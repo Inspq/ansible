@@ -10,7 +10,7 @@ class KeycloakIdentityProviderTestCase(unittest.TestCase):
     def test_create_idp(self):
         toCreate = dict(
             username = "admin", 
-            password = "Pan0rama",
+            password = "admin",
             realm = "master",
             url = "http://localhost:18081",
             alias = "test",
@@ -57,7 +57,7 @@ class KeycloakIdentityProviderTestCase(unittest.TestCase):
     def test_delete_idp(self):
         toDelete = dict(
             username = "admin", 
-            password = "Pan0rama",
+            password = "admin",
             realm = "master",
             url = "http://localhost:18081",
             alias = "test",
