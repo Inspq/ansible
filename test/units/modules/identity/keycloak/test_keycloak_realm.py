@@ -81,6 +81,7 @@ class KeycloakRealmTestCase(unittest.TestCase):
         toCreate['smtpServer']['from'] = 'root@localhost'
     
         results = realm(toCreate)
+        self.assertEqual(results['rc'],0,'Code de retour: ' + str(results['rc']))
         self.assertTrue(results['ansible_facts']['realm']['enabled'])
         
     def test_modify_realm(self):
@@ -157,6 +158,7 @@ class KeycloakRealmTestCase(unittest.TestCase):
         toModifiy['smtpServer']['from'] = 'root@localhost'
         results = realm(toModifiy)
         
+        self.assertEqual(results['rc'],0,'Code de retour: ' + str(results['rc']))
         self.assertEqual(results['ansible_facts']['realm']['displayName'], 'test123', 'name has changed')
         
     def test_delete_realm(self):
@@ -232,4 +234,5 @@ class KeycloakRealmTestCase(unittest.TestCase):
         )        
         toDelete['smtpServer']['from'] = 'root@localhost'
         results = realm(toDelete)
+        self.assertEqual(results['rc'],0,'Code de retour: ' + str(results['rc']))
         self.assertEqual(results['stdout'], 'deleted', 'realm has been deleted')

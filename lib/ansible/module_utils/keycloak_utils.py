@@ -75,3 +75,56 @@ Retour:
         return False
     except Exception, e:
         raise e
+
+def login(url, username, password):
+    '''
+Fonction : login
+Description :
+    Cette fonction permet de s'authentifier sur le serveur Keycloak.
+Arguments :
+    url :
+        type : str
+        description :
+            url de base du serveur Keycloak        
+    username :
+        type : str
+        description :
+            identifiant à utiliser pour s'authentifier au serveur Keycloak        
+    password :
+        type : str
+        description :
+            Mot de passe pour s'authentifier au serveur Keycloak        
+    '''
+    # Login to Keycloak
+    accessToken = ""
+    body = {
+            'grant_type': 'password',
+            'username': username,
+            'password': password,
+            'client_id': 'admin-cli'
+    }
+    try:
+        loginResponse = requests.post(url + '/auth/realms/master/protocol/openid-connect/token',data=body)
+    
+        loginData = loginResponse.json()
+        accessToken = loginData['access_token']
+    except requests.exceptions.RequestException, e:
+        raise e
+    except ValueError, e:
+        raise e
+
+    return accessToken
+
+def setHeaders(accessToken):
+    bearerHeader = "bearer " + accessToken
+    headers={'Authorization' : bearerHeader, 'Content-type': 'application/json'}
+    return headers
+
+def loginAndSetHeaders(url, username, password):
+    headers = {}
+    try:
+        accessToken = login(url, username, password)
+        headers = setHeaders(accessToken)
+    except Exception, e:
+        raise e
+    return headers
