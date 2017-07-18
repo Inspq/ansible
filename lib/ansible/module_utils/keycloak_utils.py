@@ -1,5 +1,5 @@
-#!/usr/bin/python
 # -*- coding: utf-8 -*-
+
 def isDictEquals(dict1, dict2, exclude = []):
     '''
 Fonction: isDictEquals
@@ -76,6 +76,7 @@ Retour:
     except Exception, e:
         raise e
 
+import requests
 def login(url, username, password):
     '''
 Fonction : login

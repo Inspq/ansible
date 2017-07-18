@@ -358,7 +358,9 @@ result:
 import requests
 import json
 import urllib
-from ansible.module_utils.keycloak_utils import *
+from ansible.module_utils.keycloak_utils import * 
+#from ansible.module_utils.keycloak_utils import KeycloakUtils
+#import ansible.module_utils.keycloak_utils as keycloak_utils
 '''
 def login(url, username, password):
     
@@ -573,10 +575,13 @@ def realm(params):
     rc = 0
     result = dict()
     changed = False
-
+    
     try:
-        #accessToken = login(url, username, password)
+        #accessToken = k.login(url, username, password)
+        #headers = k.setHeader(accessToken)
+    
         #bearerHeader = "bearer " + accessToken
+        #keycloak_utils.isDictEquals({},{})
         headers = loginAndSetHeaders(url, username, password)
     except Exception, e:
         result = dict(
