@@ -359,48 +359,7 @@ import requests
 import json
 import urllib
 from ansible.module_utils.keycloak_utils import * 
-#from ansible.module_utils.keycloak_utils import KeycloakUtils
-#import ansible.module_utils.keycloak_utils as keycloak_utils
-'''
-def login(url, username, password):
-    
-Fonction : login
-Description :
-    Cette fonction permet de s'authentifier sur le serveur Keycloak.
-Arguments :
-    url :
-        type : str
-        description :
-            url de base du serveur Keycloak        
-    username :
-        type : str
-        description :
-            identifiant à utiliser pour s'authentifier au serveur Keycloak        
-    password :
-        type : str
-        description :
-            Mot de passe pour s'authentifier au serveur Keycloak        
-    
-    # Login to Keycloak
-    accessToken = ""
-    body = {
-            'grant_type': 'password',
-            'username': username,
-            'password': password,
-            'client_id': 'admin-cli'
-    }
-    try:
-        loginResponse = requests.post(url + '/auth/realms/master/protocol/openid-connect/token',data=body)
-    
-        loginData = loginResponse.json()
-        accessToken = loginData['access_token']
-    except requests.exceptions.RequestException, e:
-        raise e
-    except ValueError, e:
-        raise e
 
-    return accessToken
-'''
 def main():
     module = AnsibleModule(
         argument_spec = dict(
@@ -577,11 +536,6 @@ def realm(params):
     changed = False
     
     try:
-        #accessToken = k.login(url, username, password)
-        #headers = k.setHeader(accessToken)
-    
-        #bearerHeader = "bearer " + accessToken
-        #keycloak_utils.isDictEquals({},{})
         headers = loginAndSetHeaders(url, username, password)
     except Exception, e:
         result = dict(
@@ -592,7 +546,6 @@ def realm(params):
         return result
     try: 
         # Vérifier si le REALM existe sur le serveur Keycloak
-        #getResponse = requests.get(url + "/auth/admin/realms/" + newRealmRepresentation["id"], headers={'Authorization' : bearerHeader})
         getResponse = requests.get(url + "/auth/admin/realms/" + newRealmRepresentation["id"], headers=headers)
     except requests.HTTPError, e:
         getStatusCode = getResponse.status_code
@@ -609,10 +562,8 @@ def realm(params):
         if (state == 'present'): # Si le status est présent
             try:
                 # Créer le REALM
-                #postResponse = requests.post(url + "/auth/admin/realms", headers={'Authorization' : bearerHeader, 'Content-type': 'application/json'}, data=data)
                 postResponse = requests.post(url + "/auth/admin/realms", headers=headers, data=data)
                 # Obtenir le nouveau REALM créé
-                #getResponse = requests.get(url + "/auth/admin/realms/" + newRealmRepresentation["id"], headers={'Authorization' : bearerHeader})
                 getResponse = requests.get(url + "/auth/admin/realms/" + newRealmRepresentation["id"], headers=headers)
                 realmRepresentation = getResponse.json()
                 changed = True
@@ -652,11 +603,9 @@ def realm(params):
                 realmRepresentation = getResponse.json()
                 if force: # Si l'option force est sélectionné
                     # Supprimer le REALM existant
-                    #deleteResponse = requests.delete(url + "/auth/admin/realms/" + newRealmRepresentation["id"], headers={'Authorization' : bearerHeader, 'Content-type': 'application/json'})
                     deleteResponse = requests.delete(url + "/auth/admin/realms/" + newRealmRepresentation["id"], headers={'Authorization' : bearerHeader, 'Content-type': 'application/json'})
                     changed = True
                     # Créer le nouveau REALM
-                    #postResponse = requests.post(url + "/auth/admin/realms", headers={'Authorization' : bearerHeader, 'Content-type': 'application/json'}, data=data)
                     postResponse = requests.post(url + "/auth/admin/realms", headers=headers, data=data)
                 else: # Si l'option force n'est pas sélectionné
                     # Comparer les realms
@@ -665,12 +614,10 @@ def realm(params):
                         changed = False
                     else: # Si le REALM doit être modifié
                         # Mettre à jour le REALM sur le serveur Keycloak
-                        #updateResponse = requests.put(url + "/auth/admin/realms/" + newRealmRepresentation["id"], headers={'Authorization' : bearerHeader, 'Content-type': 'application/json'}, data=data)
                         updateResponse = requests.put(url + "/auth/admin/realms/" + newRealmRepresentation["id"], headers=headers, data=data)
                         changed = True
                         
                 # Obtenir sa représentation JSON sur le serveur Keycloak                        
-                #getResponse = requests.get(url + "/auth/admin/realms/" + newRealmRepresentation["id"], headers={'Authorization' : bearerHeader})
                 getResponse = requests.get(url + "/auth/admin/realms/" + newRealmRepresentation["id"], headers=headers)
                 realmRepresentation = getResponse.json()
                 
@@ -684,7 +631,6 @@ def realm(params):
                     
             else: # Le status est absent
                 # Supprimer le REALM
-                #deleteResponse = requests.delete(url + "/auth/admin/realms/" + newRealmRepresentation["id"], headers={'Authorization' : bearerHeader, 'Content-type': 'application/json'})
                 deleteResponse = requests.delete(url + "/auth/admin/realms/" + newRealmRepresentation["id"], headers=headers)
                 changed = True
                 result = dict(

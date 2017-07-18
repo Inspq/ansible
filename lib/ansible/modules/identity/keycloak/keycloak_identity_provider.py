@@ -193,47 +193,7 @@ result:
 import requests
 import json
 import urllib
-from ansible.module_utils.keycloak_utils import isDictEquals
-
-def login(url, username, password):
-    '''
-Fonction : login
-Description :
-    Cette fonction permet de s'authentifier sur le serveur Keycloak.
-Arguments :
-    url :
-        type : str
-        description :
-            url de base du serveur Keycloak        
-    username :
-        type : str
-        description :
-            identifiant à utiliser pour s'authentifier au serveur Keycloak        
-    password :
-        type : str
-        description :
-            Mot de passe pour s'authentifier au serveur Keycloak        
-    '''
-    # Login to Keycloak
-    accessToken = ""
-    body = {
-            'grant_type': 'password',
-            'username': username,
-            'password': password,
-            'client_id': 'admin-cli'
-    }
-    try:
-        loginResponse = requests.post(url + '/auth/realms/master/protocol/openid-connect/token',data=body)
-    
-        loginData = loginResponse.json()
-        accessToken = loginData['access_token']
-    except requests.exceptions.RequestException, e:
-        raise e
-    except ValueError, e:
-        raise e
-
-    return accessToken
-
+from ansible.module_utils.keycloak_utils import *
     
 def addIdPEndpoints(idPConfiguration):
     '''
@@ -269,6 +229,7 @@ paramètres:
                 idPConfiguration["logoutUrl"] = openIdConfig["end_session_endpoint"]        
         except Exception, e:
             raise e
+
 def deleteAllMappers(url, bearerHeader):
     changed = False
     try:
@@ -283,13 +244,13 @@ def deleteAllMappers(url, bearerHeader):
         raise e
      
     return changed
-def createOrUpdateMappers(url, bearerHeader, alias, idPMappers):
+def createOrUpdateMappers(url, headers, alias, idPMappers):
     changed = False
     create = False
    
     try:
         # Obtenir la liste des mappers existant
-        getMappersRequest = requests.get(url + '/mappers', headers={'Authorization' : bearerHeader})
+        getMappersRequest = requests.get(url + '/mappers', headers=headers)
         try:
             mappers = getMappersRequest.json()
         except ValueError: # Il n'y a pas de mapper de défini pour cet IdP
@@ -334,9 +295,9 @@ def createOrUpdateMappers(url, bearerHeader, alias, idPMappers):
                 data=json.dumps(mapper)
                 #print str(data)
                 if len(mapperId) == 0:
-                    response = requests.post(url + '/mappers', headers={'Authorization' : bearerHeader, 'Content-type': 'application/json'}, data=data)
+                    response = requests.post(url + '/mappers', headers=headers, data=data)
                 else:
-                    response = requests.put(url + '/mappers/' + mapperId, headers={'Authorization' : bearerHeader, 'Content-type': 'application/json'}, data=data)
+                    response = requests.put(url + '/mappers/' + mapperId, headers=headers, data=data)
                 changed = True 
     except Exception ,e :
         raise e
@@ -437,8 +398,9 @@ def idp(params):
     changed = False
 
     try:
-        accessToken = login(url, username, password)
-        bearerHeader = "bearer " + accessToken
+        #accessToken = login(url, username, password)
+        #bearerHeader = "bearer " + accessToken
+        headers = loginAndSetHeaders(url, username, password)
     except Exception, e:
         result = dict(
             stderr   = 'login: ' + str(e),
@@ -448,7 +410,7 @@ def idp(params):
         return result
     try: 
         # Vérifier si le IdP existe sur le serveur Keycloak
-        getResponse = requests.get(idPSvcUrl, headers={'Authorization' : bearerHeader})
+        getResponse = requests.get(idPSvcUrl, headers=headers)
     except requests.HTTPError, e:
         getStatusCode = getResponse.status_code
     except:
@@ -466,16 +428,16 @@ def idp(params):
                 # Stocker le IdP dans un body prêt a être posté
                 data=json.dumps(newIdPRepresentation)
                 # Créer le IdP
-                postResponse = requests.post(idPSvcBaseUrl, headers={'Authorization' : bearerHeader, 'Content-type': 'application/json'}, data=data)
+                postResponse = requests.post(idPSvcBaseUrl, headers=headers, data=data)
                 # S'il y a des mappers de définis pour l'IdP
                 if len(newIdPMappers) > 0:
-                    if createOrUpdateMappers(idPSvcUrl, bearerHeader, newIdPRepresentation["alias"], newIdPMappers):
+                    if createOrUpdateMappers(idPSvcUrl, headers, newIdPRepresentation["alias"], newIdPMappers):
                         changed = True
                 # Obtenir le nouvel IdP créé
-                getResponse = requests.get(idPSvcUrl, headers={'Authorization' : bearerHeader})
+                getResponse = requests.get(idPSvcUrl, headers=headers)
                 idPRepresentation = getResponse.json()
                 
-                getResponse = requests.get(idPSvcUrl + "/mappers", headers={'Authorization' : bearerHeader})
+                getResponse = requests.get(idPSvcUrl + "/mappers", headers=headers)
                 try:
                     mappersRepresentation = getResponse.json()
                 except ValueError:
@@ -524,12 +486,12 @@ def idp(params):
                     # Supprimer les mappings existants
                     deleteAllMappers(idPSvcUrl, bearerHeader)
                     # Supprimer le IdP existant
-                    deleteResponse = requests.delete(idPSvcUrl, headers={'Authorization' : bearerHeader, 'Content-type': 'application/json'})
+                    deleteResponse = requests.delete(idPSvcUrl, headers=headers)
                     changed = True
                     # Stocker le IdP dans un body prêt a être posté
                     data=json.dumps(newIdPRepresentation)
                     # Créer le nouveau IdP
-                    postResponse = requests.post(idPSvcBaseUrl, headers={'Authorization' : bearerHeader, 'Content-type': 'application/json'}, data=data)
+                    postResponse = requests.post(idPSvcBaseUrl, headers=headers, data=data)
                 else: # Si l'option force n'est pas sélectionné
                     # Comparer les realms
                     if (isDictEquals(newIdPRepresentation, idPRepresentation, ["clientSecret", "openIdConfigurationUrl", "mappers"])): # Si le nouveau IdP n'introduit pas de modification au IdP existant
@@ -542,16 +504,16 @@ def idp(params):
                         # Stocker le IdP dans un body prêt a être posté
                         data=json.dumps(newIdPRepresentation)
                         # Mettre à jour le IdP sur le serveur Keycloak
-                        updateResponse = requests.put(idPSvcUrl, headers={'Authorization' : bearerHeader, 'Content-type': 'application/json'}, data=data)
+                        updateResponse = requests.put(idPSvcUrl, headers=headers, data=data)
                         changed = True
                 if changed and len(newIdPMappers) > 0:
                     createOrUpdateMappers(idPSvcUrl, bearerHeader, alias, newIdPMappers)
         
                 # Obtenir sa représentation JSON sur le serveur Keycloak                        
-                getResponse = requests.get(idPSvcUrl, headers={'Authorization' : bearerHeader})
+                getResponse = requests.get(idPSvcUrl, headers=headers)
                 idPRepresentation = getResponse.json()
                 
-                getResponse = requests.get(idPSvcUrl + "/mappers", headers={'Authorization' : bearerHeader})
+                getResponse = requests.get(idPSvcUrl + "/mappers", headers=headers)
                 try:
                     mappersRepresentation = getResponse.json()
                 except ValueError:
@@ -568,7 +530,7 @@ def idp(params):
                     
             else: # Le status est absent
                 # Supprimer le IdP
-                deleteResponse = requests.delete(idPSvcUrl, headers={'Authorization' : bearerHeader, 'Content-type': 'application/json'})
+                deleteResponse = requests.delete(idPSvcUrl, headers=headers)
                 changed = True
                 result = dict(
                     stdout   = 'deleted',
