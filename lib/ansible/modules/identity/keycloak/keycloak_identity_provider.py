@@ -1,8 +1,5 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-from pip._vendor.requests.models import Request
-from curses.ascii import NUL
-
 # (c) 2017, Philippe Gauthier INSPQ <philippe.gauthier@inspq.qc.ca>
 #
 # This file is not part of Ansible
@@ -36,117 +33,117 @@ version_added: "1.1"
 options:
   url:
     description:
-    - str: The url of the Keycloak server.
+    - The url of the Keycloak server.
     default: http://localhost:8080/auth
     required: true    
   username:
     description:
-    - str: The username to logon to the master realm.
+    - The username to logon to the master realm.
     required: true
   password:
     description:
-    - str: The password for the user to logon the master realm.
+    - The password for the user to logon the master realm.
     required: true
   realm:
     description:
-    - str: The name of the realm in which is the identity provider.
+    - The name of the realm in which is the identity provider.
     required: true
   alias:
     description:
-    - str: The alias of the identity provider.
+    - The alias of the identity provider.
     required: true
   displayName:
     description:
-    - str: The display name of the realm.
+    - The display name of the realm.
     required: false
   providerId:
     description:
-    - str: Type of identity provider.
+    - Type of identity provider.
     default: oidc
     required: false
-  enabled
+  enabled:
     description:
-    - bool : enabled.
+    - enabled.
     default: True
     required: false
   updateProfileFirstLoginMode:
     description:
-    - str: update Profile First Login Mode.
+    - update Profile First Login Mode.
     default: on
     required: false
   trustEmail:
     description: 
-    - bool : trust Email.
+    - trust Email.
     default: False
     required: false
   storeToken:
     description:
-    - bool : store Token.
+    - store Token.
     default: True
     required: false
   addReadTokenRoleOnCreate:
     description:
-    - bool : add Read Token Role On Create.
+    - add Read Token Role On Create.
     default: True
     required: false
   authenticateByDefault:
     description:
-    - bool : authenticate By Default.
+    - authenticate By Default.
     default: False
     required: false
-  linkOnly
+  linkOnly:
     description:
-    - bool : link Only.
+    - link Only.
     default: False
     required: false
-  firstBrokerLoginFlowAlias
+  firstBrokerLoginFlowAlias:
     description:
-    - str : first Broker Login Flow Alias.
+    - first Broker Login Flow Alias.
     default: first broker login
     required: false
-  hideOnLoginPage
+  hideOnLoginPage:
     description:
-    - bool : hide On Login Page. 
+    - hide On Login Page. 
     default: False
     required: false
-  openIdConfigurationUrl
+  openIdConfigurationUrl:
     description:
-    - str : OpenId Connect configuration auto discovery URL.
+    - OpenId Connect configuration auto discovery URL.
     default: 
     required: true
-  validateSignature
+  validateSignature:
     description:
-    - bool : validate Signature.
+    - validate Signature.
     default: True
     required: false
-  clientId
+  clientId:
     description:
-    - str : clientId.
+    - clientId.
     default:
     required: true
-  backchannelSupported
+  backchannelSupported:
     description:
-    - bool : backchannelSupported.
+    - backchannelSupported.
     default: False
     required: false
-  useJwksUrl
+  useJwksUrl:
     description:
-    - bool : use Jwks Url.
+    - use Jwks Url.
     default: True
     required: false
-  disableUserInfo
+  disableUserInfo:
     description:
-    - bool : disable User Info (must be true for ADFS).
+    - disable User Info (must be true for ADFS).
     default: False
     required: false
-  clientSecret
+  clientSecret:
     description:
-    - str : client Secret.
+    - client Secret.
     default:
     required: true
-  defaultScope
+  defaultScope:
     description:
-    - str : default Scope.
+    - default Scope.
     default: ""
     required: false
   state:
@@ -166,29 +163,29 @@ notes:
 '''
 
 EXAMPLES = '''
-# Create a realm realm1 with default settings.
-- keycloak_identity_provider:
-    alias: alias1
-    state: present
+    - name: Create a realm realm1 with default settings.
+      keycloak_identity_provider:
+        alias: alias1
+        state: present
 
-# Re-create the realm realm1
-- keycloak_identity_provider:
-    alias: alias1
-    state: present
-    force: yes
+    - name: Re-create the realm realm1
+      keycloak_identity_provider:
+        alias: alias1
+        state: present
+        force: yes
 
-# Remove a the realm realm1.
-- keycloak_identity_provider:
-    alias: alias1
-    state: absent
+    - name: Remove a the realm realm1.
+      keycloak_identity_provider:
+        alias: alias1
+        state: absent
 '''
 
 RETURN = '''
 result:
-    ansible_facts: Representation JSON du fournisseur d'identité
-    stderr: Message d'erreur s'il y en a un
-    rc: Code de retour, 0 si succès, 1 si erreur
-    changed: Retourne vrai si l'action a modifié le fournisseur d'identité, faux sinon.
+    ansible_facts: JSON Representation for the identity provider
+    stderr: Error message if ther is any.
+    rc: Return code, 1 if fail, 0 if success.
+    changed: True if the action changed the configuration of the Keycloak server, False otherwise.
 '''
 import requests
 import json
@@ -269,7 +266,7 @@ def createOrUpdateMappers(url, headers, alias, idPMappers):
             for key in idPMapper: 
                 mapperChanged = False
                 if key in mapper.keys():
-                    if type(idPMapper[key]) is dict:
+                    if isinstance(idPMapper[key],dict):
                         for dictKey in idPMapper[key]:
                             if dictKey not in mapper[key].keys() or idPMapper[key][dictKey] <> mapper[key][dictKey]:
                                 mapper[key][dictKey] = idPMapper[key][dictKey]

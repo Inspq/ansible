@@ -1,7 +1,6 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-from pip._vendor.requests.models import Request
-from curses.ascii import NUL
+
 
 # (c) 2017, Philippe Gauthier INSPQ <philippe.gauthier@inspq.qc.ca>
 #
@@ -32,7 +31,7 @@ module: keycloak_realm
 short_description: Configure a realm in Keycloak
 description:
   - This module creates, removes or update Keycloak realms.
-version_added: "1.1"
+version_added: "2.3"
 options:
   realm:
     description:
@@ -61,257 +60,252 @@ options:
     required: true
   accessCodeLifespan:
     description:
-    - integer: access code lifespan.
+    - access code lifespan.
     default: 60
     required: false
   accessCodeLifespanLogin:
     description: 
-    - integer : access code lifespan login.
+    - access code lifespan login.
     default: 1800
     required: false
   accessCodeLifespanUserAction:
     description:
-    - integer : access code lifespan user action.
+    - access code lifespan user action.
     default: 300
     required: false
   accessTokenLifespan:
     description:
-    - integer : access token lifespan.
+    - Access token lifespan.
     default: 300
     required: false
   accessTokenLifespanForImplicitFlow:
     description:
-    - integer : access token lifespan for implicit flow.
+    - Access token lifespan for implicit flow.
     default: 900
     required: false
-  notBefore
+  notBefore:
     description:
-    - integer : not Before.
+    - Not Before.
     default: 900
     required: false
-  revokeRefreshToken
+  revokeRefreshToken:
     description:
-    - bool : revoke Refresh Token.
+    - Revoke Refresh Token.
     default: 900
     required: false
-  accessTokenLifespan
+  ssoSessionMaxLifespan:
     description:
-    - integer : access token lifespan.
-    default: 300
-    required: false
-  ssoSessionMaxLifespan
-    description:
-    - integer : sso Session Max Lifespan.
+    - Sso Session Max Lifespan.
     default: 36000
     required: false
-  offlineSessionIdleTimeout
+  offlineSessionIdleTimeout:
     description:
-    - integer : offline Session Idle Timeout.
+    - Offline Session Idle Timeout.
     default: 2592000
     required: false
-  enabled
+  enabled:
     description:
-    - bool : enabled.
+    - Enabled.
     default: True
     required: false
-  sslRequired
+  sslRequired:
     description:
-    - str : sslRequired.
+    - Ssl Required.
     default: external
     required: false
-  registrationAllowed
+  registrationAllowed:
     description:
-    - bool : registration Allowed.
+    - Registration Allowed.
     default: False
     required: false
-  registrationEmailAsUsername
+  registrationEmailAsUsername:
     description:
-    - bool : registration Email As Username.
+    - Registration Email As Username.
     default: False
     required: false
-  rememberMe
+  rememberMe:
     description:
-    - bool : remember me.
+    - Remember me.
     default: False
     required: false
-  verifyEmail
+  verifyEmail:
     description:
-    - bool : verify Email.
+    - Verify Email.
     default: False
     required: false
-  loginWithEmailAllowed
+  loginWithEmailAllowed:
     description:
-    - bool : login With Email Allowed.
+    - Login With Email Allowed.
     default: True
     required: false
-  duplicateEmailsAllowed
+  duplicateEmailsAllowed:
     description:
-    - bool : duplicate Emails Allowed.
+    - Duplicate Emails Allowed.
     default: 900
     required: false
-  resetPasswordAllowed
+  resetPasswordAllowed:
     description:
-    - bool : reset Password Allowed.
+    - Reset Password Allowed.
     default: False
     required: false
-  editUsernameAllowed
+  editUsernameAllowed:
     description:
-    - bool : edit Username Allowed.
+    - Edit Username Allowed.
     default: False
     required: false
-  bruteForceProtected
+  bruteForceProtected:
     description:
-    - integer : brute Force Protected.
+    - Brute Force Protected.
     default: False
     required: false
-  maxFailureWaitSeconds
+  maxFailureWaitSeconds:
     description:
-    - integer : max Failure Wait Seconds.
+    - Max Failure Wait Seconds.
     default: 900
     required: false
-  minimumQuickLoginWaitSeconds
+  minimumQuickLoginWaitSeconds:
     description:
-    - integer : minimum Quick Login Wait Seconds.
+    - Minimum Quick Login Wait Seconds.
     default: 60
     required: false
-  waitIncrementSeconds
+  waitIncrementSeconds:
     description:
-    - integer : wait Increment Seconds.
+    - Wait Increment Seconds.
     default: 60
     required: false
-  quickLoginCheckMilliSeconds
+  quickLoginCheckMilliSeconds:
     description:
-    - integer : quick Login Check MilliSeconds.
+    - Quick Login Check MilliSeconds.
     default: 1000
     required: false
-  maxDeltaTimeSeconds
+  maxDeltaTimeSeconds:
     description:
-    - integer : max Delta Time Seconds.
+    - Max Delta Time Seconds.
     default: 43200
     required: false
-  failureFactor
+  failureFactor:
     description:
-    - integer : failure Factor.
+    - Failure Factor.
     default: 30
     required: false
-  defaultRoles
+  defaultRoles:
     description:
-    - list : default roles.
+    - Default roles.
     default: [ "offline_access", "uma_authorization" ]
     required: false
-  requiredCredentials
+  requiredCredentials:
     description:
-    - list : required Credentials.
+    - Required Credentials.
     default: [ "password" ]
     required: false
-  passwordPolicy
+  passwordPolicy:
     description:
-    - str : password Policy.
+    - Password Policy.
     default: hashIterations(20000)
     required: false
-  otpPolicyType
+  otpPolicyType:
     description:
-    - str : otp Policy Type.
+    - Otp Policy Type.
     default: totp
     required: false
-  otpPolicyAlgorithm
+  otpPolicyAlgorithm:
     description:
-    - str : otpPolicyAlgorithm.
+    - Otp Policy Algorithm.
     default: HmacSHA1
     required: false
-  otpPolicyInitialCounter
+  otpPolicyInitialCounter:
     description:
-    - integer : otpPolicyInitialCounter.
+    - Otp Policy Initial Counter.
     default: 0
     required: false
-  otpPolicyDigits
+  otpPolicyDigits:
     description:
-    - integer : otp Policy Digits.
+    - Otp Policy Digits.
     default: 6
     required: false
-  otpPolicyLookAheadWindow
+  otpPolicyLookAheadWindow:
     description:
-    - integer : otp Policy Look Ahead Window.
+    - Otp Policy Look Ahead Window.
     default: 1
     required: false
-  otpPolicyPeriod
+  otpPolicyPeriod:
     description:
-    - integer : otp Policy Period.
+    - Otp Policy Period.
     default: 30
     required: false
-  smtpServer
+  smtpServer:
     description:
-    - dict : SMTP Server.
+    - SMTP Server.
     default: {}
     required: false
-  eventsEnabled
+  eventsEnabled:
     description:
-    - bool : events Enabled.
+    - Events Enabled.
     default: False
     required: false
-  eventsListeners
+  eventsListeners:
     description:
-    - list : events Listeners.
+    - Events Listeners.
     default: [ "jboss-logging" ]
     required: false
-  enabledEventTypes
+  enabledEventTypes:
     description:
-    - list : enabledEventTypes.
+    - Enabled Event Types.
     default: [ ]
     required: false
-  adminEventsEnabled
+  adminEventsEnabled:
     description:
-    - bool : admin Events Enabled.
+    - Admin Events Enabled.
     default: False
     required: false
-  adminEventsDetailsEnabled
+  adminEventsDetailsEnabled:
     description:
-    - bool : admin Events Details Enabled.
+    - Admin Events Details Enabled.
     default: False
     required: false
-  internationalizationEnabled
+  internationalizationEnabled:
     description:
-    - bool : internationalization Enabled.
+    - Internationalization Enabled.
     default: False
     required: false
-  supportedLocales
+  supportedLocales:
     description:
-    - list : supported Locales.
+    - Supported Locales.
     default: [ ]
     required: false
-  browserFlow
+  browserFlow:
     description:
-    - str : browser Flow.
+    - Browser Flow.
     default: browser
     required: false
-  registrationFlow
+  registrationFlow:
     description:
-    - str : registrationFlow.
+    - Registration Flow.
     default: registration
     required: false
-  directGrantFlow
+  directGrantFlow:
     description:
-    - str : direct Grant Flow.
+    - Direct Grant Flow.
     default: direct grant
     required: false
-  resetCredentialsFlow
+  resetCredentialsFlow:
     description:
-    - integer : reset Credentials Flow.
+    - Reset Credentials Flow.
     default: reset credentials
     required: false
-  clientAuthenticationFlow
+  clientAuthenticationFlow:
     description:
-    - integer : client Authentication Flow.
+    - Client Authentication Flow.
     default: clients
     required: false
-  attributes=dict(type='dict', default=None),
+  attributes:
     description:
-    - dict : attributes.
+    - Attributes.
     default: None
     required: false
-  browserSecurityHeaders
+  browserSecurityHeaders:
     description:
-    - dict : browser Security Headers.
+    - Browser Security Headers.
     default: None
     required: false
   state:
@@ -331,31 +325,31 @@ notes:
 '''
 
 EXAMPLES = '''
-# Create a realm realm1 with default settings.
-- keycloak_realm:
-    name: realm1 
-    state: present
+    - name: Create a realm realm1 with default settings.
+      keycloak_realm:
+        name: realm1 
+        state: present
 
-# Re-create the realm realm1
-- keycloak_realm:
-    name: realm1
-    state: present
-    force: yes
+    - name: Re-create the realm realm1
+      keycloak_realm:
+        name: realm1
+        state: present
+        force: yes
 
-# Remove a the realm realm1.
-- keycloak_realm:
-    name: realm1
-    state: absent
+    - name: Remove a the realm realm1.
+      keycloak_realm:
+        name: realm1
+        state: absent
 '''
 
 RETURN = '''
 result:
-    ansible_facts: Representation JSON du REALM
-    stderr: Message d'erreur s'il y en a un
-    rc: Code de retour, 0 si succès, 1 si erreur
-    changed: Retourne vrai si l'action a modifié de REALM, faux sinon.
+    ansible_facts: JSON Representation JSON of the REALM
+    stderr: Error message if there is any.
+    rc: Return code, 1 if fail, 0 if success.
+    changed: True if the action changed the configuration of the Keycloak server, False otherwise.
 '''
-import requests
+
 import json
 import urllib
 from ansible.module_utils.keycloak_utils import * 
