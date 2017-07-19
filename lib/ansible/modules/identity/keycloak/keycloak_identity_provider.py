@@ -504,7 +504,7 @@ def idp(params):
                         updateResponse = requests.put(idPSvcUrl, headers=headers, data=data)
                         changed = True
                 if changed and len(newIdPMappers) > 0:
-                    createOrUpdateMappers(idPSvcUrl, bearerHeader, alias, newIdPMappers)
+                    createOrUpdateMappers(idPSvcUrl, headers, alias, newIdPMappers)
         
                 # Obtenir sa représentation JSON sur le serveur Keycloak                        
                 getResponse = requests.get(idPSvcUrl, headers=headers)
