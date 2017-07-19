@@ -377,17 +377,6 @@ def idp(params):
         if 'userIp' not in newIdPConfig.keys():
             newIdPConfig["userIp"] = "false"
     
-    try:
-        addIdPEndpoints(newIdPConfig)
-        newIdPRepresentation["config"] = newIdPConfig
-    except Exception, e:
-        result = dict(
-            stderr   = 'addIdPEndpoints: ' + str(e),
-            rc       = 1,
-            changed  = False
-            )
-        return result
-
     idPSvcBaseUrl = url + "/auth/admin/realms/" + realm + "/identity-provider/instances/"
     idPSvcUrl = idPSvcBaseUrl + newIdPRepresentation["alias"]
     rc = 0
@@ -405,6 +394,17 @@ def idp(params):
             changed  = changed
             )
         return result
+    try:
+        addIdPEndpoints(newIdPConfig)
+        newIdPRepresentation["config"] = newIdPConfig
+    except Exception, e:
+        result = dict(
+            stderr   = 'addIdPEndpoints: ' + str(e),
+            rc       = 1,
+            changed  = changed
+            )
+        return result
+
     try: 
         # Vérifier si le IdP existe sur le serveur Keycloak
         getResponse = requests.get(idPSvcUrl, headers=headers)
