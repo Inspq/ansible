@@ -384,7 +384,7 @@ def idp(params):
         result = dict(
             stderr   = 'addIdPEndpoints: ' + str(e),
             rc       = 1,
-            changed  = changed
+            changed  = False
             )
         return result
 
