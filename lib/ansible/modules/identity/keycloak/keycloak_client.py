@@ -16,7 +16,6 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with Ansible.  If not, see <http://www.gnu.org/licenses/>.
-from __builtin__ import isinstance
 
 ANSIBLE_METADATA = {'metadata_version': '1.0',
                     'status': ['preview'],
@@ -188,7 +187,7 @@ import requests
 import json
 import urllib
 from ansible.module_utils.keycloak_utils import *
-    
+from __builtin__ import isinstance    
 
 def main():
     module = AnsibleModule(
