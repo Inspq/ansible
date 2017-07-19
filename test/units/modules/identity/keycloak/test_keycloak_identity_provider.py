@@ -133,12 +133,6 @@ class KeycloakIdentityProviderTestCase(unittest.TestCase):
             ),
             mappers = [ 
                 dict(
-                    name = "test4", 
-                    config = dict(
-                        claim = "test4"
-                        )
-                    ), 
-                dict(
                     name ="test5",
                     config = dict(
                         claim = "test5"
@@ -149,16 +143,15 @@ class KeycloakIdentityProviderTestCase(unittest.TestCase):
             force = False
         )
         ToChange['mappers'][0]['config']['user.attribute'] = "lastname"
-        ToChange['mappers'][1]['config']['user.attribute'] = "firstname"
         idp(ToChange)
-        ToChange['mappers'][1]['config']["claim"] = "test6"
+        ToChange['mappers'][0]['config']["claim"] = "test6"
         results = idp(ToChange)
         # Changed is supposed to be true but I do not why keycloak do not apply changes on put for IdPs
         #self.assertTrue(results['changed'])
         # Claim is supposed to be changed to test6
-        #self.assertEquals(results['ansible_facts']['mappers'][1]['config']['claim'],'test6','test6')
+        #self.assertEquals(results['ansible_facts']['mappers'][0]['config']['claim'],'test6','test6')
         self.assertFalse(results['changed'])
-        self.assertEquals(results['ansible_facts']['mappers'][1]['config']['claim'],'test5','test5')
+        self.assertEquals(results['ansible_facts']['mappers'][0]['config']['claim'],'test5','test5')
 
     def test_delete_idp(self):
         toDelete = dict(
