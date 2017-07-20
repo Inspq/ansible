@@ -37,7 +37,7 @@ class KeycloakClientTestCase(unittest.TestCase):
         #print str(results)
     
         self.assertTrue(results['ansible_facts']['client']['enabled'])
-        #self.assertTrue(results['changed'])
+        self.assertTrue(results['changed'])
         self.assertTrue(results['ansible_facts']['clientSecret'])
         
     def test_client_not_changed(self):

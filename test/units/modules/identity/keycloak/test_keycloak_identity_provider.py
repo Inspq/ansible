@@ -3,8 +3,6 @@ import os
 import unittest
 
 from ansible.modules.identity.keycloak.keycloak_identity_provider import *
-from __builtin__ import False
-
 
 class KeycloakIdentityProviderTestCase(unittest.TestCase):
  
@@ -52,7 +50,7 @@ class KeycloakIdentityProviderTestCase(unittest.TestCase):
         toCreate['mappers'][0]['config']['user.attribute'] = "lastname"
         toCreate['mappers'][1]['config']['user.attribute'] = "firstname"
         results = idp(toCreate)
-        #self.assertTrue(results['changed'])
+        self.assertTrue(results['changed'])
         #err = results['stderr'] if 'stderr' in results else ""            
         #out = results['stdout'] if 'stdout' in results else ""
         self.assertEquals(results['rc'], 0, "rc: " + str(results['rc']) + " : " + results['stdout'] if 'stdout' in results else "" + " : " + results['stderr'] if 'stderr' in results else "")
@@ -252,6 +250,7 @@ class KeycloakIdentityProviderTestCase(unittest.TestCase):
             password = "admin",
             realm = "master",
             url = "http://localhost:18081",
+            alias = "test4",
             config = dict(
                 clientId = "test4",
                 clientSecret = "CeciEstMonSecret",
@@ -263,3 +262,20 @@ class KeycloakIdentityProviderTestCase(unittest.TestCase):
         results = idp(toChangeSecret)
         self.assertEquals(results['rc'], 0, "rc: " + str(results['rc']) + " : " + results['stdout'] if 'stdout' in results else "" + " : " + results['stderr'] if 'stderr' in results else "")
         self.assertTrue(results['changed'])
+    def test_change_client_secret_without_alias(self):
+        toChangeSecret = dict(
+            username = "admin", 
+            password = "admin",
+            realm = "master",
+            url = "http://localhost:18081",
+            config = dict(
+                clientId = "test4",
+                clientSecret = "CeciEstMonSecret",
+            ),
+            state="present",
+            force=False
+            )
+    
+        results = idp(toChangeSecret)
+        self.assertEquals(results['rc'], 1, "rc: " + str(results['rc']) + " : " + results['stdout'] if 'stdout' in results else "" + " : " + results['stderr'] if 'stderr' in results else "")
+        self.assertFalse(results['changed'])

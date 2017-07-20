@@ -307,7 +307,7 @@ def main():
             username=dict(type='str', required=True),
             password=dict(required=True),
             realm=dict(type='str', required=True),
-            alias=dict(type='str'),
+            alias=dict(type='str', required=True),
             displayName=dict(type='str', default=""),
             providerId=dict(type='str', default="oidc"),
             enabled = dict(type='bool', default=True),
@@ -353,15 +353,15 @@ def idp(params):
         newIdPRepresentation["alias"] = params['alias'].decode("utf-8")
         queryParams = {'alias': params['alias'].decode("utf-8")}
     else:
-        if 'config' in params and 'clientId' in params['config']:
-            queryParams = {'clientId': params['config']['clientId'].decode("utf-8")}
-        else:
-            result = dict(
-                stderr   = 'Either alias or config.clientId must be provided',
-                rc       = 1,
-                changed  = changed
-                )
-            return result
+        #if 'config' in params and 'clientId' in params['config']:
+        #    queryParams = {'clientId': params['config']['clientId'].decode("utf-8")}
+        #else:
+        result = dict(
+            stderr   = 'Alias must be provided',
+            rc       = 1,
+            changed  = changed
+            )
+        return result
     if 'displayName' in params:
         newIdPRepresentation["displayName"] = params['displayName'].decode("utf-8")
     if 'providerId' in params:
