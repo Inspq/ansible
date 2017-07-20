@@ -16,7 +16,6 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with Ansible.  If not, see <http://www.gnu.org/licenses/>.
-from codecs import getreader
 
 ANSIBLE_METADATA = {'metadata_version': '1.0',
                     'status': ['preview'],
