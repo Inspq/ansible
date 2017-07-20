@@ -16,6 +16,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with Ansible.  If not, see <http://www.gnu.org/licenses/>.
+from codecs import getreader
 
 ANSIBLE_METADATA = {'metadata_version': '1.0',
                     'status': ['preview'],
@@ -307,7 +308,7 @@ def main():
             username=dict(type='str', required=True),
             password=dict(required=True),
             realm=dict(type='str', required=True),
-            alias=dict(type='str', required=True),
+            alias=dict(type='str'),
             displayName=dict(type='str', default=""),
             providerId=dict(type='str', default="oidc"),
             enabled = dict(type='bool', default=True),
@@ -343,22 +344,49 @@ def idp(params):
     realm = params['realm']
     state = params['state']
     force = params['force']
-
+    rc = 0
+    result = dict()
+    changed = False
+    idPExists = False
     # Créer un représentation du realm recu en paramètres
     newIdPRepresentation = {}
-    newIdPRepresentation["alias"] = params['alias'].decode("utf-8")
-    newIdPRepresentation["displayName"] = params['displayName'].decode("utf-8")
-    newIdPRepresentation["providerId"] = params['providerId'].decode("utf-8")
-    newIdPRepresentation["enabled"] = params['enabled']
-    newIdPRepresentation["updateProfileFirstLoginMode"] = params['updateProfileFirstLoginMode'].decode("utf-8")
-    newIdPRepresentation["trustEmail"] = params['trustEmail']
-    newIdPRepresentation["storeToken"] = params['storeToken']
-    newIdPRepresentation["addReadTokenRoleOnCreate"] = params['addReadTokenRoleOnCreate']
-    newIdPRepresentation["authenticateByDefault"] = params['authenticateByDefault']
-    newIdPRepresentation["linkOnly"] = params['linkOnly']
-    newIdPRepresentation["firstBrokerLoginFlowAlias"] = params['firstBrokerLoginFlowAlias'].decode("utf-8")
-    newIdPConfig = params['config']
-    newIdPMappers = params['mappers']
+    if 'alias' in params and params['alias'] is not None and len(params['alias']) > 0:
+        newIdPRepresentation["alias"] = params['alias'].decode("utf-8")
+        queryParams = {'alias': params['alias'].decode("utf-8")}
+    else:
+        if 'config' in params and 'clientId' in params['config']:
+            queryParams = {'clientId': params['config']['clientId'].decode("utf-8")}
+        else:
+            result = dict(
+                stderr   = 'Either alias or config.clientId must be provided',
+                rc       = 1,
+                changed  = changed
+                )
+            return result
+    if 'displayName' in params:
+        newIdPRepresentation["displayName"] = params['displayName'].decode("utf-8")
+    if 'providerId' in params:
+        newIdPRepresentation["providerId"] = params['providerId'].decode("utf-8")
+    if 'enabled' in params:
+        newIdPRepresentation["enabled"] = params['enabled']
+    if 'updateProfileFirstLoginMode' in params:
+        newIdPRepresentation["updateProfileFirstLoginMode"] = params['updateProfileFirstLoginMode'].decode("utf-8")
+    if 'trustEmail' in params:
+        newIdPRepresentation["trustEmail"] = params['trustEmail']
+    if 'storeToken' in params:
+        newIdPRepresentation["storeToken"] = params['storeToken']
+    if 'addReadTokenRoleOnCreate' in params:
+        newIdPRepresentation["addReadTokenRoleOnCreate"] = params['addReadTokenRoleOnCreate']
+    if 'authenticateByDefault' in params:
+        newIdPRepresentation["authenticateByDefault"] = params['authenticateByDefault']
+    if 'linkOnly' in params:
+        newIdPRepresentation["linkOnly"] = params['linkOnly']
+    if 'firstBrokerLoginFlowAlias' in params:
+        newIdPRepresentation["firstBrokerLoginFlowAlias"] = params['firstBrokerLoginFlowAlias'].decode("utf-8")
+    if 'config' in params:
+        newIdPConfig = params['config']
+    newIdPMappers = params['mappers'] if 'mappers' in params else None
+        
     
     # Compléter la configuration reçu avec les valeurs par défaut
     if 'hideOnLoginPage' not in newIdPConfig.keys():
@@ -373,15 +401,13 @@ def idp(params):
         newIdPConfig["disableUserInfo"] = "false"
     if 'defaultScope' not in newIdPConfig.keys():
         newIdPConfig["defaultScope"] = ""
-    if newIdPRepresentation["providerId"] == 'google':
+    if 'providerId' in newIdPRepresentation and newIdPRepresentation["providerId"] == 'google':
         if 'userIp' not in newIdPConfig.keys():
             newIdPConfig["userIp"] = "false"
     
     idPSvcBaseUrl = url + "/auth/admin/realms/" + realm + "/identity-provider/instances/"
-    idPSvcUrl = idPSvcBaseUrl + newIdPRepresentation["alias"]
-    rc = 0
-    result = dict()
-    changed = False
+    
+    #print str(newIdPRepresentation)
 
     try:
         #accessToken = login(url, username, password)
@@ -395,8 +421,9 @@ def idp(params):
             )
         return result
     try:
-        addIdPEndpoints(newIdPConfig)
-        newIdPRepresentation["config"] = newIdPConfig
+        if 'config' in params:
+            addIdPEndpoints(newIdPConfig)
+            newIdPRepresentation["config"] = newIdPConfig
     except Exception, e:
         result = dict(
             stderr   = 'addIdPEndpoints: ' + str(e),
@@ -407,19 +434,38 @@ def idp(params):
 
     try: 
         # Vérifier si le IdP existe sur le serveur Keycloak
-        getResponse = requests.get(idPSvcUrl, headers=headers)
-    except requests.HTTPError, e:
-        getStatusCode = getResponse.status_code
-    except:
-        getStatusCode = 0
-    else:
-        getStatusCode = getResponse.status_code
+        getResponse = requests.get(idPSvcBaseUrl, headers=headers)
+        listIdPs = getResponse.json()
+        
+        for idP in listIdPs:
+            if ('alias' in queryParams and idP['alias'] == queryParams['alias']) or ('clientId' in queryParams and idP['config']['clientId'] == queryParams['clientId']):
+                idPExists = True
+                # Obtenir le IdP exitant
+                idPRepresentation = idP
+                break
+                
+        #print str(queryParams)
+        #print str(getResponse.json())
+    except Exception, e:
+        result = dict(
+            stderr   = 'first realm get: ' + str(e),
+            rc       = 1,
+            changed  = changed
+            )
+        return result
         
     
    
-    if (getStatusCode == 404): # Le IdP n'existe pas
+    if not idPExists: # Le IdP n'existe pas
         # Creer le IdP
-        
+        if not 'alias' in newIdPRepresentation:
+            result = dict(
+                stderr   = 'No Alias provided while creating a new Identity Provider or updating a non existing identity provider',
+                rc       = 1,
+                changed  = changed
+                )
+            return result
+        idPSvcUrl = idPSvcBaseUrl + newIdPRepresentation['alias']
         if (state == 'present'): # Si le status est présent
             try:
                 # Stocker le IdP dans un body prêt a être posté
@@ -427,11 +473,11 @@ def idp(params):
                 # Créer le IdP
                 postResponse = requests.post(idPSvcBaseUrl, headers=headers, data=data)
                 # S'il y a des mappers de définis pour l'IdP
-                if len(newIdPMappers) > 0:
-                    if createOrUpdateMappers(idPSvcUrl, headers, newIdPRepresentation["alias"], newIdPMappers):
-                        changed = True
+                if newIdPMappers is not None and len(newIdPMappers) > 0:
+                    createOrUpdateMappers(idPSvcUrl, headers, newIdPRepresentation["alias"], newIdPMappers)
                 # Obtenir le nouvel IdP créé
                 getResponse = requests.get(idPSvcUrl, headers=headers)
+                changed = True
                 idPRepresentation = getResponse.json()
                 
                 getResponse = requests.get(idPSvcUrl + "/mappers", headers=headers)
@@ -439,7 +485,7 @@ def idp(params):
                     mappersRepresentation = getResponse.json()
                 except ValueError:
                     mappersRepresentation = {}
-                changed = True
+                
                 fact = dict(
                     idp = idPRepresentation,
                     mappers = mappersRepresentation)
@@ -473,13 +519,13 @@ def idp(params):
                 changed  = changed
             )
                 
-    elif (getStatusCode == 200):  # Le realm existe déjà
+    else:  # Le realm existe déjà
+        alias = idPRepresentation['alias']
+        idPSvcUrl = idPSvcBaseUrl + alias
         try:
             if (state == 'present'): # si le status est présent
-                # Obtenir le IdP exitant
-                idPRepresentation = getResponse.json()
+                
                 if force: # Si l'option force est sélectionné
-                    alias = newIdPRepresentation['alias']
                     # Supprimer les mappings existants
                     deleteAllMappers(idPSvcUrl, bearerHeader)
                     # Supprimer le IdP existant
@@ -495,15 +541,12 @@ def idp(params):
                         # Ne rien changer
                         changed = False
                     else: # Si le IdP doit être modifié
-                        # Enlever le champ alias avec de faire le put
-                        alias = newIdPRepresentation.pop('alias')
-                        
                         # Stocker le IdP dans un body prêt a être posté
                         data=json.dumps(newIdPRepresentation)
                         # Mettre à jour le IdP sur le serveur Keycloak
                         updateResponse = requests.put(idPSvcUrl, headers=headers, data=data)
                         changed = True
-                if changed and len(newIdPMappers) > 0:
+                if changed and newIdPMappers is not None and len(newIdPMappers) > 0:
                     createOrUpdateMappers(idPSvcUrl, headers, alias, newIdPMappers)
         
                 # Obtenir sa représentation JSON sur le serveur Keycloak                        
@@ -536,24 +579,17 @@ def idp(params):
                 )
         except requests.exceptions.RequestException, e:
             result = dict(
-                stderr   = 'put or delete idp: ' + newRealmRepresentation["id"] + ' error: ' + str(e),
+                stderr   = 'put or delete idp: ' + str(newIdPRepresentation) + ' error: ' + str(e),
                 rc       = 1,
                 changed  = changed
                 )
         except ValueError, e:
             result = dict(
-                stderr   = 'put or delete idp: ' + newRealmRepresentation["id"] + ' error: ' + str(e),
+                stderr   = 'put or delete idp: ' + str(newIdPRepresentation) + ' error: ' + str(e),
                 rc       = 1,
                 changed  = changed
                 )
-    else: # Le status HTTP du GET n'est ni 200 ni 404, c'est considéré comme une erreur.
-        rc = 1
-        result = dict(
-            stderr = newRealmRepresentation["id"] + ' ' + getStatusCode,
-            rc = 1,
-            changed = changed
-            )
-
+    
     return result
         
 # import module snippets

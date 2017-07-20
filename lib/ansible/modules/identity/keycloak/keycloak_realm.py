@@ -528,7 +528,8 @@ def realm(params):
     rc = 0
     result = dict()
     changed = False
-    
+    realmExists = False
+    realmRepresentation = {}
     try:
         headers = loginAndSetHeaders(url, username, password)
     except Exception, e:
@@ -540,23 +541,29 @@ def realm(params):
         return result
     try: 
         # Vérifier si le REALM existe sur le serveur Keycloak
-        getResponse = requests.get(url + "/auth/admin/realms/" + newRealmRepresentation["id"], headers=headers)
-    except requests.HTTPError, e:
-        getStatusCode = getResponse.status_code
-    except:
-        getStatusCode = 0
-    else:
-        getStatusCode = getResponse.status_code
+        getResponse = requests.get(url + "/auth/admin/realms/", headers=headers)
+        listRealms = getResponse.json()
         
-    
-   
-    if (getStatusCode == 404): # Le realm n'existe pas
+        for realm in listRealms:
+            if realm['id'] == newRealmRepresentation["id"]:
+                realmExists = True
+                realmRepresentation = realm
+                break
+    except Exception, e:
+        result = dict(
+            stderr   = 'first realm get: ' + str(e),
+            rc       = 1,
+            changed  = changed
+            )
+        return result
+        
+    if not realmExists: # Le realm n'existe pas
         # Creer le realm
         
         if (state == 'present'): # Si le status est présent
             try:
                 # Créer le REALM
-                postResponse = requests.post(url + "/auth/admin/realms", headers=headers, data=data)
+                postResponse = requests.post(url + "/auth/admin/realms/", headers=headers, data=data)
                 # Obtenir le nouveau REALM créé
                 getResponse = requests.get(url + "/auth/admin/realms/" + newRealmRepresentation["id"], headers=headers)
                 realmRepresentation = getResponse.json()
@@ -590,11 +597,11 @@ def realm(params):
                 changed  = changed
             )
                 
-    elif (getStatusCode == 200):  # Le realm existe déjà
+    else:  # Le realm existe déjà
         try:
             if (state == 'present'): # si le status est présent
                 # Obtenir le REALM exitant
-                realmRepresentation = getResponse.json()
+                #realmRepresentation = getResponse.json()
                 if force: # Si l'option force est sélectionné
                     # Supprimer le REALM existant
                     deleteResponse = requests.delete(url + "/auth/admin/realms/" + newRealmRepresentation["id"], headers={'Authorization' : bearerHeader, 'Content-type': 'application/json'})
@@ -611,7 +618,7 @@ def realm(params):
                         updateResponse = requests.put(url + "/auth/admin/realms/" + newRealmRepresentation["id"], headers=headers, data=data)
                         changed = True
                         
-                # Obtenir sa représentation JSON sur le serveur Keycloak                        
+                # Obtenir sa nouvelle représentation JSON sur le serveur Keycloak                        
                 getResponse = requests.get(url + "/auth/admin/realms/" + newRealmRepresentation["id"], headers=headers)
                 realmRepresentation = getResponse.json()
                 
@@ -647,14 +654,6 @@ def realm(params):
                 rc       = 1,
                 changed  = changed
                 )
-    else: # Le status HTTP du GET n'est ni 200 ni 404, c'est considéré comme une erreur.
-        rc = 1
-        result = dict(
-            realm = newRealmRepresentation["id"],
-            stderr = getStatusCode,
-            rc = 1,
-            changed = changed
-            )
 
     return result
 
