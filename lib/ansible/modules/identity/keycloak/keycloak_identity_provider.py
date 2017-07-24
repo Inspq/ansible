@@ -192,7 +192,7 @@ import json
 import urllib
 from ansible.module_utils.keycloak_utils import *
     
-def addIdPEndpoints(idPConfiguration):
+def addIdPEndpoints(idPConfiguration, url):
     '''
 fonction :      addIdPEndpoints
 description:    Cette fonction permet d'intéroger le endpoint openid-configuration d'un fournisseur
@@ -201,13 +201,15 @@ description:    Cette fonction permet d'intéroger le endpoint openid-configurat
 paramètres:
     idPConfiguration:
     type: dict
-    description: Dictionnaire contenant ls structure config à compléter qui inclus le endpoint
-                 openid-configuration à interroger dans la clé openIdConfigurationUrl
+    description: Dictionnaire contenant ls structure config à compléter.
+    url:
+    type: str
+    description: URL de la configuration OpenID connect à intérroger
     '''
-    url = None
-    if 'openIdConfigurationUrl' in idPConfiguration.keys():
-        url = idPConfiguration["openIdConfigurationUrl"]
-        del idPConfiguration["openIdConfigurationUrl"]
+#    url = None
+#    if 'openIdConfigurationUrl' in idPConfiguration.keys():
+#        url = idPConfiguration["openIdConfigurationUrl"]
+#        del idPConfiguration["openIdConfigurationUrl"]
     if url is not None:
         try:
             openidConfigRequest = requests.get(url, verify=False)
@@ -318,13 +320,27 @@ def main():
             authenticateByDefault = dict(type='bool', default=False),
             linkOnly = dict(type='bool', default=False),
             firstBrokerLoginFlowAlias = dict(type='str', default="first broker login"),
-            config = dict(type='dict', required=True),
+            hideOnLoginPage = dict(type='bool', required=False),
+            userInfoUrl = dict(type='str', required=False),
+            validateSignature = dict(type='bool', required=False),
+            clientId = dict(type='str', required=False),
+            tokenUrl = dict(type='str', required=False),
+            jwksUrl = dict(type='str', required=False),
+            issuer = dict(type='str', required=False),
+            useJwksUrl = dict(type='bool', required=False),
+            authorizationUrl = dict(type='str', required=False),
+            disableUserInfo = dict(type='bool', required=False),
+            clientSecret = dict(type='str', required=False),
+            defaultScope = dict(type='str', required=False),
+            openIdConfigurationUrl = dict(type='str', required=False),
             mappers = dict(type='list', default=[]),
             state=dict(choices=["absent", "present"], default='present'),
             force=dict(type='bool', default=False),
         ),
         supports_check_mode=True,
     )
+    
+    
     params = module.params.copy()
     params['force'] = module.boolean(module.params['force'])
     
@@ -382,27 +398,53 @@ def idp(params):
         newIdPRepresentation["linkOnly"] = params['linkOnly']
     if 'firstBrokerLoginFlowAlias' in params:
         newIdPRepresentation["firstBrokerLoginFlowAlias"] = params['firstBrokerLoginFlowAlias'].decode("utf-8")
-    if 'config' in params:
-        newIdPConfig = params['config']
-    newIdPMappers = params['mappers'] if 'mappers' in params else None
-        
+     
+    newIdPConfig = {}  
+    if "hideOnLoginPage" in params:
+        newIdPConfig["hideOnLoginPage"] = params["hideOnLoginPage"]
+    if "userInfoUrl" in params:
+        newIdPConfig["userInfoUrl"] = params["userInfoUrl"] 
+    if "validateSignature" in params:
+        newIdPConfig["validateSignature"] = params["validateSignature"]
+    if "clientId" in params:
+        newIdPConfig["clientId"] = params["clientId"]
+    if "tokenUrl" in params:
+        newIdPConfig["tokenUrl"] = params["tokenUrl"]
+    if "jwksUrl" in params:
+        newIdPConfig["jwksUrl"] = params["jwksUrl"]
+    if "issuer" in params:
+        newIdPConfig["issuer"] = params["issuer"]
+    if "useJwksUrl" in params:
+        newIdPConfig["useJwksUrl"] = params["useJwksUrl"]
+    if "authorizationUrl" in params:
+        newIdPConfig["authorizationUrl"] = params["authorizationUrl"]
+    if "disableUserInfo" in params:
+         newIdPConfig["disableUserInfo"] = params["disableUserInfo"]
+    if "clientSecret" in params:
+        newIdPConfig["clientSecret"] = params["clientSecret"]
+    if "defaultScope" in params:
+        newIdPConfig["defaultScope"] = params["defaultScope"]
     
-    # Compléter la configuration reçu avec les valeurs par défaut
-    if 'hideOnLoginPage' not in newIdPConfig.keys():
-        newIdPConfig["hideOnLoginPage"] = "false"
-    if 'validateSignature' not in newIdPConfig.keys():
-        newIdPConfig["validateSignature"] = "true"
-    if 'validateSignature' not in newIdPConfig.keys():
-        newIdPConfig["backchannelSupported"] = "false"
-    if 'useJwksUrl' not in newIdPConfig.keys():
-        newIdPConfig["useJwksUrl"] = "true"
-    if 'disableUserInfo' not in newIdPConfig.keys():
-        newIdPConfig["disableUserInfo"] = "false"
-    if 'defaultScope' not in newIdPConfig.keys():
-        newIdPConfig["defaultScope"] = ""
-    if 'providerId' in newIdPRepresentation and newIdPRepresentation["providerId"] == 'google':
-        if 'userIp' not in newIdPConfig.keys():
-            newIdPConfig["userIp"] = "false"
+    '''
+    if 'config' in params:
+        newIdPConfig = params['config']    
+        # Compléter la configuration reçu avec les valeurs par défaut
+        if 'hideOnLoginPage' not in newIdPConfig.keys():
+            newIdPConfig["hideOnLoginPage"] = "false"
+        if 'validateSignature' not in newIdPConfig.keys():
+            newIdPConfig["validateSignature"] = "true"
+        if 'validateSignature' not in newIdPConfig.keys():
+            newIdPConfig["backchannelSupported"] = "false"
+        if 'useJwksUrl' not in newIdPConfig.keys():
+            newIdPConfig["useJwksUrl"] = "true"
+        if 'disableUserInfo' not in newIdPConfig.keys():
+            newIdPConfig["disableUserInfo"] = "false"
+        if 'defaultScope' not in newIdPConfig.keys():
+            newIdPConfig["defaultScope"] = ""
+    '''
+    if 'providerId' in newIdPRepresentation and newIdPRepresentation["providerId"] == 'google' and 'userIp' in params:
+        newIdPConfig["userIp"] = params["userIp"]
+    newIdPMappers = params['mappers'] if 'mappers' in params else None
     
     idPSvcBaseUrl = url + "/auth/admin/realms/" + realm + "/identity-provider/instances/"
     
@@ -420,8 +462,9 @@ def idp(params):
             )
         return result
     try:
-        if 'config' in params:
-            addIdPEndpoints(newIdPConfig)
+        if 'openIdConfigurationUrl' in params:
+            addIdPEndpoints(newIdPConfig, params['openIdConfigurationUrl'])
+        if len(newIdPConfig.keys()) > 0:
             newIdPRepresentation["config"] = newIdPConfig
     except Exception, e:
         result = dict(
