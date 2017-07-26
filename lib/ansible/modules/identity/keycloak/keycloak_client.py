@@ -315,19 +315,19 @@ def client(params):
                     )
             except requests.exceptions.RequestException, e:
                 fact = dict(
-                    idp = newClientRepresentation)
+                    client = newClientRepresentation)
                 result = dict(
                     ansible_facts= fact,
-                    stderr   = 'post idp: ' + newClientRepresentation["clientId"] + ' erreur: ' + str(e),
+                    stderr   = 'post client: ' + newClientRepresentation["clientId"] + ' erreur: ' + str(e),
                     rc       = 1,
                     changed  = changed
                     )
             except ValueError, e:
                 fact = dict(
-                    idp = newClientRepresentation)
+                    client = newClientRepresentation)
                 result = dict(
                     ansible_facts = fact,
-                    stderr   = 'post idp: ' + newClientRepresentation["clientId"] + ' erreur: ' + str(e),
+                    stderr   = 'post client: ' + newClientRepresentation["clientId"] + ' erreur: ' + str(e),
                     rc       = 1,
                     changed  = changed
                     )
