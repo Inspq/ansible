@@ -60,6 +60,8 @@ class KeycloakIdentityProviderTestCase(unittest.TestCase):
         self.assertTrue(results['ansible_facts']['mappers'][0]['config']['claim'])
         self.assertTrue(results['ansible_facts']['mappers'][1]['config']['user.attribute'])
         self.assertTrue(results['ansible_facts']['mappers'][1]['config']['claim'])
+        self.assertEquals(results['ansible_facts']['idp']['config']['clientId'],"test","ClientId: " + results['ansible_facts']['idp']['config']['clientId'])
+        print str(results)
         
     def test_idp_not_changed(self):
         ToDoNotChange = dict(

@@ -46,7 +46,7 @@ options:
         required: true
     realm:
         description:
-            - The name of the realm in which is the identity provider.
+            - The name of the realm in which is the client.
         required: true
     clientId:
         description:
@@ -238,7 +238,7 @@ def client(params):
     state = params['state']
     force = params['force']
 
-    # Créer un représentation du realm recu en paramètres
+    # Créer un représentation du client recu en paramètres
     newClientRepresentation = {}
     newClientRepresentation["clientId"] = params['clientId'].decode("utf-8")
     if params['rootUrl'] is not None:
