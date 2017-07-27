@@ -105,7 +105,31 @@ EXAMPLES = '''
         providerType: org.keycloak.storage.UserStorageProvider
         config:
           vendor:
-          - ad
+          - "ad"
+          usernameLDAPAttribute:
+          - "sAMAccountName"
+          rdnLDAPAttribute:
+          - "cn"
+          uuidLDAPAttribute:
+          - "objectGUID"
+          userObjectClasses:
+          - "person"
+          - "organizationalPerson"
+          - "user"
+          connectionUrl:
+          - "ldap://ldap.server.com:389"
+          usersDn:
+          - "OU=USERS,DC=server,DC=com"
+          authType: 
+          - "simple"
+          bindDn:
+          - "CN=keycloak,OU=USERS,DC=server,DC=com"
+          bindCredential:
+          - "UnTresLongMotDePasseQuePersonneNeConnait"
+          changedSyncPeriod:
+          - "86400"
+          fullSyncPeriod:
+          - "604800"  
         state: present
 
     - name: Re-create LDAP User Storage provider.
@@ -117,13 +141,38 @@ EXAMPLES = '''
         name: ActiveDirectory
         providerId: ldap
         providerType: org.keycloak.storage.UserStorageProvider
-        config: 
+        config:
           vendor:
-          - ad
+          - "ad"
+          usernameLDAPAttribute:
+          - "sAMAccountName"
+          rdnLDAPAttribute:
+          - "cn"
+          uuidLDAPAttribute:
+          - "objectGUID"
+          userObjectClasses:
+          - "person"
+          - "organizationalPerson"
+          - "user"
+          connectionUrl:
+          - "ldap://ldap.server.com:389"
+          usersDn:
+          - "OU=USERS,DC=server,DC=com"
+          authType: 
+          - "simple"
+          bindDn:
+          - "CN=keycloak,OU=USERS,DC=server,DC=com"
+          bindCredential:
+          - "UnTresLongMotDePasseQuePersonneNeConnait"
+          changedSyncPeriod:
+          - "86400"
+          fullSyncPeriod:
+          - "604800"  
+
         state: present
         force: yes
         
-    - name: Remove client1.
+    - name: Remove User Storage Provider.
       keycloak_component:
         url: http://localhost:8080
         username: admin
@@ -187,12 +236,16 @@ def component(params):
 
     # Créer un représentation du component recu en paramètres
     newComponent = {}
-    if "id" in params:
+    if "id" in params and params["id"] is not None:
         newComponent["id"] = params['id'].decode("utf-8")
-    newComponent["name"] = params['name'].decode("utf-8")
-    newComponent["providerId"] = params['providerId'].decode("utf-8")
-    newComponent["providerType"] = params['providerType'].decode("utf-8")
-    newComponent["parentId"] = params['parentId'].decode("utf-8")
+    if "name" in params and params["name"] is not None:
+        newComponent["name"] = params['name'].decode("utf-8")
+    if "providerId" in params and params["providerId"] is not None:
+        newComponent["providerId"] = params['providerId'].decode("utf-8")
+    if "providerType" in params and params["providerType"] is not None:
+        newComponent["providerType"] = params['providerType'].decode("utf-8")
+    if "parentId" in params and params["parentId"] is not None:
+        newComponent["parentId"] = params['parentId'].decode("utf-8")
     if "config" in params:
         newComponent["config"] = params["config"]
     
