@@ -133,6 +133,10 @@ options:
             - Public client access type.
         default: False
         required: false
+    roles:
+        description:
+            - List of roles for the client
+        required: false
     state:
         description:
             - Control if the client must exists or not
@@ -214,6 +218,7 @@ def main():
             protocol = dict(type='str', default='openid-connect'),
             bearerOnly = dict(type='bool', default=False),
             publicClient = dict(type='bool', default=False),
+            roles = dict(type='list'),
             state=dict(choices=["absent", "present"], default='present'),
             force=dict(type='bool', default=False),
         ),
@@ -237,7 +242,8 @@ def client(params):
     realm = params['realm']
     state = params['state']
     force = params['force']
-
+    newClientRoles = None
+    
     # Créer un représentation du client recu en paramètres
     newClientRepresentation = {}
     newClientRepresentation["clientId"] = params['clientId'].decode("utf-8")
@@ -262,6 +268,8 @@ def client(params):
     newClientRepresentation["protocol"] = params['protocol'].decode("utf-8")
     newClientRepresentation["bearerOnly"] = params['bearerOnly']
     newClientRepresentation["publicClient"] = params['publicClient']
+    if 'roles' in params and params['roles'] is not None:
+        newClientRoles = params['roles']
     
     clientSvcBaseUrl = url + "/auth/admin/realms/" + realm + "/clients/"
     
@@ -301,13 +309,23 @@ def client(params):
                 # Obtenir le nouveau client créé
                 getResponse = getResponse = requests.get(clientSvcBaseUrl, headers=headers, params={'clientId': newClientRepresentation["clientId"]})
                 clientRepresentation = getResponse.json()[0]
+                # Créer les rôles
+                if newClientRoles is not None:
+                    for newClientRole in newClientRoles:
+                        data=json.dumps(newClientRole)
+                        postResponse = requests.post(clientSvcBaseUrl + clientRepresentation['id'] + '/roles', headers=headers, data=data)
                 # Obtenir le ClientSecret
                 getResponse = requests.get(clientSvcBaseUrl + clientRepresentation['id'] + '/client-secret', headers=headers)
                 clientSecretRepresentation = getResponse.json()
+                # Obtenir les rôles pour le client
+                getResponse = requests.get(clientSvcBaseUrl + clientRepresentation['id'] + '/roles', headers=headers)
+                clientRolesRepresentation = getResponse.json()
                 changed = True
                 fact = dict(
                     client = clientRepresentation,
-                    clientSecret = clientSecretRepresentation)
+                    clientSecret = clientSecretRepresentation,
+                    clientRoles = clientRolesRepresentation)
+                
                 result = dict(
                     ansible_facts = fact,
                     rc = 0,
@@ -369,12 +387,44 @@ def client(params):
                 # Obtenir le nouveau client créé
                 getResponse = getResponse = requests.get(clientSvcBaseUrl, headers=headers, params={'clientId': newClientRepresentation["clientId"]})
                 clientRepresentation = getResponse.json()[0]
+                # Traiter les rôles
+                if newClientRoles is not None:
+                    # Obtenir la liste des rôles existant pour le client
+                    getResponse = requests.get(clientSvcBaseUrl + clientRepresentation['id'] + '/roles', headers=headers)
+                    clientRoles = getResponse.json()
+                    for newClientRole in newClientRoles:
+                        data=json.dumps(newClientRole)
+                        clientRoleFound = False
+                        # Vérifier si le rôle a créer exite déjà pour le client
+                        for clientRole in clientRoles:
+                            if (clientRole['name'] == newClientRole['name']):
+                                clientRoleFound = True
+                                exit
+                        # Si le rôle existe pour le client
+                        if clientRoleFound:
+                            # Obtenir la définition du rôle    
+                            getResponse = requests.get(clientSvcBaseUrl + clientRepresentation['id'] + '/roles/' + newClientRole['name'], headers=headers)
+                            clientRole = getResponse.json()
+                            # Comparer le rôle existant avec celui envoyé
+                            if not isDictEquals(newClientRole, clientRole):
+                                # S'il est différent, le modifier
+                                changed = True
+                                putResponse=requests.put(clientSvcBaseUrl + clientRepresentation['id'] + '/roles/' + newClientRole['name'], headers=headers, data=data)
+                        else: # Si le rôle n'existe pas pour ce client
+                            changed = True
+                            # Créer le rôle
+                            postResponse = requests.post(clientSvcBaseUrl + clientRepresentation['id'] + '/roles', headers=headers, data=data)
                 # Obtenir le ClientSecret
                 getResponse = requests.get(clientSvcBaseUrl + clientRepresentation['id'] + '/client-secret', headers=headers)
                 clientSecretRepresentation = getResponse.json()
+                # Obtenir les rôles
+                getResponse = requests.get(clientSvcBaseUrl + clientRepresentation['id'] + '/roles', headers=headers)
+                clientRolesRepresentation = getResponse.json()
+
                 fact = dict(
                     client = clientRepresentation,
-                    clientSecret = clientSecretRepresentation)
+                    clientSecret = clientSecretRepresentation,
+                    clientRoles = clientRolesRepresentation)
                 result = dict(
                     ansible_facts = fact,
                     rc = 0,

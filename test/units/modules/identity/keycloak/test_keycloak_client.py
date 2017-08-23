@@ -20,8 +20,8 @@ class KeycloakClientTestCase(unittest.TestCase):
         toCreate["adminUrl"] = "http://test.com:8080/admin"
         toCreate["enabled"] = True
         toCreate["clientAuthenticatorType"] = "client-secret"
-        toCreate["redirectUris"] = ["http://test.com:8080/secure"]
-        toCreate["webOrigins"] = ["http://test.com:8080/secure"]
+        toCreate["redirectUris"] = ["http://test.com:8080/secure","http://test1.com:8080/secure"]
+        toCreate["webOrigins"] = ["*"]
         toCreate["consentRequired"] = False   
         toCreate["standardFlowEnabled"] = True
         toCreate["implicitFlowEnabled"] = True
@@ -30,6 +30,7 @@ class KeycloakClientTestCase(unittest.TestCase):
         #toCreate["authorizationServicesEnabled"] = False
         toCreate["protocol"] = "openid-connect"
         toCreate["bearerOnly"] = False
+        toCreate["roles"] = [{"name":"test1"},{"name":"test2"}]
         toCreate["publicClient"] = False
         toCreate["force"] = False
 
@@ -39,6 +40,10 @@ class KeycloakClientTestCase(unittest.TestCase):
         self.assertTrue(results['ansible_facts']['client']['enabled'])
         self.assertTrue(results['changed'])
         self.assertTrue(results['ansible_facts']['clientSecret'])
+        OrderdRoles = sorted(results['ansible_facts']['clientRoles'], key=lambda k: k['name'])
+        self.assertEqual(OrderdRoles[0]['name'], toCreate["roles"][0]['name'], "roles : " + OrderdRoles[0]['name'])
+        self.assertEqual(OrderdRoles[1]['name'], toCreate["roles"][1]['name'], "roles : " + OrderdRoles[1]['name'])
+        self.assertEqual(results['ansible_facts']['client']['redirectUris'].sort(),toCreate["redirectUris"].sort(),"redirectUris: " + str(results['ansible_facts']['client']['redirectUris'].sort()))
         
     def test_client_not_changed(self):
         toDoNotChange = {}
@@ -65,6 +70,7 @@ class KeycloakClientTestCase(unittest.TestCase):
         toDoNotChange["protocol"] = "openid-connect"
         toDoNotChange["bearerOnly"] = False
         toDoNotChange["publicClient"] = False
+        toDoNotChange["roles"] = [{"name":"test1"},{"name":"test2"}]
         toDoNotChange["force"] = False
 
         client(toDoNotChange)
@@ -97,6 +103,7 @@ class KeycloakClientTestCase(unittest.TestCase):
         toChange["protocol"] = "openid-connect"
         toChange["bearerOnly"] = False
         toChange["publicClient"] = False
+        toChange["roles"] = [{"name":"test1"},{"name":"test2"}]
         toChange["force"] = False
 
         client(toChange)
@@ -105,8 +112,12 @@ class KeycloakClientTestCase(unittest.TestCase):
         results = client(toChange)
         #print str(results)
         self.assertTrue(results['changed'])
-        self.assertEqual(results['ansible_facts']['client']['name'], 'test3', 'Test3')
-        self.assertEqual(results['ansible_facts']['client']['description'], 'Ceci est un test3', 'Ceci est un test3')
+        self.assertEqual(results['ansible_facts']['client']['name'], toChange["name"], "name: " + results['ansible_facts']['client']['name'])
+        self.assertEqual(results['ansible_facts']['client']['description'], toChange["description"], 'description: ' + results['ansible_facts']['client']['description'])
+        OrderdRoles = sorted(results['ansible_facts']['clientRoles'], key=lambda k: k['name'])
+        self.assertEqual(OrderdRoles[0]['name'], toChange["roles"][0]['name'], "roles : " + OrderdRoles[0]['name'])
+        self.assertEqual(OrderdRoles[1]['name'], toChange["roles"][1]['name'], "roles : " + OrderdRoles[1]['name'])
+        self.assertEqual(results['ansible_facts']['client']['redirectUris'].sort(),toChange["redirectUris"].sort(),"redirectUris: " + str(results['ansible_facts']['client']['redirectUris'].sort()))
         
     def test_delete_client(self):
         toDelete = {}
