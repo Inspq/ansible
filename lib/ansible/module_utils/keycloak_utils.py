@@ -70,11 +70,22 @@ Retour:
                         return False
             return True
         else:
+            if type(dict1) == bool and (type(dict2) == str or type(dict2) == unicode):
+                #print ("dict1 bool: " + str(dict1) + " dict2 str: " + dict2 )
+                return dict1 == str2bool(dict2.decode("utf-8"))
+            if type(dict2) == bool and (type(dict1) == str or type(dict1) == unicode):            
+                #print ("dict1 str: " + dict1 + " dict2 bool: " + str(dict2) )
+                return dict2 == str2bool(dict1.decode("utf-8"))
             return dict1 == dict2
     except KeyError:
         return False
     except Exception, e:
         raise e
+
+def str2bool(value):
+    if type(value) == unicode:
+        return value.decode("utf-8").lower() in ("yes","true")
+    return value.lower() in ("yes","true")
 
 import requests
 def login(url, username, password):

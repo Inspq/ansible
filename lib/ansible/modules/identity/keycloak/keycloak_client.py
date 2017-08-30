@@ -137,6 +137,10 @@ options:
         description:
             - List of roles for the client
         required: false
+    protocolMappers:
+        description:
+            - List of protocol mappers for the client
+        required: false
     state:
         description:
             - Control if the client must exists or not
@@ -158,15 +162,37 @@ EXAMPLES = '''
       keycloak_client:
         url: http://localhost:8080
         username: admin
-        password: admin
+        password: password
+        realm: master
         name: client1
+        description: Client App 1
+        rootUrl: http://localhost:8081/app
+        redirectUris:
+          - http://localhost:8081/*
+        webOrigins:
+          - "*"
+        roles: 
+          - name: "groupName"
+        protocolMappers:
+          - name: MapperName
+            protocol: openid-connect
+            protocolMapper: oidc-usermodel-attribute-mapper
+            consentRequired: false
+            config:
+              multivalued: false
+              userinfo.token.claim: true
+              user.attribute: attributeName
+              id.token.claim: true
+              access.token.claim: true
+              claim.name: nameOfTheClaim
+              jsonType.label: String
         state: present
 
     - name: Re-create client1
       keycloak_client:
         url: http://localhost:8080
         username: admin
-        password: admin
+        password: password
         name: client1
         state: present
         force: yes
@@ -219,6 +245,7 @@ def main():
             bearerOnly = dict(type='bool', default=False),
             publicClient = dict(type='bool', default=False),
             roles = dict(type='list'),
+            protocolMappers = dict(type='list'),
             state=dict(choices=["absent", "present"], default='present'),
             force=dict(type='bool', default=False),
         ),
@@ -243,6 +270,7 @@ def client(params):
     state = params['state']
     force = params['force']
     newClientRoles = None
+    newClientProtocolMappers = None
     
     # Créer un représentation du client recu en paramètres
     newClientRepresentation = {}
@@ -270,6 +298,8 @@ def client(params):
     newClientRepresentation["publicClient"] = params['publicClient']
     if 'roles' in params and params['roles'] is not None:
         newClientRoles = params['roles']
+    if 'protocolMappers' in params and params['protocolMappers'] is not None:
+        newClientProtocolMappers = params['protocolMappers']
     
     clientSvcBaseUrl = url + "/auth/admin/realms/" + realm + "/clients/"
     
@@ -314,6 +344,14 @@ def client(params):
                     for newClientRole in newClientRoles:
                         data=json.dumps(newClientRole)
                         postResponse = requests.post(clientSvcBaseUrl + clientRepresentation['id'] + '/roles', headers=headers, data=data)
+                # Créer les protocols mappers
+                if newClientProtocolMappers is not None:
+                    for newClientProtocolMapper in newClientProtocolMappers:
+                        data=json.dumps(newClientProtocolMapper)
+                        postResponse = requests.post(clientSvcBaseUrl + clientRepresentation['id'] + '/protocol-mappers/models', headers=headers, data=data)
+                # Obtenir la version finale du nouveau client créé
+                getResponse = getResponse = requests.get(clientSvcBaseUrl, headers=headers, params={'clientId': newClientRepresentation["clientId"]})
+                clientRepresentation = getResponse.json()[0]
                 # Obtenir le ClientSecret
                 getResponse = requests.get(clientSvcBaseUrl + clientRepresentation['id'] + '/client-secret', headers=headers)
                 clientSecretRepresentation = getResponse.json()
@@ -395,11 +433,11 @@ def client(params):
                     for newClientRole in newClientRoles:
                         data=json.dumps(newClientRole)
                         clientRoleFound = False
-                        # Vérifier si le rôle a créer exite déjà pour le client
+                        # Vérifier si le rôle a créer existe déjà pour le client
                         for clientRole in clientRoles:
                             if (clientRole['name'] == newClientRole['name']):
                                 clientRoleFound = True
-                                exit
+                                break
                         # Si le rôle existe pour le client
                         if clientRoleFound:
                             # Obtenir la définition du rôle    
@@ -414,6 +452,37 @@ def client(params):
                             changed = True
                             # Créer le rôle
                             postResponse = requests.post(clientSvcBaseUrl + clientRepresentation['id'] + '/roles', headers=headers, data=data)
+                # Traiter les protocol Mappers
+                if newClientProtocolMappers is not None:
+                    # Obtenir la liste des mappers existant pour le client
+                    getResponse = requests.get(clientSvcBaseUrl + clientRepresentation['id'] + '/protocol-mappers/models', headers=headers)
+                    clientMappers = getResponse.json()
+                    for newClientProtocolMapper in newClientProtocolMappers:
+                        clientMapperFound = False
+                        # Vérifier si le mapper a créer existe déjà pour le client
+                        for clientMapper in clientMappers:
+                            if (clientMapper['name'] == newClientProtocolMapper['name']):
+                                clientMapperFound = True
+                                break
+                        # Si le mapper existe pour le client
+                        if clientMapperFound:
+                            print str(newClientProtocolMapper)
+                            print "----------------"
+                            print str(clientMapper)
+                            if not isDictEquals(newClientProtocolMapper, clientMapper):
+                                # S'il est différent, le modifier
+                                changed = True
+                                newClientProtocolMapper["id"] = clientMapper["id"]
+                                data=json.dumps(newClientProtocolMapper)
+                                putResponse=requests.put(clientSvcBaseUrl + clientRepresentation['id'] + '/protocol-mappers/models/' + clientMapper['id'], headers=headers, data=data)
+                        else: # Si le mapper n'existe pas pour ce client
+                            changed = True
+                            # Créer le mapper
+                            data=json.dumps(newClientProtocolMapper)
+                            postResponse = requests.post(clientSvcBaseUrl + clientRepresentation['id'] + '/protocol-mappers/models', headers=headers, data=data)
+                # Obtenir la version finale du client modifié
+                getResponse = getResponse = requests.get(clientSvcBaseUrl, headers=headers, params={'clientId': newClientRepresentation["clientId"]})
+                clientRepresentation = getResponse.json()[0]
                 # Obtenir le ClientSecret
                 getResponse = requests.get(clientSvcBaseUrl + clientRepresentation['id'] + '/client-secret', headers=headers)
                 clientSecretRepresentation = getResponse.json()

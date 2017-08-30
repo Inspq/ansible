@@ -31,6 +31,30 @@ class KeycloakClientTestCase(unittest.TestCase):
         toCreate["protocol"] = "openid-connect"
         toCreate["bearerOnly"] = False
         toCreate["roles"] = [{"name":"test1"},{"name":"test2"}]
+        toCreate["protocolMappers"] = [{"name": "test1Mapper",
+                                        "protocol": "openid-connect",
+                                        "protocolMapper": "oidc-usermodel-attribute-mapper",
+                                        "consentRequired": False,
+                                        "config": { 
+                                            "multivalued": 'false',
+                                            "userinfo.token.claim": 'true',
+                                            "user.attribute": "test1",
+                                            "id.token.claim": 'true',
+                                            "access.token.claim": 'true',
+                                            "claim.name": "test1",
+                                            "jsonType.label": "String"}},
+                                       {"name": "test2Mapper",
+                                        "protocol": "openid-connect",
+                                        "protocolMapper": "oidc-usermodel-attribute-mapper",
+                                        "consentRequired": False,
+                                        "config": { 
+                                            "multivalued": 'false',
+                                            "userinfo.token.claim": 'true',
+                                            "user.attribute": "test2",
+                                            "id.token.claim": 'true',
+                                            "access.token.claim": 'true',
+                                            "claim.name": "test2",
+                                            "jsonType.label": "String"}}]
         toCreate["publicClient"] = False
         toCreate["force"] = False
 
@@ -44,7 +68,17 @@ class KeycloakClientTestCase(unittest.TestCase):
         self.assertEqual(OrderdRoles[0]['name'], toCreate["roles"][0]['name'], "roles : " + OrderdRoles[0]['name'])
         self.assertEqual(OrderdRoles[1]['name'], toCreate["roles"][1]['name'], "roles : " + OrderdRoles[1]['name'])
         self.assertEqual(results['ansible_facts']['client']['redirectUris'].sort(),toCreate["redirectUris"].sort(),"redirectUris: " + str(results['ansible_facts']['client']['redirectUris'].sort()))
-        
+        for toCreateMapper in toCreate["protocolMappers"]:
+            mapperFound = False
+            for mapper in results['ansible_facts']['client']['protocolMappers']:
+                if mapper["name"] == toCreateMapper["name"]:
+                    mapperFound = True
+                    break
+            self.assertTrue(mapperFound, "no mapper found: " + toCreateMapper["name"])
+            if mapperFound:
+                self.assertEqual(mapper["config"]["claim.name"], toCreateMapper["config"]["claim.name"], "claim.name: " + toCreateMapper["config"]["claim.name"] + ": " + mapper["config"]["claim.name"])
+                self.assertEqual(mapper["config"]["user.attribute"], toCreateMapper["config"]["user.attribute"], "user.attribute: " + mapper["config"]["user.attribute"] + ": " + mapper["config"]["user.attribute"])
+
     def test_client_not_changed(self):
         toDoNotChange = {}
         toDoNotChange["url"] = "http://localhost:18081"
@@ -71,6 +105,30 @@ class KeycloakClientTestCase(unittest.TestCase):
         toDoNotChange["bearerOnly"] = False
         toDoNotChange["publicClient"] = False
         toDoNotChange["roles"] = [{"name":"test1"},{"name":"test2"}]
+        toDoNotChange["protocolMappers"] = [{"name": "test1Mapper",
+                                        "protocol": "openid-connect",
+                                        "protocolMapper": "oidc-usermodel-attribute-mapper",
+                                        "consentRequired": False,
+                                        "config": { 
+                                            "multivalued": 'false',
+                                            "userinfo.token.claim": True,
+                                            "user.attribute": "test1",
+                                            "id.token.claim": 'true',
+                                            "access.token.claim": 'true',
+                                            "claim.name": "test1",
+                                            "jsonType.label": "String"}},
+                                       {"name": "test2Mapper",
+                                        "protocol": "openid-connect",
+                                        "protocolMapper": "oidc-usermodel-attribute-mapper",
+                                        "consentRequired": False,
+                                        "config": { 
+                                            "multivalued": 'true',
+                                            "userinfo.token.claim": 'true',
+                                            "user.attribute": "test2",
+                                            "id.token.claim": 'true',
+                                            "access.token.claim": 'true',
+                                            "claim.name": "test2",
+                                            "jsonType.label": "String"}}]
         toDoNotChange["force"] = False
 
         client(toDoNotChange)
@@ -104,13 +162,49 @@ class KeycloakClientTestCase(unittest.TestCase):
         toChange["bearerOnly"] = False
         toChange["publicClient"] = False
         toChange["roles"] = [{"name":"test1"},{"name":"test2"}]
+        toChange["protocolMappers"] = [{"name": "test1Mapper",
+                                        "protocol": "openid-connect",
+                                        "protocolMapper": "oidc-usermodel-attribute-mapper",
+                                        "consentRequired": False,
+                                        "config": { 
+                                            "multivalued": 'false',
+                                            "userinfo.token.claim": False,
+                                            "user.attribute": "test1",
+                                            "id.token.claim": 'true',
+                                            "access.token.claim": 'true',
+                                            "claim.name": "test1",
+                                            "jsonType.label": "String"}},
+                                       {"name": "test2Mapper",
+                                        "protocol": "openid-connect",
+                                        "protocolMapper": "oidc-usermodel-attribute-mapper",
+                                        "consentRequired": False,
+                                        "config": { 
+                                            "multivalued": 'false',
+                                            "userinfo.token.claim": 'true',
+                                            "user.attribute": "test2",
+                                            "id.token.claim": 'true',
+                                            "access.token.claim": 'true',
+                                            "claim.name": "test2",
+                                            "jsonType.label": "String"}}]
         toChange["force"] = False
 
         client(toChange)
         toChange["name"] = "test3"
         toChange["description"] = "Ceci est un test3"
+        toChange["protocolMappers"] = [{"name": "test1Mapper",
+                                        "protocol": "openid-connect",
+                                        "protocolMapper": "oidc-usermodel-attribute-mapper",
+                                        "consentRequired": False,
+                                        "config": { 
+                                            "multivalued": 'false',
+                                            "userinfo.token.claim": 'false',
+                                            "user.attribute": "test12",
+                                            "id.token.claim": 'true',
+                                            "access.token.claim": 'true',
+                                            "claim.name": "test12",
+                                            "jsonType.label": "String"}}]
         results = client(toChange)
-        #print str(results)
+        print str(results)
         self.assertTrue(results['changed'])
         self.assertEqual(results['ansible_facts']['client']['name'], toChange["name"], "name: " + results['ansible_facts']['client']['name'])
         self.assertEqual(results['ansible_facts']['client']['description'], toChange["description"], 'description: ' + results['ansible_facts']['client']['description'])
@@ -118,6 +212,17 @@ class KeycloakClientTestCase(unittest.TestCase):
         self.assertEqual(OrderdRoles[0]['name'], toChange["roles"][0]['name'], "roles : " + OrderdRoles[0]['name'])
         self.assertEqual(OrderdRoles[1]['name'], toChange["roles"][1]['name'], "roles : " + OrderdRoles[1]['name'])
         self.assertEqual(results['ansible_facts']['client']['redirectUris'].sort(),toChange["redirectUris"].sort(),"redirectUris: " + str(results['ansible_facts']['client']['redirectUris'].sort()))
+        for toChangeMapper in toChange["protocolMappers"]:
+            mapperFound = False
+            for mapper in results['ansible_facts']['client']['protocolMappers']:
+                if mapper["name"] == toChangeMapper["name"]:
+                    mapperFound = True
+                    break
+            self.assertTrue(mapperFound, "no mapper found: " + toChangeMapper["name"])
+            if mapperFound:
+                self.assertEqual(mapper["config"]["claim.name"], toChangeMapper["config"]["claim.name"], "claim.name: " + toChangeMapper["config"]["claim.name"] + ": " + mapper["config"]["claim.name"])
+                self.assertEqual(mapper["config"]["user.attribute"], toChangeMapper["config"]["user.attribute"], "user.attribute: " + toChangeMapper["config"]["user.attribute"] + ": " + mapper["config"]["user.attribute"])
+ 
         
     def test_delete_client(self):
         toDelete = {}
