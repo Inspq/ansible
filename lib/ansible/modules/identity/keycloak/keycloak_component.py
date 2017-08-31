@@ -28,7 +28,8 @@ author: "Philippe Gauthier (philippe.gauthier@inspq.qc.ca"
 module: keycloak_component
 short_description: Configure a component in Keycloak
 description:
-    - This module creates, removes or update Keycloak component.
+    - This module creates, removes or update Keycloak component. 
+    - It can be use to create a LDAP and AD user federation to a realm in the Keycloak server
 version_added: "2.3"
 options:
     url:
@@ -79,6 +80,10 @@ options:
         description:
             - Configuration of the component to create, update or delete.
         required: false
+    subComponents:
+        description:
+            - List of sub components to create inside the component.
+            - It can be use to configure group-ldap-mapper for a User Federation.
     state:
         description:
             - Control if the component must exists or not
@@ -130,6 +135,31 @@ EXAMPLES = '''
           - "86400"
           fullSyncPeriod:
           - "604800"  
+        subComponents:
+          org.keycloak.storage.ldap.mappers.LDAPStorageMapper: 
+          - name: "groupMapper"
+            providerId: "group-ldap-mapper"
+            config: 
+              mode: 
+                - "READ_ONLY"
+              membership.attribute.type:
+                - "DN"
+              user.roles.retrieve.strategy: 
+                - "LOAD_GROUPS_BY_MEMBER_ATTRIBUTE"
+              group.name.ldap.attribute: 
+                - "cn"
+              membership.ldap.attribute: 
+                - "member"
+              preserve.group.inheritance: 
+                - "true"
+              membership.user.ldap.attribute: 
+                - "uid"
+              group.object.classes: 
+                - "groupOfNames"
+              groups.dn: 
+                - "cn=groups,OU=SEC,DC=SANTEPUBLIQUE,DC=RTSS,DC=QC,DC=CA"
+              drop.non.existing.groups.during.sync: [
+                - "false"
         state: present
 
     - name: Re-create LDAP User Storage provider.
@@ -168,7 +198,31 @@ EXAMPLES = '''
           - "86400"
           fullSyncPeriod:
           - "604800"  
-
+        subComponents:
+          org.keycloak.storage.ldap.mappers.LDAPStorageMapper: 
+          - name: "groupMapper"
+            providerId: "group-ldap-mapper"
+            config: 
+              mode: 
+                - "READ_ONLY"
+              membership.attribute.type:
+                - "DN"
+              user.roles.retrieve.strategy: 
+                - "LOAD_GROUPS_BY_MEMBER_ATTRIBUTE"
+              group.name.ldap.attribute: 
+                - "cn"
+              membership.ldap.attribute: 
+                - "member"
+              preserve.group.inheritance: 
+                - "true"
+              membership.user.ldap.attribute: 
+                - "uid"
+              group.object.classes: 
+                - "groupOfNames"
+              groups.dn: 
+                - "cn=groups,OU=SEC,DC=SANTEPUBLIQUE,DC=RTSS,DC=QC,DC=CA"
+              drop.non.existing.groups.during.sync: [
+                - "false"
         state: present
         force: yes
         
@@ -208,8 +262,9 @@ def main():
             name=dict(type='str', required=True),
             providerId=dict(choices=["ldap","allowed-client-templates","trusted-hosts","allowed-protocol-mappers","max-clients","scope","consent-required","rsa-generated"], required=True),
             providerType=dict(choices=["org.keycloak.storage.UserStorageProvider", "org.keycloak.services.clientregistration.policy.ClientRegistrationPolicy","org.keycloak.keys.KeyProvider","authenticatorConfig","requiredActions"], required=True),
-            parentId=dict(type='str', required=True),
+            parentId=dict(type='str'),
             config=dict(type='dict'),
+            subComponents=dict(type='dict'),
             state=dict(choices=["absent", "present"], default='present'),
             force=dict(type='bool', default=False),
         ),
@@ -244,10 +299,11 @@ def component(params):
         newComponent["providerId"] = params['providerId'].decode("utf-8")
     if "providerType" in params and params["providerType"] is not None:
         newComponent["providerType"] = params['providerType'].decode("utf-8")
-    if "parentId" in params and params["parentId"] is not None:
-        newComponent["parentId"] = params['parentId'].decode("utf-8")
+    newComponent["parentId"] = params['parentId'].decode("utf-8") if "parentId" in params and params["parentId"] is not None else realm
     if "config" in params:
         newComponent["config"] = params["config"]
+
+    newSubComponents = params["subComponents"] if "subComponents" in params else None
     
     componentSvcBaseUrl = url + "/auth/admin/realms/" + realm + "/components/"
     
@@ -265,7 +321,7 @@ def component(params):
             )
         return result
     try: 
-        # Vérifier si le client existe sur le serveur Keycloak
+        # Vérifier si le composant existe sur le serveur Keycloak
         getResponse = requests.get(componentSvcBaseUrl, headers=headers, params={"name": newComponent["name"],"type": newComponent["providerType"], "parent": newComponent["parentId"]})
         for item in getResponse.json():
             if "providerId" in item and item["providerId"] == newComponent["providerId"]:
@@ -284,9 +340,9 @@ def component(params):
         
         if (state == 'present'): # Si le status est présent
             try:
-                # Stocker le client dans un body prêt a être posté
+                # Stocker le composant dans un body prêt a être posté
                 data=json.dumps(newComponent)
-                # Créer le client
+                # Créer le composant
                 postResponse = requests.post(componentSvcBaseUrl, headers=headers, data=data)
                 # Obtenir le nouveau composant créé
                 getResponse = requests.get(componentSvcBaseUrl, headers=headers, params={"name": newComponent["name"],"type": newComponent["providerType"], "parent": newComponent["parentId"]})
@@ -294,9 +350,22 @@ def component(params):
                     if "providerId" in item and item["providerId"] == newComponent["providerId"]:
                         component = item
                         break
+                # Si des sous composants ont été défini
+                if newSubComponents is not None:
+                    for componentType in newSubComponents.keys():
+                        for newSubComponent in newSubComponents[componentType]:
+                            newSubComponent["providerType"] = componentType
+                            newSubComponent["parentId"] = component["id"]
+                            data=json.dumps(newSubComponent)
+                            # Créer le sous composant
+                            postResponse = requests.post(componentSvcBaseUrl, headers=headers, data=data)
+                # Obtenir les sous composants
+                getResponse = requests.get(componentSvcBaseUrl, headers=headers, params={"parent": component["id"]})
+                subComponents = getResponse.json()
                 changed = True
                 fact = dict(
-                    component = component
+                    component = component,
+                    subComponents = subComponents
                     )
                 result = dict(
                     ansible_facts = fact,
@@ -345,10 +414,7 @@ def component(params):
                         excludes.append("bindCredential")
                    
                     # Comparer les components
-                    if (isDictEquals(newComponent, component, excludes)): # Si le nouveau client n'introduit pas de modification au client existant
-                        # Ne rien changer
-                        changed = False
-                    else: # Si le client doit être modifié
+                    if not isDictEquals(newComponent, component, excludes): # Si le nouveau client n'introduit pas de modification au client existant
                         # Stocker le client dans un body prêt a être posté
                         data=json.dumps(newComponent)
                         # Mettre à jour le client sur le serveur Keycloak
@@ -357,8 +423,49 @@ def component(params):
                 # Obtenir le composant
                 getResponse = getResponse = requests.get(componentSvcBaseUrl + component["id"], headers=headers)
                 component = getResponse.json()
+                # Obtenir les sous composants
+                getResponse = requests.get(componentSvcBaseUrl, headers=headers, params={"parent": component["id"]})
+                subComponents = getResponse.json()
+                
+                if newSubComponents is not None:
+                    # Parcourir les sous-composants à créer ou mettre à jour recu en paramètre
+                    for componentType in newSubComponents.keys():
+                        for newSubComponent in newSubComponents[componentType]:
+                            newSubComponent["providerType"] = componentType
+                            # Le rechercher parmis les sous-composants existant
+                            newSubComponentFound = False
+                            for subComponent in subComponents:
+                                # Si le sous composant existant a le même nom que celui à créer ou modifier
+                                if subComponent["name"] == newSubComponent["name"]:
+                                    # Vérifier s'il y a un changement à apporter
+                                    if not isDictEquals(newSubComponent, subComponent):
+                                        # Alimenter les Id
+                                        newSubComponent["parentId"] = subComponent["parentId"]
+                                        newSubComponent["id"] = subComponent["id"]
+                                        print ("Modification sous-composant: " + str(subComponent))
+                                        print ("Pour: " + str(newSubComponent))
+                                        # Modifier le sous-composant
+                                        data=json.dumps(newSubComponent)
+                                        updateResponse = requests.put(componentSvcBaseUrl + subComponent["id"], headers=headers, data=data)
+                                        changed = True
+                                    newSubComponentFound = True
+                                    break
+                            # Si le sous composant a créer n'existe pas sur le serveur Keycloak
+                            if not newSubComponentFound:
+                                # Alimenter le parentId
+                                newSubComponent["parentId"] = component["id"]
+                                print ("Creation sous-composant: " + str(newSubComponent))
+                                # Créer le sous composant
+                                data=json.dumps(newSubComponent)
+                                postResponse = requests.post(componentSvcBaseUrl, headers=headers, data=data)
+                                changed = True
+                                
+                # Mettre à jour la liste des sous composants
+                getResponse = requests.get(componentSvcBaseUrl, headers=headers, params={"parent": component["id"]})
+                subComponents = getResponse.json()
                 fact = dict(
-                    component = component)
+                    component = component,
+                    subComponents = subComponents)
                 result = dict(
                     ansible_facts = fact,
                     rc = 0,
@@ -366,7 +473,7 @@ def component(params):
                     )
                     
             elif state == 'absent': # Le status est absent
-                # Supprimer le client
+                # Supprimer le composant incluant ses sous-composants
                 deleteResponse = requests.delete(componentSvcBaseUrl + component['id'], headers=headers)
                 changed = True
                 result = dict(
