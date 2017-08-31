@@ -158,7 +158,7 @@ EXAMPLES = '''
                 - "groupOfNames"
               groups.dn: 
                 - "cn=groups,OU=SEC,DC=SANTEPUBLIQUE,DC=RTSS,DC=QC,DC=CA"
-              drop.non.existing.groups.during.sync: [
+              drop.non.existing.groups.during.sync: 
                 - "false"
         state: present
 
@@ -221,7 +221,7 @@ EXAMPLES = '''
                 - "groupOfNames"
               groups.dn: 
                 - "cn=groups,OU=SEC,DC=SANTEPUBLIQUE,DC=RTSS,DC=QC,DC=CA"
-              drop.non.existing.groups.during.sync: [
+              drop.non.existing.groups.during.sync: 
                 - "false"
         state: present
         force: yes
