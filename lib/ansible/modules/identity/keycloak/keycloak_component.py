@@ -84,6 +84,20 @@ options:
         description:
             - List of sub components to create inside the component.
             - It can be use to configure group-ldap-mapper for a User Federation.
+    syncUserStorage:
+        description:
+            - Type of user storage synchronization must be triggerd for
+            - org.keycloak.storage.UserStorageProvider component. 
+            - If the parameter is absent, no sync will be triggered
+        required: false
+        choices: ["triggerFullSync", "triggerChangedUsersSync"]
+    syncLdapMappers:
+        description:
+            - Type of LDAP mapper synchronization must be triggerd for
+            - org.keycloak.storage.ldap.mappers.LDAPStorageMapper/group-ldap-mapper sub components.
+            - If the parameter is absent, no sync will be triggered
+        required: false
+        choices: ["fedToKeycloak", "keycloakToFed"]
     state:
         description:
             - Control if the component must exists or not
@@ -99,7 +113,7 @@ options:
 '''
 
 EXAMPLES = '''
-    - name: Create a LDAP User Storage provider.
+    - name: Create a LDAP User Storage provider. A full sync of users and a fedToKeycloak sync for group mappers will be triggered.
       keycloak_component:
         url: http://localhost:8080
         username: admin
@@ -160,6 +174,8 @@ EXAMPLES = '''
                 - "cn=groups,OU=SEC,DC=SANTEPUBLIQUE,DC=RTSS,DC=QC,DC=CA"
               drop.non.existing.groups.during.sync: 
                 - "false"
+        syncUserStorage: triggerFullSync
+        syncLdapMappers: fedToKeycloak
         state: present
 
     - name: Re-create LDAP User Storage provider.
@@ -265,6 +281,8 @@ def main():
             parentId=dict(type='str'),
             config=dict(type='dict'),
             subComponents=dict(type='dict'),
+            syncUserStorage=dict(choices=["triggerFullSync", "triggerChangedUsersSync"]),
+            syncLdapMappers=dict(choices=["fedToKeycloak", "keycloakToFed"]),
             state=dict(choices=["absent", "present"], default='present'),
             force=dict(type='bool', default=False),
         ),
@@ -302,10 +320,12 @@ def component(params):
     newComponent["parentId"] = params['parentId'].decode("utf-8") if "parentId" in params and params["parentId"] is not None else realm
     if "config" in params:
         newComponent["config"] = params["config"]
-
     newSubComponents = params["subComponents"] if "subComponents" in params else None
+    syncUserStorage = params['syncUserStorage'].decode("utf-8") if "syncUserStorage" in params and params["syncUserStorage"] in ["triggerFullSync", "triggerChangedUsersSync"] else "no"    
+    syncLdapMappers = params['syncLdapMappers'].decode("utf-8") if "syncLdapMappers" in params and params["syncLdapMappers"] in ["fedToKeycloak", "keycloakToFed"] else "no"    
     
     componentSvcBaseUrl = url + "/auth/admin/realms/" + realm + "/components/"
+    userStorageUrl = url + "/auth/admin/realms/" + realm + "/user-storage/"
     
     rc = 0
     result = dict()
@@ -323,9 +343,9 @@ def component(params):
     try: 
         # Vérifier si le composant existe sur le serveur Keycloak
         getResponse = requests.get(componentSvcBaseUrl, headers=headers, params={"name": newComponent["name"],"type": newComponent["providerType"], "parent": newComponent["parentId"]})
-        for item in getResponse.json():
-            if "providerId" in item and item["providerId"] == newComponent["providerId"]:
-                component = item
+        components = getResponse.json()
+        for component in components:
+            if "providerId" in component and component["providerId"] == newComponent["providerId"]:
                 break
     except Exception, e:
         result = dict(
@@ -346,19 +366,19 @@ def component(params):
                 postResponse = requests.post(componentSvcBaseUrl, headers=headers, data=data)
                 # Obtenir le nouveau composant créé
                 getResponse = requests.get(componentSvcBaseUrl, headers=headers, params={"name": newComponent["name"],"type": newComponent["providerType"], "parent": newComponent["parentId"]})
-                for item in getResponse.json():
-                    if "providerId" in item and item["providerId"] == newComponent["providerId"]:
-                        component = item
+                components = getResponse.json()
+                for component in components:
+                    if "providerId" in component and component["providerId"] == newComponent["providerId"]:
                         break
+                    
+                # Vérifier si on doit faire la synchronisation des usagers du LDAP
+                if newComponent["providerType"] == "org.keycloak.storage.UserStorageProvider" and syncUserStorage is not "no":
+                    # Faire la synchronisation des utilisateurs du LDAP
+                    postResponse = requests.post(userStorageUrl + component["id"] + "/sync", headers=headers, params={"action": syncUserStorage})
                 # Si des sous composants ont été défini
                 if newSubComponents is not None:
-                    for componentType in newSubComponents.keys():
-                        for newSubComponent in newSubComponents[componentType]:
-                            newSubComponent["providerType"] = componentType
-                            newSubComponent["parentId"] = component["id"]
-                            data=json.dumps(newSubComponent)
-                            # Créer le sous composant
-                            postResponse = requests.post(componentSvcBaseUrl, headers=headers, data=data)
+                    # Créer les sous-composants
+                    createNewSubcomponents(component, newSubComponents, syncLdapMappers, headers, componentSvcBaseUrl, userStorageUrl)
                 # Obtenir les sous composants
                 getResponse = requests.get(componentSvcBaseUrl, headers=headers, params={"parent": component["id"]})
                 subComponents = getResponse.json()
@@ -410,16 +430,20 @@ def component(params):
                     postResponse = requests.post(componentSvcBaseUrl, headers=headers, data=data)
                 else: # Si l'option force n'est pas sélectionné
                     excludes = []
-                    if "bindCredential" in newComponent["config"]:
-                        excludes.append("bindCredential")
-                   
+                    #if "bindCredential" in newComponent["config"]:
+                    #    excludes.append("bindCredential")
+                    excludes.append("bindCredential")
                     # Comparer les components
-                    if not isDictEquals(newComponent, component, excludes): # Si le nouveau client n'introduit pas de modification au client existant
+                    if not isDictEquals(newComponent, component, excludes): # Si le nouveau composant introduit des modifications
                         # Stocker le client dans un body prêt a être posté
                         data=json.dumps(newComponent)
                         # Mettre à jour le client sur le serveur Keycloak
                         updateResponse = requests.put(componentSvcBaseUrl + component["id"], headers=headers, data=data)
                         changed = True
+                # Vérifier si on doit faire la synchronisation des usagers du LDAP
+                if newComponent["providerType"] == "org.keycloak.storage.UserStorageProvider" and syncUserStorage is not "no":
+                    # Faire la synchronisation des utilisateurs du LDAP
+                    postResponse = requests.post(userStorageUrl + component["id"] + "/sync", headers=headers, params={"action": syncUserStorage})
                 # Obtenir le composant
                 getResponse = getResponse = requests.get(componentSvcBaseUrl + component["id"], headers=headers)
                 component = getResponse.json()
@@ -428,38 +452,7 @@ def component(params):
                 subComponents = getResponse.json()
                 
                 if newSubComponents is not None:
-                    # Parcourir les sous-composants à créer ou mettre à jour recu en paramètre
-                    for componentType in newSubComponents.keys():
-                        for newSubComponent in newSubComponents[componentType]:
-                            newSubComponent["providerType"] = componentType
-                            # Le rechercher parmis les sous-composants existant
-                            newSubComponentFound = False
-                            for subComponent in subComponents:
-                                # Si le sous composant existant a le même nom que celui à créer ou modifier
-                                if subComponent["name"] == newSubComponent["name"]:
-                                    # Vérifier s'il y a un changement à apporter
-                                    if not isDictEquals(newSubComponent, subComponent):
-                                        # Alimenter les Id
-                                        newSubComponent["parentId"] = subComponent["parentId"]
-                                        newSubComponent["id"] = subComponent["id"]
-                                        print ("Modification sous-composant: " + str(subComponent))
-                                        print ("Pour: " + str(newSubComponent))
-                                        # Modifier le sous-composant
-                                        data=json.dumps(newSubComponent)
-                                        updateResponse = requests.put(componentSvcBaseUrl + subComponent["id"], headers=headers, data=data)
-                                        changed = True
-                                    newSubComponentFound = True
-                                    break
-                            # Si le sous composant a créer n'existe pas sur le serveur Keycloak
-                            if not newSubComponentFound:
-                                # Alimenter le parentId
-                                newSubComponent["parentId"] = component["id"]
-                                print ("Creation sous-composant: " + str(newSubComponent))
-                                # Créer le sous composant
-                                data=json.dumps(newSubComponent)
-                                postResponse = requests.post(componentSvcBaseUrl, headers=headers, data=data)
-                                changed = True
-                                
+                    updateSubcomponents(component, subComponents, newSubComponents, syncLdapMappers, headers, componentSvcBaseUrl, userStorageUrl)
                 # Mettre à jour la liste des sous composants
                 getResponse = requests.get(componentSvcBaseUrl, headers=headers, params={"parent": component["id"]})
                 subComponents = getResponse.json()
@@ -494,7 +487,71 @@ def component(params):
                 changed  = changed
                 )
     return result
-        
+
+def createNewSubcomponents(component, newSubComponents, syncType, headers, componentSvcBaseUrl, userStorageUrl):
+    for componentType in newSubComponents.keys():
+        for newSubComponent in newSubComponents[componentType]:
+            newSubComponent["providerType"] = componentType
+            newSubComponent["parentId"] = component["id"]
+            data=json.dumps(newSubComponent)
+            # Créer le sous composant
+            postResponse = requests.post(componentSvcBaseUrl, headers=headers, data=data)
+            # Vérifier si on doit faire la synchronisation des groupes ou roles du LDAP
+            if component["providerType"] == "org.keycloak.storage.UserStorageProvider" and syncType is not "no":
+                # Obtenir le id du sous-composant
+                getResponse = requests.get(componentSvcBaseUrl, headers=headers, params={"name": newSubComponent["name"],"type": newSubComponent["providerType"], "parent": component["id"]})
+                subComponents = getResponse.json()
+                # Si le sous composant a été trouvé
+                for subComponent in subComponents:
+                    # Faire la synchronisation du sous-composant
+                    postResponse = requests.post(userStorageUrl + subComponent["parentId"] + "/mappers/" + subComponent["id"] + "/sync", headers=headers, params={"action": syncType})
+
+def updateSubcomponents(component, subComponents, newSubComponents, syncType, headers, componentSvcBaseUrl, userStorageUrl):
+    # Parcourir les sous-composants à créer ou mettre à jour recu en paramètre
+    for componentType in newSubComponents.keys():
+        for newSubComponent in newSubComponents[componentType]:
+            newSubComponent["providerType"] = componentType
+            # Le rechercher parmis les sous-composants existant
+            newSubComponentFound = False
+            for subComponent in subComponents:
+                # Si le sous composant existant a le même nom que celui à créer ou modifier
+                if subComponent["name"] == newSubComponent["name"]:
+                    # Vérifier s'il y a un changement à apporter
+                    if not isDictEquals(newSubComponent, subComponent):
+                        # Alimenter les Id
+                        newSubComponent["parentId"] = subComponent["parentId"]
+                        newSubComponent["id"] = subComponent["id"]
+                        #print ("Modification sous-composant: " + str(subComponent))
+                        #print ("Pour: " + str(newSubComponent))
+                        # Modifier le sous-composant
+                        data=json.dumps(newSubComponent)
+                        updateResponse = requests.put(componentSvcBaseUrl + subComponent["id"], headers=headers, data=data)
+                        changed = True
+                    newSubComponentFound = True
+                    # Vérifier si on doit faire la synchronisation des groupes ou roles du LDAP
+                    if component["providerType"] == "org.keycloak.storage.UserStorageProvider" and syncType is not "no":
+                        # Faire la synchronisation du sous-composant
+                        postResponse = requests.post(userStorageUrl + subComponent["parentId"] + "/mappers/" + subComponent["id"] + "/sync", headers=headers, params={"direction": syncType})
+                    break
+            # Si le sous composant a créer n'existe pas sur le serveur Keycloak
+            if not newSubComponentFound:
+                # Alimenter le parentId
+                newSubComponent["parentId"] = component["id"]
+                #print ("Creation sous-composant: " + str(newSubComponent))
+                # Créer le sous composant
+                data=json.dumps(newSubComponent)
+                postResponse = requests.post(componentSvcBaseUrl, headers=headers, data=data)
+                changed = True
+                # Vérifier si on doit faire la synchronisation des groupes ou roles du LDAP
+                if component["providerType"] == "org.keycloak.storage.UserStorageProvider" and syncType is not "no":
+                    # Obtenir le id du sous-composant
+                    getResponse = requests.get(componentSvcBaseUrl, headers=headers, params={"name": newSubComponent["name"],"type": newSubComponent["providerType"], "parent": component["id"]})
+                    subComponents = getResponse.json()
+                    # Si le sous composant a été trouvé
+                    for subComponent in subComponents:
+                        # Faire la synchronisation du sous-composant
+                        postResponse = requests.post(userStorageUrl + subComponent["parentId"] + "/mappers/" + subComponent["id"] + "/sync", headers=headers, params={"direction": syncType})
+
 # import module snippets
 from ansible.module_utils.basic import *
 
