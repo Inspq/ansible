@@ -101,50 +101,14 @@ options:
     - first Broker Login Flow Alias.
     default: first broker login
     required: false
-  hideOnLoginPage:
+  config:
     description:
-    - hide On Login Page. 
-    default: False
+    - Detailed configuration of the identity provider. 
     required: false
-  openIdConfigurationUrl:
+  mappers:
     description:
-    - OpenId Connect configuration auto discovery URL.
-    default: 
-    required: true
-  validateSignature:
-    description:
-    - validate Signature.
-    default: True
-    required: false
-  clientId:
-    description:
-    - clientId.
-    default:
-    required: true
-  backchannelSupported:
-    description:
-    - backchannelSupported.
-    default: False
-    required: false
-  useJwksUrl:
-    description:
-    - use Jwks Url.
-    default: True
-    required: false
-  disableUserInfo:
-    description:
-    - disable User Info (must be true for ADFS).
-    default: False
-    required: false
-  clientSecret:
-    description:
-    - client Secret.
-    default:
-    required: true
-  defaultScope:
-    description:
-    - default Scope.
-    default: ""
+    - List of mappers for the Identity provider.
+    default: []
     required: false
   state:
     choices: [ "present", "absent" ]
@@ -163,20 +127,56 @@ notes:
 '''
 
 EXAMPLES = '''
-    - name: Create a realm realm1 with default settings.
+    - name: Create IdP1 fully configured with idp user attribute mapper and a role mapper
       keycloak_identity_provider:
-        alias: alias1
+        realm: "master"
+        url: "http://localhost:8080"
+        username: "admin"
+        password: "password"  
+        alias: "IdP1"
+        displayName: "My super dooper IdP"
+        providerId: "oidc"
+        config:
+          openIdConfigurationUrl: https://my.idp.com/auth
+          clientId: ClientIdMyIdpGaveMe
+          clientSecret: ClientSecretMyIdpGaveMe
+          disableUserInfo: False
+          defaultScope: "openid email profile"
+        mappers:
+          - name: ClaimMapper
+            identityProviderMapper: oidc-user-attribute-idp-mapper
+            config:
+              claim: claim1
+              user.attribute: attr1
+          - name: MyRoleMapper
+            identityProviderMapper: oidc-role-idp-mapper
+            config:
+              claim: claimName
+              claim.value: valueTahtGiveRole
+              role: roleName
         state: present
 
-    - name: Re-create the realm realm1
+    - name: Re-create the Idp1 without mappers. The existing Idp will be deleted.
       keycloak_identity_provider:
-        alias: alias1
+        realm: "master"
+        url: "http://localhost:8080"
+        username: "admin"
+        password: "password"  
+        alias: "IdP1"
+        displayName: "My super dooper IdP"
+        providerId: "oidc"
+        config:
+          openIdConfigurationUrl: https://my.idp.com/auth
+          clientId: ClientIdMyIdpGaveMe
+          clientSecret: ClientSecretMyIdpGaveMe
+          disableUserInfo: False
+          defaultScope: "openid email profile"
         state: present
         force: yes
 
-    - name: Remove a the realm realm1.
+    - name: Remove a the Idp IdP1.
       keycloak_identity_provider:
-        alias: alias1
+        alias: IdP1
         state: absent
 '''
 
@@ -321,19 +321,6 @@ def main():
             linkOnly = dict(type='bool', default=False),
             firstBrokerLoginFlowAlias = dict(type='str', default="first broker login"),
             config = dict(type='dict'),
-            #hideOnLoginPage = dict(type='bool', required=False),
-            #userInfoUrl = dict(type='str', required=False),
-            #validateSignature = dict(type='bool', required=False),
-            #clientId = dict(type='str', required=False),
-            #tokenUrl = dict(type='str', required=False),
-            #jwksUrl = dict(type='str', required=False),
-            #issuer = dict(type='str', required=False),
-            #useJwksUrl = dict(type='bool', required=False),
-            #authorizationUrl = dict(type='str', required=False),
-            #disableUserInfo = dict(type='bool', required=False),
-            #clientSecret = dict(type='str', required=False),
-            #defaultScope = dict(type='str', required=False),
-            #openIdConfigurationUrl = dict(type='str', required=False),
             mappers = dict(type='list', default=[]),
             state=dict(choices=["absent", "present"], default='present'),
             force=dict(type='bool', default=False),
@@ -428,23 +415,6 @@ def idp(params):
         if "defaultScope" in params["config"]:
             newIdPConfig["defaultScope"] = params["config"]["defaultScope"]
     
-    '''
-    if 'config' in params:
-        newIdPConfig = params['config']    
-        # Compléter la configuration reçu avec les valeurs par défaut
-        if 'hideOnLoginPage' not in newIdPConfig.keys():
-            newIdPConfig["hideOnLoginPage"] = "false"
-        if 'validateSignature' not in newIdPConfig.keys():
-            newIdPConfig["validateSignature"] = "true"
-        if 'validateSignature' not in newIdPConfig.keys():
-            newIdPConfig["backchannelSupported"] = "false"
-        if 'useJwksUrl' not in newIdPConfig.keys():
-            newIdPConfig["useJwksUrl"] = "true"
-        if 'disableUserInfo' not in newIdPConfig.keys():
-            newIdPConfig["disableUserInfo"] = "false"
-        if 'defaultScope' not in newIdPConfig.keys():
-            newIdPConfig["defaultScope"] = ""
-    '''
     if 'providerId' in newIdPRepresentation and newIdPRepresentation["providerId"] == 'google' and 'userIp' in params["config"]:
         newIdPConfig["userIp"] = params["config"]["userIp"]
     newIdPMappers = params['mappers'] if 'mappers' in params else None
