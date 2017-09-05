@@ -93,7 +93,7 @@ options:
         choices: [ "yes", "no" ]
         default: "no"
         description:
-            - If yes, allows to remove realm and recreate it.
+            - If yes, allows to remove role and recreate it.
         required: false
 notes:
     - module does not modify roleId.

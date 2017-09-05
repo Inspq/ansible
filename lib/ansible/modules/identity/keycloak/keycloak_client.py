@@ -151,7 +151,7 @@ options:
         choices: [ "yes", "no" ]
         default: "no"
         description:
-            - If yes, allows to remove realm and recreate it.
+            - If yes, allows to remove client and recreate it.
         required: false
 notes:
     - module does not modify clientId.
