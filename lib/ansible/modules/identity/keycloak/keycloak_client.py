@@ -193,7 +193,29 @@ EXAMPLES = '''
         url: http://localhost:8080
         username: admin
         password: password
+        realm: master
         name: client1
+        description: Client App 1
+        rootUrl: http://localhost:8081/app
+        redirectUris:
+          - http://localhost:8081/*
+        webOrigins:
+          - "*"
+        roles: 
+          - name: "groupName"
+        protocolMappers:
+          - name: MapperName
+            protocol: openid-connect
+            protocolMapper: oidc-usermodel-attribute-mapper
+            consentRequired: false
+            config:
+              multivalued: false
+              userinfo.token.claim: true
+              user.attribute: attributeName
+              id.token.claim: true
+              access.token.claim: true
+              claim.name: nameOfTheClaim
+              jsonType.label: String
         state: present
         force: yes
 
@@ -202,6 +224,7 @@ EXAMPLES = '''
         url: http://localhost:8080
         username: admin
         password: admin
+        realm: master
         name: client1
         state: absent
 '''
