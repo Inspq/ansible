@@ -152,7 +152,7 @@ EXAMPLES = '''
             identityProviderMapper: oidc-role-idp-mapper
             config:
               claim: claimName
-              claim.value: valueTahtGiveRole
+              claim.value: valueThatGiveRole
               role: roleName
         state: present
 
