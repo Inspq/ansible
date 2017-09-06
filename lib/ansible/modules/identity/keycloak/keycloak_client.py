@@ -430,8 +430,6 @@ def client(params):
                     # Créer le nouveau client
                     postResponse = requests.post(clientSvcBaseUrl, headers=headers, data=data)
                 else: # Si l'option force n'est pas sélectionné
-                    #print 'newClientRepresentation : ' + str(newClientRepresentation)
-                    #print 'clientRepresentation : ' + str(clientRepresentation)
                     excludes = []
                     if len(newClientRepresentation['webOrigins']) == 0:
                         excludes.append("webOrigins")
@@ -489,9 +487,6 @@ def client(params):
                                 break
                         # Si le mapper existe pour le client
                         if clientMapperFound:
-                            print str(newClientProtocolMapper)
-                            print "----------------"
-                            print str(clientMapper)
                             if not isDictEquals(newClientProtocolMapper, clientMapper):
                                 # S'il est différent, le modifier
                                 changed = True
