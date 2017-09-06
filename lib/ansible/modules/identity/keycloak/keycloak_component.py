@@ -306,7 +306,7 @@ def component(params):
     realm = params['realm']
     state = params['state']
     force = params['force']
-
+    
     # Créer un représentation du component recu en paramètres
     newComponent = {}
     if "id" in params and params["id"] is not None:
@@ -321,9 +321,9 @@ def component(params):
     if "config" in params:
         newComponent["config"] = params["config"]
     newSubComponents = params["subComponents"] if "subComponents" in params else None
-    syncUserStorage = params['syncUserStorage'].decode("utf-8") if "syncUserStorage" in params and params["syncUserStorage"] in ["triggerFullSync", "triggerChangedUsersSync"] else "no"    
-    syncLdapMappers = params['syncLdapMappers'].decode("utf-8") if "syncLdapMappers" in params and params["syncLdapMappers"] in ["fedToKeycloak", "keycloakToFed"] else "no"    
-    
+    syncUserStorage = params['syncUserStorage'].decode("utf-8") if "syncUserStorage" in params and params["syncUserStorage"] is not None and params["syncUserStorage"].decode("utf-8") in ["triggerFullSync", "triggerChangedUsersSync"] else "no"    
+    syncLdapMappers = params['syncLdapMappers'].decode("utf-8") if "syncLdapMappers" in params and params["syncLdapMappers"] is not None and params["syncLdapMappers"].decode("utf-8") in ["fedToKeycloak", "keycloakToFed"] else "no"    
+
     componentSvcBaseUrl = url + "/auth/admin/realms/" + realm + "/components/"
     userStorageUrl = url + "/auth/admin/realms/" + realm + "/user-storage/"
     
@@ -488,7 +488,7 @@ def component(params):
                 )
     return result
 
-def createNewSubcomponents(component, newSubComponents, syncType, headers, componentSvcBaseUrl, userStorageUrl):
+def createNewSubcomponents(component, newSubComponents, syncLdapMappers, headers, componentSvcBaseUrl, userStorageUrl):
     for componentType in newSubComponents.keys():
         for newSubComponent in newSubComponents[componentType]:
             newSubComponent["providerType"] = componentType
@@ -497,16 +497,16 @@ def createNewSubcomponents(component, newSubComponents, syncType, headers, compo
             # Créer le sous composant
             postResponse = requests.post(componentSvcBaseUrl, headers=headers, data=data)
             # Vérifier si on doit faire la synchronisation des groupes ou roles du LDAP
-            if component["providerType"] == "org.keycloak.storage.UserStorageProvider" and syncType is not "no":
+            if component["providerType"] == "org.keycloak.storage.UserStorageProvider" and syncLdapMappers is not "no":
                 # Obtenir le id du sous-composant
                 getResponse = requests.get(componentSvcBaseUrl, headers=headers, params={"name": newSubComponent["name"],"type": newSubComponent["providerType"], "parent": component["id"]})
                 subComponents = getResponse.json()
                 # Si le sous composant a été trouvé
                 for subComponent in subComponents:
                     # Faire la synchronisation du sous-composant
-                    postResponse = requests.post(userStorageUrl + subComponent["parentId"] + "/mappers/" + subComponent["id"] + "/sync", headers=headers, params={"action": syncType})
+                    postResponse = requests.post(userStorageUrl + subComponent["parentId"] + "/mappers/" + subComponent["id"] + "/sync", headers=headers, params={"direction": syncLdapMappers})
 
-def updateSubcomponents(component, subComponents, newSubComponents, syncType, headers, componentSvcBaseUrl, userStorageUrl):
+def updateSubcomponents(component, subComponents, newSubComponents, syncLdapMappers, headers, componentSvcBaseUrl, userStorageUrl):
     # Parcourir les sous-composants à créer ou mettre à jour recu en paramètre
     for componentType in newSubComponents.keys():
         for newSubComponent in newSubComponents[componentType]:
@@ -529,9 +529,9 @@ def updateSubcomponents(component, subComponents, newSubComponents, syncType, he
                         changed = True
                     newSubComponentFound = True
                     # Vérifier si on doit faire la synchronisation des groupes ou roles du LDAP
-                    if component["providerType"] == "org.keycloak.storage.UserStorageProvider" and syncType is not "no":
+                    if component["providerType"] == "org.keycloak.storage.UserStorageProvider" and syncLdapMappers is not "no":
                         # Faire la synchronisation du sous-composant
-                        postResponse = requests.post(userStorageUrl + subComponent["parentId"] + "/mappers/" + subComponent["id"] + "/sync", headers=headers, params={"direction": syncType})
+                        postResponse = requests.post(userStorageUrl + subComponent["parentId"] + "/mappers/" + subComponent["id"] + "/sync", headers=headers, params={"direction": syncLdapMappers})
                     break
             # Si le sous composant a créer n'existe pas sur le serveur Keycloak
             if not newSubComponentFound:
