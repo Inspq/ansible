@@ -3,7 +3,6 @@ import os
 import unittest
 
 from ansible.modules.identity.keycloak.keycloak_component import *
-from wheel.signatures import assertTrue
 
 class KeycloakComponentTestCase(unittest.TestCase):
  

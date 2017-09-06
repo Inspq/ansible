@@ -3,7 +3,6 @@ import os
 import unittest
 import copy
 from ansible.modules.identity.keycloak.keycloak_identity_provider import *
-from wheel.signatures import assertTrue
 
 class KeycloakIdentityProviderTestCase(unittest.TestCase):
  
@@ -77,7 +76,7 @@ class KeycloakIdentityProviderTestCase(unittest.TestCase):
                     mapperFound = True
                     self.assertEquals(mapper["identityProviderMapper"], mapperToCreate["identityProviderMapper"], "identityProviderMapper: " + mapper["identityProviderMapper"] + "not equal " + mapperToCreate["identityProviderMapper"])
                     self.assertDictEqual(mapper["config"], mapperToCreate["config"], "config: " + str(mapper["config"]) + "not equal " + str(mapperToCreate["config"]))
-            assertTrue(mapperFound, "mapper " + mapperToCreate["name"] + " not found")                                          
+            self.assertTrue(mapperFound, "mapper " + mapperToCreate["name"] + " not found")                                          
         
     def test_idp_not_changed(self):
         ToDoNotChange = dict(
@@ -147,7 +146,7 @@ class KeycloakIdentityProviderTestCase(unittest.TestCase):
                     mapperFound = True
                     self.assertEquals(mapper["identityProviderMapper"], mapperToDoNotChange["identityProviderMapper"], "identityProviderMapper: " + mapper["identityProviderMapper"] + "not equal " + mapperToDoNotChange["identityProviderMapper"])
                     self.assertDictEqual(mapper["config"], mapperToDoNotChange["config"], "config: " + str(mapper["config"]) + "not equal " + str(mapperToDoNotChange["config"]))
-            assertTrue(mapperFound, "mapper " + mapperToDoNotChange["name"] + " not found")                                          
+            self.assertTrue(mapperFound, "mapper " + mapperToDoNotChange["name"] + " not found")                                          
 
     def test_modify_idp(self):
         ToChange = dict(
@@ -223,7 +222,7 @@ class KeycloakIdentityProviderTestCase(unittest.TestCase):
         #            mapperFound = True
         #            self.assertEquals(mapper["identityProviderMapper"], mapperToChange["identityProviderMapper"], "identityProviderMapper: " + mapper["identityProviderMapper"] + "not equal " + mapperToChange["identityProviderMapper"])
         #            self.assertDictEqual(mapper["config"], mapperToChange["config"], "config: " + str(mapper["config"]) + "not equal " + str(mapperToChange["config"]))
-        #    assertTrue(mapperFound, "mapper " + mapperToChange["name"] + " not found")  
+        #    self.assertTrue(mapperFound, "mapper " + mapperToChange["name"] + " not found")  
         # BUG IdP not changed                                        
         self.assertFalse(results['changed'])
         # BUG mappers not changed
@@ -234,7 +233,7 @@ class KeycloakIdentityProviderTestCase(unittest.TestCase):
                     mapperFound = True
                     self.assertEquals(mapper["identityProviderMapper"], mapperToChange["identityProviderMapper"], "identityProviderMapper: " + mapper["identityProviderMapper"] + "not equal " + mapperToChange["identityProviderMapper"])
                     self.assertDictEqual(mapper["config"], mapperToChange["config"], "config: " + str(mapper["config"]) + "not equal " + str(mapperToChange["config"]))
-            assertTrue(mapperFound, "mapper " + mapperToChange["name"] + " not found")                                          
+            self.assertTrue(mapperFound, "mapper " + mapperToChange["name"] + " not found")                                          
 
     def test_delete_idp(self):
         toDelete = dict(
