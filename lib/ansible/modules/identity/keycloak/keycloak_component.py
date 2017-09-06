@@ -543,14 +543,14 @@ def updateSubcomponents(component, subComponents, newSubComponents, syncLdapMapp
                 postResponse = requests.post(componentSvcBaseUrl, headers=headers, data=data)
                 changed = True
                 # Vérifier si on doit faire la synchronisation des groupes ou roles du LDAP
-                if component["providerType"] == "org.keycloak.storage.UserStorageProvider" and syncType is not "no":
+                if component["providerType"] == "org.keycloak.storage.UserStorageProvider" and syncLdapMappers is not "no":
                     # Obtenir le id du sous-composant
                     getResponse = requests.get(componentSvcBaseUrl, headers=headers, params={"name": newSubComponent["name"],"type": newSubComponent["providerType"], "parent": component["id"]})
                     subComponents = getResponse.json()
                     # Si le sous composant a été trouvé
                     for subComponent in subComponents:
                         # Faire la synchronisation du sous-composant
-                        postResponse = requests.post(userStorageUrl + subComponent["parentId"] + "/mappers/" + subComponent["id"] + "/sync", headers=headers, params={"direction": syncType})
+                        postResponse = requests.post(userStorageUrl + subComponent["parentId"] + "/mappers/" + subComponent["id"] + "/sync", headers=headers, params={"direction": syncLdapMappers})
 
 # import module snippets
 from ansible.module_utils.basic import *
