@@ -109,6 +109,7 @@ options:
         description:
             - authorization Services Enabled.
         required: false
+        default: true
     protocol:
         description:
             - Protocol.
@@ -251,7 +252,7 @@ def main():
             implicitFlowEnabled = dict(type='bool'),
             directAccessGrantsEnabled = dict(type='bool'),
             serviceAccountsEnabled = dict(type='bool'),
-            #authorizationServicesEnabled = dict(type='bool', default=True),
+            authorizationServicesEnabled = dict(type='bool', default=True),
             protocol = dict(type='str'),
             bearerOnly = dict(type='bool'),
             publicClient = dict(type='bool'),
@@ -311,9 +312,12 @@ def client(params):
         newClientRepresentation["implicitFlowEnabled"] = params['implicitFlowEnabled']
     if "directAccessGrantsEnabled" in params:
         newClientRepresentation["directAccessGrantsEnabled"] = params['directAccessGrantsEnabled']
-    if "serviceAccountsEnabled" in params:
-        newClientRepresentation["serviceAccountsEnabled"] = params['serviceAccountsEnabled']
-    #newClientRepresentation["authorizationServicesEnabled"] = params['authorizationServicesEnabled']
+    if 'authorizationServicesEnabled' in params:
+        newClientRepresentation["authorizationServicesEnabled"] = params['authorizationServicesEnabled']
+        if newClientRepresentation["authorizationServicesEnabled"]:
+            newClientRepresentation["serviceAccountsEnabled"] = True
+        elif "serviceAccountsEnabled" in params:
+            newClientRepresentation["serviceAccountsEnabled"] = params['serviceAccountsEnabled']
     if "protocol" in params and params['protocol'] is not None:
         newClientRepresentation["protocol"] = params['protocol'].decode("utf-8")
     if "bearerOnly" in params:

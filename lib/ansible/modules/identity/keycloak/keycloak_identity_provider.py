@@ -64,6 +64,7 @@ options:
     description:
     - enabled.
     required: false
+    default: true
   updateProfileFirstLoginMode:
     description:
     - update Profile First Login Mode.
@@ -76,6 +77,7 @@ options:
     description:
     - store Token.
     required: false
+    default: true
   addReadTokenRoleOnCreate:
     description:
     - add Read Token Role On Create.
@@ -288,10 +290,10 @@ def main():
             alias=dict(type='str', required=True),
             displayName=dict(type='str'),
             providerId=dict(type='str'),
-            enabled = dict(type='bool'),
+            enabled = dict(type='bool', default=True),
             updateProfileFirstLoginMode=dict(type='str'),
             trustEmail=dict(type='bool'),
-            storeToken = dict(type='bool'),
+            storeToken = dict(type='bool', default=True),
             addReadTokenRoleOnCreate = dict(type='bool'),
             authenticateByDefault = dict(type='bool'),
             linkOnly = dict(type='bool'),
@@ -306,9 +308,8 @@ def main():
     
     
     params = module.params.copy()
-    params['force'] = module.boolean(module.params['force'])
     
-    result = idp(params)
+    result = idp(params, module)
     
     if result['rc'] != 0:
         module.fail_json(msg='non-zero return code', **result)
@@ -316,13 +317,13 @@ def main():
         module.exit_json(**result)
     
     
-def idp(params):
+def idp(params, module = None):
     url = params['url']
     username = params['username']
     password = params['password']
     realm = params['realm']
     state = params['state']
-    force = params['force']
+    force = module.boolean(module.params['force']) if module is not None else params['force']
     rc = 0
     result = dict()
     changed = False
@@ -347,19 +348,19 @@ def idp(params):
     if 'providerId' in params and params['providerId'] is not None:
         newIdPRepresentation["providerId"] = params['providerId'].decode("utf-8")
     if 'enabled' in params:
-        newIdPRepresentation["enabled"] = params['enabled']
+        newIdPRepresentation["enabled"] = module.boolean(params['enabled']) if module is not None else params['enabled']
     if 'updateProfileFirstLoginMode' in params and params['updateProfileFirstLoginMode'] is not None:
         newIdPRepresentation["updateProfileFirstLoginMode"] = params['updateProfileFirstLoginMode'].decode("utf-8")
     if 'trustEmail' in params:
-        newIdPRepresentation["trustEmail"] = params['trustEmail']
+        newIdPRepresentation["trustEmail"] = module.boolean(params['trustEmail']) if module is not None else params['trustEmail']
     if 'storeToken' in params:
-        newIdPRepresentation["storeToken"] = params['storeToken']
+        newIdPRepresentation["storeToken"] = module.boolean(params['storeToken']) if module is not None else params['storeToken']
     if 'addReadTokenRoleOnCreate' in params:
-        newIdPRepresentation["addReadTokenRoleOnCreate"] = params['addReadTokenRoleOnCreate']
+        newIdPRepresentation["addReadTokenRoleOnCreate"] = module.boolean(params['addReadTokenRoleOnCreate']) if module is not None else params['addReadTokenRoleOnCreate']
     if 'authenticateByDefault' in params:
-        newIdPRepresentation["authenticateByDefault"] = params['authenticateByDefault']
+        newIdPRepresentation["authenticateByDefault"] = module.boolean(params['authenticateByDefault']) if module is not None else params['authenticateByDefault']
     if 'linkOnly' in params:
-        newIdPRepresentation["linkOnly"] = params['linkOnly']
+        newIdPRepresentation["linkOnly"] = module.boolean(params['linkOnly']) if module is not None else params['linkOnly']
     if 'firstBrokerLoginFlowAlias' in params and params['firstBrokerLoginFlowAlias'] is not None:
         newIdPRepresentation["firstBrokerLoginFlowAlias"] = params['firstBrokerLoginFlowAlias'].decode("utf-8")
 
