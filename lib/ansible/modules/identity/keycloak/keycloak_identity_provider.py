@@ -59,47 +59,38 @@ options:
   providerId:
     description:
     - Type of identity provider.
-    default: oidc
     required: false
   enabled:
     description:
     - enabled.
-    default: True
     required: false
   updateProfileFirstLoginMode:
     description:
     - update Profile First Login Mode.
-    default: on
     required: false
   trustEmail:
     description: 
     - trust Email.
-    default: False
     required: false
   storeToken:
     description:
     - store Token.
-    default: True
     required: false
   addReadTokenRoleOnCreate:
     description:
     - add Read Token Role On Create.
-    default: True
     required: false
   authenticateByDefault:
     description:
     - authenticate By Default.
-    default: False
     required: false
   linkOnly:
     description:
     - link Only.
-    default: False
     required: false
   firstBrokerLoginFlowAlias:
     description:
     - first Broker Login Flow Alias.
-    default: first broker login
     required: false
   config:
     description:
@@ -108,13 +99,12 @@ options:
   mappers:
     description:
     - List of mappers for the Identity provider.
-    default: []
     required: false
   state:
-    choices: [ "present", "absent" ]
-    default: present
     description:
     - Control if the realm exists.
+    choices: [ "present", "absent" ]
+    default: present
     required: false
   force:
     choices: [ "yes", "no" ]
@@ -296,18 +286,18 @@ def main():
             password=dict(required=True),
             realm=dict(type='str', required=True),
             alias=dict(type='str', required=True),
-            displayName=dict(type='str', default=""),
-            providerId=dict(type='str', default="oidc"),
-            enabled = dict(type='bool', default=True),
-            updateProfileFirstLoginMode=dict(type='str', default="on"),
-            trustEmail=dict(type='bool',default=False),
-            storeToken = dict(type='bool',default=True),
-            addReadTokenRoleOnCreate = dict(type='bool', default=True),
-            authenticateByDefault = dict(type='bool', default=False),
-            linkOnly = dict(type='bool', default=False),
-            firstBrokerLoginFlowAlias = dict(type='str', default="first broker login"),
+            displayName=dict(type='str'),
+            providerId=dict(type='str'),
+            enabled = dict(type='bool'),
+            updateProfileFirstLoginMode=dict(type='str'),
+            trustEmail=dict(type='bool'),
+            storeToken = dict(type='bool'),
+            addReadTokenRoleOnCreate = dict(type='bool'),
+            authenticateByDefault = dict(type='bool'),
+            linkOnly = dict(type='bool'),
+            firstBrokerLoginFlowAlias = dict(type='str'),
             config = dict(type='dict'),
-            mappers = dict(type='list', default=[]),
+            mappers = dict(type='list'),
             state=dict(choices=["absent", "present"], default='present'),
             force=dict(type='bool', default=False),
         ),
@@ -352,13 +342,13 @@ def idp(params):
             changed  = changed
             )
         return result
-    if 'displayName' in params:
+    if 'displayName' in params and params['displayName'] is not None:
         newIdPRepresentation["displayName"] = params['displayName'].decode("utf-8")
-    if 'providerId' in params:
+    if 'providerId' in params and params['providerId'] is not None:
         newIdPRepresentation["providerId"] = params['providerId'].decode("utf-8")
     if 'enabled' in params:
         newIdPRepresentation["enabled"] = params['enabled']
-    if 'updateProfileFirstLoginMode' in params:
+    if 'updateProfileFirstLoginMode' in params and params['updateProfileFirstLoginMode'] is not None:
         newIdPRepresentation["updateProfileFirstLoginMode"] = params['updateProfileFirstLoginMode'].decode("utf-8")
     if 'trustEmail' in params:
         newIdPRepresentation["trustEmail"] = params['trustEmail']
@@ -370,7 +360,7 @@ def idp(params):
         newIdPRepresentation["authenticateByDefault"] = params['authenticateByDefault']
     if 'linkOnly' in params:
         newIdPRepresentation["linkOnly"] = params['linkOnly']
-    if 'firstBrokerLoginFlowAlias' in params:
+    if 'firstBrokerLoginFlowAlias' in params and params['firstBrokerLoginFlowAlias'] is not None:
         newIdPRepresentation["firstBrokerLoginFlowAlias"] = params['firstBrokerLoginFlowAlias'].decode("utf-8")
 
     newIdPConfig = None

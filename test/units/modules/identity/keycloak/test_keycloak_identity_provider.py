@@ -214,6 +214,7 @@ class KeycloakIdentityProviderTestCase(unittest.TestCase):
             "url": "http://localhost:18081",
             "alias": "test2",
             "providerId": "oidc",
+            "storeToken": False,
             "mappers": [
                 {
                     "name": "test24",
@@ -241,7 +242,8 @@ class KeycloakIdentityProviderTestCase(unittest.TestCase):
         
         self.assertEquals(results['rc'], 0, "rc: " + str(results['rc']) + " : " + results['stdout'] if 'stdout' in results else "" + " : " + results['stderr'] if 'stderr' in results else "")
         self.assertEquals(results['ansible_facts']['idp']['alias'],'test2', 'Alias = ' + results['ansible_facts']['idp']['alias'])
-        # BUG Changed is supposed to be true but I do not why keycloak do not apply changes on put for IdPs
+        # BUG storeToken is supposed to be changed to false but is still true. Keycloak does not apply the changes on put for IdPs
+        #self.assertFalse(results['ansible_facts']['idp']['storeToken'], 'storeToken should be false : ' + str(results['ansible_facts']['idp']['storeToken']))
         self.assertTrue(results['changed'])
         # BUG Claims are supposed to be changed
         for mapperToChange in newToChange["mappers"]:
