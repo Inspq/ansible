@@ -243,6 +243,7 @@ def deleteAllMappers(url, bearerHeader):
         raise e
      
     return changed
+
 def createOrUpdateMappers(url, headers, alias, idPMappers):
     changed = False
     create = False
@@ -260,47 +261,32 @@ def createOrUpdateMappers(url, headers, alias, idPMappers):
             mapperId = ""
             for mapper in mappers:
                 if mapper['name'] == idPMapper['name']:
-                    mapperId = mapper['id']
-        
-            if len(mapperId) == 0:
-                mapper = {}
-                
-            for key in idPMapper: 
-                mapperChanged = False
-                if key in mapper.keys():
-                    if isinstance(idPMapper[key],dict):
-                        for dictKey in idPMapper[key]:
-                            if dictKey not in mapper[key].keys() or idPMapper[key][dictKey] <> mapper[key][dictKey]:
-                                mapper[key][dictKey] = idPMapper[key][dictKey]
-                                mapperChanged = True
-                    elif idPMapper[key] <> mapper[key]:      
-                        mapper[key] = idPMapper[key]
-                        mapperChanged = True
-                else:
+                    mapperFound = True
+                    break
+            # If mapper already exist and is different
+            if mapperFound and not isDictEquals(idPMapper,mapper):
+                # update the existing mapper
+                for key in idPMapper.keys():
                     mapper[key] = idPMapper[key]
-                    mapperChanged = True
-            if 'identityProviderMapper' in idPMapper.keys(): # si le type de mapper a été fourni
-                if mapper['identityProviderMapper'] <> idPMapper['identityProviderMapper']:
-                    mapper['identityProviderMapper'] = idPMapper['identityProviderMapper']
-                    mapperChanged = True
-            else: # Sinon, utiliser la valeur par défaut
-                if 'identityProviderMapper' not in mapper.keys():
-                    mapper['identityProviderMapper'] = 'oidc-user-attribute-idp-mapper'
-                    mapperChanged = True
-            if 'identityProviderAlias' not in mapper.keys() or mapper['identityProviderAlias'] <> alias:
-                mapper['identityProviderAlias'] = alias
-                mapperChanged = True
-            if mapperChanged:
-                data=json.dumps(mapper)
-                #print str(data)
-                if len(mapperId) == 0:
-                    response = requests.post(url + '/mappers', headers=headers, data=data)
-                else:
-                    response = requests.put(url + '/mappers/' + mapperId, headers=headers, data=data)
-                changed = True 
+                    data=json.dumps(mapper)
+                    response = requests.put(url + '/mappers/' + mapper["id"], headers=headers, data=data)
+                changed = True
+            # If the mapper does not already exist
+            if not mapperFound:
+                # Complete the mapper settings with defaults
+                if 'identityProviderMapper' not in idPMapper.keys(): # si le type de mapper a été fourni
+                    idPMapper['identityProviderMapper'] = 'oidc-user-attribute-idp-mapper'                
+                idPMapper['identityProviderAlias'] = alias
+ 
+                # Create it
+                data=json.dumps(idPMapper)
+                response = requests.post(url + '/mappers', headers=headers, data=data)
+                changed = True
+                
     except Exception ,e :
         raise e
     return changed
+                    
 
 def main():
     module = AnsibleModule(
@@ -386,8 +372,9 @@ def idp(params):
         newIdPRepresentation["linkOnly"] = params['linkOnly']
     if 'firstBrokerLoginFlowAlias' in params:
         newIdPRepresentation["firstBrokerLoginFlowAlias"] = params['firstBrokerLoginFlowAlias'].decode("utf-8")
-     
-    if 'config' in params:
+
+    newIdPConfig = None
+    if 'config' in params and params['config'] is not None:
         #newIdPConfig = params['config']
         newIdPConfig = {}  
         if "hideOnLoginPage" in params["config"]:
@@ -435,10 +422,11 @@ def idp(params):
             )
         return result
     try:
-        if 'openIdConfigurationUrl' in params['config']:
-            addIdPEndpoints(newIdPConfig, params["config"]['openIdConfigurationUrl'])
+        if newIdPConfig is not None:
+            if 'openIdConfigurationUrl' in params['config']:
+                addIdPEndpoints(newIdPConfig, params["config"]['openIdConfigurationUrl'])
         
-        newIdPRepresentation["config"] = newIdPConfig
+            newIdPRepresentation["config"] = newIdPConfig
     except Exception, e:
         result = dict(
             stderr   = 'addIdPEndpoints: ' + str(e),
@@ -552,17 +540,16 @@ def idp(params):
                     postResponse = requests.post(idPSvcBaseUrl, headers=headers, data=data)
                 else: # Si l'option force n'est pas sélectionné
                     # Comparer les realms
-                    if (isDictEquals(newIdPRepresentation, idPRepresentation, ["clientSecret", "openIdConfigurationUrl", "mappers"])): # Si le nouveau IdP n'introduit pas de modification au IdP existant
-                        # Ne rien changer
-                        changed = False
-                    else: # Si le IdP doit être modifié
+                    if not isDictEquals(newIdPRepresentation, idPRepresentation, ["clientSecret", "openIdConfigurationUrl", "mappers"]): # Si le nouveau IdP n'introduit pas de modification au IdP existant
+                        # S'il y a un changement
                         # Stocker le IdP dans un body prêt a être posté
                         data=json.dumps(newIdPRepresentation)
                         # Mettre à jour le IdP sur le serveur Keycloak
                         updateResponse = requests.put(idPSvcUrl, headers=headers, data=data)
                         changed = True
-                if changed and newIdPMappers is not None and len(newIdPMappers) > 0:
-                    createOrUpdateMappers(idPSvcUrl, headers, alias, newIdPMappers)
+                if newIdPMappers is not None and len(newIdPMappers) > 0:
+                    if createOrUpdateMappers(idPSvcUrl, headers, alias, newIdPMappers):
+                        changed = True
         
                 # Obtenir sa représentation JSON sur le serveur Keycloak                        
                 getResponse = requests.get(idPSvcUrl, headers=headers)

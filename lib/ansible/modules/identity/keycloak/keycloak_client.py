@@ -76,62 +76,50 @@ options:
     clientAuthenticatorType:
         description: 
             - client Authenticator Type.
-        default: client-secret
         required: false
     redirectUris:
         description:
             - List of redirect URIs.
-        default: 
         required: true
     webOrigins:
         description:
             - List of allowed CORS origins.
-        default: []
         required: false
     consentRequired:
         description:
             - consent Required.
-        default: False
         required: false
     standardFlowEnabled:
         description:
             - standard Flow Enabled.
-        default: True
         required: false
     implicitFlowEnabled:
         description:
             - implicitFlowEnabled. 
-        default: True
         required: false
     directAccessGrantsEnabled:
         description:
             - Direct Access Grants Enabled.
-        default: True
         required: false
     serviceAccountsEnabled:
         description:
             - service Accounts Enabled.
-        default: True
         required: false
     authorizationServicesEnabled:
         description:
             - authorization Services Enabled.
-        default: True
         required: false
     protocol:
         description:
             - Protocol.
-        default: openid-connect
         required: false
     bearerOnly:
         description:
             - bearer Only access type.
-        default: False
         required: false
     publicClient:
         description:
             - Public client access type.
-        default: False
         required: false
     roles:
         description:
@@ -148,10 +136,10 @@ options:
         default: present
         required: false
     force:
-        choices: [ "yes", "no" ]
-        default: "no"
         description:
             - If yes, allows to remove client and recreate it.
+        choices: [ "yes", "no" ]
+        default: "no"
         required: false
 notes:
     - module does not modify clientId.
@@ -250,23 +238,23 @@ def main():
             password=dict(required=True),
             realm=dict(type='str', required=True),
             clientId=dict(type='str', required=True),
-            rootUrl=dict(type='str', default=None),
-            name=dict(type='str', default=None),
-            description = dict(type='str', default=None),
-            adminUrl=dict(type='str', default=None),
+            rootUrl=dict(type='str'),
+            name=dict(type='str'),
+            description = dict(type='str'),
+            adminUrl=dict(type='str'),
             enabled=dict(type='bool',default=True),
-            clientAuthenticatorType = dict(type='str',default='client-secret'),
-            redirectUris = dict(type='list', required=True),
-            webOrigins = dict(type='list', default=[]),
-            consentRequired = dict(type='bool', default=False),
-            standardFlowEnabled = dict(type='bool', default=True),
-            implicitFlowEnabled = dict(type='bool', default=True),
-            directAccessGrantsEnabled = dict(type='bool', default=True),
-            serviceAccountsEnabled = dict(type='bool', default=True),
+            clientAuthenticatorType = dict(type='str'),
+            redirectUris = dict(type='list'),
+            webOrigins = dict(type='list'),
+            consentRequired = dict(type='bool'),
+            standardFlowEnabled = dict(type='bool'),
+            implicitFlowEnabled = dict(type='bool'),
+            directAccessGrantsEnabled = dict(type='bool'),
+            serviceAccountsEnabled = dict(type='bool'),
             #authorizationServicesEnabled = dict(type='bool', default=True),
-            protocol = dict(type='str', default='openid-connect'),
-            bearerOnly = dict(type='bool', default=False),
-            publicClient = dict(type='bool', default=False),
+            protocol = dict(type='str'),
+            bearerOnly = dict(type='bool'),
+            publicClient = dict(type='bool'),
             roles = dict(type='list'),
             protocolMappers = dict(type='list'),
             state=dict(choices=["absent", "present"], default='present'),
@@ -298,27 +286,40 @@ def client(params):
     # Créer un représentation du client recu en paramètres
     newClientRepresentation = {}
     newClientRepresentation["clientId"] = params['clientId'].decode("utf-8")
-    if params['rootUrl'] is not None:
+    if "rootUrl" in params and params['rootUrl'] is not None:
         newClientRepresentation["rootUrl"] = params['rootUrl'].decode("utf-8")
-    if params['name'] is not None:
+    if "name" in params and params['name'] is not None:
         newClientRepresentation["name"] = params['name'].decode("utf-8")
-    if params['description'] is not None:
+    if "description" in params and params['description'] is not None:
         newClientRepresentation["description"] = params['description'].decode("utf-8")
-    if params['adminUrl'] is not None:
+    if "adminUrl" in params and params['adminUrl'] is not None:
         newClientRepresentation["adminUrl"] = params['adminUrl'].decode("utf-8")
-    newClientRepresentation["enabled"] = params['enabled']
-    newClientRepresentation["clientAuthenticatorType"] = params['clientAuthenticatorType'].decode("utf-8")
-    newClientRepresentation["redirectUris"] = params['redirectUris']
-    newClientRepresentation["webOrigins"] = params['webOrigins']
-    newClientRepresentation["consentRequired"] = params['consentRequired']   
-    newClientRepresentation["standardFlowEnabled"] = params['standardFlowEnabled']
-    newClientRepresentation["implicitFlowEnabled"] = params['implicitFlowEnabled']
-    newClientRepresentation["directAccessGrantsEnabled"] = params['directAccessGrantsEnabled']
-    newClientRepresentation["serviceAccountsEnabled"] = params['serviceAccountsEnabled']
+        
+    if "enabled" in params:
+        newClientRepresentation["enabled"] = params['enabled']
+    if "clientAuthenticatorType" in params and params['clientAuthenticatorType'] is not None:
+        newClientRepresentation["clientAuthenticatorType"] = params['clientAuthenticatorType'].decode("utf-8")
+    if "redirectUris" in params and params['redirectUris'] is not None:
+        newClientRepresentation["redirectUris"] = params['redirectUris']
+    if "webOrigins" in params and params['webOrigins'] is not None:
+        newClientRepresentation["webOrigins"] = params['webOrigins']
+    if "consentRequired" in params:
+        newClientRepresentation["consentRequired"] = params['consentRequired']   
+    if "standardFlowEnabled" in params:
+        newClientRepresentation["standardFlowEnabled"] = params['standardFlowEnabled']
+    if "implicitFlowEnabled" in params:
+        newClientRepresentation["implicitFlowEnabled"] = params['implicitFlowEnabled']
+    if "directAccessGrantsEnabled" in params:
+        newClientRepresentation["directAccessGrantsEnabled"] = params['directAccessGrantsEnabled']
+    if "serviceAccountsEnabled" in params:
+        newClientRepresentation["serviceAccountsEnabled"] = params['serviceAccountsEnabled']
     #newClientRepresentation["authorizationServicesEnabled"] = params['authorizationServicesEnabled']
-    newClientRepresentation["protocol"] = params['protocol'].decode("utf-8")
-    newClientRepresentation["bearerOnly"] = params['bearerOnly']
-    newClientRepresentation["publicClient"] = params['publicClient']
+    if "protocol" in params and params['protocol'] is not None:
+        newClientRepresentation["protocol"] = params['protocol'].decode("utf-8")
+    if "bearerOnly" in params:
+        newClientRepresentation["bearerOnly"] = params['bearerOnly']
+    if "publicClient" in params:
+        newClientRepresentation["publicClient"] = params['publicClient']
     if 'roles' in params and params['roles'] is not None:
         newClientRoles = params['roles']
     if 'protocolMappers' in params and params['protocolMappers'] is not None:
@@ -431,7 +432,7 @@ def client(params):
                     postResponse = requests.post(clientSvcBaseUrl, headers=headers, data=data)
                 else: # Si l'option force n'est pas sélectionné
                     excludes = []
-                    if len(newClientRepresentation['webOrigins']) == 0:
+                    if "webOrigins" in newClientRepresentation and len(newClientRepresentation['webOrigins']) == 0:
                         excludes.append("webOrigins")
                     # Comparer les clients
                     if (isDictEquals(newClientRepresentation, clientRepresentation, excludes)): # Si le nouveau client n'introduit pas de modification au client existant
