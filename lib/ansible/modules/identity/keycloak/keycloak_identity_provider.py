@@ -86,10 +86,6 @@ options:
     description:
     - authenticate By Default.
     required: false
-  linkOnly:
-    description:
-    - link Only.
-    required: false
   firstBrokerLoginFlowAlias:
     description:
     - first Broker Login Flow Alias.
@@ -296,7 +292,6 @@ def main():
             storeToken = dict(type='bool', default=True),
             addReadTokenRoleOnCreate = dict(type='bool'),
             authenticateByDefault = dict(type='bool'),
-            linkOnly = dict(type='bool'),
             firstBrokerLoginFlowAlias = dict(type='str'),
             config = dict(type='dict'),
             mappers = dict(type='list'),
@@ -359,8 +354,6 @@ def idp(params, module = None):
         newIdPRepresentation["addReadTokenRoleOnCreate"] = module.boolean(params['addReadTokenRoleOnCreate']) if module is not None else params['addReadTokenRoleOnCreate']
     if 'authenticateByDefault' in params:
         newIdPRepresentation["authenticateByDefault"] = module.boolean(params['authenticateByDefault']) if module is not None else params['authenticateByDefault']
-    if 'linkOnly' in params:
-        newIdPRepresentation["linkOnly"] = module.boolean(params['linkOnly']) if module is not None else params['linkOnly']
     if 'firstBrokerLoginFlowAlias' in params and params['firstBrokerLoginFlowAlias'] is not None:
         newIdPRepresentation["firstBrokerLoginFlowAlias"] = params['firstBrokerLoginFlowAlias'].decode("utf-8")
 
