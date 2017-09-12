@@ -25,7 +25,7 @@ ANSIBLE_METADATA = {'metadata_version': '1.0',
 DOCUMENTATION = '''
 ---
 author: "Etienne Sadio (etienne.sadio@inspq.qc.ca"
-module: SX5_client
+module: sx5_client
 short_description: Configure a client application url in SX5 DB 
 description:
     - This module creates, creat or update client application url.
