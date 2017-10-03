@@ -51,23 +51,26 @@ class KeycloakRealmTestCase(unittest.TestCase):
             otpPolicyDigits = 6,
             otpPolicyLookAheadWindow = 1,
             otpPolicyPeriod = 30,
-            smtpServer = dict(
-                replyToDisplayName = 'root',
-                starttls = "",
-                auth = "",
-                port = "25",
-                host = "localhost",
-                replyTo = "root@localhost",
-                fromDisplayName = "local",
-                envelopeFrom = "root@localhost",
-                ssl = ""),
-            eventsEnabled = False,
-            eventsListeners = [ "jboss-logging" ],
-            enabledEventTypes = [],
-            adminEventsEnabled= False,
-            adminEventsDetailsEnabled = False,
+            smtpServer = {
+                "replyToDisplayName": "root",
+                "starttls": "",
+                "auth": "",
+                "port": "25",
+                "host": "localhost",
+                "replyTo": "root@localhost",
+                "fromDisplayName": "local",
+                "envelopeFrom": "root@localhost",
+                "ssl": "",
+                "smtpServer.from": "root@localhost"
+            },
+            eventsConfig = {
+                "eventsEnabled": True,
+                "eventsListeners": [ "jboss-logging" ],
+                "enabledEventTypes": ["SEND_RESET_PASSWORD", "UPDATE_TOTP", "REMOVE_TOTP", "REVOKE_GRANT", "LOGIN_ERROR", "CLIENT_LOGIN", "RESET_PASSWORD_ERROR", "IMPERSONATE_ERROR", "CODE_TO_TOKEN_ERROR", "CUSTOM_REQUIRED_ACTION", "UPDATE_PROFILE_ERROR", "IMPERSONATE", "LOGIN", "UPDATE_PASSWORD_ERROR", "REGISTER", "LOGOUT", "CLIENT_REGISTER", "UPDATE_PASSWORD", "FEDERATED_IDENTITY_LINK_ERROR", "CLIENT_DELETE", "IDENTITY_PROVIDER_FIRST_LOGIN", "VERIFY_EMAIL", "CLIENT_DELETE_ERROR", "CLIENT_LOGIN_ERROR", "REMOVE_FEDERATED_IDENTITY_ERROR", "EXECUTE_ACTIONS", "SEND_IDENTITY_PROVIDER_LINK_ERROR", "SEND_VERIFY_EMAIL", "EXECUTE_ACTIONS_ERROR", "REMOVE_FEDERATED_IDENTITY", "IDENTITY_PROVIDER_POST_LOGIN", "UPDATE_EMAIL", "REGISTER_ERROR", "REVOKE_GRANT_ERROR", "LOGOUT_ERROR", "UPDATE_EMAIL_ERROR", "CLIENT_UPDATE_ERROR", "UPDATE_PROFILE", "FEDERATED_IDENTITY_LINK", "CLIENT_REGISTER_ERROR", "SEND_VERIFY_EMAIL_ERROR", "SEND_IDENTITY_PROVIDER_LINK", "RESET_PASSWORD", "REMOVE_TOTP_ERROR", "VERIFY_EMAIL_ERROR", "SEND_RESET_PASSWORD_ERROR", "CLIENT_UPDATE", "IDENTITY_PROVIDER_POST_LOGIN_ERROR", "CUSTOM_REQUIRED_ACTION_ERROR", "UPDATE_TOTP_ERROR", "CODE_TO_TOKEN", "IDENTITY_PROVIDER_FIRST_LOGIN_ERROR"],
+                "adminEventsEnabled": True,
+                "adminEventsDetailsEnabled": True},
             internationalizationEnabled = False,
-            supportedLocales= [ ],
+            supportedLocales= [  ],
             browserFlow= "browser",
             registrationFlow= "registration",
             directGrantFlow= "direct grant",
@@ -78,19 +81,23 @@ class KeycloakRealmTestCase(unittest.TestCase):
             attributes=None,
             browserSecurityHeaders=None
         )        
-        toCreate['smtpServer']['from'] = 'root@localhost'
     
         results = realm(toCreate)
-        self.assertEqual(results['rc'],0,'Code de retour: ' + str(results['rc']))
+        print("results: " + str(results))
+        self.assertEqual(results['rc'],0,'Return code : ' + str(results['rc']))
         self.assertTrue(results['ansible_facts']['realm']['enabled'])
+        self.assertTrue(results["changed"], "Changed: " + str(results["changed"]))
+        self.assertTrue(results["ansible_facts"]["realm"]["eventsEnabled"], "eventsEnabled: " + str(results["ansible_facts"]["realm"]["eventsEnabled"]))
+        self.assertTrue(results["ansible_facts"]["realm"]["adminEventsEnabled"], "adminEventsEnabled: " + str(results["ansible_facts"]["realm"]["adminEventsEnabled"]))
+        self.assertTrue(results["ansible_facts"]["realm"]["adminEventsDetailsEnabled"], "adminEventsDetailsEnabled: " + str(results["ansible_facts"]["realm"]["adminEventsDetailsEnabled"]))
         
     def test_modify_realm(self):
         toModifiy = dict(
-            realm='test',
+            realm='test1',
             url='http://localhost:18081',
             username='admin',
             password='admin',
-            name='test123',
+            name='test1',
             namehtml='ceci est un test',
             accessCodeLifespan=60,
             accessCodeLifespanLogin=1800,
@@ -128,16 +135,18 @@ class KeycloakRealmTestCase(unittest.TestCase):
             otpPolicyDigits = 6,
             otpPolicyLookAheadWindow = 1,
             otpPolicyPeriod = 30,
-            smtpServer = dict(
-                replyToDisplayName = 'root',
-                starttls = "",
-                auth = "",
-                port = "25",
-                host = "localhost",
-                replyTo = "root@localhost",
-                fromDisplayName = "local",
-                envelopeFrom = "root@localhost",
-                ssl = ""),
+            smtpServer = {
+                "replyToDisplayName": "root",
+                "starttls": "",
+                "auth": "",
+                "port": "25",
+                "host": "localhost",
+                "replyTo": "root@localhost",
+                "fromDisplayName": "local",
+                "envelopeFrom": "root@localhost",
+                "ssl": "",
+                "smtpServer.from": "root@localhost"
+            },
             eventsEnabled = False,
             eventsListeners = [ "jboss-logging" ],
             enabledEventTypes = [],
@@ -155,19 +164,20 @@ class KeycloakRealmTestCase(unittest.TestCase):
             attributes=None,
             browserSecurityHeaders=None
         )        
-        toModifiy['smtpServer']['from'] = 'root@localhost'
+        realm(toModifiy)
+        toModifiy["namehtml"] = "New name"
         results = realm(toModifiy)
         
-        self.assertEqual(results['rc'],0,'Code de retour: ' + str(results['rc']))
-        self.assertEqual(results['ansible_facts']['realm']['displayName'], 'test123', 'name has changed')
+        self.assertEqual(results['rc'],0,'Return code: ' + str(results['rc']))
+        self.assertEqual(results['ansible_facts']['realm']['displayNameHtml'], toModifiy["namehtml"], "namehtml: " + results['ansible_facts']['realm']['displayNameHtml'])
         
     def test_delete_realm(self):
         toDelete = dict(
-            realm='test',
+            realm='test2',
             url='http://localhost:18081',
             username='admin',
             password='admin',
-            name='test123',
+            name='test2',
             namehtml='ceci est un test',
             accessCodeLifespan=60,
             accessCodeLifespanLogin=1800,
@@ -205,16 +215,18 @@ class KeycloakRealmTestCase(unittest.TestCase):
             otpPolicyDigits = 6,
             otpPolicyLookAheadWindow = 1,
             otpPolicyPeriod = 30,
-            smtpServer = dict(
-                replyToDisplayName = 'root',
-                starttls = "",
-                auth = "",
-                port = "25",
-                host = "localhost",
-                replyTo = "root@localhost",
-                fromDisplayName = "local",
-                envelopeFrom = "root@localhost",
-                ssl = ""),
+            smtpServer = {
+                "replyToDisplayName": "root",
+                "starttls": "",
+                "auth": "",
+                "port": "25",
+                "host": "localhost",
+                "replyTo": "root@localhost",
+                "fromDisplayName": "local",
+                "envelopeFrom": "root@localhost",
+                "ssl": "",
+                "smtpServer.from": "root@localhost"
+            },
             eventsEnabled = False,
             eventsListeners = [ "jboss-logging" ],
             enabledEventTypes = [],
@@ -227,12 +239,13 @@ class KeycloakRealmTestCase(unittest.TestCase):
             directGrantFlow= "direct grant",
             resetCredentialsFlow= "reset credentials",
             clientAuthenticationFlow= "clients",
-            state='absent',
+            state='present',
             force=False,
             attributes=None,
             browserSecurityHeaders=None
         )        
-        toDelete['smtpServer']['from'] = 'root@localhost'
+        realm(toDelete)
+        toDelete["state"] = "absent"
         results = realm(toDelete)
         self.assertEqual(results['rc'],0,'Code de retour: ' + str(results['rc']))
         self.assertEqual(results['stdout'], 'deleted', 'realm has been deleted')

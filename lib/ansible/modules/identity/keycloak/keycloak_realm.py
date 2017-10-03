@@ -238,30 +238,9 @@ options:
     - SMTP Server.
     default: {}
     required: false
-  eventsEnabled:
+  eventsConfig:
     description:
-    - Events Enabled.
-    default: False
-    required: false
-  eventsListeners:
-    description:
-    - Events Listeners.
-    default: [ "jboss-logging" ]
-    required: false
-  enabledEventTypes:
-    description:
-    - Enabled Event Types.
-    default: [ ]
-    required: false
-  adminEventsEnabled:
-    description:
-    - Admin Events Enabled.
-    default: False
-    required: false
-  adminEventsDetailsEnabled:
-    description:
-    - Admin Events Details Enabled.
-    default: False
+    - Event configuration for the realm.
     required: false
   internationalizationEnabled:
     description:
@@ -400,11 +379,7 @@ def main():
             otpPolicyLookAheadWindow = dict(type='int', default=1),
             otpPolicyPeriod = dict(type='int', default=30),
             smtpServer = dict(type='dict', default={}),
-            eventsEnabled = dict(type='bool', default=False),
-            eventsListeners = dict(type='list', default=[ "jboss-logging" ]),
-            enabledEventTypes = dict(type='list', default=[ ]),
-            adminEventsEnabled= dict(type='bool', default=False),
-            adminEventsDetailsEnabled= dict(type='bool', default=False),
+            eventsConfig = dict(type='dict'),
             internationalizationEnabled= dict(type='bool', default=False),
             supportedLocales= dict(type='list', default=[ ]),
             browserFlow= dict(type='str', default="browser"),
@@ -511,11 +486,6 @@ def realm(params):
     newRealmRepresentation["otpPolicyPeriod"] = params['otpPolicyPeriod']
     #if len(params['smtpServer']):
     newRealmRepresentation["smtpServer"] = params['smtpServer']
-    newRealmRepresentation["eventsEnabled"] = params['eventsEnabled']
-    newRealmRepresentation["eventsListeners"] = params['eventsListeners']
-    newRealmRepresentation["enabledEventTypes"] = params['enabledEventTypes']
-    newRealmRepresentation["adminEventsEnabled"] = params['adminEventsEnabled']
-    newRealmRepresentation["adminEventsDetailsEnabled"] = params['adminEventsDetailsEnabled']
     newRealmRepresentation["internationalizationEnabled"] = params['internationalizationEnabled']
     newRealmRepresentation["supportedLocales"] = params['supportedLocales']
     newRealmRepresentation["browserFlow"] = params['browserFlow'].decode("utf-8")
@@ -525,6 +495,9 @@ def realm(params):
     newRealmRepresentation["clientAuthenticationFlow"] = params['clientAuthenticationFlow'].decode("utf-8")
     # Stocker le REALM dans un body prèt a être posté
     data=json.dumps(newRealmRepresentation)
+    # Read Events configuration for the Realm
+    newEventsConfig = params["eventsConfig"] if "eventsConfig" in params and params["eventsConfig"] is not None else None
+    
     rc = 0
     result = dict()
     changed = False
@@ -567,9 +540,18 @@ def realm(params):
                 # Obtenir le nouveau REALM créé
                 getResponse = requests.get(url + "/auth/admin/realms/" + newRealmRepresentation["id"], headers=headers)
                 realmRepresentation = getResponse.json()
-                changed = True
                 fact = dict(
                     realm = realmRepresentation)
+                # if there is a configuration for Events
+                if newEventsConfig is not None:
+                    data=json.dumps(newEventsConfig)
+                    # Update the Config
+                    putResponse = requests.put(url + "/auth/admin/realms/" + newRealmRepresentation["id"] + "/events/config", headers=headers, data=data)
+                    # Get the actual config from Keycloak server
+                    getResponse = requests.get(url + "/auth/admin/realms/" + newRealmRepresentation["id"] + "/events/config", headers=headers)
+                    eventsConfig = getResponse.json()
+                    fact["eventsConfig"] = eventsConfig
+                changed = True
                 result = dict(
                     ansible_facts = fact,
                     rc = 0,
