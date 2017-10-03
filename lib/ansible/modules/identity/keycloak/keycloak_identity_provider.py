@@ -525,6 +525,7 @@ def idp(params, module = None):
                 else: # Si l'option force n'est pas sélectionné
                     # Comparer les realms
                     if not isDictEquals(newIdPRepresentation, idPRepresentation, ["clientSecret", "openIdConfigurationUrl", "mappers"]): # Si le nouveau IdP n'introduit pas de modification au IdP existant
+                    #if not isDictEquals(newIdPRepresentation, idPRepresentation): # Si le nouveau IdP n'introduit pas de modification au IdP existant
                         # S'il y a un changement
                         # Stocker le IdP dans un body prêt a être posté
                         data=json.dumps(newIdPRepresentation)

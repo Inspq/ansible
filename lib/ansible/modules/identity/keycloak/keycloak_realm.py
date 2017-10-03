@@ -304,15 +304,43 @@ notes:
 '''
 
 EXAMPLES = '''
-    - name: Create a realm realm1 with default settings.
+    - name: Create a realm
       keycloak_realm:
-        name: realm1 
-        state: present
+        realm: realm1
+        name: "realm1"
+        namehtml: "The first Realm"
+        url: "http://localhost:8080"
+        username: "admin"
+        password: "admin"
+        smtpServer: 
+          replyToDisplayName: root
+          starttls: ""
+          auth: ""
+          port: "25"
+          host: "localhost"
+          replyTo: "root@localhost"
+          from: "root@localhost"
+          fromDisplayName: "local"
+          envelopeFrom: "root@localhost"
+          ssl: ""
+        eventsConfig:
+          eventsEnabled: true
+          eventsListeners :
+            - jboss-logging
+            - sx5-event-listener
+          adminEventsEnabled: true
+          adminEventsDetailsEnabled: false
+        state : present
 
     - name: Re-create the realm realm1
       keycloak_realm:
-        name: realm1
-        state: present
+        realm: realm1
+        name: "realm1"
+        namehtml: "The first Realm"
+        url: "http://localhost:8080"
+        username: "admin"
+        password: "admin"
+        state : present
         force: yes
 
     - name: Remove a the realm realm1.
@@ -535,13 +563,9 @@ def realm(params):
         
         if (state == 'present'): # Si le status est présent
             try:
+                fact = dict()
                 # Créer le REALM
                 postResponse = requests.post(url + "/auth/admin/realms/", headers=headers, data=data)
-                # Obtenir le nouveau REALM créé
-                getResponse = requests.get(url + "/auth/admin/realms/" + newRealmRepresentation["id"], headers=headers)
-                realmRepresentation = getResponse.json()
-                fact = dict(
-                    realm = realmRepresentation)
                 # if there is a configuration for Events
                 if newEventsConfig is not None:
                     data=json.dumps(newEventsConfig)
@@ -551,6 +575,10 @@ def realm(params):
                     getResponse = requests.get(url + "/auth/admin/realms/" + newRealmRepresentation["id"] + "/events/config", headers=headers)
                     eventsConfig = getResponse.json()
                     fact["eventsConfig"] = eventsConfig
+                # Obtenir le nouveau REALM créé
+                getResponse = requests.get(url + "/auth/admin/realms/" + newRealmRepresentation["id"], headers=headers)
+                realmRepresentation = getResponse.json()
+                fact["realm"] = realmRepresentation
                 changed = True
                 result = dict(
                     ansible_facts = fact,
