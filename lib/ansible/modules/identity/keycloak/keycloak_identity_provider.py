@@ -178,6 +178,7 @@ result:
 import requests
 import json
 import urllib
+import copy
 from ansible.module_utils.keycloak_utils import *
     
 def addIdPEndpoints(idPConfiguration, url):
@@ -346,13 +347,13 @@ def idp(params, module = None):
         newIdPRepresentation["enabled"] = module.boolean(params['enabled']) if module is not None else params['enabled']
     if 'updateProfileFirstLoginMode' in params and params['updateProfileFirstLoginMode'] is not None:
         newIdPRepresentation["updateProfileFirstLoginMode"] = params['updateProfileFirstLoginMode'].decode("utf-8")
-    if 'trustEmail' in params:
+    if 'trustEmail' in params and params["trustEmail"] is not None:
         newIdPRepresentation["trustEmail"] = module.boolean(params['trustEmail']) if module is not None else params['trustEmail']
-    if 'storeToken' in params:
+    if 'storeToken' in params and params["storeToken"] is not None:
         newIdPRepresentation["storeToken"] = module.boolean(params['storeToken']) if module is not None else params['storeToken']
-    if 'addReadTokenRoleOnCreate' in params:
+    if 'addReadTokenRoleOnCreate' in params and params["addReadTokenRoleOnCreate"] is not None:
         newIdPRepresentation["addReadTokenRoleOnCreate"] = module.boolean(params['addReadTokenRoleOnCreate']) if module is not None else params['addReadTokenRoleOnCreate']
-    if 'authenticateByDefault' in params:
+    if 'authenticateByDefault' in params and params["authenticateByDefault"] is not None:
         newIdPRepresentation["authenticateByDefault"] = module.boolean(params['authenticateByDefault']) if module is not None else params['authenticateByDefault']
     if 'firstBrokerLoginFlowAlias' in params and params['firstBrokerLoginFlowAlias'] is not None:
         newIdPRepresentation["firstBrokerLoginFlowAlias"] = params['firstBrokerLoginFlowAlias'].decode("utf-8")
@@ -524,11 +525,21 @@ def idp(params, module = None):
                     postResponse = requests.post(idPSvcBaseUrl, headers=headers, data=data)
                 else: # Si l'option force n'est pas sélectionné
                     # Comparer les realms
-                    if not isDictEquals(newIdPRepresentation, idPRepresentation, ["clientSecret", "openIdConfigurationUrl", "mappers"]): # Si le nouveau IdP n'introduit pas de modification au IdP existant
+                    if not isDictEquals(newIdPRepresentation, idPRepresentation, ["clientSecret", "openIdConfigurationUrl", "mappers"]) or ("config" in newIdPRepresentation and "clientSecret" in newIdPRepresentation["config"] and newIdPRepresentation["config"]["clientSecret"] is not None): # Si le nouveau IdP n'introduit pas de modification au IdP existant
                     #if not isDictEquals(newIdPRepresentation, idPRepresentation): # Si le nouveau IdP n'introduit pas de modification au IdP existant
                         # S'il y a un changement
+                        # Mettre a jour la representation existante
+                        updatedIdP = copy.deepcopy(idPRepresentation)
+                        updatedIdP.update(newIdPRepresentation)
+                        if "config" in newIdPRepresentation and newIdPRepresentation["config"] is not None:
+                            updatedConfig = idPRepresentation["config"]
+                            updatedConfig.update(newIdPRepresentation["config"])
+                            updatedIdP["config"] = updatedConfig
+                        #with open("/tmp/keycloak_idp.log","a") as f:
+                        #    f.write(str(updatedIdP))
+                        #f.close()
                         # Stocker le IdP dans un body prêt a être posté
-                        data=json.dumps(newIdPRepresentation)
+                        data=json.dumps(updatedIdP)
                         # Mettre à jour le IdP sur le serveur Keycloak
                         updateResponse = requests.put(idPSvcUrl, headers=headers, data=data)
                         changed = True

@@ -317,7 +317,7 @@ def authentication(params):
                 changed  = changed
             )
                 
-    else:  # Le authentication existe déjà
+    else:  # The authentication flow already exist
         try:
             if (state == 'present'): # si le status est présent
                 if force: # Si l'option force est sélectionné
