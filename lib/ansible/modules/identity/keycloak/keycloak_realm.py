@@ -58,6 +58,22 @@ options:
     description:
     - The name to use within the HTML page of the realm.
     required: true
+  loginTheme:
+    description:
+    - Theme to use at logon for this realm.
+    required: false
+  adminTheme:
+    description:
+    - Theme to use for this realm's admin console.
+    required: false
+  emailTheme:
+    description:
+    - Theme to use for this realm's emails.
+    required: false
+  accountTheme:
+    description:
+    - Theme to use for this realm's accounts.
+    required: false
   accessCodeLifespan:
     description:
     - access code lifespan.
@@ -370,6 +386,10 @@ def main():
             password=dict(required=True),
             name=dict(type='str', default=""),
             namehtml=dict(type='str', default=""),
+            loginTheme=dict(type="str"),
+            adminTheme=dict(type="str"),
+            emailTheme=dict(type="str"),
+            accountTheme=dict(type="str"),
             accessCodeLifespan=dict(type='int', default=60),
             accessCodeLifespanLogin=dict(type='int', default=1800),
             accessCodeLifespanUserAction=dict(type='int',default=300),
@@ -476,6 +496,14 @@ def realm(params):
     newRealmRepresentation["realm"] = params['realm'].decode("utf-8")
     newRealmRepresentation["displayName"] = params['name'].decode("utf-8")
     newRealmRepresentation["displayNameHtml"] = params['namehtml'].decode("utf-8")
+    if "loginTheme" in params and params["loginTheme"] is not None:
+        newRealmRepresentation["loginTheme"] = params["loginTheme"].decode("utf-8")
+    if "adminTheme" in params and params["adminTheme"] is not None:
+        newRealmRepresentation["adminTheme"] = params["adminTheme"].decode("utf-8")
+    if "emailTheme" in params and params["emailTheme"] is not None:
+        newRealmRepresentation["emailTheme"] = params["emailTheme"].decode("utf-8")
+    if "accountTheme" in params and params["accountTheme"] is not None:
+        newRealmRepresentation["accountTheme"] = params["accountTheme"].decode("utf-8")
     newRealmRepresentation["accessCodeLifespan"] = params['accessCodeLifespan']
     newRealmRepresentation["accessCodeLifespanLogin"] = params['accessCodeLifespanLogin']
     newRealmRepresentation["accessCodeLifespanUserAction"] = params['accessCodeLifespanUserAction']
