@@ -74,6 +74,18 @@ options:
     description:
     - Theme to use for this realm's accounts.
     required: false
+  internationalizationEnabled:
+    description:
+    - Is internationalization enabled for this realm?
+    required: false
+  supportedLocales:
+    description:
+    - List of supported languages for the realm.
+    required: false
+  defaultLocale:
+    description:
+    - If multiple locales are suported, which one will be used as default language.
+    required: false
   accessCodeLifespan:
     description:
     - access code lifespan.
@@ -258,16 +270,6 @@ options:
     description:
     - Event configuration for the realm.
     required: false
-  internationalizationEnabled:
-    description:
-    - Internationalization Enabled.
-    default: False
-    required: false
-  supportedLocales:
-    description:
-    - Supported Locales.
-    default: [ ]
-    required: false
   browserFlow:
     description:
     - Browser Flow.
@@ -390,6 +392,9 @@ def main():
             adminTheme=dict(type="str"),
             emailTheme=dict(type="str"),
             accountTheme=dict(type="str"),
+            internationalizationEnabled=dict(type="bool"),
+            supportedLocales=dict(type="list"),
+            defaultLocale=dict(type="str"),
             accessCodeLifespan=dict(type='int', default=60),
             accessCodeLifespanLogin=dict(type='int', default=1800),
             accessCodeLifespanUserAction=dict(type='int',default=300),
@@ -428,8 +433,6 @@ def main():
             otpPolicyPeriod = dict(type='int', default=30),
             smtpServer = dict(type='dict', default={}),
             eventsConfig = dict(type='dict'),
-            internationalizationEnabled= dict(type='bool', default=False),
-            supportedLocales= dict(type='list', default=[ ]),
             browserFlow= dict(type='str', default="browser"),
             registrationFlow= dict(type='str', default="registration"),
             directGrantFlow= dict(type='str', default="direct grant"),
@@ -540,15 +543,23 @@ def realm(params):
     newRealmRepresentation["otpPolicyDigits"] = params['otpPolicyDigits']
     newRealmRepresentation["otpPolicyLookAheadWindow"] = params['otpPolicyLookAheadWindow']
     newRealmRepresentation["otpPolicyPeriod"] = params['otpPolicyPeriod']
-    #if len(params['smtpServer']):
     newRealmRepresentation["smtpServer"] = params['smtpServer']
-    newRealmRepresentation["internationalizationEnabled"] = params['internationalizationEnabled']
-    newRealmRepresentation["supportedLocales"] = params['supportedLocales']
+    if "supportedLocales" in params and params["supportedLocales"] is not None:
+        if "internationalizationEnabled" in params and params["internationalizationEnabled"] is not None:
+            newRealmRepresentation["internationalizationEnabled"] = params["internationalizationEnabled"]
+        else:
+            newRealmRepresentation["internationalizationEnabled"] = True
+        newRealmRepresentation["supportedLocales"] = params["supportedLocales"]
+        if "defaultLocale" in params and params["defaultLocale"]:
+            newRealmRepresentation["defaultLocale"] = params["defaultLocale"].decode("utf-8")
+    else:
+        newRealmRepresentation["internationalizationEnabled"] = False
     newRealmRepresentation["browserFlow"] = params['browserFlow'].decode("utf-8")
     newRealmRepresentation["registrationFlow"] = params['registrationFlow'].decode("utf-8")
     newRealmRepresentation["directGrantFlow"] = params['directGrantFlow'].decode("utf-8")
     newRealmRepresentation["resetCredentialsFlow"] = params['resetCredentialsFlow'].decode("utf-8")
     newRealmRepresentation["clientAuthenticationFlow"] = params['clientAuthenticationFlow'].decode("utf-8")
+    
     # Stocker le REALM dans un body prèt a être posté
     data=json.dumps(newRealmRepresentation)
     # Read Events configuration for the Realm
