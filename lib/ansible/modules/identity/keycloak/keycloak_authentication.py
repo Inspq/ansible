@@ -53,10 +53,14 @@ options:
         description:
             - Alias for the authentication flow
         required: true
+    providerId:
+        description:
+            - providerId for the new flow when not copied from an existing flow.
+        required: false
     copyForm:
         description:
             - flowAlias of the authentication flow to use for the copy.
-        required: true
+        required: false
     authenticationConfig:
         description:
             - Configuration structure for the authenticator. See example.
@@ -157,6 +161,21 @@ def copyAuthFlow(url, config, headers):
             return flow
     return None
 
+def createEmptyAuthFlow(url, config, headers):
+    
+    newFlow = dict(
+        alias = config["alias"],
+        providerId = config["providerId"],
+        topLevel = True
+    )
+    data = json.dumps(newFlow)
+    requests.post(url + "flows", headers=headers, data=data)
+    getResponse = requests.get(url + "flows/", headers = headers)
+    flowList = getResponse.json()
+    for flow in flowList:
+        if flow["alias"] == config["alias"]:
+            return flow
+    return None
 def addAuthenticationConfig(url, config, headers):
     # Prepare post to create the execution
     postJson = dict(
@@ -200,7 +219,8 @@ def main():
             password=dict(required=True),
             realm=dict(type='str', required=True),
             alias=dict(type='str', required=True),
-            copyFrom = dict(type='str', required=True),
+            providerId=dict(type='str'),
+            copyFrom = dict(type='str'),
             authenticationConfig=dict(type='dict', required=True),
             authenticationExecutions=dict(type='dict', required=True),
             state=dict(choices=["absent", "present"], default='present'),
@@ -232,7 +252,10 @@ def authentication(params):
     # Créer un représentation du authentication recu en paramètres
     newAuthenticationRepresentation = {}
     newAuthenticationRepresentation["alias"] = params["alias"].decode("utf-8")
-    newAuthenticationRepresentation["copyFrom"] = params["copyFrom"].decode("utf-8")
+    if "copyFrom" in params and params["copyFrom"] is not None:
+        newAuthenticationRepresentation["copyFrom"] = params["copyFrom"].decode("utf-8")
+    if "providerId" in params and params["providerId"] is not None:
+        newAuthenticationRepresentation["providerId"] = params["providerId"].decode("utf-8")
     if "authenticationConfig" in params and params["authenticationConfig"] is not None:
         newAuthenticationRepresentation["authenticationConfig"] = params["authenticationConfig"]
     if "authenticationExecutions" in params and params["authenticationExecutions"] is not None:
@@ -275,7 +298,10 @@ def authentication(params):
         if (state == 'present'): # Si le status est présent
             try:
                 # Create authentication flow from a copy
-                authenticationRepresentation = copyAuthFlow(authenticationSvcBaseUrl, newAuthenticationRepresentation, headers)
+                if "copyFrom" in newAuthenticationRepresentation and newAuthenticationRepresentation["copyFrom"] is not None:
+                    authenticationRepresentation = copyAuthFlow(authenticationSvcBaseUrl, newAuthenticationRepresentation, headers)
+                else:
+                    authenticationRepresentation = createEmptyAuthFlow(authenticationSvcBaseUrl, newAuthenticationRepresentation, headers)
                 # If the authentication still not exist on the server, raise an exception.
                 if authenticationRepresentation is None:
                     raise Exception("Authentication just created not found: " + str(newAuthenticationRepresentation))

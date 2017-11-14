@@ -90,6 +90,10 @@ options:
     description:
     - first Broker Login Flow Alias.
     required: false
+  postBrokerLoginFlowAlias:
+    description:
+    - post Broker Login Flow Alias.
+    required: false
   config:
     description:
     - Detailed configuration of the identity provider. 
@@ -294,6 +298,7 @@ def main():
             addReadTokenRoleOnCreate = dict(type='bool'),
             authenticateByDefault = dict(type='bool'),
             firstBrokerLoginFlowAlias = dict(type='str'),
+            postBrokerLoginFlowAlias = dict(type='str'),
             config = dict(type='dict'),
             mappers = dict(type='list'),
             state=dict(choices=["absent", "present"], default='present'),
@@ -357,6 +362,8 @@ def idp(params, module = None):
         newIdPRepresentation["authenticateByDefault"] = module.boolean(params['authenticateByDefault']) if module is not None else params['authenticateByDefault']
     if 'firstBrokerLoginFlowAlias' in params and params['firstBrokerLoginFlowAlias'] is not None:
         newIdPRepresentation["firstBrokerLoginFlowAlias"] = params['firstBrokerLoginFlowAlias'].decode("utf-8")
+    if 'postBrokerLoginFlowAlias' in params and params['postBrokerLoginFlowAlias'] is not None:
+        newIdPRepresentation["postBrokerLoginFlowAlias"] = params['postBrokerLoginFlowAlias'].decode("utf-8")
 
     newIdPConfig = None
     if 'config' in params and params['config'] is not None:

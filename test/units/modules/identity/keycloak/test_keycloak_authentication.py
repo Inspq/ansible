@@ -29,9 +29,35 @@ class KeycloakGroupTestCase(unittest.TestCase):
         }
 
         results = authentication(toCreate)
-        print (str(results))
+        self.assertEquals(results["ansible_facts"]["flow"]["alias"], toCreate["alias"], results["ansible_facts"]["flow"]["alias"] + "is not" + toCreate["alias"] )
         self.assertTrue(results['changed'])
         
+    def test_create_authentication_flow_without_copy(self):
+        toCreate = {
+            "url":  "http://localhost:18081",
+            "username": "admin",
+            "password": "admin",
+            "realm": "master",
+            "alias": "No Copy broker login",
+            "providerId": "basic-flow",
+            "authenticationConfig": {
+                "alias": "name",
+                "config": {
+                    "defaultProvider": "value"
+                }
+            },
+            "authenticationExecutions":{
+                "providerId": "identity-provider-redirector",
+                "requirement": "ALTERNATIVE"
+            }, 
+            "state":"present",
+            "force":False
+        }
+
+        results = authentication(toCreate)
+        self.assertEquals(results["ansible_facts"]["flow"]["alias"], toCreate["alias"], results["ansible_facts"]["flow"]["alias"] + "is not" + toCreate["alias"] )
+        self.assertTrue(results['changed'])
+
     def test_authentication_flow_not_changed(self):
         toDoNotChange = {
             "url":  "http://localhost:18081",
@@ -85,6 +111,7 @@ class KeycloakGroupTestCase(unittest.TestCase):
         toChange["authenticationConfig"]["config"]["defaultProvider"] = "modified value"
         results = authentication(toChange)
         self.assertTrue(results['changed'])
+        self.assertEquals(results["ansible_facts"]["flow"]["alias"], toChange["alias"], results["ansible_facts"]["flow"]["alias"] + "is not" + toChange["alias"] )
         self.assertEquals(results["ansible_facts"]["authenticationConfig"]["config"]["defaultProvider"], toChange["authenticationConfig"]["config"]["defaultProvider"], "config: " + str(results["ansible_facts"]["authenticationConfig"]["config"]) + " : " + str(toChange["authenticationConfig"]["config"]))
         
     def test_delete_authentication_flow(self):
