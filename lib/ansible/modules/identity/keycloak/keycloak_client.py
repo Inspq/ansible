@@ -385,7 +385,8 @@ def client(params):
                     for newClientRole in newClientRoles:
                         newRoleRepresentation = {}
                         newRoleRepresentation["name"] = newClientRole['name'].decode("utf-8")
-                        newRoleRepresentation["description"] = newClientRole['description'].decode("utf-8")
+                        if "description" in newClientRole and newClientRole['description'] is not None:
+                            newRoleRepresentation["description"] = newClientRole['description'].decode("utf-8")
                         newRoleRepresentation["composite"] = newClientRole['composite'] if "composite" in newClientRole else False
                         #data=json.dumps(newClientRole)
                         data=json.dumps(newRoleRepresentation)
