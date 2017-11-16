@@ -30,7 +30,9 @@ class KeycloakClientTestCase(unittest.TestCase):
         #toCreate["authorizationServicesEnabled"] = False
         toCreate["protocol"] = "openid-connect"
         toCreate["bearerOnly"] = False
-        toCreate["roles"] = [{"name":"test1"},{"name":"test2"}]
+        toCreate["roles"] = [{"name":"test1","description": "test1","composite": "False"},
+                             {"name":"test2","description": "test2","composite": True,"composites": [{"id": "test1","name": "test1","clientRole": True,"composite": True}]}
+                             ]
         toCreate["protocolMappers"] = [{"name": "test1Mapper",
                                         "protocol": "openid-connect",
                                         "protocolMapper": "oidc-usermodel-attribute-mapper",
@@ -104,7 +106,9 @@ class KeycloakClientTestCase(unittest.TestCase):
         toDoNotChange["protocol"] = "openid-connect"
         toDoNotChange["bearerOnly"] = False
         toDoNotChange["publicClient"] = False
-        toDoNotChange["roles"] = [{"name":"test1"},{"name":"test2"}]
+        toDoNotChange["roles"] = [{"name":"test1","description": "test1","composite": "False"},
+                                  {"name":"test2","description": "test2","composite": True,"composites": [{"id": "test1","name": "test1","clientRole": True,"composite": True}]}
+                                  ]
         toDoNotChange["protocolMappers"] = [{"name": "test1Mapper",
                                         "protocol": "openid-connect",
                                         "protocolMapper": "oidc-usermodel-attribute-mapper",
@@ -161,7 +165,9 @@ class KeycloakClientTestCase(unittest.TestCase):
         toChange["protocol"] = "openid-connect"
         toChange["bearerOnly"] = False
         toChange["publicClient"] = False
-        toChange["roles"] = [{"name":"test1"},{"name":"test2"}]
+        toChange["roles"] = [{"name":"test1","description": "test1","composite": "False"},
+                                  {"name":"test2","description": "test2","composite": True,"composites": [{"id": "test1","name": "test1","clientRole": True,"composite": True}]}
+                                  ]
         toChange["protocolMappers"] = [{"name": "test1Mapper",
                                         "protocol": "openid-connect",
                                         "protocolMapper": "oidc-usermodel-attribute-mapper",
