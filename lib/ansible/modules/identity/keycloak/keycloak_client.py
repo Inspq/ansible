@@ -341,6 +341,7 @@ def client(params):
     if 'protocolMappers' in params and params['protocolMappers'] is not None:
         newClientProtocolMappers = params['protocolMappers']
     composites = []
+    Repsonse = []
     
     clientSvcBaseUrl = url + "/auth/admin/realms/" + realm + "/clients/"
     
@@ -509,7 +510,10 @@ def client(params):
                             getResponse = requests.get(clientSvcBaseUrl + clientRepresentation['id'] + '/roles/' + newClientRole['name'], headers=headers)
                             clientRole = getResponse.json()
                             # Comparer le rôle existant avec celui envoyé
-                            if not isDictEquals(newClientRole, clientRole):
+                            excludes = []
+                            if "composites" in newClientRole:
+                                excludes.append("composites")
+                            if not isDictEquals(newClientRole, clientRole,excludes):
                                 # S'il est différent, le modifier
                                 changed = True
                                 newRoleRepresentation = {}
