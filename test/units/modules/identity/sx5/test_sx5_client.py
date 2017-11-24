@@ -2,9 +2,10 @@ import collections
 import os
 import unittest
 
+
 from ansible.modules.identity.sx5.sx5_client import *
 
-class Sx5ClientTestCase(unittest.TestCase):
+class KeycloakClientTestCase(unittest.TestCase):
  
     def test_create_client(self):
         toCreate = {}
@@ -12,29 +13,31 @@ class Sx5ClientTestCase(unittest.TestCase):
         toCreate["username"] = "admin"
         toCreate["password"] = "admin"
         toCreate["realm"] = "master"
+        toCreate["sx5url"] = "http://localhost:18084/clients"
+        toCreate["clientUrl"] = "http://localhost/test1"
         toCreate["state"] = "present"
         toCreate["clientId"] = "test"
         toCreate["force"] = False
-        toCreate["clientUrl"] = ["http://test.com"]
-        toCreate["sx5url"] = ["http://localhost:8088/clients"]
-
+        
         results = client(toCreate)
         #print str(results)
+    
         self.assertTrue(results['changed'])
-        
+
     def test_client_not_changed(self):
         toDoNotChange = {}
         toDoNotChange["idp_url"] = "http://localhost:18081"
         toDoNotChange["username"] = "admin"
         toDoNotChange["password"] = "admin"
         toDoNotChange["realm"] = "master"
+        toDoNotChange["sx5url"] = "http://localhost:18084/clients"
+        toDoNotChange["clientUrl"] = "http://localhost/test1"
         toDoNotChange["state"] = "present"
-        toDoNotChange["clientId"] = "test2"
+        toDoNotChange["clientId"] = "test"
         toDoNotChange["force"] = False
-        toDoNotChange["clientUrl"] = ["http://test2.com"]
-        toDoNotChange["sx5url"] = ["http://localhost:8088/clients"]
-        
+
         client(toDoNotChange)
+        #print str(results)
         results = client(toDoNotChange)
         #print str(results)
         self.assertFalse(results['changed'])
@@ -45,18 +48,19 @@ class Sx5ClientTestCase(unittest.TestCase):
         toChange["username"] = "admin"
         toChange["password"] = "admin"
         toChange["realm"] = "master"
+        toChange["sx5url"] = "http://localhost:18084/clients"
+        toChange["clientUrl"] = "http://localhost/test1"
         toChange["state"] = "present"
-        toChange["clientId"] = "test3"
+        toChange["clientId"] = "test"
         toChange["force"] = False
-        toCreate["clientUrl"] = ["http://test3.com"]
-        toCreate["sx5url"] = ["http://localhost:8088/clients"]
 
         client(toChange)
-        toChange["realm"] = "master2"
+        toChange["clientUrl"] = "http://localhost/test1"
+       
         results = client(toChange)
-        #print str(results)
+        print str(results)
         self.assertTrue(results['changed'])
-        self.assertEqual(results['ansible_facts']['client']['realmId'], 'master2', 'master2')
+        
         
     def test_delete_client(self):
         toDelete = {}
@@ -64,11 +68,11 @@ class Sx5ClientTestCase(unittest.TestCase):
         toDelete["username"] = "admin"
         toDelete["password"] = "admin"
         toDelete["realm"] = "master"
+        toDelete["clientUrl"] = "http://localhost:18084/clients"
+        toDelete["sx5url"] = "http://localhost/client1"
         toDelete["state"] = "present"
-        toDelete["clientId"] = "test4"
+        toDelete["clientId"] = "test"
         toDelete["force"] = False
-        toCreate["clientUrl"] = ["http://test4.com"]
-        toCreate["sx5url"] = ["http://localhost:8088/clients"]
 
         client(toDelete)
         toDelete["state"] = "absent"
