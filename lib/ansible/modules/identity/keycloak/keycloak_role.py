@@ -142,11 +142,22 @@ EXAMPLES = '''
 '''
 
 RETURN = '''
-result:
-    ansible_facts: JSON representation for the role
-    stderr: Error message if it is the case
-    rc: return code, 0 if success, 1 otherwise
-    changed: Return True if the operation changed the role on the keycloak server, false otherwise.
+ansible_facts:
+  description: JSON representation for the role.
+  returned: on success
+  type: dict
+stderr:
+  description: Error message if it is the case
+  returned: on error
+  type: str
+rc:
+  description: return code, 0 if success, 1 otherwise.
+  returned: always
+  type: bool
+changed:
+  description: Return True if the operation changed the role on the keycloak server, false otherwise.
+  returned: always
+  type: bool
 '''
 import requests
 import json
