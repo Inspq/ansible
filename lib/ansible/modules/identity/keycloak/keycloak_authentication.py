@@ -198,24 +198,29 @@ def addAuthenticationConfig(url, config, headers):
     # get the execution Id
     getResponse = requests.get(url + "flows/" + urllib.quote(config["alias"]) + "/executions", headers=headers)
     executions = getResponse.json()
+    execution = None
     for execution in executions:
         if "providerId" in execution and execution["providerId"] == config["authenticationExecutions"]["providerId"]:
             break
     
     # Add the autenticatorConfig to the execution
     data = json.dumps(config["authenticationConfig"])
-    requests.post(url + "executions/" + execution["id"] + "/config", headers=headers, data=data)
-    # Configure the execution itself
-    config["authenticationExecutions"]["id"] = execution["id"]
-    data = json.dumps(config["authenticationExecutions"])
-    requests.put(url + "flows/" + urllib.quote(config["alias"]) + "/executions", headers=headers, data=data)
+    if execution is not None:
+        requests.post(url + "executions/" + execution["id"] + "/config", headers=headers, data=data)
+        # Configure the execution itself
+        config["authenticationExecutions"]["id"] = execution["id"]
+        data = json.dumps(config["authenticationExecutions"])
+        requests.put(url + "flows/" + urllib.quote(config["alias"]) + "/executions", headers=headers, data=data)
     getResponse = requests.get(url + "flows/" + urllib.quote(config["alias"]) + "/executions", headers=headers)
     executions = getResponse.json()
+    execution = None
     for execution in executions:
         if "providerId" in execution and execution["providerId"] == config["authenticationExecutions"]["providerId"]:
             break
-    getResponse = requests.get(url + "config/" + execution["authenticationConfig"], headers=headers)
-    authenticationConfig = getResponse.json()
+    authenticationConfig = None
+    if execution is not None:
+        getResponse = requests.get(url + "config/" + execution["authenticationConfig"], headers=headers)
+        authenticationConfig = getResponse.json()
     toReturn = dict(
         authenticationExecutions = execution,
         authenticationConfig = authenticationConfig
