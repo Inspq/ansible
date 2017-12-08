@@ -132,11 +132,22 @@ EXAMPLES = '''
 '''
 
 RETURN = '''
-result:
-    ansible_facts: JSON representation for the authentication
-    stderr: Error message if it is the case
-    rc: return code, 0 if success, 1 otherwise
-    changed: Return True if the operation changed the authentication on the keycloak server, false otherwise.
+ansible_facts:
+  description: JSON representation for the authentication.
+  returned: on success
+  type: dict
+stderr:
+  description: Error message if it is the case
+  returned: on error
+  type: str
+rc:
+  description: return code, 0 if success, 1 otherwise.
+  returned: always
+  type: bool
+changed:
+  description: Return True if the operation changed the authentication on the keycloak server, false otherwise.
+  returned: always
+  type: bool
 '''
 import requests
 import json
@@ -187,24 +198,29 @@ def addAuthenticationConfig(url, config, headers):
     # get the execution Id
     getResponse = requests.get(url + "flows/" + urllib.quote(config["alias"]) + "/executions", headers=headers)
     executions = getResponse.json()
+    execution = None
     for execution in executions:
         if "providerId" in execution and execution["providerId"] == config["authenticationExecutions"]["providerId"]:
             break
     
     # Add the autenticatorConfig to the execution
     data = json.dumps(config["authenticationConfig"])
-    requests.post(url + "executions/" + execution["id"] + "/config", headers=headers, data=data)
-    # Configure the execution itself
-    config["authenticationExecutions"]["id"] = execution["id"]
-    data = json.dumps(config["authenticationExecutions"])
-    requests.put(url + "flows/" + urllib.quote(config["alias"]) + "/executions", headers=headers, data=data)
+    if execution is not None:
+        requests.post(url + "executions/" + execution["id"] + "/config", headers=headers, data=data)
+        # Configure the execution itself
+        config["authenticationExecutions"]["id"] = execution["id"]
+        data = json.dumps(config["authenticationExecutions"])
+        requests.put(url + "flows/" + urllib.quote(config["alias"]) + "/executions", headers=headers, data=data)
     getResponse = requests.get(url + "flows/" + urllib.quote(config["alias"]) + "/executions", headers=headers)
     executions = getResponse.json()
+    execution = None
     for execution in executions:
         if "providerId" in execution and execution["providerId"] == config["authenticationExecutions"]["providerId"]:
             break
-    getResponse = requests.get(url + "config/" + execution["authenticationConfig"], headers=headers)
-    authenticationConfig = getResponse.json()
+    authenticationConfig = None
+    if execution is not None:
+        getResponse = requests.get(url + "config/" + execution["authenticationConfig"], headers=headers)
+        authenticationConfig = getResponse.json()
     toReturn = dict(
         authenticationExecutions = execution,
         authenticationConfig = authenticationConfig
