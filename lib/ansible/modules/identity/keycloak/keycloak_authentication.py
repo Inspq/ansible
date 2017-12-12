@@ -383,12 +383,14 @@ def authentication(params):
                     # The module does not modify an existing authentication flow. Use force to delete it and recreate it
                     getResponse = requests.get(authenticationSvcBaseUrl + "flows/" + urllib.quote(newAuthenticationRepresentation["alias"]) + "/executions", headers=headers)
                     executions = getResponse.json()
+                    execution = None
                     for execution in executions:
                         if "providerId" in execution and execution["providerId"] == newAuthenticationRepresentation["authenticationExecutions"]["providerId"]:
                             break
-                    getResponse = requests.get(authenticationSvcBaseUrl + "config/" + execution["authenticationConfig"], headers=headers)
-                    authenticationConfig = getResponse.json()
-
+                    authenticationConfig = None
+                    if execution is not None:
+                        getResponse = requests.get(authenticationSvcBaseUrl + "config/" + execution["authenticationConfig"], headers=headers)
+                        authenticationConfig = getResponse.json()
                     fact = dict(
                         flow = authenticationRepresentation,
                         authenticationExecutions = execution,
