@@ -368,11 +368,22 @@ EXAMPLES = '''
 '''
 
 RETURN = '''
-result:
-    ansible_facts: JSON Representation JSON of the REALM
-    stderr: Error message if there is any.
-    rc: Return code, 1 if fail, 0 if success.
-    changed: True if the action changed the configuration of the Keycloak server, False otherwise.
+ansible_facts:
+  description: JSON representation for the REALM.
+  returned: on success
+  type: dict
+stderr:
+  description: Error message if it is the case
+  returned: on error
+  type: str
+rc:
+  description: return code, 0 if success, 1 otherwise.
+  returned: always
+  type: bool
+changed:
+  description: Return True if the operation changed the REALM on the keycloak server, false otherwise.
+  returned: always
+  type: bool
 '''
 
 import json

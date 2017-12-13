@@ -173,11 +173,22 @@ EXAMPLES = '''
 '''
 
 RETURN = '''
-result:
-    ansible_facts: JSON Representation for the identity provider
-    stderr: Error message if ther is any.
-    rc: Return code, 1 if fail, 0 if success.
-    changed: True if the action changed the configuration of the Keycloak server, False otherwise.
+ansible_facts:
+  description: JSON representation for the identity provider.
+  returned: on success
+  type: dict
+stderr:
+  description: Error message if it is the case
+  returned: on error
+  type: str
+rc:
+  description: return code, 0 if success, 1 otherwise.
+  returned: always
+  type: bool
+changed:
+  description: Return True if the operation changed the identity provider on the keycloak server, false otherwise.
+  returned: always
+  type: bool
 '''
 import requests
 import json
