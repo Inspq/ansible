@@ -386,6 +386,8 @@ def component(params):
                 if newComponent["providerType"] == "org.keycloak.storage.UserStorageProvider" and syncUserStorage is not "no":
                     # Faire la synchronisation des utilisateurs du LDAP
                     postResponse = requests.post(userStorageUrl + component["id"] + "/sync", headers=headers, params={"action": syncUserStorage})
+                    # User sync can be longer than the access_token validity. Re-authenticate
+                    headers = loginAndSetHeaders(url, username, password)
                 # Si des sous composants ont été défini
                 if newSubComponents is not None:
                     # Créer les sous-composants
@@ -455,6 +457,8 @@ def component(params):
                 if newComponent["providerType"] == "org.keycloak.storage.UserStorageProvider" and syncUserStorage is not "no":
                     # Faire la synchronisation des utilisateurs du LDAP
                     postResponse = requests.post(userStorageUrl + component["id"] + "/sync", headers=headers, params={"action": syncUserStorage})
+                    # User sync can be longer than the access_token validity. Re-authenticate
+                    headers = loginAndSetHeaders(url, username, password)
                 # Obtenir le composant
                 getResponse = getResponse = requests.get(componentSvcBaseUrl + component["id"], headers=headers)
                 component = getResponse.json()
