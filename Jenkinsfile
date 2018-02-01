@@ -25,7 +25,7 @@ pipeline {
             parallel {
                 stage ('Tests unitaires du module ansible de Keycloak') {
                     steps {
-                        sh "rm ansible.cfg"
+//                        sh "rm ansible.cfg"
                         sh "rmdir -rf ansible"
                         sh "ls -al"
 //                        sh "cat ansible.cfg"
