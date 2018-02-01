@@ -1,26 +1,47 @@
 #!/usr/bin/env groovy
 pipeline {
     agent any
+    triggers { pollSCM('H/15 * * * *') }
     options {
         buildDiscarder(logRotator(numToKeepStr: '5'))
         disableConcurrentBuilds()
     }
+/*
     tools {
         jdk 'JDK1.8.0_65'
         maven 'M3'
     }
+*/
     stages {
-        stage('Checkout de Keycloak') {
+        stage('Environnement pour les tests') {
             steps {
                 script {
                     BRANCH_NAME = 'trunk'
-                    tagDocker = 'SNAPSHOT'
-                    fa_svn_url = 'http://svn.inspq.qc.ca/svn/inspq/dev/FA/branches/Keycloak'
+                    keycloak_svn_url = "http://svn.inspq.qc.ca/svn/inspq/dev/Inspq.SX5/trunk/keycloak"
                 }
-                echo 'Obtention de... ' + BRANCH_NAME
-//                sh "svn checkout ${fa_svn_url} ${WORKSPACE}/FA"
+            }
+        }
+        stage ('Checkout de keycloak') {
+            echo 'Checkout de keycloak ' + BRANCH_NAME
+            steps {
+                sh "if [ ! -d keycloak ]; then svn checkout ${keycloak_svn_url} keycloak; fi;"
                 sh "ls -al"
+            }
+        }
+        stage ('Tests unitaires du module ansible de Keycloak') {
+            steps {
+                sh "source hacking/env-setup; ansible-test sanity --test validate-modules"
+                sh "touch ansible.cfg"
+                sh "printf '[defaults]\nroles_path=${WORKSPACE}/rolesansible/roles\nlibrary=${WORKSPACE}/lib/ansible/modules:library\nmodule_utils=${WORKSPACE}/lib/ansible/module_utils:module_utils\n' >> ansible.cfg"
+                sh "source hacking/env-setup; ansible-playbook keycloak/createUnitEnv.yml -i keycloak/UNIT/UNIT.hosts"
+                sh "source hacking/env-setup; nosetests --with-xunit test/units/module_utils/test_keycloak_utils.py test/units/modules/identity/keycloak/test_keycloak*.py"
+                sh "source hacking/env-setup; ansible-playbook keycloak/cleanupUnitEnv.yml -i keycloak/UNIT/UNIT.hosts"
+            }
+            post {
+                success {
+                    junit '**/nosetests.xml'
                 }
+            }
         }
     }
     post {
