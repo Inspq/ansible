@@ -15,14 +15,16 @@ pipeline {
                 script {
                     BRANCH_NAME = 'trunk'
                     tagDocker = 'SNAPSHOT'
+                    fa_svn_url = 'http://svn.inspq.qc.ca/svn/inspq/dev/FA/branches/Keycloak'
                 }
                 echo 'Obtention de... ' + BRANCH_NAME
-                checkout scm
+//                sh "svn checkout ${fa_svn_url} ${WORKSPACE}/FA"
             }
         }
         stage ('Tests unitaires') {
             parallel {
                 stage ('Tests unitaires du module ansible de Keycloak') {
+/*
                     steps {
                         sh "if [ ! -d ansible ]; then git clone https://github.com/Inspq/ansible.git && cd ansible; else cd ansible && git pull; fi; git checkout inspq"
                         sh "source ansible/hacking/env-setup; cd ansible && ansible-test sanity --test validate-modules"
@@ -37,6 +39,7 @@ pipeline {
                             junit '**/nosetests.xml'
                         }
                     }
+*/
                 }
             }
         }
