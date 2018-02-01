@@ -19,19 +19,17 @@ pipeline {
                 }
                 echo 'Obtention de... ' + BRANCH_NAME
 //                sh "svn checkout ${fa_svn_url} ${WORKSPACE}/FA"
-            }
-        }
-        stage ('Tests unitaires') {
-            parallel {
-                stage ('Tests unitaires du module ansible de Keycloak') {
-                    steps {
-//                        sh "rm ansible.cfg"
-                        sh "rmdir -rf ansible"
-                        sh "ls -al"
-//                        sh "cat ansible.cfg"
-//                        sh "cd ansible && ls -al"
-                    }
-                }
+                sh "ls -al"
+
+
+
+
+
+
+
+
+
+
             }
         }
     }
