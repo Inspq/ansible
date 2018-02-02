@@ -6,12 +6,7 @@ pipeline {
         buildDiscarder(logRotator(numToKeepStr: '5'))
         disableConcurrentBuilds()
     }
-/*
-    tools {
-        jdk 'JDK1.8.0_65'
-        maven 'M3'
-    }
-*/
+
     stages {
         stage('Environnement pour les tests') {
             steps {
