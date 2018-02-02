@@ -6,6 +6,12 @@ pipeline {
         buildDiscarder(logRotator(numToKeepStr: '5'))
         disableConcurrentBuilds()
     }
+/*
+    tools {
+        jdk 'JDK1.8.0_65'
+        maven 'M3'
+    }
+*/
     stages {
         stage('Environnement pour les tests') {
             steps {
@@ -34,11 +40,30 @@ pipeline {
                         workspaceUpdater: [$class: 'UpdateUpdater']])
             }
         }
+        stage ('Configurer Ansible') {
+            steps {
+                checkout([$class: 'SubversionSCM',
+                        additionalCredentials: [],
+                        excludedCommitMessages: '',
+                        excludedRegions: '',
+                        excludedRevprop: '',
+                        excludedUsers: '',
+                        filterChangelog: false,
+                        ignoreDirPropChanges: false,
+                        includedRegions: '',
+                        locations: [[credentialsId: '30020735-8a8a-4209-bcb1-35b991e3b7ba',
+                                    depthOption: 'infinity',
+                                    ignoreExternalsOption: true,
+                                    local: 'roles',
+                                    remote: "http://svn.inspq.qc.ca/svn/inspq/infrastructure/ansible/trunk/roles"]],
+                        workspaceUpdater: [$class: 'UpdateUpdater']])
+                sh "touch ansible.cfg"
+                sh "printf '[defaults]\nroles_path=roles\nhost_key_checking = False' > ansible.cfg"
+            }
+        }
         stage ('Tests unitaires du module ansible de Keycloak') {
             steps {
                 sh "source hacking/env-setup; ansible-test sanity --test validate-modules"
-                sh "touch ansible.cfg"
-                sh "printf '[defaults]\nroles_path=${WORKSPACE}/rolesansible/roles\nlibrary=${WORKSPACE}/lib/ansible/modules:library\nmodule_utils=${WORKSPACE}/lib/ansible/module_utils:module_utils\n' >> ansible.cfg"
                 sh "source hacking/env-setup; ansible-playbook keycloak/createUnitEnv.yml -i keycloak/UNIT/UNIT.hosts"
                 sh "source hacking/env-setup; nosetests --with-xunit test/units/module_utils/test_keycloak_utils.py test/units/modules/identity/keycloak/test_keycloak*.py"
                 sh "source hacking/env-setup; ansible-playbook keycloak/cleanupUnitEnv.yml -i keycloak/UNIT/UNIT.hosts"
