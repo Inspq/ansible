@@ -134,6 +134,7 @@ EXAMPLES = '''
           clientSecret: ClientSecretMyIdpGaveMe
           disableUserInfo: False
           defaultScope: "openid email profile"
+          guiOrder: 1
         mappers:
           - name: ClaimMapper
             identityProviderMapper: oidc-user-attribute-idp-mapper
@@ -163,6 +164,7 @@ EXAMPLES = '''
           clientSecret: ClientSecretMyIdpGaveMe
           disableUserInfo: False
           defaultScope: "openid email profile"
+          guiOrder: 2
         state: present
         force: yes
 
@@ -380,31 +382,10 @@ def idp(params, module = None):
     if 'config' in params and params['config'] is not None:
         #newIdPConfig = params['config']
         newIdPConfig = {}  
-        if "hideOnLoginPage" in params["config"]:
-            newIdPConfig["hideOnLoginPage"] = params["config"]["hideOnLoginPage"]
-        if "userInfoUrl" in params["config"]:
-            newIdPConfig["userInfoUrl"] = params["config"]["userInfoUrl"] 
-        if "validateSignature" in params["config"]:
-            newIdPConfig["validateSignature"] = params["config"]["validateSignature"]
-        if "clientId" in params["config"]:
-            newIdPConfig["clientId"] = params["config"]["clientId"]
-        if "tokenUrl" in params["config"]:
-            newIdPConfig["tokenUrl"] = params["config"]["tokenUrl"]
-        if "jwksUrl" in params["config"]:
-            newIdPConfig["jwksUrl"] = params["config"]["jwksUrl"]
-        if "issuer" in params["config"]:
-            newIdPConfig["issuer"] = params["config"]["issuer"]
-        if "useJwksUrl" in params["config"]:
-            newIdPConfig["useJwksUrl"] = params["config"]["useJwksUrl"]
-        if "authorizationUrl" in params["config"]:
-            newIdPConfig["authorizationUrl"] = params["config"]["authorizationUrl"]
-        if "disableUserInfo" in params["config"]:
-             newIdPConfig["disableUserInfo"] = params["config"]["disableUserInfo"]
-        if "clientSecret" in params["config"]:
-            newIdPConfig["clientSecret"] = params["config"]["clientSecret"]
-        if "defaultScope" in params["config"]:
-            newIdPConfig["defaultScope"] = params["config"]["defaultScope"]
-    
+        for param, value in params["config"].iteritems():
+            if param != 'openIdConfigurationUrl':
+                newIdPConfig[param] = value
+  
     if 'providerId' in newIdPRepresentation and newIdPRepresentation["providerId"] == 'google' and 'userIp' in params["config"]:
         newIdPConfig["userIp"] = params["config"]["userIp"]
     newIdPMappers = params['mappers'] if 'mappers' in params else None
