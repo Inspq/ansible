@@ -12,7 +12,6 @@ pipeline {
             steps {
                 script {
                     BRANCH_NAME = 'trunk'
-                    keycloak_svn_url = "http://svn.inspq.qc.ca/svn/inspq/dev/Inspq.SX5/trunk/keycloak"
                 }
             }
         }
