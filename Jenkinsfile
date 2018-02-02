@@ -22,7 +22,6 @@ pipeline {
             }
         }
         stage ('Checkout de keycloak') {
-            echo 'Checkout de keycloak ' + BRANCH_NAME
             steps {
                 sh "if [ ! -d keycloak ]; then svn checkout ${keycloak_svn_url} keycloak; fi;"
                 sh "ls -al"
