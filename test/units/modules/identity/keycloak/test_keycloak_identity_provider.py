@@ -28,7 +28,8 @@ class KeycloakIdentityProviderTestCase(unittest.TestCase):
                 clientId = "test",
                 clientSecret = "test",
                 defaultScope = "openid email profile",
-                disableUserInfo = "false"
+                disableUserInfo = "false",
+                guiOrder = "1"
                 ),
             mappers = [ 
                     {
@@ -69,6 +70,7 @@ class KeycloakIdentityProviderTestCase(unittest.TestCase):
         self.assertTrue(results['ansible_facts']['idp']['enabled'])
         self.assertEquals(results['ansible_facts']['idp']['alias'],toCreate["alias"], 'Alias = ' + results['ansible_facts']['idp']['alias'])
         self.assertEquals(results['ansible_facts']['idp']['config']['clientId'],toCreate["config"]["clientId"],"ClientId: " + results['ansible_facts']['idp']['config']['clientId'])
+        self.assertEquals(results['ansible_facts']['idp']['config']['guiOrder'], toCreate["config"]["guiOrder"],"GuiOrder: " + results['ansible_facts']['idp']['config']['guiOrder'] + ": " + toCreate["config"]["guiOrder"])
         for mapperToCreate in toCreate["mappers"]:
             mapperFound = False
             for mapper in results['ansible_facts']['mappers']:
@@ -99,7 +101,8 @@ class KeycloakIdentityProviderTestCase(unittest.TestCase):
                 "openIdConfigurationUrl": "http://localhost:18081/auth/realms/master/.well-known/openid-configuration",
                 "clientId": "test1",
                 "defaultScope": "openid email profile",
-                "disableUserInfo": "false"
+                "disableUserInfo": "false",
+                "guiOrder": "1"
                 },
             "mappers": [ 
                     {
@@ -170,7 +173,8 @@ class KeycloakIdentityProviderTestCase(unittest.TestCase):
                 clientId = "test2",
                 clientSecret = "test2",
                 defaultScope = "openid email profile",
-                disableUserInfo = "false"
+                disableUserInfo = "false",
+                guiOrder = "1"
                 ),
             mappers = [ 
                     {
@@ -220,7 +224,8 @@ class KeycloakIdentityProviderTestCase(unittest.TestCase):
                 "clientId": "test2",
                 "clientSecret": "password",
                 "defaultScope": "openid email profile",
-                "disableUserInfo": "false"
+                "disableUserInfo": "false",
+                "guiOrder": "2"
                 },
                 "state": "present",
                 "force": False
@@ -232,6 +237,7 @@ class KeycloakIdentityProviderTestCase(unittest.TestCase):
         self.assertEquals(results['ansible_facts']['idp']['alias'],ToChange["alias"], 'Alias = ' + results['ansible_facts']['idp']['alias'])
         self.assertFalse(results['ansible_facts']['idp']['storeToken'], 'storeToken should be false : ' + str(results['ansible_facts']['idp']['storeToken']))
         self.assertEquals(results['ansible_facts']['idp']['firstBrokerLoginFlowAlias'], newToChange["firstBrokerLoginFlowAlias"], "firstBrokerLoginFlowAlias: " + results['ansible_facts']['idp']['firstBrokerLoginFlowAlias'])
+        self.assertEquals(results['ansible_facts']['idp']['config']['guiOrder'],newToChange["config"]["guiOrder"],"GuiOrder: " + results['ansible_facts']['idp']['config']['guiOrder'])
         self.assertTrue(results['changed'])
 
     def test_modify_idp_modify_mappers(self):
