@@ -6,12 +6,6 @@ pipeline {
         buildDiscarder(logRotator(numToKeepStr: '5'))
         disableConcurrentBuilds()
     }
-/*
-    tools {
-        jdk 'JDK1.8.0_65'
-        maven 'M3'
-    }
-*/
     stages {
         stage('Environnement pour les tests') {
             steps {
@@ -58,7 +52,8 @@ pipeline {
     }
     post {
         always {
-            script {equipe = 'eric.parent@inspq.qc.ca'
+            script {
+                equipe = 'mathieu.couture@inspq.qc.ca,etienne.sadio@inspq.qc.ca,soleman.merchan@inspq.qc.ca,philippe.gauthier@inspq.qc.ca,pierre-olivier.chiasson@inspq.qc.ca,eric.parent@inspq.qc.ca'
             }
         }
         success {
