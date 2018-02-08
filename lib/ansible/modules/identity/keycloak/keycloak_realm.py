@@ -186,6 +186,11 @@ options:
     - Brute Force Protected.
     default: False
     required: false
+  permanentLockout:
+    description:
+    - Permanent Lockout.
+    default: False
+    required: false
   maxFailureWaitSeconds:
     description:
     - Max Failure Wait Seconds.
@@ -427,6 +432,7 @@ def main():
             resetPasswordAllowed = dict(type='bool', default=False),
             editUsernameAllowed = dict(type='bool', default=False),
             bruteForceProtected = dict(type='bool', default=False),
+            permanentLockout = dict(type='bool', default=False),
             maxFailureWaitSeconds = dict(type='int', default=900),
             minimumQuickLoginWaitSeconds = dict(type='int', default=60),
             waitIncrementSeconds = dict(type='int', default=60),
@@ -478,16 +484,8 @@ def realm(params):
             ), 
         actionTokenGeneratedByAdminLifespan = dict(type='int', default=43200), 
         actionTokenGeneratedByUserLifespan = dict(type='int', default=300), 
-        bruteForceProtected = dict(type='bool', default=False), 
         displayName = dict(type='unicode', default=params['name'].decode("utf-8")), 
         displayNameHtml = dict(type='unicode', default=params['namehtml'].decode("utf-8")), 
-        failureFactor = dict(type='int', default=30), 
-        maxDeltaTimeSeconds = dict(type='int', default=43200), 
-        maxFailureWaitSeconds = dict(type='int', default=900), 
-        minimumQuickLoginWaitSeconds = dict(type='int', default=60), 
-        permanentLockout = dict(type='bool', default=False), 
-        quickLoginCheckMilliSeconds = dict(type='int', default=1000), 
-        waitIncrementSeconds = dict(type='int', default=60)
         )
     defaultBrowserSecurityHeaders = dict(
         contentSecurityPolicy = dict(type='unicode', default="frame-src 'self'"), 
@@ -539,6 +537,7 @@ def realm(params):
     newRealmRepresentation["resetPasswordAllowed"] = params['resetPasswordAllowed']
     newRealmRepresentation["editUsernameAllowed"] = params['editUsernameAllowed']
     newRealmRepresentation["bruteForceProtected"] = params['bruteForceProtected']
+    newRealmRepresentation["permanentLockout"] = params['permanentLockout']
     newRealmRepresentation["maxFailureWaitSeconds"] = params['maxFailureWaitSeconds']
     newRealmRepresentation["minimumQuickLoginWaitSeconds"] = params['minimumQuickLoginWaitSeconds']
     newRealmRepresentation["waitIncrementSeconds"] = params['waitIncrementSeconds']
