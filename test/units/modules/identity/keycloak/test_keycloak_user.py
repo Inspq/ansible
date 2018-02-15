@@ -106,7 +106,7 @@ class KeycloakUserTestCase(unittest.TestCase):
         self.assertEquals(results["ansible_facts"]["user"]["lastName"], toChange["lastName"], "lastName: " + results["ansible_facts"]["user"]["lastName"] + " : " + toChange["lastName"])
         
         
-    def test_delete_role(self):
+    def test_delete_user(self):
         toDelete = {
             "url": "http://localhost:18081",
             "masterUsername": "admin",
