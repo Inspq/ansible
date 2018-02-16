@@ -24,7 +24,7 @@ ANSIBLE_METADATA = {'metadata_version': '1.0',
 
 DOCUMENTATION = '''
 ---
-author: "Etienne Sadio (etienne.sadio@inspq.qc.ca")
+author: "Etienne Sadio (etienne.sadio@inspq.qc.ca)"
 module: keycloak_user
 short_description: create and Configure a user in Keycloak
 description:
@@ -288,14 +288,9 @@ def user(params):
     username = params['masterUsername']
     password = params['masterpassword']
     realm = params['realm']
-    state = params['state']
-    force = params['force']
+    state = params['state'] if "state" in params else "present"
+    force = params['force'] if "force" in params else False
     newUserRepresentation = None
-    #newUserCredentialRepresentation = None
-    #newUserClientRoles = None
-    #newUserGroups = None
-    #newCredential = None
-    #newRoleRepresentation = None
     
     # Create a representation of the user received in parameters
     newUserRepresentation = {}
@@ -389,7 +384,7 @@ def user(params):
                 
                 changed = True
                 fact = dict(
-                    user = getResponse.json()
+                    user = userRepresentation
                     )
                 
                 result = dict(
@@ -426,7 +421,7 @@ def user(params):
         #userRepresentation = getResponse.json()[0]
         try:
             if (state == 'present'): # if the status is present
-                if force: # If the force option is set to true
+                if force == True: # If the force option is set to true
                     # Delete the existing user
                     deleteResponse = requests.delete(userSvcBaseUrl + userRepresentation["id"], headers=headers)
                     changed = True
@@ -435,19 +430,7 @@ def user(params):
                     # Create the new user
                     postResponse = requests.post(userSvcBaseUrl, headers=headers, data=data)
                 else: # If the force option is false
-                    excludes = []
-                    if "credentials" in newUserRepresentation and len(newUserRepresentation['credentials']) == 0:
-                        excludes.append("credentials")
-                    if "attributes" in newUserRepresentation and len(newUserRepresentation['attributes']) == 0:
-                        excludes.append("attributes")
-                    if "realmRoles" in newUserRepresentation and len(newUserRepresentation['realmRoles']) == 0:
-                        excludes.append("realmRoles")
-                    if "clientRoles" in newUserRepresentation and len(newUserRepresentation['clientRoles']) == 0:
-                        excludes.append("clientRoles")
-                    if "groups" in newUserRepresentation and len(newUserRepresentation['groups']) == 0:
-                        excludes.append("groups")
-                    if "access" in newUserRepresentation and len(newUserRepresentation['access']) == 0:
-                        excludes.append("access")
+                    excludes = ["access","notBefore","createdTimestamp","totp","credentials","disableableCredentialTypes","realmRoles","clientRoles","groups","clientConsents","federatedIdentities","requiredActions"]
                     # Compare users
                     if (isDictEquals(newUserRepresentation, userRepresentation, excludes)): # If the new user does not introduce a change to the existing user
                         # Do not change anything
