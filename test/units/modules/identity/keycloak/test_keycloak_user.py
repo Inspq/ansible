@@ -16,12 +16,12 @@ class KeycloakUserTestCase(unittest.TestCase):
             "firstName": "user1",
             "lastName": "user1",
             "email": "user1@user.ca",
-            "enabled": 'true',
-            "emailVerified": 'false',
+            "enabled": True,
+            "emailVerified": False,
             "credentials": [{"temporary": 'false',"type": "password","value": "password"}],
             "attributes": {"attr1": ["value1"],"attr2": ["value2"]},
             "state":"present",
-            "force":False
+            "force":"no"
         }
 
         results = user(toCreate)
@@ -34,27 +34,26 @@ class KeycloakUserTestCase(unittest.TestCase):
             "masterUsername": "admin",
             "masterpassword": "admin",
             "realm": "master",
-            "username": "user1",
-            "firstName": "user1",
-            "lastName": "user1",
-            "email": "user1@user.ca",
-            "enabled": 'true',
-            "emailVerified": 'false',
+            "username": "user2",
+            "firstName": "user2",
+            "lastName": "user2",
+            "email": "user2@user.ca",
+            "enabled": True,
+            "emailVerified": False,
             "credentials": [{"temporary": 'false',"type": "password","value": "password"}],
             "attributes": {"attr1": ["value1"],"attr2": ["value2"]},
-            "state":"present",
-            "force":False
+            "state": "present",
+            "force": False
         }
 
         results = user(toDoNotChange)
-        #print str(results)
+        print str(results)
         results = user(toDoNotChange)
-        #print str(results)
+        print str(results)
         self.assertFalse(results['changed'])
         self.assertEquals(results["ansible_facts"]["user"]["username"], toDoNotChange["username"], "username: " + results["ansible_facts"]["user"]["username"] + " : " + toDoNotChange["username"])
         self.assertEquals(results["ansible_facts"]["user"]["firstName"], toDoNotChange["firstName"], "firstName: " + results["ansible_facts"]["user"]["firstName"] + " : " + toDoNotChange["firstName"])
         self.assertEquals(results["ansible_facts"]["user"]["lastName"], toDoNotChange["lastName"], "lastName: " + results["ansible_facts"]["user"]["lastName"] + " : " + toDoNotChange["lastName"])
-        self.assertEquals(results["ansible_facts"]["user"]["enabled"], toDoNotChange["enabled"], "enabled: " + results["ansible_facts"]["user"]["enabled"] + " : " + toDoNotChange["enabled"])
 
     def test_user_modify_force(self):
         toDoNotChange = {
@@ -62,16 +61,16 @@ class KeycloakUserTestCase(unittest.TestCase):
             "masterUsername": "admin",
             "masterpassword": "admin",
             "realm": "master",
-            "username": "user1",
-            "firstName": "user1",
-            "lastName": "user1",
-            "email": "user1@user.ca",
-            "enabled": 'true',
-            "emailVerified": 'false',
+            "username": "user3",
+            "firstName": "user3",
+            "lastName": "user3",
+            "email": "user3@user.ca",
+            "enabled": True,
+            "emailVerified": False,
             "credentials": [{"temporary": 'false',"type": "password","value": "password"}],
             "attributes": {"attr1": ["value1"],"attr2": ["value2"]},
             "state":"present",
-            "force":False
+            "force": False
         }
 
         user(toDoNotChange)
@@ -87,19 +86,19 @@ class KeycloakUserTestCase(unittest.TestCase):
             "masterUsername": "admin",
             "masterpassword": "admin",
             "realm": "master",
-            "username": "user1",
-            "firstName": "user1",
-            "lastName": "user1",
-            "email": "user1@user.ca",
-            "enabled": 'true',
-            "emailVerified": 'false',
+            "username": "user4",
+            "firstName": "user4",
+            "lastName": "user4",
+            "email": "user4@user.ca",
+            "enabled": True,
+            "emailVerified": False,
             "credentials": [{"temporary": 'false',"type": "password","value": "password"}],
             "attributes": {"attr1": ["value1"],"attr2": ["value2"]},
             "state":"present",
-            "force":False
+            "force": False
         }
         user(toChange)
-        toChange["lastName"] = "user2"
+        toChange["lastName"] = "usernew4"
         results = user(toChange)
         print str(results)
         self.assertTrue(results['changed'])
@@ -112,16 +111,16 @@ class KeycloakUserTestCase(unittest.TestCase):
             "masterUsername": "admin",
             "masterpassword": "admin",
             "realm": "master",
-            "username": "user1",
-            "firstName": "user1",
-            "lastName": "user1",
-            "email": "user1@user.ca",
-            "enabled": 'true',
-            "emailVerified": 'false',
+            "username": "user5",
+            "firstName": "user5",
+            "lastName": "user5",
+            "email": "user4@user.ca",
+            "enabled": True,
+            "emailVerified": False,
             "credentials": [{"temporary": 'false',"type": "password","value": "password"}],
             "attributes": {"attr1": ["value1"],"attr2": ["value2"]},
             "state":"present",
-            "force":False
+            "force": False
         }
 
         user(toDelete)
