@@ -12,7 +12,6 @@ pipeline {
             steps {
                 script {
                     BRANCH_NAME = 'trunk'
-                    keycloak_svn_url = "http://svn.inspq.qc.ca/svn/inspq/dev/Inspq.SX5/trunk/keycloak"
                 }
             }
         }
@@ -58,7 +57,7 @@ pipeline {
         }
         stage ('Tests unitaires du module ansible de Keycloak') {
             steps {
-                sh "source hacking/env-setup; ansible-test sanity --test validate-modules"
+                // sh "source hacking/env-setup; ansible-test sanity --test validate-modules"
                 sh "source hacking/env-setup; ansible-playbook keycloak/createUnitEnv.yml -i keycloak/UNIT/UNIT.hosts"
                 sh "source hacking/env-setup; nosetests --with-xunit test/units/module_utils/test_keycloak_utils.py test/units/modules/identity/keycloak/test_keycloak*.py"
                 sh "source hacking/env-setup; ansible-playbook keycloak/cleanupUnitEnv.yml -i keycloak/UNIT/UNIT.hosts"
