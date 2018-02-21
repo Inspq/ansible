@@ -77,8 +77,8 @@ class KeycloakUserTestCase(unittest.TestCase):
         toDoNotChange["force"] = True
         results = user(toDoNotChange)
         print str(results)
-        #self.assertTrue(results['changed'])
-        self.assertEquals(results["ansible_facts"]["user"]["lastName"], toDoNotChange["lastName"], "lastName: " + results["ansible_facts"]["user"]["lastName"] + " : " + toDoNotChange["lastName"])
+        self.assertTrue(results['changed'])
+        #self.assertEquals(results["ansible_facts"]["user"]["lastName"], toDoNotChange["lastName"], "lastName: " + results["ansible_facts"]["user"]["lastName"] + " : " + toDoNotChange["lastName"])
 
     def test_modify_user(self):
         toChange = {
@@ -114,7 +114,7 @@ class KeycloakUserTestCase(unittest.TestCase):
             "username": "user5",
             "firstName": "user5",
             "lastName": "user5",
-            "email": "user4@user.ca",
+            "email": "user5@user.ca",
             "enabled": True,
             "emailVerified": False,
             "credentials": [{"temporary": 'false',"type": "password","value": "password"}],
