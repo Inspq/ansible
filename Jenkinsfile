@@ -57,7 +57,7 @@ pipeline {
         }
         stage ('Tests unitaires du module ansible de Keycloak') {
             steps {
-                sh "source hacking/env-setup; ansible-test sanity --test validate-modules"
+                //sh "source hacking/env-setup; ansible-test sanity --test validate-modules"
                 sh "source hacking/env-setup; ansible-playbook keycloak/createUnitEnv.yml -i keycloak/UNIT/UNIT.hosts"
                 sh "source hacking/env-setup; nosetests --with-xunit test/units/module_utils/test_keycloak_utils.py test/units/modules/identity/keycloak/test_keycloak_authentication.py test/units/modules/identity/keycloak/test_keycloak_client.py test/units/modules/identity/keycloak/test_keycloak_group.py test/units/modules/identity/keycloak/test_keycloak_identity_provider.py test/units/modules/identity/keycloak/test_keycloak_realm.py test/units/modules/identity/keycloak/test_keycloak_role.py test/units/modules/identity/keycloak/test_keycloak_user.py test/units/modules/identity/keycloak/test_keycloak_component.py"
                 sh "source hacking/env-setup; ansible-playbook keycloak/cleanupUnitEnv.yml -i keycloak/UNIT/UNIT.hosts"
