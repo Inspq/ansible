@@ -19,9 +19,8 @@ class KeycloakUserTestCase(unittest.TestCase):
             "enabled": True,
             "emailVerified": False,
             "credentials": [{"temporary": 'false',"type": "password","value": "password"}],
-            "attributes": {"attr1": ["value1"],"attr2": ["value2"]},
             "clientRoles": {"master-realm": ["manage-clients"]},
-            "realmRoles": ["admin"],
+            "attributes": {"attr1": ["value1"],"attr2": ["value2"]},
             "state":"present",
             "force":"no"
         }
@@ -43,6 +42,7 @@ class KeycloakUserTestCase(unittest.TestCase):
             "enabled": True,
             "emailVerified": False,
             "credentials": [{"temporary": 'false',"type": "password","value": "password"}],
+            "clientRoles": {"master-realm": ["manage-clients"]},
             "attributes": {"attr1": ["value1"],"attr2": ["value2"]},
             "state": "present",
             "force": False
@@ -70,6 +70,7 @@ class KeycloakUserTestCase(unittest.TestCase):
             "enabled": True,
             "emailVerified": False,
             "credentials": [{"temporary": 'false',"type": "password","value": "password"}],
+            "clientRoles": {"master-realm": ["manage-clients"]},
             "attributes": {"attr1": ["value1"],"attr2": ["value2"]},
             "state":"present",
             "force": False
@@ -95,6 +96,7 @@ class KeycloakUserTestCase(unittest.TestCase):
             "enabled": True,
             "emailVerified": False,
             "credentials": [{"temporary": 'false',"type": "password","value": "password"}],
+            "clientRoles": {"master-realm": ["manage-clients"]},
             "attributes": {"attr1": ["value1"],"attr2": ["value2"]},
             "state":"present",
             "force": False
@@ -120,6 +122,7 @@ class KeycloakUserTestCase(unittest.TestCase):
             "enabled": True,
             "emailVerified": False,
             "credentials": [{"temporary": 'false',"type": "password","value": "password"}],
+            "clientRoles": {"master-realm": ["manage-clients"]},
             "attributes": {"attr1": ["value1"],"attr2": ["value2"]},
             "state":"present",
             "force": False

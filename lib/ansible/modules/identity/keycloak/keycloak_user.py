@@ -17,7 +17,7 @@
 # You should have received a copy of the GNU General Public License
 # along with Ansible.  If not, see <http://www.gnu.org/licenses/>.
 
-ANSIBLE_METADATA = {'metadata_version': '1.1',
+ANSIBLE_METADATA = {'metadata_version': '1.0',
                     'status': ['preview'],
                     'supported_by': 'community'}
 
@@ -291,6 +291,7 @@ def user(params):
     state = params['state'] if "state" in params else "present"
     force = params['force'] if "force" in params else False
     newUserRepresentation = None
+    userClientRoles = None
     
     # Create a representation of the user received in parameters
     newUserRepresentation = {}
@@ -335,6 +336,7 @@ def user(params):
         newUserRepresentation["groups"] = params['groups']
     
     userSvcBaseUrl = url + "/auth/admin/realms/" + realm + "/users/"
+    clientSvcBaseUrl = url + "/auth/admin/realms/" + realm + "/clients/"
     userRepresentation = None
     rc = 0
     result = dict()
@@ -376,15 +378,28 @@ def user(params):
                 # Get new user created
                 #getResponse = requests.get(userSvcBaseUrl+"?username="+newUserRepresentation["username"], headers=headers)
                 getResponse = requests.get(userSvcBaseUrl, headers=headers, params={"username": newUserRepresentation["username"]})
-                #userRepresentation = getResponse.json()[0]
+                #userRepresentation = getResponse.json()[0]        
                 users = getResponse.json()
                 for userRepresentation in users:
                     if "username" in userRepresentation and userRepresentation["username"] == newUserRepresentation["username"]:
                         break
-                
+                #set user ClientsRoles
+                if "clientRoles" in newUserRepresentation and newUserRepresentation['clientRoles'] is not None:
+                    for userClientRoles in newUserRepresentation["clientRoles"]:
+                        try:
+                            createOrUpdateClientRoles(userClientRoles,userRepresentation,newUserRepresentation["clientRoles"][userClientRoles], clientSvcBaseUrl, userSvcBaseUrl, headers)
+                        except Exception ,e :
+                            result = dict(
+                                stderr   = 'createOrUpdateClientRoles: ' + userClientRoles + ' error: ' + str(e),
+                                rc       = 1,
+                                changed  = changed
+                                )
+                #set ClientsRoles
+                #createOrUpdateClientRoles(userClientRoles,userRepresentation, clientSvcBaseUrl, userSvcBaseUrl, headers)
                 changed = True
                 fact = dict(
-                    user = userRepresentation
+                    user = userRepresentation,
+                    clientRoles = userClientRoles
                     )
                 
                 result = dict(
@@ -429,6 +444,17 @@ def user(params):
                     data=json.dumps(newUserRepresentation)
                     # Create the new user
                     postResponse = requests.post(userSvcBaseUrl, headers=headers, data=data)
+                    #set user ClientsRoles
+                    if "clientRoles" in newUserRepresentation and newUserRepresentation['clientRoles'] is not None:
+                        for userClientRoles in newUserRepresentation["clientRoles"]:
+                            try:
+                                createOrUpdateClientRoles(userClientRoles,userRepresentation,newUserRepresentation["clientRoles"][userClientRoles], clientSvcBaseUrl, userSvcBaseUrl, headers)
+                            except Exception ,e :
+                                result = dict(
+                                    stderr   = 'createOrUpdateClientRoles: ' + userClientRoles + ' error: ' + str(e),
+                                    rc       = 1,
+                                    changed  = changed
+                                    )
                 else: # If the force option is false
                     excludes = ["access","notBefore","createdTimestamp","totp","credentials","disableableCredentialTypes","realmRoles","clientRoles","groups","clientConsents","federatedIdentities","requiredActions"]
                     # Compare users
@@ -440,6 +466,17 @@ def user(params):
                         data=json.dumps(newUserRepresentation)
                         # Updated the user on the Keycloak server
                         updateResponse = requests.put(userSvcBaseUrl + userRepresentation["id"], headers=headers, data=data)
+                        #set user ClientsRoles
+                        if "clientRoles" in newUserRepresentation and newUserRepresentation['clientRoles'] is not None:
+                            for userClientRoles in newUserRepresentation["clientRoles"]:
+                                try:
+                                    createOrUpdateClientRoles(userClientRoles,userRepresentation,newUserRepresentation["clientRoles"][userClientRoles], clientSvcBaseUrl, userSvcBaseUrl, headers)
+                                except Exception ,e :
+                                    result = dict(
+                                        stderr   = 'createOrUpdateClientRoles: ' + userClientRoles + ' error: ' + str(e),
+                                        rc       = 1,
+                                        changed  = changed
+                                        )
                         changed = True
                 # Get the new user
                 #getResponse = requests.get(userSvcBaseUrl+"?username="+newUserRepresentation["username"], headers=headers)
@@ -480,6 +517,35 @@ def user(params):
                 changed  = changed
                 )
     return result
+
+def createOrUpdateClientRoles(userClientRoles, userRepresentation, ClientRoles, clientSvcBaseUrl, userSvcBaseUrl, headers):
+    changed = False
+    # Get Roles ID
+    clientId=None
+    try:
+        getResponse = requests.get(clientSvcBaseUrl, headers=headers)
+        clients = getResponse.json()
+        for client in clients:
+            if "clientId" in client and client["clientId"] == userClientRoles:
+                clientId = client["id"]
+                break
+        clientRolesToAdd = []
+        if clientId is not None:
+            #Egt clientsrole for clientID
+            getResponse = requests.get(clientSvcBaseUrl +clientId+ "/roles/", headers=headers)
+            roles = getResponse.json()
+            for rolesToadd in ClientRoles:
+                for role in roles:
+                    if rolesToadd == role["name"]:
+                      clientRolesToAdd.append(role)
+        if len(clientRolesToAdd) > 0:
+            #Set user role-mappings
+            data=json.dumps(clientRolesToAdd)
+            postResponse = requests.post(userSvcBaseUrl + userRepresentation["id"] + '/role-mappings/clients/'+clientId, headers=headers, data=data)
+            changed = True
+    except Exception ,e :
+        raise e
+    return changed    
         
 # import module snippets
 from ansible.module_utils.basic import *
