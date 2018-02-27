@@ -17,7 +17,7 @@
 # You should have received a copy of the GNU General Public License
 # along with Ansible.  If not, see <http://www.gnu.org/licenses/>.
 
-ANSIBLE_METADATA = {'metadata_version': '1.1',
+ANSIBLE_METADATA = {'metadata_version': '1.0',
                     'status': ['preview'],
                     'supported_by': 'community'}
 
@@ -135,6 +135,7 @@ EXAMPLES = '''
           disableUserInfo: False
           defaultScope: "openid email profile"
           guiOrder: 1
+          backchannelSupported: True
         mappers:
           - name: ClaimMapper
             identityProviderMapper: oidc-user-attribute-idp-mapper
@@ -165,6 +166,7 @@ EXAMPLES = '''
           disableUserInfo: False
           defaultScope: "openid email profile"
           guiOrder: 2
+          backchannelSupported: True
         state: present
         force: yes
 

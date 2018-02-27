@@ -29,7 +29,8 @@ class KeycloakIdentityProviderTestCase(unittest.TestCase):
                 clientSecret = "test",
                 defaultScope = "openid email profile",
                 disableUserInfo = "false",
-                guiOrder = "1"
+                guiOrder = "1",
+                backchannelSupported = "false"
                 ),
             mappers = [ 
                     {
@@ -102,7 +103,8 @@ class KeycloakIdentityProviderTestCase(unittest.TestCase):
                 "clientId": "test1",
                 "defaultScope": "openid email profile",
                 "disableUserInfo": "false",
-                "guiOrder": "1"
+                "guiOrder": "1",
+                "backchannelSupported": "true"
                 },
             "mappers": [ 
                     {
@@ -174,7 +176,8 @@ class KeycloakIdentityProviderTestCase(unittest.TestCase):
                 clientSecret = "test2",
                 defaultScope = "openid email profile",
                 disableUserInfo = "false",
-                guiOrder = "1"
+                guiOrder = "1",
+                backchannelSupported = "true"
                 ),
             mappers = [ 
                     {
