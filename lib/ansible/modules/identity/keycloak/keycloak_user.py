@@ -212,10 +212,12 @@ EXAMPLES = '''
           attr2: 
             - value2
         clientRoles:
-          client1: 
-            - role1
-          client2: 
-            - role2
+          - clientID: client1
+            roles:
+            - clientrole1
+          - clientID: client2
+            roles:
+            - clientrole2
         groups:
           - group1
         realmRoles:
@@ -276,7 +278,7 @@ def main():
             serviceAccountClientId=dict(type='str'),
             attributes=dict(type='dict'),
             access=dict(type='dict'),
-            clientRoles=dict(type='dict'),
+            clientRoles=dict(type='list', default=[]),
             realmRoles=dict(type='list', default=[]),
             groups=dict(type='list', default=[]),
             disableableCredentialTypes=dict(type='list', default=[]),
@@ -309,11 +311,13 @@ def user(params):
     state = params['state'] if "state" in params else "present"
     force = params['force'] if "force" in params else False
     newUserRepresentation = None
+    newUserClientRolesRepresentation = None
     userClientRoles = None
     userRealmRoles = None
     userGroups = None
     # Create a representation of the user received in parameters
     newUserRepresentation = {}
+    newUserClientRolesRepresentation = {}
     newUserRepresentation["username"] = params['username'].decode("utf-8")
     if "self" in params and params['self'] is not None:
         newUserRepresentation["self"] = params['self'].decode("utf-8")
@@ -348,7 +352,8 @@ def user(params):
     if "access" in params and params['access'] is not None:
         newUserRepresentation["access"] = params['access']
     if "clientRoles" in params and params['clientRoles'] is not None:
-        newUserRepresentation["clientRoles"] = params['clientRoles']
+        newUserClientRolesRepresentation["clientRoles"] = params['clientRoles']
+        #newUserRepresentation["clientRoles"] = params['clientRoles']
     if "realmRoles" in params and params['realmRoles'] is not None:
         newUserRepresentation["realmRoles"] = params['realmRoles']
     if "groups" in params and params['groups'] is not None:
@@ -404,13 +409,13 @@ def user(params):
                     if "username" in userRepresentation and userRepresentation["username"] == newUserRepresentation["username"]:
                         break
                 #set user ClientsRoles
-                if "clientRoles" in newUserRepresentation and newUserRepresentation['clientRoles'] is not None:
-                    for userClientRoles in newUserRepresentation["clientRoles"]:
+                if "clientRoles" in newUserClientRolesRepresentation and newUserClientRolesRepresentation['clientRoles'] is not None:
+                    for userClientRoles in newUserClientRolesRepresentation["clientRoles"]:
                         try:
-                            createOrUpdateClientRoles(userClientRoles,userRepresentation,newUserRepresentation["clientRoles"][userClientRoles], clientSvcBaseUrl, userSvcBaseUrl, headers)
+                            createOrUpdateClientRoles(userClientRoles,userRepresentation, clientSvcBaseUrl, userSvcBaseUrl, headers)
                         except Exception ,e :
                             result = dict(
-                                stderr   = 'createOrUpdateClientRoles: ' + userClientRoles + ' error: ' + str(e),
+                                stderr   = 'createOrUpdateClientRoles: ' + userClientRoles["clientId"] + ' error: ' + str(e),
                                 rc       = 1,
                                 changed  = changed
                                 )
@@ -490,13 +495,13 @@ def user(params):
                         if "username" in userRepresentation and userRepresentation["username"] == newUserRepresentation["username"]:
                             break
                     #set user ClientsRoles
-                    if "clientRoles" in newUserRepresentation and newUserRepresentation['clientRoles'] is not None:
-                        for userClientRoles in newUserRepresentation["clientRoles"]:
+                    if "clientRoles" in newUserClientRolesRepresentation and newUserClientRolesRepresentation['clientRoles'] is not None:
+                        for userClientRoles in newUserClientRolesRepresentation["clientRoles"]:
                             try:
-                                createOrUpdateClientRoles(userClientRoles,userRepresentation,newUserRepresentation["clientRoles"][userClientRoles], clientSvcBaseUrl, userSvcBaseUrl, headers)
+                                createOrUpdateClientRoles(userClientRoles,userRepresentation, clientSvcBaseUrl, userSvcBaseUrl, headers)
                             except Exception ,e :
                                 result = dict(
-                                    stderr   = 'createOrUpdateClientRoles: ' + userClientRoles + ' error: ' + str(e),
+                                    stderr   = 'createOrUpdateClientRoles: ' + userClientRoles["clientId"] + ' error: ' + str(e),
                                     rc       = 1,
                                     changed  = changed
                                     )
@@ -534,13 +539,13 @@ def user(params):
                         # Updated the user on the Keycloak server
                         updateResponse = requests.put(userSvcBaseUrl + userRepresentation["id"], headers=headers, data=data)
                         #set user ClientsRoles
-                        if "clientRoles" in newUserRepresentation and newUserRepresentation['clientRoles'] is not None:
-                            for userClientRoles in newUserRepresentation["clientRoles"]:
+                        if "clientRoles" in newUserClientRolesRepresentation and newUserClientRolesRepresentation['clientRoles'] is not None:
+                            for userClientRoles in newUserClientRolesRepresentation["clientRoles"]:
                                 try:
-                                    createOrUpdateClientRoles(userClientRoles,userRepresentation,newUserRepresentation["clientRoles"][userClientRoles], clientSvcBaseUrl, userSvcBaseUrl, headers)
+                                    createOrUpdateClientRoles(userClientRoles, clientSvcBaseUrl, userSvcBaseUrl, headers)
                                 except Exception ,e :
                                     result = dict(
-                                        stderr   = 'createOrUpdateClientRoles: ' + userClientRoles + ' error: ' + str(e),
+                                        stderr   = 'createOrUpdateClientRoles: ' + userClientRoles["clientId"] + ' error: ' + str(e),
                                         rc       = 1,
                                         changed  = changed
                                         )
@@ -607,7 +612,7 @@ def user(params):
                 )
     return result
 
-def createOrUpdateClientRoles(userClientRoles, userRepresentation, ClientRoles, clientSvcBaseUrl, userSvcBaseUrl, headers):
+def createOrUpdateClientRoles(userClientRoles, userRepresentation, clientSvcBaseUrl, userSvcBaseUrl, headers):
     changed = False
     # Get Roles ID
     clientId=None
@@ -615,7 +620,7 @@ def createOrUpdateClientRoles(userClientRoles, userRepresentation, ClientRoles, 
         getResponse = requests.get(clientSvcBaseUrl, headers=headers)
         clients = getResponse.json()
         for client in clients:
-            if "clientId" in client and client["clientId"] == userClientRoles:
+            if "clientId" in client and client["clientId"] == userClientRoles["clientId"]:
                 clientId = client["id"]
                 break
         clientRolesToAdd = []
@@ -623,7 +628,7 @@ def createOrUpdateClientRoles(userClientRoles, userRepresentation, ClientRoles, 
             #Egt clientsrole for clientID
             getResponse = requests.get(clientSvcBaseUrl +clientId+ "/roles/", headers=headers)
             roles = getResponse.json()
-            for rolesToadd in ClientRoles:
+            for rolesToadd in userClientRoles["roles"]:
                 for role in roles:
                     if rolesToadd == role["name"]:
                       clientRolesToAdd.append(role)
