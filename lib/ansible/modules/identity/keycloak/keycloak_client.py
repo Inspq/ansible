@@ -286,6 +286,23 @@ def main():
     )
     params = module.params.copy()
     params['force'] = module.boolean(module.params['force'])
+    params['enabled'] = module.boolean(module.params['enabled'])
+    if "consentRequired" in params and params['consentRequired'] is not None:
+        params['consentRequired'] = module.boolean(module.params['consentRequired'])
+    if "standardFlowEnabled" in params and params['standardFlowEnabled'] is not None:
+        params['standardFlowEnabled'] = module.boolean(module.params['standardFlowEnabled'])
+    if "implicitFlowEnabled" in params and params['implicitFlowEnabled'] is not None:
+        params['implicitFlowEnabled'] = module.boolean(module.params['implicitFlowEnabled'])
+    if "directAccessGrantsEnabled" in params and params['directAccessGrantsEnabled'] is not None:
+        params['directAccessGrantsEnabled'] = module.boolean(module.params['directAccessGrantsEnabled'])
+    if "serviceAccountsEnabled" in params and params['serviceAccountsEnabled'] is not None:
+        params['serviceAccountsEnabled'] = module.boolean(module.params['serviceAccountsEnabled'])
+    if "authorizationServicesEnabled" in params and params['authorizationServicesEnabled'] is not None:
+        params['authorizationServicesEnabled'] = module.boolean(module.params['authorizationServicesEnabled'])
+    if "bearerOnly" in params and params['bearerOnly'] is not None:
+        params['bearerOnly'] = module.boolean(module.params['bearerOnly'])
+    if "publicClient" in params and params['publicClient'] is not None:
+        params['publicClient'] = module.boolean(module.params['publicClient'])
     
     result = client(params)
     
@@ -431,8 +448,11 @@ def client(params):
                 getResponse = getResponse = requests.get(clientSvcBaseUrl, headers=headers, params={'clientId': newClientRepresentation["clientId"]})
                 clientRepresentation = getResponse.json()[0]
                 # Obtenir le ClientSecret
-                getResponse = requests.get(clientSvcBaseUrl + clientRepresentation['id'] + '/client-secret', headers=headers)
-                clientSecretRepresentation = getResponse.json()
+                if not newClientRepresentation["publicClient"]:
+                    getResponse = requests.get(clientSvcBaseUrl + clientRepresentation['id'] + '/client-secret', headers=headers)
+                    clientSecretRepresentation = getResponse.json()
+                else:
+                    clientSecretRepresentation = None   
                 # Obtenir les rôles pour le client
                 getResponse = requests.get(clientSvcBaseUrl + clientRepresentation['id'] + '/roles', headers=headers)
                 clientRolesRepresentation = getResponse.json()
