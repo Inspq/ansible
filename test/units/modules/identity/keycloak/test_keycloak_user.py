@@ -18,7 +18,9 @@ class KeycloakUserTestCase(unittest.TestCase):
             "email": "user1@user.ca",
             "enabled": True,
             "emailVerified": False,
-            "credentials": [{"temporary": 'false',"type": "password","value": "password"}],
+            "credentials": [{"temporary": 'false',"type": "password","value": "password"}], 
+            "clientRoles": [{"clientId": "master-realm","roles": ["manage-clients"]}],
+            "realmRoles": ["admin"],
             "attributes": {"attr1": ["value1"],"attr2": ["value2"]},
             "state":"present",
             "force":"no"
@@ -41,6 +43,8 @@ class KeycloakUserTestCase(unittest.TestCase):
             "enabled": True,
             "emailVerified": False,
             "credentials": [{"temporary": 'false',"type": "password","value": "password"}],
+            "clientRoles": [{"clientId": "master-realm","roles": ["manage-clients"]}],
+            "realmRoles": ["admin"],
             "attributes": {"attr1": ["value1"],"attr2": ["value2"]},
             "state": "present",
             "force": False
@@ -68,7 +72,9 @@ class KeycloakUserTestCase(unittest.TestCase):
             "enabled": True,
             "emailVerified": False,
             "credentials": [{"temporary": 'false',"type": "password","value": "password"}],
+            "clientRoles": [{"clientId": "master-realm","roles": ["manage-clients"]}],
             "attributes": {"attr1": ["value1"],"attr2": ["value2"]},
+            "realmRoles": ["admin"],
             "state":"present",
             "force": False
         }
@@ -77,8 +83,8 @@ class KeycloakUserTestCase(unittest.TestCase):
         toDoNotChange["force"] = True
         results = user(toDoNotChange)
         print str(results)
-        #self.assertTrue(results['changed'])
-        self.assertEquals(results["ansible_facts"]["user"]["lastName"], toDoNotChange["lastName"], "lastName: " + results["ansible_facts"]["user"]["lastName"] + " : " + toDoNotChange["lastName"])
+        self.assertTrue(results['changed'])
+        #self.assertEquals(results["ansible_facts"]["user"]["lastName"], toDoNotChange["lastName"], "lastName: " + results["ansible_facts"]["user"]["lastName"] + " : " + toDoNotChange["lastName"])
 
     def test_modify_user(self):
         toChange = {
@@ -93,7 +99,9 @@ class KeycloakUserTestCase(unittest.TestCase):
             "enabled": True,
             "emailVerified": False,
             "credentials": [{"temporary": 'false',"type": "password","value": "password"}],
+            "clientRoles": [{"clientId": "master-realm","roles": ["manage-clients"]}],
             "attributes": {"attr1": ["value1"],"attr2": ["value2"]},
+            "realmRoles": ["admin"],
             "state":"present",
             "force": False
         }
@@ -114,11 +122,13 @@ class KeycloakUserTestCase(unittest.TestCase):
             "username": "user5",
             "firstName": "user5",
             "lastName": "user5",
-            "email": "user4@user.ca",
+            "email": "user5@user.ca",
             "enabled": True,
             "emailVerified": False,
             "credentials": [{"temporary": 'false',"type": "password","value": "password"}],
+            "clientRoles": [{"clientId": "master-realm","roles": ["manage-clients"]}],
             "attributes": {"attr1": ["value1"],"attr2": ["value2"]},
+            "realmRoles": ["admin"],
             "state":"present",
             "force": False
         }
