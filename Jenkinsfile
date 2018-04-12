@@ -11,7 +11,7 @@ pipeline {
         stage ('Tests unitaires du module ansible de Keycloak') {
             steps {
                 //sh "source hacking/env-setup; ansible-test sanity --test validate-modules"
-            	sh "source hacking/env-setup; ansible-galaxy install -r requirement.yml"
+            	sh "source hacking/env-setup; ansible-galaxy install -r requirements.yml"
                 sh "source hacking/env-setup; ansible-playbook -i 'localhost,' -c local deploy-keycloak.yml"
                 sh "source hacking/env-setup; nosetests --with-xunit test/units/module_utils/test_keycloak_utils.py test/units/modules/identity/keycloak/test_keycloak_authentication.py test/units/modules/identity/keycloak/test_keycloak_client.py test/units/modules/identity/keycloak/test_keycloak_group.py test/units/modules/identity/keycloak/test_keycloak_identity_provider.py test/units/modules/identity/keycloak/test_keycloak_realm.py test/units/modules/identity/keycloak/test_keycloak_role.py test/units/modules/identity/keycloak/test_keycloak_user.py test/units/modules/identity/keycloak/test_keycloak_component.py"
                 sh "source hacking/env-setup; ansible-playbook -i 'localhost,' -c local deploy-keycloak.yml"
