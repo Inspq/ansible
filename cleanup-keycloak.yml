@@ -1,0 +1,11 @@
+---
+- hosts: all
+  vars:
+    keycloak_container_name: keycloak
+   
+  tasks:
+  - name: Removing Keycloak container {{ keycloak_container_name }}
+    docker_container:
+      name: "{{ keycloak_container_name }}"
+      state: absent
+    
