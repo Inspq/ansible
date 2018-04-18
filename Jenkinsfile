@@ -36,7 +36,7 @@ pipeline {
         }
         success {
             script {
-                if (currentBuild.getPreviousBuild().getResult().toString() != "SUCCESS") {
+                if (currentBuild.getPreviousBuild() != null && currentBuild.getPreviousBuild().getResult().toString() != "SUCCESS") {
                     mail(to: "${equipe}", 
                         subject: "Tests unitaires des modules Ansible pour Keycloak réalisée avec succès: ${env.JOB_NAME} #${env.BUILD_NUMBER}", 
                         body: "${env.BUILD_URL}")
