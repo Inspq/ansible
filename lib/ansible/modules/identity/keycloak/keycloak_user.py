@@ -17,7 +17,7 @@
 # You should have received a copy of the GNU General Public License
 # along with Ansible.  If not, see <http://www.gnu.org/licenses/>.
 
-ANSIBLE_METADATA = {'metadata_version': '1.0',
+ANSIBLE_METADATA = {'metadata_version': '1.1',
                     'status': ['preview'],
                     'supported_by': 'community'}
 
@@ -121,10 +121,6 @@ options:
         description:
             - list user access. 
         required: false
-    clientConsents:
-        description:
-            - list user clientConsents. 
-        required: false
     disableableCredentialTypes:
         description:
             - list user Credential Type. 
@@ -132,10 +128,6 @@ options:
     origin:
         description:
             - user origin. 
-        required: false
-    serviceAccountClientId:
-        description:
-            - service Account ClientId for user. 
         required: false
     self:
         description:
