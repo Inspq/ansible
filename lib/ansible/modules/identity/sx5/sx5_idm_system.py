@@ -166,7 +166,7 @@ def main():
             spUsername=dict(type='str', required=True),
             spPassword=dict(required=True),
             spRealm=dict(type='str', required=True),
-            clientId=dict(type='list', default=[]),
+            clients=dict(type='list', default=[]),
             systemName=dict(type='str', required=True),
             force=dict(type='bool', default=False),
             state=dict(choices=["absent", "present"], default='present'),
