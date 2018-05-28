@@ -11,6 +11,8 @@ class Sx5SystemTestCase(unittest.TestCase):
         toCreate["spUsername"] = "admin"
         toCreate["spPassword"] = "admin"
         toCreate["spRealm"] = "master"
+        toCreate["idmClient_id"] = "admin-cli"
+        toCreate["idmClient_secret"] = ""
         toCreate["sx5IdmUrl"] = "http://localhost:8089/idm/config"
         toCreate["systemName"] = "system02"
         toCreate["clients"] = [{"nom": "client1"},{"nom": "client2"}]
@@ -20,15 +22,17 @@ class Sx5SystemTestCase(unittest.TestCase):
         toCreate["force"] = False
     
         results = system(toCreate)
-        #print str(results)
+        print str(results)
         self.assertTrue(results['changed'])
 
     """ def test_system_not_changed(self):
         toDoNotChange = {}
         toDoNotChange["spUrl"] = "http://localhost:18081"
-        toDoNotChange["spUsername"] = "admin"
-        toDoNotChange["spPassword"] = "admin"
-        toDoNotChange["spRealm"] = "master"
+        toDoNotChange["spUsername"] = "testes01"
+        toDoNotChange["spPassword"] = "testes01"
+        toChange["spRealm"] = "master"
+        toChange["idmClient_id"] = "admin-cli"
+        toChange["idmClient_secret"] = ""
         toDoNotChange["sx5IdmUrl"] = "http://localhost:8089/idm/config"
         toDoNotChange["systemName"] = "system01"
         toDoNotChange["clients"] = [{"nom": "client1"},{"nom": "client2"}]
@@ -49,6 +53,8 @@ class Sx5SystemTestCase(unittest.TestCase):
         toChange["spUsername"] = "admin"
         toChange["spPassword"] = "admin"
         toChange["spRealm"] = "master"
+        toChange["idmClient_id"] = "admin-cli"
+        toChange["idmClient_secret"] = ""
         toChange["sx5IdmUrl"] = "http://localhost:8089/idm/config"
         toChange["systemName"] = "system01"
         toChange["clients"] = [{"nom": "client1"},{"nom": "client2"}]
@@ -71,6 +77,8 @@ class Sx5SystemTestCase(unittest.TestCase):
         toDelete["spUsername"] = "admin"
         toDelete["spPassword"] = "admin"
         toDelete["spRealm"] = "master"
+        toDelete["idmClient_id"] = "admin-cli"
+        toDelete["idmClient_secret"] = ""
         toDelete["sx5IdmUrl"] = "http://localhost:8089/idm/config"
         toDelete["systemName"] = "system01"
         toDelete["clients"] = [{"nom": "client1"},{"nom": "client2"}]

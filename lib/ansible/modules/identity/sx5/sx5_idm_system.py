@@ -48,6 +48,14 @@ options:
         description:
             - The name of the Keycloak realm in which is the client.
         required: true
+    idmClient_id:
+        description:
+            - IDM Client ID.
+        required: true
+    idmClient_secret:
+        description:
+            - IDM Client Secret.
+        required: true
     systemName:
         description:
             - System name of Client ID.
@@ -94,6 +102,8 @@ EXAMPLES = '''
         spUsername: admin
         spPassword: admin
         spRealm: Master
+        idmClient_id: sx5idm
+        idmClient_secret: client_string
         clients: 
         - nom: client1
         - nom: client2
@@ -111,6 +121,8 @@ EXAMPLES = '''
         spUsername: admin
         spPassword: admin
         idpRealm: Master
+        idmClient_id: sx5idm
+        idmClient_secret: client_string
         clients: 
         - nom: client1
         - nom: client2
@@ -129,6 +141,8 @@ EXAMPLES = '''
         spUsername: admin
         spPassword: admin
         spRealm: Master
+        idmClient_id: sx5idm
+        idmClient_secret: client_string
         systemName: systemName
         sx5IdmUrl: http://localhost/client1
         state: adsent
@@ -166,6 +180,8 @@ def main():
             spUsername=dict(type='str', required=True),
             spPassword=dict(required=True),
             spRealm=dict(type='str', required=True),
+            idmClient_id=dict(type='str', required=True),
+            idmClient_secret=dict(type='str', required=True),
             clients=dict(type='list', default=[]),
             systemName=dict(type='str', required=True),
             force=dict(type='bool', default=False),
@@ -190,6 +206,8 @@ def system(params):
     spUrl = params['spUrl']
     username = params['spUsername']
     password = params['spPassword']
+    clientid = params['idmClient_id']
+    clientSecret = params['idmClient_secret']
     realm = params['spRealm']
     force = params['force']
     sx5IdmUrl = params['sx5IdmUrl']
@@ -210,7 +228,7 @@ def system(params):
     changed = False
     
     try:
-        headers = loginAndSetHeaders(spUrl, realm, username, password)
+        headers = loginAndSetHeaders(spUrl, realm, username, password, clientid, clientSecret)
     except Exception, e:
         result = dict(
             stderr   = 'login: ' + str(e),

@@ -45,7 +45,7 @@ def isDictEquals(dict1, dict2, exclude = []):
         raise e
 
 import requests
-def login(url, realm, username, password):
+def login(url, realm, username, password, clientid, clientSecret):
     '''
 Fonction : login
 Description :
@@ -74,10 +74,11 @@ Arguments :
             'grant_type': 'password',
             'username': username,
             'password': password,
-            'client_id': 'admin-cli'
+            'client_id': clientid,
+            'client_secret': clientSecret
     }
     try:
-        loginResponse = requests.post(url + '/auth/realms/master/protocol/openid-connect/token',data=body)
+        loginResponse = requests.post(url + '/auth/realms/' + realm + '/protocol/openid-connect/token',data=body)
     
         loginData = loginResponse.json()
         accessToken = loginData['access_token']
@@ -93,10 +94,10 @@ def setHeaders(accessToken):
     headers={'Authorization' : bearerHeader, 'Content-type': 'application/json'}
     return headers
 
-def loginAndSetHeaders(url, realm, username, password):
+def loginAndSetHeaders(url, realm, username, password, clientid, clientSecret):
     headers = {}
     try:
-        accessToken = login(url, realm, username, password)
+        accessToken = login(url, realm, username, password, clientid, clientSecret)
         headers = setHeaders(accessToken)
     except Exception, e:
         raise e
