@@ -17,7 +17,7 @@
 # You should have received a copy of the GNU General Public License
 # along with Ansible.  If not, see <http://www.gnu.org/licenses/>.
 
-ANSIBLE_METADATA = {'metadata_version': '1.1',
+ANSIBLE_METADATA = {'metadata_version': '1.0',
                     'status': ['preview'],
                     'supported_by': 'community'}
 
@@ -194,8 +194,6 @@ def system(params):
     force = params['force']
     sx5IdmUrl = params['sx5IdmUrl']
     state = params['state']
-    
-    clientSvcBaseUrl = spUrl + "/auth/admin/realms/" + realm + "/clients/"
         
     # Créer un représentation du system pour BD IDM
     newSystemDBRepresentation = {}
@@ -207,8 +205,6 @@ def system(params):
     newSystemDBRepresentation["sadu_principal"] = params['sadu_principal'].decode("utf-8")
     if "sadu_secondary" in params and params['sadu_secondary'] is not None:
         newSystemDBRepresentation["sadu_secondary"] = params['sadu_secondary']
-    
-    
     rc = 0
     result = dict()
     changed = False
