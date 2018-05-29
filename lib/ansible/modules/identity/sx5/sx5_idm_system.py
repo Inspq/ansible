@@ -55,7 +55,7 @@ options:
     idmClient_secret:
         description:
             - IDM Client Secret.
-        required: true
+        required: false
     systemName:
         description:
             - System name of Client ID.
@@ -181,7 +181,7 @@ def main():
             spPassword=dict(required=True),
             spRealm=dict(type='str', required=True),
             idmClient_id=dict(type='str', required=True),
-            idmClient_secret=dict(type='str', required=True),
+            idmClient_secret=dict(type='str', required=False),
             clients=dict(type='list', default=[]),
             systemName=dict(type='str', required=True),
             force=dict(type='bool', default=False),
@@ -207,7 +207,10 @@ def system(params):
     username = params['spUsername']
     password = params['spPassword']
     clientid = params['idmClient_id']
-    clientSecret = params['idmClient_secret']
+    if "idmClient_secret" in params and params['idmClient_secret'] is not None:
+        clientSecret = params['idmClient_secret']
+    else:
+        clientSecret = ''
     realm = params['spRealm']
     force = params['force']
     sx5IdmUrl = params['sx5IdmUrl']

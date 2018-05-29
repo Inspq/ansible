@@ -70,13 +70,21 @@ Arguments :
     '''
     # Login to Keycloak
     accessToken = ""
-    body = {
+    if clientSecret == '':
+        body = {
+            'grant_type': 'password',
+            'username': username,
+            'password': password,
+            'client_id': clientid
+        }
+    else:
+        body = {
             'grant_type': 'password',
             'username': username,
             'password': password,
             'client_id': clientid,
             'client_secret': clientSecret
-    }
+        }
     try:
         loginResponse = requests.post(url + '/auth/realms/' + realm + '/protocol/openid-connect/token',data=body)
     
