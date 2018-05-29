@@ -14,7 +14,7 @@ class Sx5SystemTestCase(unittest.TestCase):
         toCreate["idmClient_id"] = "admin-cli"
         toCreate["idmClient_secret"] = ""
         toCreate["sx5IdmUrl"] = "http://localhost:8089/idm/config"
-        toCreate["systemName"] = "system02"
+        toCreate["systemName"] = "test1"
         toCreate["clients"] = [{"nom": "client1"},{"nom": "client2"}]
         toCreate["sadu_principal"] = "http://sadu_principal"
         toCreate["sadu_secondary"] = [{"adresse": "http://sadu_secondary1"},{"adresse": "http://sadu_secondary2"}]
@@ -25,16 +25,16 @@ class Sx5SystemTestCase(unittest.TestCase):
         print str(results)
         self.assertTrue(results['changed'])
 
-    """ def test_system_not_changed(self):
+    def test_system_not_changed(self):
         toDoNotChange = {}
         toDoNotChange["spUrl"] = "http://localhost:18081"
-        toDoNotChange["spUsername"] = "testes01"
-        toDoNotChange["spPassword"] = "testes01"
-        toChange["spRealm"] = "master"
-        toChange["idmClient_id"] = "admin-cli"
-        toChange["idmClient_secret"] = ""
+        toDoNotChange["spUsername"] = "admin   "
+        toDoNotChange["spPassword"] = "admin"
+        toDoNotChange["spRealm"] = "master"
+        toDoNotChange["idmClient_id"] = "admin-cli"
+        toDoNotChange["idmClient_secret"] = ""
         toDoNotChange["sx5IdmUrl"] = "http://localhost:8089/idm/config"
-        toDoNotChange["systemName"] = "system01"
+        toDoNotChange["systemName"] = "test2"
         toDoNotChange["clients"] = [{"nom": "client1"},{"nom": "client2"}]
         toDoNotChange["sadu_principal"] = "http://sadu_principal"
         toDoNotChange["sadu_secondary"] = [{"adresse": "http://sadu_secondary1"},{"adresse": "http://sadu_secondary2"}]
@@ -45,7 +45,7 @@ class Sx5SystemTestCase(unittest.TestCase):
         #print str(results)
         results = system(toDoNotChange)
         #print str(results)
-        self.assertFalse(results['changed']) """
+        self.assertFalse(results['changed'])
 
     def test_modify_system(self):
         toChange = {}
@@ -56,16 +56,16 @@ class Sx5SystemTestCase(unittest.TestCase):
         toChange["idmClient_id"] = "admin-cli"
         toChange["idmClient_secret"] = ""
         toChange["sx5IdmUrl"] = "http://localhost:8089/idm/config"
-        toChange["systemName"] = "system01"
+        toChange["systemName"] = "test3"
         toChange["clients"] = [{"nom": "client1"},{"nom": "client2"}]
         toChange["sadu_principal"] = "http://sadu_principal"
         toChange["sadu_secondary"] = [{"adresse": "http://sadu_secondary1"},{"adresse": "http://sadu_secondary2"}]
         toChange["state"] = "present"
         toChange["force"] = False
 
-        system(toChange)
-        toChange["clientUrl"] = "http://localhost/test1"
-       
+        results = system(toChange)
+        #print str(results)
+        toChange["sadu_principal"] = "http://localhost/test3"
         results = system(toChange)
         #print str(results)
         self.assertTrue(results['changed'])

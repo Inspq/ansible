@@ -382,16 +382,10 @@ def system(params):
                                 "adresse": sadu_secondary["adresse"]
                             }
                             adresse.append(adresseS)
-                    body = {
-                            "nom": newSystemDBRepresentation["systemName"],
-                            "adressesApprovisionnement": adresse,
-                            "clientsKeycloak": newSystemDBRepresentation["clients"]
-                        }
-                    try:
-                        requests.put(dataResponse["_links"]["self"]["href"],headers=headers,json=body)
-                        getResponse = requests.get(sx5IdmUrl+"/systemes/search/findByNom?nom="+newSystemDBRepresentation["systemName"], headers=headers)
-                        dataResponse = getResponse.json()
-                        changed = True
+                    body = {"nom": newSystemDBRepresentation["systemName"],"adressesApprovisionnement": adresse,"clientsKeycloak": newSystemDBRepresentation["clients"]}
+                    
+                    if body["adressesApprovisionnement"] == dataResponse["adressesApprovisionnement"] and body["clientsKeycloak"] == dataResponse["clientsKeycloak"]:
+                        changed = False
                         fact = dict(
                             systemes = dataResponse
                             )
@@ -400,24 +394,38 @@ def system(params):
                             rc = 0,
                             changed = changed
                             )
-                    except requests.exceptions.RequestException, e:
-                        fact = dict(
-                            systemes = newSystemDBRepresentation)
-                        result = dict(
-                            ansible_facts= fact,
-                            stderr   = 'Update systemes: ' + newSystemDBRepresentation["systemName"] + ' erreur: ' + str(e),
-                            rc       = 1,
-                            changed  = changed
-                            )
-                    except ValueError, e:
-                        fact = dict(
-                            systemes = newSystemDBRepresentation)
-                        result = dict(
-                            ansible_facts= fact,
-                            stderr   = 'Update systemes: ' + newSystemDBRepresentation["systemName"] + ' erreur: ' + str(e),
-                            rc       = 1,
-                            changed  = changed
-                            )
+                    else:
+                        try:
+                            requests.put(dataResponse["_links"]["self"]["href"],headers=headers,json=body)
+                            getResponse = requests.get(sx5IdmUrl+"/systemes/search/findByNom?nom="+newSystemDBRepresentation["systemName"], headers=headers)
+                            dataResponse = getResponse.json()
+                            changed = True
+                            fact = dict(
+                                systemes = dataResponse
+                                )
+                            result = dict(
+                                ansible_facts = fact,
+                                rc = 0,
+                                changed = changed
+                                )
+                        except requests.exceptions.RequestException, e:
+                            fact = dict(
+                                systemes = newSystemDBRepresentation)
+                            result = dict(
+                                ansible_facts= fact,
+                                stderr   = 'Update systemes: ' + newSystemDBRepresentation["systemName"] + ' erreur: ' + str(e),
+                                rc       = 1,
+                                changed  = changed
+                                )
+                        except ValueError, e:
+                            fact = dict(
+                                systemes = newSystemDBRepresentation)
+                            result = dict(
+                                ansible_facts= fact,
+                                stderr   = 'Update systemes: ' + newSystemDBRepresentation["systemName"] + ' erreur: ' + str(e),
+                                rc       = 1,
+                                changed  = changed
+                                )
                 elif getResponse.status_code == 404: #systeme n'existe pas, le creer
                     adresse = []
                     adresseP={
