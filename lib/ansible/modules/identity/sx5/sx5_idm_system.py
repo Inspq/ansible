@@ -79,6 +79,11 @@ options:
             - list of secondary provisioning services URL.
         default: 
         required: false
+    clientRoles_mapper:
+        description:
+            - list of role correspondance between keycloak roles end SADU roles.
+        default: 
+        required: false
     force:
         choices: [ "yes", "no" ]
         default: "no"
