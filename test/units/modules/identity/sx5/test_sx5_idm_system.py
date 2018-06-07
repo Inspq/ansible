@@ -14,10 +14,11 @@ class Sx5SystemTestCase(unittest.TestCase):
         toCreate["idmClient_id"] = "admin-cli"
         toCreate["idmClient_secret"] = ""
         toCreate["sx5IdmUrl"] = "http://localhost:8089/idm/config"
-        toCreate["systemName"] = "test1"
-        toCreate["clients"] = [{"nom": "client1"},{"nom": "client2"}]
-        toCreate["sadu_principal"] = "http://sadu_principal"
+        toCreate["systemName"] = "FonctionsAllegeesDEV"
+        toCreate["clients"] = [{"nom": "faiusdev"},{"nom": "faservicesdev"}]
+        toCreate["sadu_principal"] = "http://sadu.dev.inspq.qc.ca"
         toCreate["sadu_secondary"] = [{"adresse": "http://sadu_secondary1"},{"adresse": "http://sadu_secondary2"}]
+        toCreate["clientRoles_mapper"] = [{"spClientRole": "roleInSp11", "eq_sadu_role": "roleSadu11"},{"spClientRole": "roleInSp12", "eq_sadu_role": "roleSadu12"}]
         toCreate["state"] = "present"
         toCreate["force"] = False
     
@@ -38,6 +39,7 @@ class Sx5SystemTestCase(unittest.TestCase):
         toDoNotChange["clients"] = [{"nom": "client1"},{"nom": "client2"}]
         toDoNotChange["sadu_principal"] = "http://sadu_principal"
         toDoNotChange["sadu_secondary"] = [{"adresse": "http://sadu_secondary1"},{"adresse": "http://sadu_secondary2"}]
+        toDoNotChange["clientRoles_mapper"] = [{"spClientRole": "roleInSp21", "eq_sadu_role": "roleSadu21"},{"spClientRole": "roleInSp12", "eq_sadu_role": "roleSadu12"}]
         toDoNotChange["state"] = "present"
         toDoNotChange["force"] = False
 
@@ -60,6 +62,7 @@ class Sx5SystemTestCase(unittest.TestCase):
         toChange["clients"] = [{"nom": "client1"},{"nom": "client2"}]
         toChange["sadu_principal"] = "http://sadu_principal"
         toChange["sadu_secondary"] = [{"adresse": "http://sadu_secondary1"},{"adresse": "http://sadu_secondary2"}]
+        toChange["clientRoles_mapper"] = [{"spClientRole": "roleInSp11", "eq_sadu_role": "roleSadu11"},{"spClientRole": "roleInSp12", "eq_sadu_role": "roleSadu12"}]
         toChange["state"] = "present"
         toChange["force"] = False
 
@@ -84,6 +87,7 @@ class Sx5SystemTestCase(unittest.TestCase):
         toDelete["clients"] = [{"nom": "client1"},{"nom": "client2"}]
         toDelete["sadu_principal"] = "http://sadu_principal"
         toDelete["sadu_secondary"] = [{"adresse": "http://sadu_secondary1"},{"adresse": "http://sadu_secondary2"}]
+        toDelete["clientRoles_mapper"] = [{"spClientRole": "roleInSp11", "eq_sadu_role": "roleSadu11"},{"spClientRole": "roleInSp12", "eq_sadu_role": "roleSadu12"}]
         toDelete["state"] = "present"
         toDelete["force"] = False
 

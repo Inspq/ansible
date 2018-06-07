@@ -113,6 +113,11 @@ EXAMPLES = '''
         sadu_secondary:
         - adresse: http://localhost:8088/sadu2
         - adresse: http://localhost:8088/sadu3
+        clientRoles_mapper:
+        - spClientRole: roleInSp1
+          eq_sadu_role: roleSadu1
+        - spClientRole: roleInSp2
+          eq_sadu_role: roleSadu2
         state: present
 
     - name: Re-create system1
@@ -132,6 +137,11 @@ EXAMPLES = '''
         sadu_secondary:
         - adresse: http://localhost:8088/sadu2
         - adresse: http://localhost:8088/sadu3
+        clientRoles_mapper:
+        - spClientRole: roleInSp1
+          eq_sadu_role: roleSadu1
+        - spClientRole: roleInSp2
+          eq_sadu_role: roleSadu2
         state: present
         force: yes
         
@@ -189,6 +199,7 @@ def main():
             sx5IdmUrl = dict(type='str', required=True),
             sadu_principal = dict(type='str', required=True),
             sadu_secondary = dict(type='list', default=[]),
+            clientRoles_mapper = dict(type='list', default=[]),
         ),
         supports_check_mode=True,
     )
@@ -226,6 +237,8 @@ def system(params):
     newSystemDBRepresentation["sadu_principal"] = params['sadu_principal'].decode("utf-8")
     if "sadu_secondary" in params and params['sadu_secondary'] is not None:
         newSystemDBRepresentation["sadu_secondary"] = params['sadu_secondary']
+    if "clientRoles_mapper" in params and params['clientRoles_mapper'] is not None:
+        newSystemDBRepresentation["clientRoles_mapper"] = params['clientRoles_mapper']
     rc = 0
     result = dict()
     changed = False
@@ -258,9 +271,18 @@ def system(params):
                                 "adresse": sadu_secondary["adresse"]
                             }
                             adresse.append(adresseS)
+                    rolemapper = []
+                    for clientRoles_mapper in newSystemDBRepresentation["clientRoles_mapper"]:
+                        if "sadu_secondary" in params and params['sadu_secondary'] is not None:
+                            role={
+                                "roleKeycloak": clientRoles_mapper["spClientRole"],
+                                "roleSysteme": clientRoles_mapper["eq_sadu_role"]
+                            }
+                            rolemapper.append(role)
                     body = {
                             "nom": newSystemDBRepresentation["systemName"],
                             "adressesApprovisionnement": adresse,
+                            "correspondancesRoles": rolemapper,
                             "clientsKeycloak": newSystemDBRepresentation["clients"]
                         }
                     try:
@@ -309,9 +331,18 @@ def system(params):
                                 "adresse": sadu_secondary["adresse"]
                             }
                             adresse.append(adresseS)
+                    rolemapper = []
+                    for clientRoles_mapper in newSystemDBRepresentation["clientRoles_mapper"]:
+                        if "sadu_secondary" in params and params['sadu_secondary'] is not None:
+                            role={
+                                "roleKeycloak": clientRoles_mapper["spClientRole"],
+                                "roleSysteme": clientRoles_mapper["eq_sadu_role"]
+                            }
+                            rolemapper.append(role)
                     body = {
                             "nom": newSystemDBRepresentation["systemName"],
                             "adressesApprovisionnement": adresse,
+                            "correspondancesRoles": rolemapper,
                             "clientsKeycloak": newSystemDBRepresentation["clients"]
                         }
                     try:
@@ -382,9 +413,22 @@ def system(params):
                                 "adresse": sadu_secondary["adresse"]
                             }
                             adresse.append(adresseS)
-                    body = {"nom": newSystemDBRepresentation["systemName"],"adressesApprovisionnement": adresse,"clientsKeycloak": newSystemDBRepresentation["clients"]}
+                    rolemapper = []
+                    for clientRoles_mapper in newSystemDBRepresentation["clientRoles_mapper"]:
+                        if "sadu_secondary" in params and params['sadu_secondary'] is not None:
+                            role={
+                                "roleKeycloak": clientRoles_mapper["spClientRole"],
+                                "roleSysteme": clientRoles_mapper["eq_sadu_role"]
+                            }
+                            rolemapper.append(role)
+                    body = {
+                            "nom": newSystemDBRepresentation["systemName"],
+                            "adressesApprovisionnement": adresse,
+                            "correspondancesRoles": rolemapper,
+                            "clientsKeycloak": newSystemDBRepresentation["clients"]
+                        }
                     
-                    if body["adressesApprovisionnement"] == dataResponse["adressesApprovisionnement"] and body["clientsKeycloak"] == dataResponse["clientsKeycloak"]:
+                    if body["adressesApprovisionnement"] == dataResponse["adressesApprovisionnement"] and body["clientsKeycloak"] == dataResponse["clientsKeycloak"] and body["correspondancesRoles"] == dataResponse["correspondancesRoles"]:
                         changed = False
                         fact = dict(
                             systemes = dataResponse
@@ -440,11 +484,20 @@ def system(params):
                                 "adresse": sadu_secondary["adresse"]
                             }
                             adresse.append(adresseS)
+                    rolemapper = []
+                    for clientRoles_mapper in newSystemDBRepresentation["clientRoles_mapper"]:
+                        if "sadu_secondary" in params and params['sadu_secondary'] is not None:
+                            role={
+                                "roleKeycloak": clientRoles_mapper["spClientRole"],
+                                "roleSysteme": clientRoles_mapper["eq_sadu_role"]
+                            }
+                            rolemapper.append(role)
                     body = {
-                                "nom": newSystemDBRepresentation["systemName"],
-                                "adressesApprovisionnement": adresse,
-                                "clientsKeycloak": newSystemDBRepresentation["clients"]
-                    }
+                            "nom": newSystemDBRepresentation["systemName"],
+                            "adressesApprovisionnement": adresse,
+                            "correspondancesRoles": rolemapper,
+                            "clientsKeycloak": newSystemDBRepresentation["clients"]
+                        }
                     try:
                         requests.post(sx5IdmUrl+"/systemes/",headers=headers,json=body)
                         getResponse = requests.get(sx5IdmUrl+"/systemes/search/findByNom?nom="+newSystemDBRepresentation["systemName"], headers=headers)
