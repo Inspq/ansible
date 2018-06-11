@@ -116,8 +116,10 @@ Arguments :
             'client_id': 'admin-cli'
     }
     try:
-        loginResponse = requests.post(url + '/auth/realms/' + realm + '/protocol/openid-connect/token',data=body)
-        #loginResponse = requests.post(url + '/auth/realms/master/protocol/openid-connect/token',data=body)
+        if username == "admin":
+            loginResponse = requests.post(url + '/auth/realms/master/protocol/openid-connect/token',data=body)
+        else:
+            loginResponse = requests.post(url + '/auth/realms/' + realm + '/protocol/openid-connect/token',data=body)
     
         loginData = loginResponse.json()
         accessToken = loginData['access_token']
