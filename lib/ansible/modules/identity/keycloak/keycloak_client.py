@@ -378,7 +378,7 @@ def client(params):
     changed = False
 
     try:
-        headers = loginAndSetHeaders(url, username, password)
+        headers = loginAndSetHeaders(url, realm, username, password)
     except Exception, e:
         result = dict(
             stderr   = 'login: ' + str(e),
