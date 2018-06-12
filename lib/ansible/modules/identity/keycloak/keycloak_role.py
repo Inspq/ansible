@@ -224,15 +224,28 @@ def role(params):
     result = dict()
     changed = False
 
-    try:
-        headers = loginAndSetHeaders(url, username, password)
-    except Exception, e:
-        result = dict(
-            stderr   = 'login: ' + str(e),
-            rc       = 1,
-            changed  = changed
-            )
-        return result
+    if username == 'admin':
+        try:
+            #accessToken = login(url, username, password)
+            #bearerHeader = "bearer " + accessToken
+            headers = loginAndSetHeaders(url, username, password)
+        except Exception, e:
+            result = dict(
+                stderr   = 'login: ' + str(e),
+                rc       = 1,
+                changed  = changed
+                )
+            return result
+    else:
+        try:
+            headers = realmLoginAndSetHeaders(url, realm, username, password)
+        except Exception, e:
+            result = dict(
+                stderr   = 'login: ' + str(e),
+                rc       = 1,
+                changed  = changed
+                )
+            return result
     try: 
         # Vérifier si le role existe sur le serveur Keycloak
         getResponse = requests.get(roleSvcBaseUrl + newRoleRepresentation["name"], headers=headers)
