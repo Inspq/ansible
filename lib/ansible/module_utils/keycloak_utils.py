@@ -88,7 +88,7 @@ def str2bool(value):
     return value.lower() in ("yes","true")
 
 import requests
-def login(url, realm, username, password):
+def login(url, username, password):
     '''
 Fonction : login
 Description :
@@ -116,10 +116,7 @@ Arguments :
             'client_id': 'admin-cli'
     }
     try:
-        if username == "admin":
-            loginResponse = requests.post(url + '/auth/realms/master/protocol/openid-connect/token',data=body)
-        else:
-            loginResponse = requests.post(url + '/auth/realms/' + realm + '/protocol/openid-connect/token',data=body)
+        loginResponse = requests.post(url + '/auth/realms/master/protocol/openid-connect/token',data=body)
     
         loginData = loginResponse.json()
         accessToken = loginData['access_token']
@@ -135,10 +132,10 @@ def setHeaders(accessToken):
     headers={'Authorization' : bearerHeader, 'Content-type': 'application/json'}
     return headers
 
-def loginAndSetHeaders(url, realm, username, password):
+def loginAndSetHeaders(url, username, password):
     headers = {}
     try:
-        accessToken = login(url, realm, username, password)
+        accessToken = login(url, username, password)
         headers = setHeaders(accessToken)
     except Exception, e:
         raise e
