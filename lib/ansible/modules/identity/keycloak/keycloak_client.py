@@ -377,15 +377,26 @@ def client(params):
     result = dict()
     changed = False
 
-    try:
-        headers = loginAndSetHeaders(url, realm, username, password)
-    except Exception, e:
-        result = dict(
-            stderr   = 'login: ' + str(e),
-            rc       = 1,
-            changed  = changed
-            )
-        return result
+    if username == 'admin':
+        try:
+            headers = loginAndSetHeaders(url, username, password)
+        except Exception, e:
+            result = dict(
+                stderr   = 'login: ' + str(e),
+                rc       = 1,
+                changed  = changed
+                )
+            return result
+    else:
+        try:
+            headers = realmLoginAndSetHeaders(url, realm, username, password)
+        except Exception, e:
+            result = dict(
+                stderr   = 'login: ' + str(e),
+                rc       = 1,
+                changed  = changed
+                )
+            return result
     try: 
         # Vérifier si le client existe sur le serveur Keycloak
         getResponse = requests.get(clientSvcBaseUrl, headers=headers, params={'clientId': newClientRepresentation["clientId"]})

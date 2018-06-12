@@ -127,6 +127,26 @@ Arguments :
 
     return accessToken
 
+def realmLogin(url, realm, username, password):
+    # Login to Keycloak
+    accessToken = ""
+    body = {
+            'grant_type': 'password',
+            'username': username,
+            'password': password,
+            'client_id': 'admin-cli'
+    }
+    try:
+        loginResponse = requests.post(url + '/auth/realms/' + realm + '/protocol/openid-connect/token',data=body)
+        loginData = loginResponse.json()
+        accessToken = loginData['access_token']
+    except requests.exceptions.RequestException, e:
+        raise e
+    except ValueError, e:
+        raise e
+
+    return accessToken
+
 def setHeaders(accessToken):
     bearerHeader = "bearer " + accessToken
     headers={'Authorization' : bearerHeader, 'Content-type': 'application/json'}
@@ -140,3 +160,12 @@ def loginAndSetHeaders(url, username, password):
     except Exception, e:
         raise e
     return headers
+def realmLoginAndSetHeaders(url, realm, username, password):
+    headers = {}
+    try:
+        accessToken = realmLogin(url, realm, username, password)
+        headers = setHeaders(accessToken)
+    except Exception, e:
+        raise e
+    return headers
+
