@@ -442,9 +442,9 @@ def client(params):
                                 roles = getResponse.json()
                                 for newComposite in newComposites:
                                     for role in roles:
-                                        if role['name'] == newComposite['name']:
-                                            newComposite['id'] = role['id']
-                                            newCompositeToCreate.append(newComposite)
+                                        #if role['name'] == newComposite['name']:
+                                        #    newComposite['id'] = role['id']
+                                        newCompositeToCreate.append(newComposite)
                                 # rôle composites
                                 data=json.dumps(newCompositeToCreate)
                                 postResponse = requests.post(clientSvcBaseUrl + clientRepresentation['id'] + '/roles/'+ newClientRole['name'] +'/composites', headers=headers, data=data)
@@ -578,9 +578,9 @@ def client(params):
                                         roles = getResponse.json()
                                         for newComposite in newComposites:
                                             for role in roles:
-                                                if role['name'] == newComposite['name']:
-                                                    newComposite['id'] = role['id']
-                                                    newCompositeToCreate.append(newComposite)
+                                                #if role['name'] == newComposite['name']:
+                                                #    newComposite['id'] = role['id']
+                                                newCompositeToCreate.append(newComposite)
                                         # rôle composites
                                         data=json.dumps(newCompositeToCreate)
                                         delResponse = requests.delete(clientSvcBaseUrl + clientRepresentation['id'] + '/roles/'+ newClientRole['name'] +'/composites', headers=headers, data=data)
@@ -610,9 +610,9 @@ def client(params):
                                     roles = getResponse.json()
                                     for newComposite in newComposites:
                                         for role in roles:
-                                            if role['name'] == newComposite['name']:
-                                                newComposite['id'] = role['id']
-                                                newCompositeToCreate.append(newComposite)
+                                            #if role['name'] == newComposite['name']:
+                                            #    newComposite['id'] = role['id']
+                                            newCompositeToCreate.append(newComposite)
                                     data=json.dumps(newCompositeToCreate)
                                     postResponse = requests.post(clientSvcBaseUrl + clientRepresentation['id'] + '/roles/'+ newClientRole['name'] +'/composites', headers=headers, data=data)
                                     getResponse = requests.get(clientSvcBaseUrl + clientRepresentation['id'] + '/roles/'+ newClientRole['name'] +'/composites', headers=headers)
