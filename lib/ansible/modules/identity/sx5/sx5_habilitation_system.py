@@ -93,11 +93,11 @@ EXAMPLES = '''
         spRealm: Master
         habilitationClient_id: sx5habilitation
         habilitationClient_secret: client_string
-        habilitationUrl = http://localhost:8089/config
+        habilitationUrl: http://localhost:8089/config
         systemName: systemName
         clientKeycloak:
         - spClient: client1
-        - spClient: client1
+        - spClient: client2
         state: present
 
     - name: Create a system system1 with default settings.
@@ -108,11 +108,11 @@ EXAMPLES = '''
         spRealm: Master
         habilitationClient_id: sx5habilitation
         habilitationClient_secret: client_string
-        habilitationUrl = http://localhost:8089/config
+        habilitationUrl: http://localhost:8089/config
         systemName: systemName
         clientKeycloak:
         - spClient: client1
-        - spClient: client1
+        - spClient: client2
         state: present
         force: yes
         
@@ -124,12 +124,12 @@ EXAMPLES = '''
         spRealm: Master
         habilitationClient_id: sx5habilitation
         habilitationClient_secret: client_string
-        habilitationUrl = http://localhost:8089/config
+        habilitationUrl: http://localhost:8089/config
         systemName: systemName
         clientKeycloak:
         - spClient: client1
-        - spClient: client1
-        state: adsent
+        - spClient: client2
+        state: absent
 
 '''
 
