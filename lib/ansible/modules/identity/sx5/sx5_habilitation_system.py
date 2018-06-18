@@ -25,10 +25,10 @@ ANSIBLE_METADATA = {'metadata_version': '1.1',
 DOCUMENTATION = '''
 ---
 author: "Etienne Sadio (etienne.sadio@inspq.qc.ca)"
-module: sx5_idm_system
-short_description: Configure a system application provisioning url in SX5 DB 
+module: sx5_habilitation_system
+short_description: Configure a system application in SX5 Habiliataion DB 
 description:
-    - This module creates, creat or update system application provisioning url.
+    - This module creates, creat or update system application in habilitation DB.
 version_added: "2.3"
 options:
     spUrl:
@@ -48,42 +48,26 @@ options:
         description:
             - The name of the Keycloak realm in which is the client.
         required: true
-    idmClient_id:
+    habilitationClient_id:
         description:
-            - IDM Client ID.
+            - Habilitation ui Client ID.
         required: true
-    idmClient_secret:
+    habilitationClient_secret:
         description:
-            - IDM Client Secret.
+            - Habilitation ui Client Secret.
         required: false
+    habilitationUrl:
+        description:
+            - sx5habilitation DB REST services URL.
+        required: true
     systemName:
         description:
             - System name of Client ID.
         required: true
-    clients:
+    clientKeycloak:
         description:
             - list of OIDC Client ID for the client in Keycloak.
         required: true
-    sx5IdmUrl:
-        description:
-            - sx5Idm DB REST services URL.
-        default: 
-        required: true
-    sadu_principal:
-        description:
-            - Princidal provisioning services URL.
-        default: 
-        required: true
-    sadu_secondary:
-        description:
-            - list of secondary provisioning services URL.
-        default: 
-        required: false
-    clientRoles_mapper:
-        description:
-            - list of role correspondance between keycloak roles end SADU roles.
-        default: 
-        required: false
     force:
         choices: [ "yes", "no" ]
         default: "no"
@@ -102,64 +86,49 @@ notes:
 
 EXAMPLES = '''
     - name: Create a system system1 with default settings.
-      sx5_idm_system:
+      sx5_habilitation_system:
         spUrl: http://localhost:8080/auth
         spUsername: admin
         spPassword: admin
         spRealm: Master
-        idmClient_id: sx5idm
-        idmClient_secret: client_string
-        clients: 
-        - nom: client1
-        - nom: client2
+        habilitationClient_id: sx5habilitation
+        habilitationClient_secret: client_string
+        habilitationUrl = http://localhost:8089/config
         systemName: systemName
-        sx5IdmUrl: http://localhost/client1
-        sadu_principal: http://localhost:8088/sadu1
-        sadu_secondary:
-        - adresse: http://localhost:8088/sadu2
-        - adresse: http://localhost:8088/sadu3
-        clientRoles_mapper:
-        - spClientRole: roleInSp1
-          eq_sadu_role: roleSadu1
-        - spClientRole: roleInSp2
-          eq_sadu_role: roleSadu2
+        clientKeycloak:
+        - spClient: client1
+        - spClient: client1
         state: present
 
-    - name: Re-create system1
-      sx5_idm_system:
+    - name: Create a system system1 with default settings.
+      sx5_habilitation_system:
         spUrl: http://localhost:8080/auth
         spUsername: admin
         spPassword: admin
-        idpRealm: Master
-        idmClient_id: sx5idm
-        idmClient_secret: client_string
-        clients: 
-        - nom: client1
-        - nom: client2
+        spRealm: Master
+        habilitationClient_id: sx5habilitation
+        habilitationClient_secret: client_string
+        habilitationUrl = http://localhost:8089/config
         systemName: systemName
-        sx5IdmUrl: http://localhost/client1
-        sadu_principal: http://localhost:8088/sadu1
-        sadu_secondary:
-        - adresse: http://localhost:8088/sadu2
-        - adresse: http://localhost:8088/sadu3
-        clientRoles_mapper:
-        - spClientRole: roleInSp1
-          eq_sadu_role: roleSadu1
-        - spClientRole: roleInSp2
-          eq_sadu_role: roleSadu2
+        clientKeycloak:
+        - spClient: client1
+        - spClient: client1
         state: present
         force: yes
         
-    - name: Remove system1
-      sx5_idm_system:
+    - name: Create a system system1 with default settings.
+      sx5_habilitation_system:
         spUrl: http://localhost:8080/auth
         spUsername: admin
         spPassword: admin
         spRealm: Master
-        idmClient_id: sx5idm
-        idmClient_secret: client_string
+        habilitationClient_id: sx5habilitation
+        habilitationClient_secret: client_string
+        habilitationUrl = http://localhost:8089/config
         systemName: systemName
-        sx5IdmUrl: http://localhost/client1
+        clientKeycloak:
+        - spClient: client1
+        - spClient: client1
         state: adsent
 
 '''
@@ -195,16 +164,13 @@ def main():
             spUsername=dict(type='str', required=True),
             spPassword=dict(required=True),
             spRealm=dict(type='str', required=True),
-            idmClient_id=dict(type='str', required=True),
-            idmClient_secret=dict(type='str', required=False),
-            clients=dict(type='list', default=[]),
+            habilitationClient_id=dict(type='str', required=True),
+            habilitationClient_secret=dict(type='str', required=False),
+            habilitationUrl = dict(type='str', required=True),
             systemName=dict(type='str', required=True),
+            clientKeycloak=dict(type='list', default=[]),
             force=dict(type='bool', default=False),
             state=dict(choices=["absent", "present"], default='present'),
-            sx5IdmUrl = dict(type='str', required=True),
-            sadu_principal = dict(type='str', required=True),
-            sadu_secondary = dict(type='list', default=[]),
-            clientRoles_mapper = dict(type='list', default=[]),
         ),
         supports_check_mode=True,
     )
@@ -219,89 +185,62 @@ def main():
         module.exit_json(**result)
     
 def system(params):
-    spUrl = None
-    if "spUrl" in params and params["spUrl"] is not None:
-        spUrl = params['spUrl']
-    if "spUsername" in params and params["spUsername"] is not None:
-        username = params['spUsername']
-    if "spPassword" in params and params["spPassword"] is not None:
-        password = params['spPassword']
-    if "idmClient_id" in params and params["idmClient_id"] is not None:
-        clientid = params['idmClient_id']
-    if "idmClient_secret" in params and params['idmClient_secret'] is not None:
-        clientSecret = params['idmClient_secret']
+    spUrl = params['spUrl']
+    username = params['spUsername']
+    password = params['spPassword']
+    clientid = params['habilitationClient_id']
+    if "habilitationClient_secret" in params and params['habilitationClient_secret'] is not None:
+        clientSecret = params['habilitationClient_secret']
     else:
         clientSecret = ''
+    realm = params['spRealm']
     force = params['force']
-    sx5IdmUrl = params['sx5IdmUrl']
+    habilitationUrl = params['habilitationUrl']
     state = params['state']
         
-    # Créer un représentation du system pour BD IDM
+    # Créer un représentation du system pour BD Habilitation
     newSystemDBRepresentation = {}
-    if "spRealm" in params and params["spRealm"] is not None:
-        realm = params['spRealm']
-        newSystemDBRepresentation["spRealm"] = params['spRealm'].decode("utf-8")
+    newSystemDBRepresentation["spRealm"] = params['spRealm'].decode("utf-8")
     if "clients" in params and params['clients'] is not None:
         newSystemDBRepresentation["clients"] = params['clients']
     newSystemDBRepresentation["systemName"] = params['systemName'].decode("utf-8")
-    newSystemDBRepresentation["sx5IdmUrl"] = params['sx5IdmUrl'].decode("utf-8")
-    newSystemDBRepresentation["sadu_principal"] = params['sadu_principal'].decode("utf-8")
-    if "sadu_secondary" in params and params['sadu_secondary'] is not None:
-        newSystemDBRepresentation["sadu_secondary"] = params['sadu_secondary']
-    if "clientRoles_mapper" in params and params['clientRoles_mapper'] is not None:
-        newSystemDBRepresentation["clientRoles_mapper"] = params['clientRoles_mapper']
+    newSystemDBRepresentation["habilitationUrl"] = params['habilitationUrl'].decode("utf-8")
+    if "clientKeycloak" in params and params['clientKeycloak'] is not None:
+        newSystemDBRepresentation["clientKeycloak"] = params['clientKeycloak']
     rc = 0
     result = dict()
     changed = False
     
-    headers=''
-    if spUrl:
-        try:
-            headers = loginAndSetHeaders(spUrl, realm, username, password, clientid, clientSecret)
-        except Exception, e:
-            result = dict(
-                stderr   = 'login: ' + str(e),
-                rc       = 1,
-                changed  = changed
-                )
-            return result
+    try:
+        headers = loginAndSetHeaders(spUrl, realm, username, password, clientid, clientSecret)
+    except Exception, e:
+        result = dict(
+            stderr   = 'login: ' + str(e),
+            rc       = 1,
+            changed  = changed
+            )
+        return result
     if state == 'present':# Si le status est présent
         if force: # Si force est de yes modifier le systeme meme s'il existe
             try:
-                getResponse = requests.get(sx5IdmUrl+"/systemes/search/findByNom?nom="+newSystemDBRepresentation["systemName"], headers=headers)
+                getResponse = requests.get(habilitationUrl+"/systemeConfigurations/search/findByNom?nom="+newSystemDBRepresentation["systemName"], headers=headers)
                 if getResponse.status_code == 200:#systeme existe, on le supprime et on le recree
                     dataResponse = getResponse.json()
-                    adresse = []
-                    adresseP={
-                        "principal": True,
-                        "adresse": newSystemDBRepresentation["sadu_principal"]
-                    }
-                    adresse.append(adresseP)
-                    for sadu_secondary in newSystemDBRepresentation["sadu_secondary"]:
-                        if "sadu_secondary" in params and params['sadu_secondary'] is not None:
-                            adresseS={
-                                "principal": False,
-                                "adresse": sadu_secondary["adresse"]
+                    client = []
+                    for clientKeycloak in newSystemDBRepresentation["clientKeycloak"]:
+                        if "clientKeycloak" in params and params['clientKeycloak'] is not None:
+                            clientS={
+                                "nom": clientKeycloak["spClient"]
                             }
-                            adresse.append(adresseS)
-                    rolemapper = []
-                    for clientRoles_mapper in newSystemDBRepresentation["clientRoles_mapper"]:
-                        if "sadu_secondary" in params and params['sadu_secondary'] is not None:
-                            role={
-                                "roleKeycloak": clientRoles_mapper["spClientRole"],
-                                "roleSysteme": clientRoles_mapper["eq_sadu_role"]
-                            }
-                            rolemapper.append(role)
+                            client.append(clientS)
                     body = {
                             "nom": newSystemDBRepresentation["systemName"],
-                            "adressesApprovisionnement": adresse,
-                            "correspondancesRoles": rolemapper,
-                            "clientsKeycloak": newSystemDBRepresentation["clients"]
+                            "clientsKeycloak": client
                         }
                     try:
                         requests.delete(dataResponse["_links"]["self"]["href"],headers=headers)
-                        requests.post(sx5IdmUrl+"/systemes/",headers=headers,json=body)
-                        getResponse = requests.get(sx5IdmUrl+"/systemes/search/findByNom?nom="+newSystemDBRepresentation["systemName"], headers=headers)
+                        requests.post(habilitationUrl+"/systemes/",headers=headers,json=body)
+                        getResponse = requests.get(habilitationUrl+"/systemeConfigurations/search/findByNom?nom="+newSystemDBRepresentation["systemName"], headers=headers)
                         dataResponse = getResponse.json()
                         changed = True
                         fact = dict(
@@ -331,36 +270,20 @@ def system(params):
                             changed  = changed
                             )
                 elif getResponse.status_code == 404: #systeme n'existe pas, le creer
-                    adresse = []
-                    adresseP={
-                        "principal": True,
-                        "adresse": newSystemDBRepresentation["sadu_principal"]
-                    }
-                    adresse.append(adresseP)
-                    for sadu_secondary in newSystemDBRepresentation["sadu_secondary"]:
-                        if "sadu_secondary" in params and params['sadu_secondary'] is not None:
-                            adresseS={
-                                "principal": False,
-                                "adresse": sadu_secondary["adresse"]
+                    client = []
+                    for clientKeycloak in newSystemDBRepresentation["clientKeycloak"]:
+                        if "clientKeycloak" in params and params['clientKeycloak'] is not None:
+                            clientS={
+                                "nom": clientKeycloak["spClient"]
                             }
-                            adresse.append(adresseS)
-                    rolemapper = []
-                    for clientRoles_mapper in newSystemDBRepresentation["clientRoles_mapper"]:
-                        if "sadu_secondary" in params and params['sadu_secondary'] is not None:
-                            role={
-                                "roleKeycloak": clientRoles_mapper["spClientRole"],
-                                "roleSysteme": clientRoles_mapper["eq_sadu_role"]
-                            }
-                            rolemapper.append(role)
+                            client.append(clientS)
                     body = {
                             "nom": newSystemDBRepresentation["systemName"],
-                            "adressesApprovisionnement": adresse,
-                            "correspondancesRoles": rolemapper,
-                            "clientsKeycloak": newSystemDBRepresentation["clients"]
+                            "clientsKeycloak": client
                         }
                     try:
-                        requests.post(sx5IdmUrl+"/systemes/",headers=headers,json=body)
-                        getResponse = requests.get(sx5IdmUrl+"/systemes/search/findByNom?nom="+newSystemDBRepresentation["systemName"], headers=headers)
+                        requests.post(habilitationUrl+"/systemes/",headers=headers,json=body)
+                        getResponse = requests.get(habilitationUrl+"/systemeConfigurations/search/findByNom?nom="+newSystemDBRepresentation["systemName"], headers=headers)
                         dataResponse = getResponse.json()
                         changed = True
                         fact = dict(
@@ -410,38 +333,21 @@ def system(params):
         # Si force est de no modifier le systeme s'il change
         else:
             try:
-                getResponse = requests.get(sx5IdmUrl+"/systemes/search/findByNom?nom="+newSystemDBRepresentation["systemName"], headers=headers)
+                getResponse = requests.get(habilitationUrl+"/systemeConfigurations/search/findByNom?nom="+newSystemDBRepresentation["systemName"], headers=headers)
                 if getResponse.status_code == 200:#systeme exist
                     dataResponse = getResponse.json()
-                    adresse = []
-                    adresseP={
-                        "principal": True,
-                        "adresse": newSystemDBRepresentation["sadu_principal"]
-                    }
-                    adresse.append(adresseP)
-                    for sadu_secondary in newSystemDBRepresentation["sadu_secondary"]:
-                        if "sadu_secondary" in params and params['sadu_secondary'] is not None:
-                            adresseS={
-                                "principal": False,
-                                "adresse": sadu_secondary["adresse"]
+                    client = []
+                    for clientKeycloak in newSystemDBRepresentation["clientKeycloak"]:
+                        if "clientKeycloak" in params and params['clientKeycloak'] is not None:
+                            clientS={
+                                "nom": clientKeycloak["spClient"]
                             }
-                            adresse.append(adresseS)
-                    rolemapper = []
-                    for clientRoles_mapper in newSystemDBRepresentation["clientRoles_mapper"]:
-                        if "sadu_secondary" in params and params['sadu_secondary'] is not None:
-                            role={
-                                "roleKeycloak": clientRoles_mapper["spClientRole"],
-                                "roleSysteme": clientRoles_mapper["eq_sadu_role"]
-                            }
-                            rolemapper.append(role)
+                            client.append(clientS)
                     body = {
                             "nom": newSystemDBRepresentation["systemName"],
-                            "adressesApprovisionnement": adresse,
-                            "correspondancesRoles": rolemapper,
-                            "clientsKeycloak": newSystemDBRepresentation["clients"]
+                            "clientsKeycloak": client
                         }
-                    
-                    if body["adressesApprovisionnement"] == dataResponse["adressesApprovisionnement"] and body["clientsKeycloak"] == dataResponse["clientsKeycloak"] and body["correspondancesRoles"] == dataResponse["correspondancesRoles"]:
+                    if body["clientsKeycloak"] == dataResponse["clientsKeycloak"]:
                         changed = False
                         fact = dict(
                             systemes = dataResponse
@@ -454,7 +360,7 @@ def system(params):
                     else:
                         try:
                             requests.put(dataResponse["_links"]["self"]["href"],headers=headers,json=body)
-                            getResponse = requests.get(sx5IdmUrl+"/systemes/search/findByNom?nom="+newSystemDBRepresentation["systemName"], headers=headers)
+                            getResponse = requests.get(habilitationUrl+"/systemeConfigurations/search/findByNom?nom="+newSystemDBRepresentation["systemName"], headers=headers)
                             dataResponse = getResponse.json()
                             changed = True
                             fact = dict(
@@ -484,36 +390,20 @@ def system(params):
                                 changed  = changed
                                 )
                 elif getResponse.status_code == 404: #systeme n'existe pas, le creer
-                    adresse = []
-                    adresseP={
-                        "principal": True,
-                        "adresse": newSystemDBRepresentation["sadu_principal"]
-                    }
-                    adresse.append(adresseP)
-                    for sadu_secondary in newSystemDBRepresentation["sadu_secondary"]:
-                        if "sadu_secondary" in params and params['sadu_secondary'] is not None:
-                            adresseS={
-                                "principal": False,
-                                "adresse": sadu_secondary["adresse"]
+                    client = []
+                    for clientKeycloak in newSystemDBRepresentation["clientKeycloak"]:
+                        if "clientKeycloak" in params and params['clientKeycloak'] is not None:
+                            clientS={
+                                "nom": clientKeycloak["spClient"]
                             }
-                            adresse.append(adresseS)
-                    rolemapper = []
-                    for clientRoles_mapper in newSystemDBRepresentation["clientRoles_mapper"]:
-                        if "sadu_secondary" in params and params['sadu_secondary'] is not None:
-                            role={
-                                "roleKeycloak": clientRoles_mapper["spClientRole"],
-                                "roleSysteme": clientRoles_mapper["eq_sadu_role"]
-                            }
-                            rolemapper.append(role)
+                            client.append(clientS)
                     body = {
                             "nom": newSystemDBRepresentation["systemName"],
-                            "adressesApprovisionnement": adresse,
-                            "correspondancesRoles": rolemapper,
-                            "clientsKeycloak": newSystemDBRepresentation["clients"]
+                            "clientsKeycloak": client
                         }
                     try:
-                        requests.post(sx5IdmUrl+"/systemes/",headers=headers,json=body)
-                        getResponse = requests.get(sx5IdmUrl+"/systemes/search/findByNom?nom="+newSystemDBRepresentation["systemName"], headers=headers)
+                        requests.post(habilitationUrl+"/systemeConfigurations/",headers=headers,json=body)
+                        getResponse = requests.get(habilitationUrl+"/systemeConfigurations/search/findByNom?nom="+newSystemDBRepresentation["systemName"], headers=headers)
                         dataResponse = getResponse.json()
                         changed = True
                         fact = dict(
@@ -562,7 +452,7 @@ def system(params):
                     )
     elif state == 'absent':# Supprimer le systeme
         try:
-            getResponse = requests.get(sx5IdmUrl+"/systemes/search/findByNom?nom="+newSystemDBRepresentation["systemName"], headers=headers)
+            getResponse = requests.get(habilitationUrl+"/systemeConfigurations/search/findByNom?nom="+newSystemDBRepresentation["systemName"], headers=headers)
             if getResponse.status_code == 200:
                 dataResponse = getResponse.json()
                 try:

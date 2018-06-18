@@ -377,15 +377,26 @@ def client(params):
     result = dict()
     changed = False
 
-    try:
-        headers = loginAndSetHeaders(url, username, password)
-    except Exception, e:
-        result = dict(
-            stderr   = 'login: ' + str(e),
-            rc       = 1,
-            changed  = changed
-            )
-        return result
+    if username == 'admin':
+        try:
+            headers = loginAndSetHeaders(url, username, password)
+        except Exception, e:
+            result = dict(
+                stderr   = 'login: ' + str(e),
+                rc       = 1,
+                changed  = changed
+                )
+            return result
+    else:
+        try:
+            headers = realmLoginAndSetHeaders(url, realm, username, password)
+        except Exception, e:
+            result = dict(
+                stderr   = 'login: ' + str(e),
+                rc       = 1,
+                changed  = changed
+                )
+            return result
     try: 
         # Vérifier si le client existe sur le serveur Keycloak
         getResponse = requests.get(clientSvcBaseUrl, headers=headers, params={'clientId': newClientRepresentation["clientId"]})
@@ -423,22 +434,25 @@ def client(params):
                         # rôle composites
                         if 'composites' in newClientRole and newClientRole['composites'] is not None:
                             newComposites = newClientRole['composites']
-                            getResponse=requests.get(clientSvcBaseUrl + clientRepresentation['id'] + '/roles', headers=headers)
-                            newCompositeToCreate = []
-                            if getResponse.status_code == 404:
-                                raise Exception("Role just created not found: " + str(newComposites))
-                            else:# rôle composites update
-                                roles = getResponse.json()
-                                for newComposite in newComposites:
-                                    for role in roles:
-                                        if role['name'] == newComposite['name']:
-                                            newComposite['id'] = role['id']
-                                            newCompositeToCreate.append(newComposite)
-                                # rôle composites
-                                data=json.dumps(newCompositeToCreate)
-                                postResponse = requests.post(clientSvcBaseUrl + clientRepresentation['id'] + '/roles/'+ newClientRole['name'] +'/composites', headers=headers, data=data)
-                                getResponse = requests.get(clientSvcBaseUrl + clientRepresentation['id'] + '/roles/'+ newClientRole['name'] +'/composites', headers=headers)
-                                composites.append(getResponse.text)
+                            getResponse=requests.get(clientSvcBaseUrl, headers=headers)
+                            clientLists = getResponse.json()
+                            for clientList in clientLists:
+                                getResponse=requests.get(clientSvcBaseUrl + clientList['id'] + '/roles', headers=headers)
+                                newCompositeToCreate = []
+                                if getResponse.status_code == 404:
+                                    raise Exception("Role just created not found: " + str(newComposites))
+                                else:# rôle composites update
+                                    roles = getResponse.json()
+                                    for newComposite in newComposites:
+                                        for role in roles:
+                                            if role['name'] == newComposite['name']:
+                                                newComposite['id'] = role['id']
+                                                newCompositeToCreate.append(newComposite)
+                                    # rôle composites
+                                    data=json.dumps(newCompositeToCreate)
+                                    postResponse = requests.post(clientSvcBaseUrl + clientRepresentation['id'] + '/roles/'+ newClientRole['name'] +'/composites', headers=headers, data=data)
+                                    getResponse = requests.get(clientSvcBaseUrl + clientRepresentation['id'] + '/roles/'+ newClientRole['name'] +'/composites', headers=headers)
+                                    composites.append(getResponse.text)
                 # Créer les protocols mappers
                 if newClientProtocolMappers is not None:
                     for newClientProtocolMapper in newClientProtocolMappers:
@@ -557,25 +571,26 @@ def client(params):
                                 # rôle composites
                                 if 'composites' in newClientRole and newClientRole['composites'] is not None:
                                     newComposites = newClientRole['composites']
-                                    #ID of composite role by name
-                                    getResponse=requests.get(clientSvcBaseUrl + clientRepresentation['id'] + '/roles', headers=headers)
-                                    #getResponse=requests.get(clientSvcBaseUrl + clientRepresentation['id'] + '/roles/' + newComposites['name'], headers=headers)
-                                    newCompositeToCreate = []
-                                    if getResponse.status_code == 404:
-                                        raise Exception("Role just created not found: " + str(newComposites))
-                                    else:# rôle composites update
-                                        roles = getResponse.json()
-                                        for newComposite in newComposites:
-                                            for role in roles:
-                                                if role['name'] == newComposite['name']:
-                                                    newComposite['id'] = role['id']
-                                                    newCompositeToCreate.append(newComposite)
-                                        # rôle composites
-                                        data=json.dumps(newCompositeToCreate)
-                                        delResponse = requests.delete(clientSvcBaseUrl + clientRepresentation['id'] + '/roles/'+ newClientRole['name'] +'/composites', headers=headers, data=data)
-                                        putResponse = requests.post(clientSvcBaseUrl + clientRepresentation['id'] + '/roles/'+ newClientRole['name'] +'/composites', headers=headers, data=data)
-                                        getResponse = requests.get(clientSvcBaseUrl + clientRepresentation['id'] + '/roles/'+ newClientRole['name'] +'/composites', headers=headers)
-                                        composites.append(getResponse.text)
+                                    getResponse=requests.get(clientSvcBaseUrl, headers=headers)
+                                    clientLists = getResponse.json()
+                                    for clientList in clientLists:
+                                        getResponse=requests.get(clientSvcBaseUrl + clientList['id'] + '/roles', headers=headers)
+                                        newCompositeToCreate = []
+                                        if getResponse.status_code == 404:
+                                            raise Exception("Role just created not found: " + str(newComposites))
+                                        else:# rôle composites update
+                                            roles = getResponse.json()
+                                            for newComposite in newComposites:
+                                                for role in roles:
+                                                    if role['name'] == newComposite['name']:
+                                                        newComposite['id'] = role['id']
+                                                        newCompositeToCreate.append(newComposite)
+                                            # rôle composites
+                                            data=json.dumps(newCompositeToCreate)
+                                            delResponse = requests.delete(clientSvcBaseUrl + clientRepresentation['id'] + '/roles/'+ newClientRole['name'] +'/composites', headers=headers, data=data)
+                                            putResponse = requests.post(clientSvcBaseUrl + clientRepresentation['id'] + '/roles/'+ newClientRole['name'] +'/composites', headers=headers, data=data)
+                                            getResponse = requests.get(clientSvcBaseUrl + clientRepresentation['id'] + '/roles/'+ newClientRole['name'] +'/composites', headers=headers)
+                                            composites.append(getResponse.text)
                         else: # Si le rôle n'existe pas pour ce client
                             changed = True
                             # Créer le rôle
@@ -589,23 +604,25 @@ def client(params):
                             # rôle composites
                             if 'composites' in newClientRole and newClientRole['composites'] is not None:
                                 newComposites = newClientRole['composites']
-                                #ID of composite role by name
-                                getResponse=requests.get(clientSvcBaseUrl + clientRepresentation['id'] + '/roles', headers=headers)
-                                #getResponse=requests.get(clientSvcBaseUrl + clientRepresentation['id'] + '/roles/' + newComposites['name'], headers=headers)
-                                newCompositeToCreate = []
-                                if getResponse.status_code == 404:
-                                    raise Exception("Role just created not found: " + str(newComposites))
-                                else:# rôle composites update
-                                    roles = getResponse.json()
-                                    for newComposite in newComposites:
-                                        for role in roles:
-                                            if role['name'] == newComposite['name']:
-                                                newComposite['id'] = role['id']
-                                                newCompositeToCreate.append(newComposite)
-                                    data=json.dumps(newCompositeToCreate)
-                                    postResponse = requests.post(clientSvcBaseUrl + clientRepresentation['id'] + '/roles/'+ newClientRole['name'] +'/composites', headers=headers, data=data)
-                                    getResponse = requests.get(clientSvcBaseUrl + clientRepresentation['id'] + '/roles/'+ newClientRole['name'] +'/composites', headers=headers)
-                                    composites.append(getResponse.text)
+                                getResponse=requests.get(clientSvcBaseUrl, headers=headers)
+                                clientLists = getResponse.json()
+                                for clientList in clientLists:
+                                    getResponse=requests.get(clientSvcBaseUrl + clientList['id'] + '/roles', headers=headers)
+                                    newCompositeToCreate = []
+                                    if getResponse.status_code == 404:
+                                        raise Exception("Role just created not found: " + str(newComposites))
+                                    else:# rôle composites update
+                                        roles = getResponse.json()
+                                        for newComposite in newComposites:
+                                            for role in roles:
+                                                if role['name'] == newComposite['name']:
+                                                    newComposite['id'] = role['id']
+                                                    newCompositeToCreate.append(newComposite)
+                                        # rôle composites
+                                        data=json.dumps(newCompositeToCreate)
+                                        postResponse = requests.post(clientSvcBaseUrl + clientRepresentation['id'] + '/roles/'+ newClientRole['name'] +'/composites', headers=headers, data=data)
+                                        getResponse = requests.get(clientSvcBaseUrl + clientRepresentation['id'] + '/roles/'+ newClientRole['name'] +'/composites', headers=headers)
+                                        composites.append(getResponse.text)
                 # Traiter les protocol Mappers
                 if newClientProtocolMappers is not None:
                     # Obtenir la liste des mappers existant pour le client

@@ -359,15 +359,28 @@ def user(params):
     result = dict()
     changed = False
 
-    try:
-        headers = loginAndSetHeaders(url, username, password)
-    except Exception, e:
-        result = dict(
-            stderr   = 'login: ' + str(e),
-            rc       = 1,
-            changed  = changed
-            )
-        return result
+    if username == 'admin':
+        try:
+            #accessToken = login(url, username, password)
+            #bearerHeader = "bearer " + accessToken
+            headers = loginAndSetHeaders(url, username, password)
+        except Exception, e:
+            result = dict(
+                stderr   = 'login: ' + str(e),
+                rc       = 1,
+                changed  = changed
+                )
+            return result
+    else:
+        try:
+            headers = realmLoginAndSetHeaders(url, realm, username, password)
+        except Exception, e:
+            result = dict(
+                stderr   = 'login: ' + str(e),
+                rc       = 1,
+                changed  = changed
+                )
+            return result
     try: 
         # Check if the user exists on the Keycloak server
         #getResponse = requests.get(userSvcBaseUrl+"?username="+newUserRepresentation["username"], headers=headers)

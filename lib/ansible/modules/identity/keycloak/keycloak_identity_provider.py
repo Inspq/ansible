@@ -396,17 +396,28 @@ def idp(params, module = None):
     
     #print str(newIdPRepresentation)
 
-    try:
-        #accessToken = login(url, username, password)
-        #bearerHeader = "bearer " + accessToken
-        headers = loginAndSetHeaders(url, username, password)
-    except Exception, e:
-        result = dict(
-            stderr   = 'login: ' + str(e),
-            rc       = 1,
-            changed  = changed
-            )
-        return result
+    if username == 'admin':
+        try:
+            #accessToken = login(url, username, password)
+            #bearerHeader = "bearer " + accessToken
+            headers = loginAndSetHeaders(url, username, password)
+        except Exception, e:
+            result = dict(
+                stderr   = 'login: ' + str(e),
+                rc       = 1,
+                changed  = changed
+                )
+            return result
+    else:
+        try:
+            headers = realmLoginAndSetHeaders(url, realm, username, password)
+        except Exception, e:
+            result = dict(
+                stderr   = 'login: ' + str(e),
+                rc       = 1,
+                changed  = changed
+                )
+            return result
     try:
         if newIdPConfig is not None:
             if 'openIdConfigurationUrl' in params['config']:
