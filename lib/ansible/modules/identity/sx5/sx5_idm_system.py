@@ -203,22 +203,28 @@ def main():
         module.exit_json(**result)
     
 def system(params):
-    spUrl = params['spUrl']
-    username = params['spUsername']
-    password = params['spPassword']
-    clientid = params['idmClient_id']
+    spUrl = None
+    if "spUrl" in params and params["spUrl"] is not None:
+        spUrl = params['spUrl']
+    if "spUsername" in params and params["spUsername"] is not None:
+        username = params['spUsername']
+    if "spPassword" in params and params["spPassword"] is not None:
+        password = params['spPassword']
+    if "idmClient_id" in params and params["idmClient_id"] is not None:
+        clientid = params['idmClient_id']
     if "idmClient_secret" in params and params['idmClient_secret'] is not None:
         clientSecret = params['idmClient_secret']
     else:
         clientSecret = ''
-    realm = params['spRealm']
     force = params['force']
     sx5IdmUrl = params['sx5IdmUrl']
     state = params['state']
         
     # Créer un représentation du system pour BD IDM
     newSystemDBRepresentation = {}
-    newSystemDBRepresentation["spRealm"] = params['spRealm'].decode("utf-8")
+    if "spRealm" in params and params["spRealm"] is not None:
+        realm = params['spRealm']
+        newSystemDBRepresentation["spRealm"] = params['spRealm'].decode("utf-8")
     if "clients" in params and params['clients'] is not None:
         newSystemDBRepresentation["clients"] = params['clients']
     newSystemDBRepresentation["systemName"] = params['systemName'].decode("utf-8")
@@ -230,15 +236,17 @@ def system(params):
     result = dict()
     changed = False
     
-    try:
-        headers = loginAndSetHeaders(spUrl, realm, username, password, clientid, clientSecret)
-    except Exception, e:
-        result = dict(
-            stderr   = 'login: ' + str(e),
-            rc       = 1,
-            changed  = changed
-            )
-        return result
+    headers=''
+    if spUrl:
+        try:
+            headers = loginAndSetHeaders(spUrl, realm, username, password, clientid, clientSecret)
+        except Exception, e:
+            result = dict(
+                stderr   = 'login: ' + str(e),
+                rc       = 1,
+                changed  = changed
+                )
+            return result
     if state == 'present':# Si le status est présent
         if force: # Si force est de yes modifier le systeme meme s'il existe
             try:

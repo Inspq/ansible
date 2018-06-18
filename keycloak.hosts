@@ -1,5 +1,4 @@
 [all:vars]
 ansible_user=root
-keycloak_base_url=localhost
 [all]
 localhost

@@ -100,3 +100,5 @@ htmlcov/
 test/units/.coverage.*
 /test/integration/cloud-config-azure.yml
 /nosetests.xml
+
+roles/

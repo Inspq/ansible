@@ -7,13 +7,13 @@ class Sx5SystemTestCase(unittest.TestCase):
 
     def test_create_system(self):
         toCreate = {}
-        toCreate["spUrl"] = "http://localhost:18081"
-        toCreate["spUsername"] = "admin"
-        toCreate["spPassword"] = "admin"
-        toCreate["spRealm"] = "master"
-        toCreate["idmClient_id"] = "admin-cli"
-        toCreate["idmClient_secret"] = ""
-        toCreate["sx5IdmUrl"] = "http://localhost:8089/idm/config"
+#        toCreate["spUrl"] = "http://localhost:18081"
+#        toCreate["spUsername"] = "admin"
+#        toCreate["spPassword"] = "admin"
+#        toCreate["spRealm"] = "master"
+#        toCreate["idmClient_id"] = "admin-cli"
+#        toCreate["idmClient_secret"] = ""
+        toCreate["sx5IdmUrl"] = "http://localhost:18085/idm/config"
         toCreate["systemName"] = "test1"
         toCreate["clients"] = [{"nom": "client1"},{"nom": "client2"}]
         toCreate["sadu_principal"] = "http://sadu_principal"
@@ -27,13 +27,13 @@ class Sx5SystemTestCase(unittest.TestCase):
 
     def test_system_not_changed(self):
         toDoNotChange = {}
-        toDoNotChange["spUrl"] = "http://localhost:18081"
-        toDoNotChange["spUsername"] = "admin   "
-        toDoNotChange["spPassword"] = "admin"
-        toDoNotChange["spRealm"] = "master"
-        toDoNotChange["idmClient_id"] = "admin-cli"
-        toDoNotChange["idmClient_secret"] = ""
-        toDoNotChange["sx5IdmUrl"] = "http://localhost:8089/idm/config"
+#        toDoNotChange["spUrl"] = "http://localhost:18081"
+#        toDoNotChange["spUsername"] = "admin"
+#        toDoNotChange["spPassword"] = "admin"
+#        toDoNotChange["spRealm"] = "master"
+#        toDoNotChange["idmClient_id"] = "admin-cli"
+#        toDoNotChange["idmClient_secret"] = ""
+        toDoNotChange["sx5IdmUrl"] = "http://localhost:18085/idm/config"
         toDoNotChange["systemName"] = "test2"
         toDoNotChange["clients"] = [{"nom": "client1"},{"nom": "client2"}]
         toDoNotChange["sadu_principal"] = "http://sadu_principal"
@@ -49,13 +49,13 @@ class Sx5SystemTestCase(unittest.TestCase):
 
     def test_modify_system(self):
         toChange = {}
-        toChange["spUrl"] = "http://localhost:18081"
-        toChange["spUsername"] = "admin"
-        toChange["spPassword"] = "admin"
-        toChange["spRealm"] = "master"
-        toChange["idmClient_id"] = "admin-cli"
-        toChange["idmClient_secret"] = ""
-        toChange["sx5IdmUrl"] = "http://localhost:8089/idm/config"
+ #       toChange["spUrl"] = "http://localhost:18081"
+ #       toChange["spUsername"] = "admin"
+ #       toChange["spPassword"] = "admin"
+ #       toChange["spRealm"] = "master"
+ #       toChange["idmClient_id"] = "admin-cli"
+ #       toChange["idmClient_secret"] = ""
+        toChange["sx5IdmUrl"] = "http://localhost:18085/idm/config"
         toChange["systemName"] = "test3"
         toChange["clients"] = [{"nom": "client1"},{"nom": "client2"}]
         toChange["sadu_principal"] = "http://sadu_principal"
@@ -73,13 +73,13 @@ class Sx5SystemTestCase(unittest.TestCase):
         
     def test_delete_system(self):
         toDelete = {}
-        toDelete["spUrl"] = "http://localhost:18081"
-        toDelete["spUsername"] = "admin"
-        toDelete["spPassword"] = "admin"
-        toDelete["spRealm"] = "master"
-        toDelete["idmClient_id"] = "admin-cli"
-        toDelete["idmClient_secret"] = ""
-        toDelete["sx5IdmUrl"] = "http://localhost:8089/idm/config"
+#        toDelete["spUrl"] = "http://localhost:18081"
+#        toDelete["spUsername"] = "admin"
+#        toDelete["spPassword"] = "admin"
+#        toDelete["spRealm"] = "master"
+#        toDelete["idmClient_id"] = "admin-cli"
+#        toDelete["idmClient_secret"] = ""
+        toDelete["sx5IdmUrl"] = "http://localhost:18085/idm/config"
         toDelete["systemName"] = "system01"
         toDelete["clients"] = [{"nom": "client1"},{"nom": "client2"}]
         toDelete["sadu_principal"] = "http://sadu_principal"

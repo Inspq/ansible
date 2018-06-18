@@ -19,7 +19,7 @@ pipeline {
                 sh "source hacking/env-setup; ansible-test sanity --test validate-modules"
            	}
         }
-        stage ('Tests unitaires du module ansible de Keycloak sur la dernière version de Keycloak') {
+        stage ('Tests unitaires des modules ansible de Keycloak sur la dernière version de Keycloak') {
             steps {
                 sh "source hacking/env-setup; ansible-playbook -i keycloak.hosts -e docker_image=nexus3.inspq.qc.ca:5000/inspq/keycloak -e docker_image_version=latest deploy-keycloak.yml"
                 sh "source hacking/env-setup; nosetests --with-xunit --xunit-file=nosetests-keycloak.xml test/units/module_utils/test_keycloak_utils.py test/units/modules/identity/keycloak/test_keycloak_authentication.py test/units/modules/identity/keycloak/test_keycloak_client.py test/units/modules/identity/keycloak/test_keycloak_group.py test/units/modules/identity/keycloak/test_keycloak_identity_provider.py test/units/modules/identity/keycloak/test_keycloak_realm.py test/units/modules/identity/keycloak/test_keycloak_role.py test/units/modules/identity/keycloak/test_keycloak_user.py test/units/modules/identity/keycloak/test_keycloak_component.py"
@@ -31,7 +31,7 @@ pipeline {
                 }
             }
         }
-        stage ('Tests unitaires du module ansible de Keycloak sur la dernière version de RHSSO') {
+        stage ('Tests unitaires des modules ansible de Keycloak sur la dernière version de RHSSO') {
             steps {
                 sh "source hacking/env-setup; ansible-playbook -i keycloak.hosts -e docker_image=nexus3.inspq.qc.ca:5000/inspq/rhsso -e docker_image_version=latest deploy-keycloak.yml"
                 sh "source hacking/env-setup; nosetests --with-xunit --xunit-file=nosetests-rhsso.xml test/units/module_utils/test_keycloak_utils.py test/units/modules/identity/keycloak/test_keycloak_authentication.py test/units/modules/identity/keycloak/test_keycloak_client.py test/units/modules/identity/keycloak/test_keycloak_group.py test/units/modules/identity/keycloak/test_keycloak_identity_provider.py test/units/modules/identity/keycloak/test_keycloak_realm.py test/units/modules/identity/keycloak/test_keycloak_role.py test/units/modules/identity/keycloak/test_keycloak_user.py test/units/modules/identity/keycloak/test_keycloak_component.py"
@@ -40,6 +40,18 @@ pipeline {
             post {
                 success {
                     junit '**/nosetests-rhsso.xml'
+                }
+            }
+        }
+        stage ('Tests unitaires des modules ansible de sx5-idm') {
+            steps {
+                sh "source hacking/env-setup; ansible-playbook -i sx5-idm.hosts -e sx5idm_image_version=1.0.4-SNAPSHOT deploy-sx5-idm.yml"
+                sh "source hacking/env-setup; nosetests --with-xunit --xunit-file=nosetests-sx5-idm.xml test/units/module_utils/test_sx5_idm_system_utils.py test/units/modules/identity/sx5/test_sx5_idm*.py"
+                sh "source hacking/env-setup; ansible-playbook -i sx5-idm.hosts cleanup-sx5-idm.yml"
+            }
+            post {
+                success {
+                    junit '**/nosetests-sx5-idm.xml'
                 }
             }
         }
