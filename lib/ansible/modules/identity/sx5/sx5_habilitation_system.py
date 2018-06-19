@@ -244,10 +244,10 @@ def system(params):
                                     for dataKeycloak in dataResponseKeycloak:
                                         if dataKeycloak["clientId"] == clientKeycloak["spClient"]:
                                             clientS={
-                                                "nom": clientKeycloak["spClient"],
+                                                "nom": dataKeycloak["name"],
                                                 "uuidKeycloak": dataKeycloak["id"],
                                                 "clientid": dataKeycloak["clientId"],
-                                                "description": dataKeycloak["clientId"]
+                                                "description": dataKeycloak["description"]
                                             }
                                         else:
                                             clientS={
@@ -319,10 +319,10 @@ def system(params):
                                     for dataKeycloak in dataResponseKeycloak:
                                         if dataKeycloak["clientId"] == clientKeycloak["spClient"]:
                                             clientS={
-                                                "nom": clientKeycloak["spClient"],
+                                                "nom": dataKeycloak["name"],
                                                 "uuidKeycloak": dataKeycloak["id"],
                                                 "clientid": dataKeycloak["clientId"],
-                                                "description": dataKeycloak["clientId"]
+                                                "description": dataKeycloak["description"]
                                             }
                                         else:
                                             clientS={
@@ -416,10 +416,10 @@ def system(params):
                                     for dataKeycloak in dataResponseKeycloak:
                                         if dataKeycloak["clientId"] == clientKeycloak["spClient"]:
                                             clientS={
-                                                "nom": clientKeycloak["spClient"],
+                                                "nom": dataKeycloak["name"],
                                                 "uuidKeycloak": dataKeycloak["id"],
                                                 "clientid": dataKeycloak["clientId"],
-                                                "description": dataKeycloak["clientId"]
+                                                "description": dataKeycloak["description"]
                                             }
                                         else:
                                             clientS={
@@ -504,10 +504,10 @@ def system(params):
                                     for dataKeycloak in dataResponseKeycloak:
                                         if dataKeycloak["clientId"] == clientKeycloak["spClient"]:
                                             clientS={
-                                                "nom": clientKeycloak["spClient"],
+                                                "nom": dataKeycloak["name"],
                                                 "uuidKeycloak": dataKeycloak["id"],
                                                 "clientid": dataKeycloak["clientId"],
-                                                "description": dataKeycloak["clientId"]
+                                                "description": dataKeycloak["description"]
                                             }
                                         else:
                                             clientS={
