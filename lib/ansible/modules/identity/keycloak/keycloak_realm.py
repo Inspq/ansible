@@ -271,6 +271,10 @@ options:
     - SMTP Server.
     default: {}
     required: false
+  eventsExpiration:
+    description:
+    - backup time of logs in keycloak.
+    required: false
   eventsConfig:
     description:
     - Event configuration for the realm.
@@ -449,6 +453,7 @@ def main():
             otpPolicyLookAheadWindow = dict(type='int', default=1),
             otpPolicyPeriod = dict(type='int', default=30),
             smtpServer = dict(type='dict', default={}),
+            eventsExpiration = dict(type='int'),
             eventsConfig = dict(type='dict'),
             browserFlow= dict(type='str', default="browser"),
             registrationFlow= dict(type='str', default="registration"),
@@ -569,7 +574,8 @@ def realm(params):
     newRealmRepresentation["directGrantFlow"] = params['directGrantFlow'].decode("utf-8")
     newRealmRepresentation["resetCredentialsFlow"] = params['resetCredentialsFlow'].decode("utf-8")
     newRealmRepresentation["clientAuthenticationFlow"] = params['clientAuthenticationFlow'].decode("utf-8")
-    
+    if "eventsExpiration" in params and params["eventsExpiration"] is not None:
+      newRealmRepresentation["eventsExpiration"] = params['eventsExpiration']
     # Stocker le REALM dans un body prèt a être posté
     data=json.dumps(newRealmRepresentation)
     # Read Events configuration for the Realm
