@@ -1,8 +1,65 @@
 ---
 - hosts: all
-  roles:
-  - role: keycloak
+  vars:
+    keycloak_user: admin
+    keycloak_password: admin
+    keycloak_loglevel: DEBUG
     keycloak_config: standalone-ansible.xml
+    keycloak_external_port: 18081
+    keycloak_internal_port: 8080
+    docker_image: jboss/keycloak
+    keycloak_container_name: keycloak
+    docker_image_version: latest
+  tasks:
+  - name: Definir les variables d'environnement
+    set_fact:
+      keycloak_container_env:
+        KEYCLOAK_USER: "{{ keycloak_user }}"
+        KEYCLOAK_PASSWORD: "{{ keycloak_password }}"
+        KEYCLOAK_LOGLEVEL: "{{ keycloak_loglevel }}"
+        KEYCLOAK_CONFIG: "{{ keycloak_config | default() }}"
+        KEYCLOAK_HA_CONFIG: "{{ keycloak_ha_config | default() }}"
+        DB_URL: "{{ keycloak_db_url | default() }}"
+        DB_USERNAME: "{{ keycloak_db_username | default() }}"
+        DB_PASSWORD: "{{ keycloak_db_password | default() }}"
+        KEYCLOAK_DB_DRIVER: "{{ keycloak_db_driver | default() }}"
+        GRAYLOG_HOST_BASE: "{{ keycloak_url | default() }}"
+        GRAYLOG_URL: "{{ keycloak_graylog_host | default() }}"
+        GRAYLOG_PORT:  "{{ keycloak_graylog_gelf_tcp | default() }}"
+        GRAYLOG_ROTATE_SIZE: "{{ keycloak_graylog_rotate_size | default() }}"  
+        GRAYLOG_NB_FILE: "{{ keycloak_graylog_nb_file | default() }}" 
+        GRAYLOG_LOG_FILE: "{{ keycloak_graylog_log_file | default() }}"
+        KEYCLOAK_DEBUG_PORT: "{{ keycloak_debug_port | default() }}"
+        CLUSTER_INITIAL_HOSTS: "{{ keycloak_cluster_initial_hosts | default() }}"
+  
+  - name: Definir les mapping de port pour le mode standalone
+    set_fact:
+      keycloak_port_mappings:
+        - "{{ keycloak_external_port }}:{{ keycloak_internal_port }}"
+      
+  - name: Conteneur Keycloak standalone
+    docker_container:
+      name: "{{ keycloak_container_name }}"
+      hostname: "{{ keycloak_container_name }}"
+      image: "{{ docker_image }}:{{ docker_image_version }}"
+      state: started
+      restart_policy: unless-stopped
+      log_driver: "{{ keycloak_log_driver | default(omit) }}"
+      log_options: "{{ keycloak_log_options | default(omit) }}"
+      ports: "{{ keycloak_port_mappings }}"
+      volumes: "{{ keycloak_volumes | default(omit) }}"
+      env: "{{ keycloak_container_env }}"
+      
+  - name: Attendre que le serveur Keycloak soit disponible
+    uri:
+      url: "http://{{ ansible_hostname }}:{{keycloak_external_port}}"
+      status_code: 200
+      validate_certs: no
+    register: result
+    until: result.status == 200
+    retries: 5
+    delay: 10
+  
         
         
       

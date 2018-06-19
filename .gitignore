@@ -102,3 +102,4 @@ test/units/.coverage.*
 /nosetests.xml
 
 roles/
+nosetests-*.xml
