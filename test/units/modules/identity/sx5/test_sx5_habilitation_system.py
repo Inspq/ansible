@@ -2,10 +2,35 @@ import collections
 import os
 import unittest
 from ansible.modules.identity.sx5.sx5_habilitation_system import *
+from ansible.modules.identity.keycloak.keycloak_client import *
 
 class Sx5SystemTestCase(unittest.TestCase):
 
     def test_create_system(self):
+        #client for the test
+        toCreateClient = {}
+        toCreateClient["url"] = "http://localhost:18081"
+        toCreateClient["username"] = "admin"
+        toCreateClient["password"] = "admin"
+        toCreateClient["realm"] = "master"
+        toCreateClient["state"] = "present"
+        toCreateClient["clientId"] = "clientsystem11"
+        toCreateClient["rootUrl"] = "http://test.com:8080"
+        toCreateClient["name"] = "clientsystem11"
+        toCreateClient["description"] = "Ceci est un test"
+        toCreateClient["adminUrl"] = "http://test.com:8080/admin"
+        toCreateClient["enabled"] = True
+        toCreateClient["clientAuthenticatorType"] = "client-secret"
+        toCreateClient["redirectUris"] = ["http://test.com:8080/secure","http://test1.com:8080/secure"]
+        toCreateClient["webOrigins"] = ["*"]
+        toCreateClient["bearerOnly"] = False
+        toCreateClient["publicClient"] = False
+        toCreateClient["force"] = False
+        client(toCreateClient)
+        toCreateClient["clientId"] = "clientsystem12"
+        toCreateClient["name"] = "clientsystem12"
+        client(toCreateClient)
+        ##########################################
         toCreate = {}
         toCreate["spUrl"] = "http://localhost:18081"
         toCreate["spUsername"] = "admin"
@@ -24,6 +49,30 @@ class Sx5SystemTestCase(unittest.TestCase):
         self.assertTrue(results['changed'])
 
     def test_system_not_changed(self):
+        #client for the test
+        toCreateClient = {}
+        toCreateClient["url"] = "http://localhost:18081"
+        toCreateClient["username"] = "admin"
+        toCreateClient["password"] = "admin"
+        toCreateClient["realm"] = "master"
+        toCreateClient["state"] = "present"
+        toCreateClient["clientId"] = "clientsystem21"
+        toCreateClient["rootUrl"] = "http://test.com:8080"
+        toCreateClient["name"] = "clientsystem21"
+        toCreateClient["description"] = "Ceci est un test"
+        toCreateClient["adminUrl"] = "http://test.com:8080/admin"
+        toCreateClient["enabled"] = True
+        toCreateClient["clientAuthenticatorType"] = "client-secret"
+        toCreateClient["redirectUris"] = ["http://test.com:8080/secure","http://test1.com:8080/secure"]
+        toCreateClient["webOrigins"] = ["*"]
+        toCreateClient["bearerOnly"] = False
+        toCreateClient["publicClient"] = False
+        toCreateClient["force"] = False
+        client(toCreateClient)
+        toCreateClient["clientId"] = "clientsystem22"
+        toCreateClient["name"] = "clientsystem22"
+        client(toCreateClient)
+        ##########################################
         toDoNotChange = {}
         toDoNotChange["spUrl"] = "http://localhost:18081"
         toDoNotChange["spUsername"] = "admin"
@@ -44,6 +93,36 @@ class Sx5SystemTestCase(unittest.TestCase):
         self.assertFalse(results['changed'])
 
     def test_modify_system(self):
+        #client for the test
+        toCreateClient = {}
+        toCreateClient["url"] = "http://localhost:18081"
+        toCreateClient["username"] = "admin"
+        toCreateClient["password"] = "admin"
+        toCreateClient["realm"] = "master"
+        toCreateClient["state"] = "present"
+        toCreateClient["clientId"] = "clientsystem31"
+        toCreateClient["rootUrl"] = "http://test.com:8080"
+        toCreateClient["name"] = "clientsystem31"
+        toCreateClient["description"] = "Ceci est un test"
+        toCreateClient["adminUrl"] = "http://test.com:8080/admin"
+        toCreateClient["enabled"] = True
+        toCreateClient["clientAuthenticatorType"] = "client-secret"
+        toCreateClient["redirectUris"] = ["http://test.com:8080/secure","http://test1.com:8080/secure"]
+        toCreateClient["webOrigins"] = ["*"]
+        toCreateClient["bearerOnly"] = False
+        toCreateClient["publicClient"] = False
+        toCreateClient["force"] = False
+        client(toCreateClient)
+        toCreateClient["clientId"] = "clientsystem32"
+        toCreateClient["name"] = "clientsystem32"
+        client(toCreateClient)
+        toCreateClient["clientId"] = "clientsystemChange31"
+        toCreateClient["name"] = "clientsystemChange31"
+        client(toCreateClient)
+        toCreateClient["clientId"] = "clientsystemChange32"
+        toCreateClient["name"] = "clientsystemChange32"
+        client(toCreateClient)
+        ##########################################
         toChange = {}
         toChange["spUrl"] = "http://localhost:18081"
         toChange["spUsername"] = "admin"
@@ -66,6 +145,30 @@ class Sx5SystemTestCase(unittest.TestCase):
         
         
     def test_delete_system(self):
+        #client for the test
+        toCreateClient = {}
+        toCreateClient["url"] = "http://localhost:18081"
+        toCreateClient["username"] = "admin"
+        toCreateClient["password"] = "admin"
+        toCreateClient["realm"] = "master"
+        toCreateClient["state"] = "present"
+        toCreateClient["clientId"] = "clientsystem42"
+        toCreateClient["rootUrl"] = "http://test.com:8080"
+        toCreateClient["name"] = "clientsystem42"
+        toCreateClient["description"] = "Ceci est un test"
+        toCreateClient["adminUrl"] = "http://test.com:8080/admin"
+        toCreateClient["enabled"] = True
+        toCreateClient["clientAuthenticatorType"] = "client-secret"
+        toCreateClient["redirectUris"] = ["http://test.com:8080/secure","http://test1.com:8080/secure"]
+        toCreateClient["webOrigins"] = ["*"]
+        toCreateClient["bearerOnly"] = False
+        toCreateClient["publicClient"] = False
+        toCreateClient["force"] = False
+        client(toCreateClient)
+        toCreateClient["clientId"] = "clientsystem41"
+        toCreateClient["name"] = "clientsystem41"
+        client(toCreateClient)
+        ##########################################
         toDelete = {}
         toDelete["spUrl"] = "http://localhost:18081"
         toDelete["spUsername"] = "admin"
