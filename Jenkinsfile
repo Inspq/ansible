@@ -22,7 +22,14 @@ pipeline {
         stage ('Tests unitaires des modules ansible de Keycloak sur la dernière version de Keycloak') {
             steps {
                 sh "source hacking/env-setup; ansible-playbook -i keycloak.hosts -e docker_image=nexus3.inspq.qc.ca:5000/inspq/keycloak -e docker_image_version=latest deploy-keycloak.yml"
-                sh "source hacking/env-setup; nosetests --with-xunit --xunit-file=nosetests-keycloak.xml test/units/module_utils/test_keycloak_utils.py test/units/modules/identity/keycloak/test_keycloak_authentication.py test/units/modules/identity/keycloak/test_keycloak_client.py test/units/modules/identity/keycloak/test_keycloak_group.py test/units/modules/identity/keycloak/test_keycloak_identity_provider.py test/units/modules/identity/keycloak/test_keycloak_realm.py test/units/modules/identity/keycloak/test_keycloak_role.py test/units/modules/identity/keycloak/test_keycloak_user.py test/units/modules/identity/keycloak/test_keycloak_component.py"
+                script {
+                    try {
+		                sh "source hacking/env-setup; nosetests --with-xunit --xunit-file=nosetests-keycloak.xml test/units/module_utils/test_keycloak_utils.py test/units/modules/identity/keycloak/test_keycloak_authentication.py test/units/modules/identity/keycloak/test_keycloak_client.py test/units/modules/identity/keycloak/test_keycloak_group.py test/units/modules/identity/keycloak/test_keycloak_identity_provider.py test/units/modules/identity/keycloak/test_keycloak_realm.py test/units/modules/identity/keycloak/test_keycloak_role.py test/units/modules/identity/keycloak/test_keycloak_user.py test/units/modules/identity/keycloak/test_keycloak_component.py"
+                    }
+                    catch (exc){
+                        currentBuild.result = 'UNSTABLE'
+                    }
+                }
                 sh "source hacking/env-setup; ansible-playbook -i keycloak.hosts cleanup-keycloak.yml"
             }
             post {
@@ -34,7 +41,14 @@ pipeline {
         stage ('Tests unitaires des modules ansible de Keycloak sur la dernière version de RHSSO') {
             steps {
                 sh "source hacking/env-setup; ansible-playbook -i keycloak.hosts -e docker_image=nexus3.inspq.qc.ca:5000/inspq/rhsso -e docker_image_version=latest deploy-keycloak.yml"
-                sh "source hacking/env-setup; nosetests --with-xunit --xunit-file=nosetests-rhsso.xml test/units/module_utils/test_keycloak_utils.py test/units/modules/identity/keycloak/test_keycloak_authentication.py test/units/modules/identity/keycloak/test_keycloak_client.py test/units/modules/identity/keycloak/test_keycloak_group.py test/units/modules/identity/keycloak/test_keycloak_identity_provider.py test/units/modules/identity/keycloak/test_keycloak_realm.py test/units/modules/identity/keycloak/test_keycloak_role.py test/units/modules/identity/keycloak/test_keycloak_user.py test/units/modules/identity/keycloak/test_keycloak_component.py"
+                script {
+                    try {
+		                sh "source hacking/env-setup; nosetests --with-xunit --xunit-file=nosetests-rhsso.xml test/units/module_utils/test_keycloak_utils.py test/units/modules/identity/keycloak/test_keycloak_authentication.py test/units/modules/identity/keycloak/test_keycloak_client.py test/units/modules/identity/keycloak/test_keycloak_group.py test/units/modules/identity/keycloak/test_keycloak_identity_provider.py test/units/modules/identity/keycloak/test_keycloak_realm.py test/units/modules/identity/keycloak/test_keycloak_role.py test/units/modules/identity/keycloak/test_keycloak_user.py test/units/modules/identity/keycloak/test_keycloak_component.py"
+                    }
+                    catch (exc){
+                        currentBuild.result = 'UNSTABLE'
+                    }
+                }
                 sh "source hacking/env-setup; ansible-playbook -i keycloak.hosts cleanup-keycloak.yml"
             }
             post {
@@ -46,7 +60,14 @@ pipeline {
         stage ('Tests unitaires des modules ansible de sx5-idm') {
             steps {
                 sh "source hacking/env-setup; ansible-playbook -i sx5-idm.hosts -e sx5idm_image_version=1.0.4-SNAPSHOT deploy-sx5-idm.yml"
-                sh "source hacking/env-setup; nosetests --with-xunit --xunit-file=nosetests-sx5-idm.xml test/units/module_utils/test_sx5_idm_system_utils.py test/units/modules/identity/sx5/test_sx5_idm*.py"
+                script {
+                    try {
+		                sh "source hacking/env-setup; nosetests --with-xunit --xunit-file=nosetests-sx5-idm.xml test/units/module_utils/test_sx5_idm_system_utils.py test/units/modules/identity/sx5/test_sx5_idm*.py"                
+                    }
+                    catch (exc){
+                        currentBuild.result = 'UNSTABLE'
+                    }
+                }
                 sh "source hacking/env-setup; ansible-playbook -i sx5-idm.hosts cleanup-sx5-idm.yml"
             }
             post {
@@ -59,7 +80,14 @@ pipeline {
             steps {
                 sh "source hacking/env-setup; ansible-playbook -i keycloak.hosts -e docker_image=nexus3.inspq.qc.ca:5000/inspq/keycloak -e docker_image_version=latest deploy-keycloak.yml"
                 sh "source hacking/env-setup; ansible-playbook -i sx5-habilitation.hosts -e sx5habilitationservices_image_version=0.2.0-SNAPSHOT deploy-sx5-habilitation.yml"
-                sh "source hacking/env-setup; nosetests --with-xunit --xunit-file=nosetests-sx5-habilitation.xml test/units/modules/identity/sx5/test_sx5_habilitation*.py"
+                script {
+                    try {
+		                sh "source hacking/env-setup; nosetests --with-xunit --xunit-file=nosetests-sx5-habilitation.xml test/units/modules/identity/sx5/test_sx5_habilitation*.py"
+                    }
+                    catch (exc){
+                        currentBuild.result = 'UNSTABLE'
+                    }
+                }
                 sh "source hacking/env-setup; ansible-playbook -i sx5-habilitation.hosts cleanup-sx5-habilitation.yml"
                 sh "source hacking/env-setup; ansible-playbook -i keycloak.hosts cleanup-keycloak.yml"
             }
