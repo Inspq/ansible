@@ -5,6 +5,7 @@
     sx5idm_keycloak_enabled: false
     sx5idm_container_name: sx5idm 
     sx5idm_docker_image: nexus3.inspq.qc.ca:5000/inspq/sx5-idm
+    sx5idm_image_version: latest
     sx5idm_external_port: 18085
     sx5idm_internal_port: 8089
   tasks:

@@ -59,7 +59,7 @@ pipeline {
         }
         stage ('Tests unitaires des modules ansible de sx5-idm') {
             steps {
-                sh "source hacking/env-setup; ansible-playbook -i sx5-idm.hosts -e sx5idm_image_version=1.0.4-SNAPSHOT deploy-sx5-idm.yml"
+                sh "source hacking/env-setup; ansible-playbook -i sx5-idm.hosts deploy-sx5-idm.yml"
                 script {
                     try {
 		                sh "source hacking/env-setup; nosetests --with-xunit --xunit-file=nosetests-sx5-idm.xml test/units/module_utils/test_sx5_idm_system_utils.py test/units/modules/identity/sx5/test_sx5_idm*.py"                
