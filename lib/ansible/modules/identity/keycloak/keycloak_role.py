@@ -57,11 +57,6 @@ options:
         description:
             - Description of the role.
         required: false
-    scopeParamRequired:
-        description:
-            - If true, this role will only be granted if scope parameter with role name is used durint authorization/token request.
-        required: false
-        default: false
     composite:
         description:
             - If true, the role is a composition of other realm and/or client role.
@@ -174,7 +169,7 @@ def main():
             realm=dict(type='str', required=True),
             name=dict(type='str', required=True),
             description = dict(type='str', default=None),
-            scopeParamRequired=dict(type='bool', default=False),
+            # scopeParamRequired=dict(type='bool', default=False),
             composite=dict(type='bool',default=False),
             clientRole = dict(type='bool',default=False),
             containerId = dict(type='str', required=False),
@@ -210,7 +205,7 @@ def role(params):
     newRoleRepresentation["name"] = params['name'].decode("utf-8")
     if params['description'] is not None:
         newRoleRepresentation["description"] = params['description'].decode("utf-8")
-    newRoleRepresentation["scopeParamRequired"] = params["scopeParamRequired"] if "scopeParamRequired" in params else False 
+    # newRoleRepresentation["scopeParamRequired"] = params["scopeParamRequired"] if "scopeParamRequired" in params else False 
     newRoleRepresentation["composite"] = params['composite'] if "composite" in params else False
     newRoleRepresentation["clientRole"] = params['clientRole'] if "clientRole" in params else False
     newRoleRepresentation["containerId"] = params['containerId'].decode("utf-8") if "containerId" in params and params['containerId'] is not None else realm
