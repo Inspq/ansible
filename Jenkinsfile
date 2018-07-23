@@ -14,7 +14,7 @@ pipeline {
             	sh "source hacking/env-setup; ansible-galaxy install -r requirements.yml"
             }
         }
-        stage ('Validataion des modules ansibles') {
+        stage ('Validation des modules ansibles') {
             steps {
                 sh "source hacking/env-setup; ansible-test sanity --test validate-modules"
            	}

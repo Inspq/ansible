@@ -3,7 +3,8 @@ import os
 import unittest
 
 from ansible.module_utils.keycloak_utils import isDictEquals
-
+from ansible.module_utils.keycloak_utils import ansible2keycloakClientRoles
+from ansible.module_utils.keycloak_utils import keycloak2ansibleClientRoles
 
 class KeycloakIsDictEqualsTestCase(unittest.TestCase):
 
@@ -73,3 +74,39 @@ class KeycloakIsDictEqualsTestCase(unittest.TestCase):
     def test_equals_with_dict5_contain_bool_and_dict6_contain_true_tring(self):
         self.assertTrue(isDictEquals(self.dict5,self.dict6))
         self.assertTrue(isDictEquals(self.dict6,self.dict5))
+        
+class KeycloakAnsibleClientRolesTestCase(unittest.TestCase):
+    ansibleClientRoles = [
+        {
+            'clientid': 'test1',
+            'roles': [
+                'role1',
+                'role2'
+                ]
+            },
+        {
+            'clientid': 'test2',
+            'roles': [
+                'role3',
+                'role4'
+                ]
+            }        
+        ]
+    keycloakClientRoles = {
+        'test1':[
+            'role1',
+            'role2'
+            ],
+        'test2':[
+            'role3',
+            'role4'
+            ]
+        }
+    
+    def testAnsible2KeycloakClientRoles(self):
+        self.assertEqual(ansible2keycloakClientRoles(self.ansibleClientRoles), self.keycloakClientRoles, str(ansible2keycloakClientRoles(self.ansibleClientRoles)) + ' is not ' + str(self.keycloakClientRoles))
+        
+    def testKeycloak2AnsibleClientRoles(self):
+        self.assertEqual(keycloak2ansibleClientRoles(self.keycloakClientRoles), self.ansibleClientRoles, str(keycloak2ansibleClientRoles(self.keycloakClientRoles)) + ' is not ' + str(self.ansibleClientRoles))
+ 
+        

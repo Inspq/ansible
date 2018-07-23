@@ -66,12 +66,10 @@ options:
     realmRoles:
         description:
             - Array of realm roles to assign to the group.
-            - This parameter does not change the group configuration actually.
         required: false
     clientRoles:
         description:
-            - Key/[values] pairs for client roles to assign to group.
-            - This parameter does not change the group configuration actually.
+            - Array of client roles to assign to group.
         required: false
     state:
         description:
@@ -105,9 +103,10 @@ EXAMPLES = '''
         realmRoles:
           - uma_authorization
         clientRoles:
-          realm-management:
-            - manage-clients
-            - manage-users
+          - clientid: realm-management
+            roles:
+              - manage-clients
+              - manage-users
         state: present
 
     - name: Re-create group group1
@@ -170,7 +169,7 @@ def main():
             path = dict(type='str'),
             attributes=dict(type='dict'),
             realmRoles=dict(type='list'),
-            clientRoles=dict(type='dict'),
+            clientRoles=dict(type='list'),
             state=dict(choices=["absent", "present"], default='present'),
             force=dict(type='bool', default=False),
         ),
@@ -206,9 +205,14 @@ def group(params):
     if 'realmRoles' in params and params['realmRoles'] is not None:
         newGroupRepresentation["realmRoles"] = params['realmRoles']
     if 'clientRoles' in params and params['clientRoles'] is not None:
-        newGroupRepresentation["clientRoles"] = params['clientRoles']
+        newGroupRepresentation["clientRoles"] = ansible2keycloakClientRoles(params['clientRoles'])
+    
+    #f = open('/tmp/ansible_debug.log', 'a')
+    #f.write(str(newGroupRepresentation))
     
     groupSvcBaseUrl = url + "/auth/admin/realms/" + realm + "/groups/"
+    roleSvcBaseUrl = url + "/auth/admin/realms/" + realm + "/roles/"
+    clientSvcBaseUrl = url + "/auth/admin/realms/" + realm + "/clients/"
     
     rc = 0
     result = dict()
@@ -257,10 +261,21 @@ def group(params):
         
         if (state == 'present'): # Si le status est présent
             try:
+                # Keep realm roles in a variable and remove them from representation
+                groupRealmRoles = []
+                if "realmRoles" in newGroupRepresentation:
+                    groupRealmRoles = newGroupRepresentation["realmRoles"]
+                    newGroupRepresentation["realmRoles"] = []
+                # Keep realm roles in a variable and remove them from representation
+                groupClientRoles = {}
+                if "clientRoles" in newGroupRepresentation:
+                    groupClientRoles = newGroupRepresentation["clientRoles"]
+                    newGroupRepresentation["clientRoles"] = {}
                 # Stocker le group dans un body prêt a être posté
                 data=json.dumps(newGroupRepresentation)
                 # Créer le group
                 postResponse = requests.post(groupSvcBaseUrl, headers=headers, data=data)
+
                 # Rechercher le nouveau groupe qui vient d'être créé
                 getResponse = requests.get(groupSvcBaseUrl, headers=headers)
                 for group in getResponse.json():
@@ -270,9 +285,18 @@ def group(params):
                 # If the group still not exist on the server, raise an exception.
                 if groupRepresentation is None:
                     raise Exception("Group just created not found: " + str(newGroupRepresentation))
-                # Obtenir la nouvelle représentation du groupe
+                # Get new role representation without group
                 getResponse = requests.get(groupSvcBaseUrl + groupRepresentation["id"], headers=headers)
                 groupRepresentation = getResponse.json()
+                # Assing roles to group
+                assingRolestoGroup(headers, groupRepresentation, groupRealmRoles, groupClientRoles, groupSvcBaseUrl, roleSvcBaseUrl, clientSvcBaseUrl)
+                # Get final group representation with roles
+                getResponse = requests.get(groupSvcBaseUrl + groupRepresentation["id"], headers=headers)
+                groupRepresentation = getResponse.json()
+
+                if "clientRoles" in groupRepresentation:
+                    tmpClientRoles = groupRepresentation["clientRoles"]
+                    groupRepresentation["clientRoles"] = keycloak2ansibleClientRoles(tmpClientRoles)
                 changed = True
                 fact = dict(
                     group = groupRepresentation)                
@@ -316,11 +340,22 @@ def group(params):
                     # Supprimer le group existant
                     deleteResponse = requests.delete(groupSvcBaseUrl + groupRepresentation["id"], headers=headers)
                     changed = True
+                    # Keep realm roles in a variable and remove them from representation
+                    groupRealmRoles = []
+                    if "realmRoles" in newGroupRepresentation:
+                        groupRealmRoles = newGroupRepresentation["realmRoles"]
+                        newGroupRepresentation["realmRoles"] = []
+                    # Keep realm roles in a variable and remove them from representation
+                    groupClientRoles = {}
+                    if "clientRoles" in newGroupRepresentation:
+                        groupClientRoles = newGroupRepresentation["clientRoles"]
+                        newGroupRepresentation["clientRoles"] = {}
                     # Stocker le group dans un body prêt a être posté
                     data=json.dumps(newGroupRepresentation)
-                    # Créer à nouveau le group
+                    # Créer le group
                     postResponse = requests.post(groupSvcBaseUrl, headers=headers, data=data)
-                    # Rechercher le nouveau groupe qui vient d'être créé pour obtenir son ID
+    
+                    # Rechercher le nouveau groupe qui vient d'être créé
                     getResponse = requests.get(groupSvcBaseUrl, headers=headers)
                     for group in getResponse.json():
                         if group["name"] == newGroupRepresentation["name"]:
@@ -329,7 +364,37 @@ def group(params):
                     # If the group still not exist on the server, raise an exception.
                     if groupRepresentation is None:
                         raise Exception("Group just created not found: " + str(newGroupRepresentation))
+                    # Get new role representation without group
+                    getResponse = requests.get(groupSvcBaseUrl + groupRepresentation["id"], headers=headers)
+                    groupRepresentation = getResponse.json()
+                    # Assing roles to group
+                    assingRolestoGroup(headers, groupRepresentation, groupRealmRoles, groupClientRoles, groupSvcBaseUrl, roleSvcBaseUrl, clientSvcBaseUrl)
+                    # Get final group representation with roles
+                    getResponse = requests.get(groupSvcBaseUrl + groupRepresentation["id"], headers=headers)
+                    groupRepresentation = getResponse.json()
+    
+                    if "clientRoles" in groupRepresentation:
+                        tmpClientRoles = groupRepresentation["clientRoles"]
+                        groupRepresentation["clientRoles"] = keycloak2ansibleClientRoles(tmpClientRoles)
+                    changed = True
+                    fact = dict(
+                        group = groupRepresentation)                
+                    result = dict(
+                        ansible_facts = fact,
+                        rc = 0,
+                        changed = changed
+                        )
                 else: # Si l'option force n'est pas sélectionné
+                    # Keep realm roles in a variable and remove them from representation
+                    groupRealmRoles = []
+                    if "realmRoles" in newGroupRepresentation:
+                        groupRealmRoles = newGroupRepresentation["realmRoles"]
+                        newGroupRepresentation["realmRoles"] = []
+                    # Keep realm roles in a variable and remove them from representation
+                    groupClientRoles = {}
+                    if "clientRoles" in newGroupRepresentation:
+                        groupClientRoles = newGroupRepresentation["clientRoles"]
+                        newGroupRepresentation["clientRoles"] = {}
                     # Comparer les groups
                     excludes = ["realmRoles","clientRoles"]
                     if not (isDictEquals(newGroupRepresentation, groupRepresentation, excludes)): # Si le nouveau group introduit des modifications aux groups existants
@@ -341,6 +406,15 @@ def group(params):
                 # Obtenir la nouvelle représentation du groupe
                 getResponse = requests.get(groupSvcBaseUrl + groupRepresentation["id"], headers=headers)
                 groupRepresentation = getResponse.json()
+                # Assing roles to group
+                if assingRolestoGroup(headers, groupRepresentation, groupRealmRoles, groupClientRoles, groupSvcBaseUrl, roleSvcBaseUrl, clientSvcBaseUrl):
+                    changed = True
+                # Get final group representation with roles
+                getResponse = requests.get(groupSvcBaseUrl + groupRepresentation["id"], headers=headers)
+                groupRepresentation = getResponse.json()
+                if "clientRoles" in groupRepresentation:
+                    tmpClientRoles = groupRepresentation["clientRoles"]
+                    groupRepresentation["clientRoles"] = keycloak2ansibleClientRoles(tmpClientRoles)
 
                 fact = dict(
                     group = groupRepresentation)
@@ -372,7 +446,59 @@ def group(params):
                 changed  = changed
                 )
     return result
-        
+
+def assingRolestoGroup(headers, groupRepresentation, groupRealmRoles, groupClientRoles, groupSvcBaseUrl, roleSvcBaseUrl, clientSvcBaseUrl):
+    changed = False
+    # Assing Realm Roles
+    realmRolesRepresentation = []
+    for realmRole in groupRealmRoles:
+        # Look for existing role into group representation
+        if not realmRole in groupRepresentation["realmRoles"]:
+            roleid = None
+            # Get all realm roles
+            getResponse = requests.get(roleSvcBaseUrl, headers=headers)
+            # Find the role id
+            for role in getResponse.json():
+                if role["name"] == realmRole:
+                    roleid = role["id"]
+                    break
+            if roleid is not None:
+                realmRoleRepresentation = {}
+                realmRoleRepresentation["id"] = roleid
+                realmRoleRepresentation["name"] = realmRole
+                realmRolesRepresentation.append(realmRoleRepresentation)
+    if len(realmRolesRepresentation) > 0 :
+        data=json.dumps(realmRolesRepresentation)
+        # Assing Role
+        postResp = requests.post(groupSvcBaseUrl + groupRepresentation["id"] + "/role-mappings/realm", headers=headers, data=data)
+        changed = True
+    # Assing clients roles            
+    for clientToAssingRole in groupClientRoles.keys():
+        # Get the client id
+        getResponse = requests.get(clientSvcBaseUrl, headers=headers, params={'clientId': clientToAssingRole})
+        if len(getResponse.json()) > 0 and "id" in getResponse.json()[0]:
+            clientId = getResponse.json()[0]["id"]
+            # Get the client roles
+            getResponse = requests.get(clientSvcBaseUrl + clientId + '/roles', headers=headers)
+            clientRoles = getResponse.json()
+            if not clientToAssingRole in groupRepresentation["clientRoles"].keys() or not isDictEquals(groupRepresentation["clientRoles"][clientToAssingRole], groupClientRoles[clientToAssingRole]):
+                rolesToAssing = []
+                for roleToAssing in groupClientRoles[clientToAssingRole]:
+                    newRole = {}
+                    # Find his Id
+                    for clientRole in clientRoles:
+                        if clientRole["name"] == roleToAssing:
+                            newRole["id"] = clientRole["id"]
+                            newRole["name"] = roleToAssing
+                            rolesToAssing.append(newRole)
+                if len(rolesToAssing) > 0:
+                    data=json.dumps(rolesToAssing)
+                    # Assing Role
+                    requests.post(groupSvcBaseUrl + groupRepresentation["id"] + "/role-mappings/clients/" + clientId, headers=headers, data=data)
+                    changed = True
+            
+    return changed             
+
 # import module snippets
 from ansible.module_utils.basic import *
 

@@ -169,3 +169,17 @@ def realmLoginAndSetHeaders(url, realm, username, password):
         raise e
     return headers
 
+def ansible2keycloakClientRoles(ansibleClientRoles):
+    keycloakClientRoles = {}
+    for clientRoles in ansibleClientRoles:
+        keycloakClientRoles[clientRoles["clientid"]] = clientRoles["roles"]
+    return keycloakClientRoles
+
+def keycloak2ansibleClientRoles(keycloakClientRoles):
+    ansibleClientRoles = []
+    for client in keycloakClientRoles.keys():
+        role = {}
+        role["clientid"] = client
+        role["roles"] = keycloakClientRoles[client]
+        ansibleClientRoles.append(role)
+    return ansibleClientRoles
