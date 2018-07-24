@@ -37,8 +37,8 @@ Retour:
         if type(dict1) is list and type(dict2) is list:
             if len(dict1) == 0 and len(dict2) == 0:
                 return True
-            found = False
             for item1 in dict1:
+                found = False
                 if type(item1) is list:
                     found1 = False
                     for item2 in dict2:
@@ -54,12 +54,19 @@ Retour:
                     if found1:
                         found = True
                 else:
-                    found1 = False
-                    for item2 in dict2:
-                        if item1 == item2:
-                            found1 = True
-                    if found1:
+                    if item1 not in dict2:
+                        return False
+                    else:
                         found = True
+
+#                    found1 = False
+#                    for item2 in dict2:
+#                        if item1 == item2:
+#                            found1 = True
+#                    if found1:
+#                        found = True
+                if not found:
+                    return False
             return found
         elif type(dict1) is dict and type(dict2) is dict:
             if len(dict1) == 0 and len(dict2) == 0:

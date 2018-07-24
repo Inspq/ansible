@@ -492,6 +492,8 @@ def assingRolestoGroup(headers, groupRepresentation, groupRealmRoles, groupClien
                             newRole["name"] = roleToAssing
                             rolesToAssing.append(newRole)
                 if len(rolesToAssing) > 0:
+                    # Delete exiting client Roles
+                    requests.delete(groupSvcBaseUrl + groupRepresentation["id"] + "/role-mappings/clients/" + clientId, headers=headers)
                     data=json.dumps(rolesToAssing)
                     # Assing Role
                     requests.post(groupSvcBaseUrl + groupRepresentation["id"] + "/role-mappings/clients/" + clientId, headers=headers, data=data)

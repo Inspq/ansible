@@ -3,6 +3,7 @@ import os
 import unittest
 
 from ansible.modules.identity.keycloak.keycloak_group import *
+from ansible.module_utils.keycloak_utils import isDictEquals
 
 class KeycloakGroupTestCase(unittest.TestCase):
  
@@ -23,7 +24,8 @@ class KeycloakGroupTestCase(unittest.TestCase):
             "clientRoles": [{
                 "clientid": "master-realm",
                 "roles": [
-                    "manage-users"
+                    "manage-users",
+                    "view-identity-providers"
                     ]
                 }
             ], 
@@ -36,7 +38,7 @@ class KeycloakGroupTestCase(unittest.TestCase):
         self.assertTrue(results['changed'])
         self.assertEquals(results["ansible_facts"]["group"]["name"], toCreate["name"], "name: " + results["ansible_facts"]["group"]["name"] + " : " + toCreate["name"])
         self.assertDictEqual(results["ansible_facts"]["group"]["attributes"], toCreate["attributes"], "attributes: " + str(results["ansible_facts"]["group"]["attributes"]) + " : " + str(toCreate["attributes"]))
-        self.assertListEqual(results["ansible_facts"]["group"]["clientRoles"], toCreate["clientRoles"], "clientRoles: " + str(results["ansible_facts"]["group"]["clientRoles"]) + " : " + str(toCreate["clientRoles"]))
+        self.assertTrue(isDictEquals(results["ansible_facts"]["group"]["clientRoles"], toCreate["clientRoles"]), "clientRoles: " + str(results["ansible_facts"]["group"]["clientRoles"]) + " : " + str(toCreate["clientRoles"]))
         self.assertListEqual(results["ansible_facts"]["group"]["realmRoles"], toCreate["realmRoles"], "realmRoles: " + str(results["ansible_facts"]["group"]["realmRoles"]) + " : " + str(toCreate["realmRoles"]))
         
     def test_group_not_changed(self):
@@ -70,7 +72,7 @@ class KeycloakGroupTestCase(unittest.TestCase):
         self.assertFalse(results['changed'])
         self.assertEquals(results["ansible_facts"]["group"]["name"], toDoNotChange["name"], "name: " + results["ansible_facts"]["group"]["name"] + " : " + toDoNotChange["name"])
         self.assertDictEqual(results["ansible_facts"]["group"]["attributes"], toDoNotChange["attributes"], "attributes: " + str(results["ansible_facts"]["group"]["attributes"]) + " : " + str(toDoNotChange["attributes"]))
-        self.assertListEqual(results["ansible_facts"]["group"]["clientRoles"], toDoNotChange["clientRoles"], "clientRoles: " + str(results["ansible_facts"]["group"]["clientRoles"]) + " : " + str(toDoNotChange["clientRoles"]))
+        self.assertTrue(isDictEquals(results["ansible_facts"]["group"]["clientRoles"], toDoNotChange["clientRoles"]), "clientRoles: " + str(results["ansible_facts"]["group"]["clientRoles"]) + " : " + str(toDoNotChange["clientRoles"]))
         self.assertListEqual(results["ansible_facts"]["group"]["realmRoles"], toDoNotChange["realmRoles"], "realmRoles: " + str(results["ansible_facts"]["group"]["realmRoles"]) + " : " + str(toDoNotChange["realmRoles"]))
 
     def test_group_modify_force(self):
@@ -104,7 +106,7 @@ class KeycloakGroupTestCase(unittest.TestCase):
         self.assertTrue(results['changed'])
         self.assertEquals(results["ansible_facts"]["group"]["name"], toDoNotChange["name"], "name: " + results["ansible_facts"]["group"]["name"] + " : " + toDoNotChange["name"])
         self.assertDictEqual(results["ansible_facts"]["group"]["attributes"], toDoNotChange["attributes"], "attributes: " + str(results["ansible_facts"]["group"]["attributes"]) + " : " + str(toDoNotChange["attributes"]))
-        self.assertListEqual(results["ansible_facts"]["group"]["clientRoles"], toDoNotChange["clientRoles"], "clientRoles: " + str(results["ansible_facts"]["group"]["clientRoles"]) + " : " + str(toDoNotChange["clientRoles"]))
+        self.assertTrue(isDictEquals(results["ansible_facts"]["group"]["clientRoles"], toDoNotChange["clientRoles"]), "clientRoles: " + str(results["ansible_facts"]["group"]["clientRoles"]) + " : " + str(toDoNotChange["clientRoles"]))
         self.assertListEqual(results["ansible_facts"]["group"]["realmRoles"], toDoNotChange["realmRoles"], "realmRoles: " + str(results["ansible_facts"]["group"]["realmRoles"]) + " : " + str(toDoNotChange["realmRoles"]))
 
     def test_modify_group(self):
@@ -119,15 +121,16 @@ class KeycloakGroupTestCase(unittest.TestCase):
                 "attr2":["value2"]
             }, 
             "realmRoles": [
-                "uma_authorization"
+                "uma_authorization",
             ], 
             "clientRoles": [{
                 "clientid": "master-realm",
                 "roles": [
-                    "manage-users"
+                    "manage-users",
+                    "view-identity-providers"
                     ]
                 }
-            ], 
+            ],
             "state":"present",
             "force":False
         }
@@ -135,11 +138,32 @@ class KeycloakGroupTestCase(unittest.TestCase):
         toChange["attributes"] = {
             "attr3":["value3"]
             }
+        toChange["realmRoles"] = [
+                "uma_authorization",
+                "offline_access"
+            ]
+
+        toChange["clientRoles"] = [{
+            "clientid": "master-realm",
+            "roles": [
+                "view-clients",
+                "query-realms",
+                "view-users"
+                ]
+            },{
+            "clientid": "account",
+            "roles": [
+                "manage-account-links",
+                "view-profile",
+                "manage-account"
+                ]
+            }
+        ]
         results = group(toChange)
         self.assertTrue(results['changed'])
         self.assertEquals(results["ansible_facts"]["group"]["name"], toChange["name"], "name: " + results["ansible_facts"]["group"]["name"] + " : " + toChange["name"])
         self.assertDictEqual(results["ansible_facts"]["group"]["attributes"], toChange["attributes"], "attributes: " + str(results["ansible_facts"]["group"]["attributes"]) + " : " + str(toChange["attributes"]))
-        self.assertListEqual(results["ansible_facts"]["group"]["clientRoles"], toChange["clientRoles"], "clientRoles: " + str(results["ansible_facts"]["group"]["clientRoles"]) + " : " + str(toChange["clientRoles"]))
+        self.assertTrue(isDictEquals(results["ansible_facts"]["group"]["clientRoles"], toChange["clientRoles"]), "clientRoles: " + str(results["ansible_facts"]["group"]["clientRoles"]) + " : " + str(toChange["clientRoles"]))
         self.assertListEqual(results["ansible_facts"]["group"]["realmRoles"], toChange["realmRoles"], "realmRoles: " + str(results["ansible_facts"]["group"]["realmRoles"]) + " : " + str(toChange["realmRoles"]))
 
         

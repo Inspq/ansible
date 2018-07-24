@@ -58,7 +58,9 @@ class KeycloakIsDictEqualsTestCase(unittest.TestCase):
         test3 = ['test1',dict(test='test1',test2='test23'),'test3'],
         test4 = 'test4'         
         )
-    
+    dict7 = [{'roles': ['view-clients', 'view-identity-providers', 'view-users', 'query-realms', 'manage-users'], 'clientid': 'master-realm'}, {'roles': ['manage-account', 'view-profile', 'manage-account-links'], 'clientid': 'account'}]
+    dict8 = [{'roles': ['view-clients', 'query-realms', 'view-users'], 'clientid': 'master-realm'}, {'roles': ['manage-account-links', 'view-profile', 'manage-account'], 'clientid': 'account'}]
+
     def test_trivial(self):
         self.assertTrue(isDictEquals(self.dict1,self.dict1))
 
@@ -74,6 +76,10 @@ class KeycloakIsDictEqualsTestCase(unittest.TestCase):
     def test_equals_with_dict5_contain_bool_and_dict6_contain_true_tring(self):
         self.assertTrue(isDictEquals(self.dict5,self.dict6))
         self.assertTrue(isDictEquals(self.dict6,self.dict5))
+
+    def test_not_equals_dict7_dict8_compare_dict7_with_list_bigger_than_dict8_but_reverse_equals(self):
+        self.assertFalse(isDictEquals(self.dict7,self.dict8))
+        self.assertTrue(isDictEquals(self.dict8,self.dict7))
         
 class KeycloakAnsibleClientRolesTestCase(unittest.TestCase):
     ansibleClientRoles = [
