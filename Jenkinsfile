@@ -36,6 +36,9 @@ pipeline {
                 success {
                     junit '**/nosetests-keycloak.xml'
                 }
+                unstable{
+                    junit '**/nosetests-keycloak.xml'
+                }
             }
         }
         stage ('Tests unitaires des modules ansible de Keycloak sur la dernière version de RHSSO') {
@@ -53,6 +56,9 @@ pipeline {
             }
             post {
                 success {
+                    junit '**/nosetests-rhsso.xml'
+                }
+                unstable{
                     junit '**/nosetests-rhsso.xml'
                 }
             }
@@ -74,6 +80,9 @@ pipeline {
                 success {
                     junit '**/nosetests-sx5-idm.xml'
                 }
+                unstable{
+                    junit '**/nosetests-sx5-idm.xml'
+                }
             }
         }
         stage ('Tests unitaires des modules ansible de sx5-habilitation') {
@@ -93,6 +102,9 @@ pipeline {
             }
             post {
                 success {
+                    junit '**/nosetests-sx5-habilitation.xml'
+                }
+                unstable{
                     junit '**/nosetests-sx5-habilitation.xml'
                 }
             }
