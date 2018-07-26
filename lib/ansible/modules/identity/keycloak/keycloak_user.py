@@ -150,7 +150,7 @@ notes:
 '''
 
 EXAMPLES = '''
-    - name: Create a user user1 with default settings.
+    - name: Create a user user1
       keycloak_user:
         url: http://localhost:8080
         masterUsername: admin
@@ -172,17 +172,19 @@ EXAMPLES = '''
           attr2: 
             - value2
         clientRoles:
-          client1: 
+          - clientId: client1 
+            roles:  
             - role1
-          client2: 
+          - clientId: client2 
+            roles:
             - role2
         groups:
           - group1
         realmRoles:
-          - Roles1
+          - Role1
         state: present
 
-    - name: Re-create client1
+    - name: Re-create a User
       keycloak_user:
         url: http://localhost:8080
         masterUsername: admin
@@ -204,12 +206,12 @@ EXAMPLES = '''
           attr2: 
             - value2
         clientRoles:
-          - clientID: client1
+          - clientId: client1 
+            roles:  
+            - role1
+          - clientId: client2 
             roles:
-            - clientrole1
-          - clientID: client2
-            roles:
-            - clientrole2
+            - role2
         groups:
           - group1
         realmRoles:
@@ -217,7 +219,7 @@ EXAMPLES = '''
         state: present
         force: yes
 
-    - name: Remove client1.
+    - name: Remove User.
       keycloak_user:
         url: http://localhost:8080
         masterUsername: admin
@@ -247,9 +249,7 @@ changed:
 '''
 import requests
 import json
-import urllib
 from ansible.module_utils.keycloak_utils import *
-from __builtin__ import isinstance    
 
 def main():
     module = AnsibleModule(
@@ -302,8 +302,6 @@ def user(params):
     realm = params['realm']
     state = params['state'] if "state" in params else "present"
     force = params['force'] if "force" in params else False
-    newUserRepresentation = None
-    newUserClientRolesRepresentation = None
     userClientRoles = None
     userRealmRoles = None
     userGroups = None
@@ -354,8 +352,10 @@ def user(params):
     userSvcBaseUrl = url + "/auth/admin/realms/" + realm + "/users/"
     clientSvcBaseUrl = url + "/auth/admin/realms/" + realm + "/clients/"
     groupSvcBaseUrl = url + "/auth/admin/realms/" + realm + "/groups/"
+    roleSvcBaseUrl = url + "/auth/admin/realms/" + realm + "/roles/"
+
     userRepresentation = None
-    rc = 0
+   
     result = dict()
     changed = False
 
@@ -404,7 +404,7 @@ def user(params):
                 # Store the user in a post body
                 data=json.dumps(newUserRepresentation)
                 # Create the user
-                postResponse = requests.post(userSvcBaseUrl, headers=headers, data=data)
+                requests.post(userSvcBaseUrl, headers=headers, data=data)
                 # Get new user created
                 #getResponse = requests.get(userSvcBaseUrl+"?username="+newUserRepresentation["username"], headers=headers)
                 getResponse = requests.get(userSvcBaseUrl, headers=headers, params={"username": newUserRepresentation["username"]})
@@ -413,28 +413,14 @@ def user(params):
                 for userRepresentation in users:
                     if "username" in userRepresentation and userRepresentation["username"] == newUserRepresentation["username"]:
                         break
-                #set user ClientsRoles
-                if "clientRoles" in newUserClientRolesRepresentation and newUserClientRolesRepresentation['clientRoles'] is not None:
-                    for userClientRoles in newUserClientRolesRepresentation["clientRoles"]:
-                        try:
-                            createOrUpdateClientRoles(userClientRoles,userRepresentation, clientSvcBaseUrl, userSvcBaseUrl, headers)
-                        except Exception ,e :
-                            result = dict(
-                                stderr   = 'createOrUpdateClientRoles: ' + userClientRoles["clientId"] + ' error: ' + str(e),
-                                rc       = 1,
-                                changed  = changed
-                                )
-                #set user RealmsRoles
-                if "realmRoles" in newUserRepresentation and newUserRepresentation['realmRoles'] is not None:
-                    for userRealmRoles in newUserRepresentation["realmRoles"]:
-                        try:
-                            createOrUpdateRealmRoles(userRealmRoles,userRepresentation, userSvcBaseUrl, headers)
-                        except Exception ,e :
-                            result = dict(
-                                stderr   = 'createOrUpdateRealmRoles: ' + userRealmRoles + ' error: ' + str(e),
-                                rc       = 1,
-                                changed  = changed
-                                )
+                # Get the new created user realm roles
+                userRepresentation["realmRoles"] = getUserRealmRoles(userSvcBaseUrl, headers, userRepresentation["id"])
+                # Get the new created user clientRoles
+                userRepresentation["clientRoles"] = getUserClientRoles(userSvcBaseUrl, headers, userRepresentation["id"])
+                # Get the new created user groups
+                userRepresentation["groups"] = getUserGroups(userSvcBaseUrl, headers, userRepresentation["id"])
+                # Assing new Roles to user
+                assingRolestoUser(headers, userRepresentation, newUserRepresentation['realmRoles'], newUserClientRolesRepresentation['clientRoles'], userSvcBaseUrl, roleSvcBaseUrl, clientSvcBaseUrl)
                 #set user groups
                 if "groups" in newUserRepresentation and newUserRepresentation['groups'] is not None:
                     for userGroups in newUserRepresentation["groups"]:
@@ -446,10 +432,16 @@ def user(params):
                                 rc       = 1,
                                 changed  = changed
                                 )
+                # Get the user realm roles
+                userRepresentation["realmRoles"] = getUserRealmRoles(userSvcBaseUrl, headers, userRepresentation["id"])
+                # Get the user clientRoles
+                userRepresentation["clientRoles"] = getUserClientRoles(userSvcBaseUrl, headers, userRepresentation["id"])
+                # Get the user groups
+                userRepresentation["groups"] = getUserGroups(userSvcBaseUrl, headers, userRepresentation["id"])
                 changed = True
                 fact = dict(
                     user = userRepresentation,
-                    clientRoles = userClientRoles
+                    #clientRoles = userClientRoles
                     )
                 
                 result = dict(
@@ -483,44 +475,30 @@ def user(params):
             )
                 
     else:  # the user already exists
-        #userRepresentation = getResponse.json()[0]
         try:
             if (state == 'present'): # if the status is present
                 if force == True: # If the force option is set to true
                     # Delete the existing user
-                    deleteResponse = requests.delete(userSvcBaseUrl + userRepresentation["id"], headers=headers)
+                    requests.delete(userSvcBaseUrl + userRepresentation["id"], headers=headers)
                     changed = True
+                    
                     # Store the user in a body for a post
                     data=json.dumps(newUserRepresentation)
                     # Create the new user
-                    postResponse = requests.post(userSvcBaseUrl, headers=headers, data=data)
+                    requests.post(userSvcBaseUrl, headers=headers, data=data)
                     getResponse = requests.get(userSvcBaseUrl, headers=headers, params={"username": newUserRepresentation["username"]})        
                     users = getResponse.json()
                     for userRepresentation in users:
                         if "username" in userRepresentation and userRepresentation["username"] == newUserRepresentation["username"]:
                             break
-                    #set user ClientsRoles
-                    if "clientRoles" in newUserClientRolesRepresentation and newUserClientRolesRepresentation['clientRoles'] is not None:
-                        for userClientRoles in newUserClientRolesRepresentation["clientRoles"]:
-                            try:
-                                createOrUpdateClientRoles(userClientRoles,userRepresentation, clientSvcBaseUrl, userSvcBaseUrl, headers)
-                            except Exception ,e :
-                                result = dict(
-                                    stderr   = 'createOrUpdateClientRoles: ' + userClientRoles["clientId"] + ' error: ' + str(e),
-                                    rc       = 1,
-                                    changed  = changed
-                                    )
-                    #set user RealmsRoles
-                    if "realmRoles" in newUserRepresentation and newUserRepresentation['realmRoles'] is not None:
-                        for userRealmRoles in newUserRepresentation["realmRoles"]:
-                            try:
-                                createOrUpdateRealmRoles(userRealmRoles,userRepresentation, userSvcBaseUrl, headers)
-                            except Exception ,e :
-                                result = dict(
-                                    stderr   = 'createOrUpdateRealmRoles: ' + userRealmRoles + ' error: ' + str(e),
-                                    rc       = 1,
-                                    changed  = changed
-                                    )
+                    # Get the new created user realm roles
+                    userRepresentation["realmRoles"] = getUserRealmRoles(userSvcBaseUrl, headers, userRepresentation["id"])
+                    # Get the new created user clientRoles
+                    userRepresentation["clientRoles"] = getUserClientRoles(userSvcBaseUrl, headers, userRepresentation["id"])
+                    # Get the new created user groups
+                    userRepresentation["groups"] = getUserGroups(userSvcBaseUrl, headers, userRepresentation["id"])
+                    # Assing new roles to user
+                    assingRolestoUser(headers, userRepresentation, newUserRepresentation['realmRoles'], newUserClientRolesRepresentation['clientRoles'], userSvcBaseUrl, roleSvcBaseUrl, clientSvcBaseUrl)
                     #set user groups
                     if "groups" in newUserRepresentation and newUserRepresentation['groups'] is not None:
                         for userGroups in newUserRepresentation["groups"]:
@@ -542,30 +520,16 @@ def user(params):
                         # Store the user in a body for a post
                         data=json.dumps(newUserRepresentation)
                         # Updated the user on the Keycloak server
-                        updateResponse = requests.put(userSvcBaseUrl + userRepresentation["id"], headers=headers, data=data)
+                        requests.put(userSvcBaseUrl + userRepresentation["id"], headers=headers, data=data)
                         #set user ClientsRoles
-                        if "clientRoles" in newUserClientRolesRepresentation and newUserClientRolesRepresentation['clientRoles'] is not None:
-                            for userClientRoles in newUserClientRolesRepresentation["clientRoles"]:
-                                try:
-                                    createOrUpdateClientRoles(userClientRoles, clientSvcBaseUrl, userSvcBaseUrl, headers)
-                                except Exception ,e :
-                                    result = dict(
-                                        stderr   = 'createOrUpdateClientRoles: ' + userClientRoles["clientId"] + ' error: ' + str(e),
-                                        rc       = 1,
-                                        changed  = changed
-                                        )
-                        #set user RealmsRoles
-                        if "realmRoles" in newUserRepresentation and newUserRepresentation['realmRoles'] is not None:
-                            for userRealmRoles in newUserRepresentation["realmRoles"]:
-                                try:
-                                    createOrUpdateRealmRoles(userRealmRoles,userRepresentation, userSvcBaseUrl, headers)
-                                except Exception ,e :
-                                    result = dict(
-                                        stderr   = 'createOrUpdateRealmRoles: ' + userRealmRoles + ' error: ' + str(e),
-                                        rc       = 1,
-                                        changed  = changed
-                                        )
-                        #set user groups
+                        # Get the actual user realm roles
+                        userRepresentation["realmRoles"] = getUserRealmRoles(userSvcBaseUrl, headers, userRepresentation["id"])
+                        # Get the actual user clientRoles
+                        userRepresentation["clientRoles"] = getUserClientRoles(userSvcBaseUrl, headers, userRepresentation["id"])
+                        # Get the actuial user groups
+                        userRepresentation["groups"] = getUserGroups(userSvcBaseUrl, headers, userRepresentation["id"])
+                        # Assing new role to user
+                        assingRolestoUser(headers, userRepresentation, newUserRepresentation['realmRoles'], newUserClientRolesRepresentation['clientRoles'], userSvcBaseUrl, roleSvcBaseUrl, clientSvcBaseUrl)
                         if "groups" in newUserRepresentation and newUserRepresentation['groups'] is not None:
                             for userGroups in newUserRepresentation["groups"]:
                                 try:
@@ -585,6 +549,13 @@ def user(params):
                     if "username" in userRepresentation and userRepresentation["username"] == newUserRepresentation["username"]:
                         break
                 #userRepresentation = getResponse.json()[0]
+                # Update user realm roles
+                userRepresentation["realmRoles"] = getUserRealmRoles(userSvcBaseUrl, headers, userRepresentation["id"])
+                # Update the user clientRoles
+                userRepresentation["clientRoles"] = getUserClientRoles(userSvcBaseUrl, headers, userRepresentation["id"])
+                # Update the user groups
+                userRepresentation["groups"] = getUserGroups(userSvcBaseUrl, headers, userRepresentation["id"])
+                
                 fact = dict(
                     user = userRepresentation
                     )
@@ -596,7 +567,7 @@ def user(params):
                     
             elif state == 'absent': # Status is absent
                 # Delete user
-                deleteResponse = requests.delete(userSvcBaseUrl + userRepresentation['id'], headers=headers)
+                requests.delete(userSvcBaseUrl + userRepresentation['id'], headers=headers)
                 changed = True
                 result = dict(
                     stdout   = 'deleted',
@@ -617,68 +588,106 @@ def user(params):
                 )
     return result
 
-def createOrUpdateClientRoles(userClientRoles, userRepresentation, clientSvcBaseUrl, userSvcBaseUrl, headers):
-    changed = False
-    # Get Roles ID
-    clientId=None
-    try:
-        getResponse = requests.get(clientSvcBaseUrl, headers=headers)
-        clients = getResponse.json()
-        for client in clients:
-            if "clientId" in client and client["clientId"] == userClientRoles["clientId"]:
-                clientId = client["id"]
-                break
-        clientRolesToAdd = []
-        if clientId is not None:
-            #Egt clientsrole for clientID
-            getResponse = requests.get(clientSvcBaseUrl +clientId+ "/roles/", headers=headers)
-            roles = getResponse.json()
-            for rolesToadd in userClientRoles["roles"]:
-                for role in roles:
-                    if rolesToadd == role["name"]:
-                      clientRolesToAdd.append(role)
-        if len(clientRolesToAdd) > 0:
-            #Set user role-mappings
-            data=json.dumps(clientRolesToAdd)
-            postResponse = requests.post(userSvcBaseUrl + userRepresentation["id"] + '/role-mappings/clients/'+clientId, headers=headers, data=data)
-            changed = True
-    except Exception ,e :
-        raise e
-    return changed    
-
-def createOrUpdateRealmRoles(userRealmRoles,userRepresentation, userSvcBaseUrl, headers):
-    changed = False
-    # Get Reaml Roles Available
-    realmRolesToAdd = []
-    try:
-        getResponse = requests.get(userSvcBaseUrl + userRepresentation["id"] + '/role-mappings/realm/available', headers=headers)
-        roles = getResponse.json()
-        for role in roles:
-            if "name" in role and role["name"] == userRealmRoles:
-                realmRolesToAdd.append(role)
-        if len(realmRolesToAdd) > 0:
-            #Set user role-mappings
-            data=json.dumps(realmRolesToAdd)
-            postResponse = requests.post(userSvcBaseUrl + userRepresentation["id"] + '/role-mappings/realm', headers=headers, data=data)
-            changed = True
-    except Exception ,e :
-        raise e
-    return changed        
 
 def createOrUpdateGroups(userGroups,userRepresentation, userSvcBaseUrl, groupSvcBaseUrl, headers):
     changed = False
     # Get groups Available
-    groupToAdd = []
     try:
         getResponse = requests.get(groupSvcBaseUrl, headers=headers)
         groups = getResponse.json()
         for group in groups:
             if "name" in group and group["name"] == userGroups:
-                putResponse = requests.put(userSvcBaseUrl + userRepresentation["id"] + '/groups/'+group["id"], headers=headers)
+                requests.put(userSvcBaseUrl + userRepresentation["id"] + '/groups/'+group["id"], headers=headers)
                 changed = True
     except Exception ,e :
         raise e
     return changed
+
+def getUserRealmRoles(userSvcBaseUrl, headers, userId):
+    realmRoles = []
+    getResponse = requests.get(userSvcBaseUrl + userId + '/role-mappings', headers=headers)
+    for roleMapping in getResponse.json()["realmMappings"]:
+        realmRoles.append(roleMapping["name"])
+    return realmRoles
+
+def getUserClientRoles(userSvcBaseUrl, headers, userId):
+    clientRoles = []
+    getResponse = requests.get(userSvcBaseUrl + userId + '/role-mappings', headers=headers)
+    userMappings = getResponse.json()
+    for clientMapping in userMappings["clientMappings"].keys():
+        clientRole = {}
+        clientRole["clientId"] = userMappings["clientMappings"][clientMapping]["client"]
+        roles = []
+        for role in userMappings["clientMappings"][clientMapping]["mappings"]:
+            roles.append(role["name"])
+        clientRole["roles"] = roles
+        clientRoles.append(clientRole)
+    return clientRoles
+
+def getUserGroups(userSvcBaseUrl, headers, userId):
+    groups = []
+    getResponse = requests.get(userSvcBaseUrl + userId + '/groups', headers=headers)
+    for clientGroup in getResponse.json():
+        groups.append(clientGroup["name"])
+    return groups
+
+def assingRolestoUser(headers, userRepresentation, userRealmRoles, userClientRoles, userSvcBaseUrl, roleSvcBaseUrl, clientSvcBaseUrl):
+    changed = False
+    # Assing Realm Roles
+    realmRolesRepresentation = []
+    # Get all realm roles
+    getResponse = requests.get(roleSvcBaseUrl, headers=headers)
+    allRealmRoles = getResponse.json()
+    for realmRole in userRealmRoles:
+        # Look for existing role into user representation
+        if not realmRole in userRepresentation["realmRoles"]:
+            roleid = None
+            # Find the role id
+            for role in allRealmRoles:
+                if role["name"] == realmRole:
+                    roleid = role["id"]
+                    break
+            if roleid is not None:
+                realmRoleRepresentation = {}
+                realmRoleRepresentation["id"] = roleid
+                realmRoleRepresentation["name"] = realmRole
+                realmRolesRepresentation.append(realmRoleRepresentation)
+    if len(realmRolesRepresentation) > 0 :
+        data=json.dumps(realmRolesRepresentation)
+        # Assing Role
+        requests.post(userSvcBaseUrl + userRepresentation["id"] + "/role-mappings/realm", headers=headers, data=data)
+        changed = True
+    # Assing clients roles            
+    for clientToAssingRole in userClientRoles:
+        # Get the client id
+        getResponse = requests.get(clientSvcBaseUrl, headers=headers, params={'clientId': clientToAssingRole["clientId"]})
+        if len(getResponse.json()) > 0 and "id" in getResponse.json()[0]:
+            clientId = getResponse.json()[0]["id"]
+            # Get the client roles
+            getResponse = requests.get(clientSvcBaseUrl + clientId + '/roles', headers=headers)
+            clientRoles = getResponse.json()
+            # Check if user already have this client roles
+            if not isDictEquals(clientToAssingRole, userRepresentation["clientRoles"]):
+                rolesToAssing = []
+                for roleToAssing in clientToAssingRole["roles"]:
+                    newRole = {}
+                    # Find his Id
+                    for clientRole in clientRoles:
+                        if clientRole["name"] == roleToAssing:
+                            newRole["id"] = clientRole["id"]
+                            newRole["name"] = roleToAssing
+                            rolesToAssing.append(newRole)
+                if len(rolesToAssing) > 0:
+                    # Delete exiting client Roles
+                    requests.delete(userSvcBaseUrl + userRepresentation["id"] + "/role-mappings/clients/" + clientId, headers=headers)
+                    data=json.dumps(rolesToAssing)
+                    # Assing Role
+                    requests.post(userSvcBaseUrl + userRepresentation["id"] + "/role-mappings/clients/" + clientId, headers=headers, data=data)
+                    changed = True
+            
+    return changed             
+
+
 # import module snippets
 from ansible.module_utils.basic import *
 

@@ -2,9 +2,63 @@ import collections
 import os
 import unittest
 
-from ansible.modules.identity.keycloak.keycloak_user import *
+from ansible.modules.identity.keycloak.keycloak_user import user
+from ansible.modules.identity.keycloak.keycloak_group import group
+from ansible.modules.identity.keycloak.keycloak_role import role
+from ansible.module_utils.keycloak_utils import isDictEquals
 
 class KeycloakUserTestCase(unittest.TestCase):
+    testGroups = [
+        {
+            "username":"admin", 
+            "password":"admin",
+            "realm":"master",
+            "url":"http://localhost:18081",
+            "name":"testUserGroup1",
+            "state":"present",
+            "force":False
+            },
+        {
+            "username":"admin", 
+            "password":"admin",
+            "realm":"master",
+            "url":"http://localhost:18081",
+            "name":"testUserGroup2",
+            "state":"present",
+            "force":False
+            }
+        ]
+    compareExcludes = ["url", "masterUsername", "masterpassword", "realm", "state", "force", "credentials"]
+    testRoles = [
+        {
+            "username":"admin", 
+            "password":"admin",
+            "realm":"master",
+            "url":"http://localhost:18081",
+            "name":"testUserRole1",
+            "description":"Test1",
+            "state":"present",
+            "force":False
+        },
+                {
+            "username":"admin", 
+            "password":"admin",
+            "realm":"master",
+            "url":"http://localhost:18081",
+            "name":"testUserRole2",
+            "description":"Test2",
+            "state":"present",
+            "force":False
+        }]
+    
+    def setUp(self):
+        #unittest.TestCase.setUp(self)
+        for theGroup in self.testGroups:
+            theGroup["state"] = "present"
+            group(theGroup)
+        for theRole in self.testRoles:
+            theRole["state"] = "present"
+            role(theRole)
  
     def test_create_user(self):
         toCreate = {
@@ -20,15 +74,16 @@ class KeycloakUserTestCase(unittest.TestCase):
             "emailVerified": False,
             "credentials": [{"temporary": 'false',"type": "password","value": "password"}], 
             "clientRoles": [{"clientId": "master-realm","roles": ["manage-clients"]}],
-            "realmRoles": ["admin"],
+            "realmRoles": ["testUserRole1","testUserRole2"],
             "attributes": {"attr1": ["value1"],"attr2": ["value2"]},
+            "groups": ["testUserGroup1","testUserGroup2"],
             "state":"present",
             "force":"no"
         }
 
         results = user(toCreate)
-        print str(results)
         self.assertTrue(results['changed'])
+        self.assertTrue(isDictEquals(toCreate, results["ansible_facts"]["user"], self.compareExcludes), "user: " + str(toCreate) + " : " + str(results["ansible_facts"]["user"]))
 
     def test_user_not_changed(self):
         toDoNotChange = {
@@ -44,20 +99,21 @@ class KeycloakUserTestCase(unittest.TestCase):
             "emailVerified": False,
             "credentials": [{"temporary": 'false',"type": "password","value": "password"}],
             "clientRoles": [{"clientId": "master-realm","roles": ["manage-clients"]}],
-            "realmRoles": ["admin"],
+            "realmRoles": ["testUserRole1","testUserRole2"],
             "attributes": {"attr1": ["value1"],"attr2": ["value2"]},
+            "groups": ["testUserGroup1","testUserGroup2"],
             "state": "present",
             "force": False
         }
 
+        user(toDoNotChange)
         results = user(toDoNotChange)
-        print str(results)
-        results = user(toDoNotChange)
-        print str(results)
+
         self.assertFalse(results['changed'])
         self.assertEquals(results["ansible_facts"]["user"]["username"], toDoNotChange["username"], "username: " + results["ansible_facts"]["user"]["username"] + " : " + toDoNotChange["username"])
         self.assertEquals(results["ansible_facts"]["user"]["firstName"], toDoNotChange["firstName"], "firstName: " + results["ansible_facts"]["user"]["firstName"] + " : " + toDoNotChange["firstName"])
         self.assertEquals(results["ansible_facts"]["user"]["lastName"], toDoNotChange["lastName"], "lastName: " + results["ansible_facts"]["user"]["lastName"] + " : " + toDoNotChange["lastName"])
+        self.assertTrue(isDictEquals(toDoNotChange, results["ansible_facts"]["user"], self.compareExcludes), "user: " + str(toDoNotChange) + " : " + str(results["ansible_facts"]["user"]))
 
     def test_user_modify_force(self):
         toDoNotChange = {
@@ -73,8 +129,9 @@ class KeycloakUserTestCase(unittest.TestCase):
             "emailVerified": False,
             "credentials": [{"temporary": 'false',"type": "password","value": "password"}],
             "clientRoles": [{"clientId": "master-realm","roles": ["manage-clients"]}],
+            "realmRoles": ["testUserRole1","testUserRole2"],
             "attributes": {"attr1": ["value1"],"attr2": ["value2"]},
-            "realmRoles": ["admin"],
+            "groups": ["testUserGroup1","testUserGroup2"],
             "state":"present",
             "force": False
         }
@@ -82,9 +139,8 @@ class KeycloakUserTestCase(unittest.TestCase):
         user(toDoNotChange)
         toDoNotChange["force"] = True
         results = user(toDoNotChange)
-        print str(results)
         self.assertTrue(results['changed'])
-        #self.assertEquals(results["ansible_facts"]["user"]["lastName"], toDoNotChange["lastName"], "lastName: " + results["ansible_facts"]["user"]["lastName"] + " : " + toDoNotChange["lastName"])
+        self.assertTrue(isDictEquals(toDoNotChange, results["ansible_facts"]["user"], self.compareExcludes), "user: " + str(toDoNotChange) + " : " + str(results["ansible_facts"]["user"]))
 
     def test_modify_user(self):
         toChange = {
@@ -100,18 +156,20 @@ class KeycloakUserTestCase(unittest.TestCase):
             "emailVerified": False,
             "credentials": [{"temporary": 'false',"type": "password","value": "password"}],
             "clientRoles": [{"clientId": "master-realm","roles": ["manage-clients"]}],
+            "realmRoles": ["testUserRole1"],
             "attributes": {"attr1": ["value1"],"attr2": ["value2"]},
-            "realmRoles": ["admin"],
+            "groups": ["testUserGroup1"],
             "state":"present",
             "force": False
         }
         user(toChange)
         toChange["lastName"] = "usernew4"
+        toChange["clientRoles"] = [{"clientId": "master-realm","roles": ["manage-clients","query-groups"]}]
+        toChange["realmRoles"] = ["testUserRole1","testUserRole2"]
         results = user(toChange)
-        print str(results)
         self.assertTrue(results['changed'])
         self.assertEquals(results["ansible_facts"]["user"]["lastName"], toChange["lastName"], "lastName: " + results["ansible_facts"]["user"]["lastName"] + " : " + toChange["lastName"])
-        
+        self.assertTrue(isDictEquals(toChange, results["ansible_facts"]["user"], self.compareExcludes), "user: " + str(toChange) + " : " + str(results["ansible_facts"]["user"]))
         
     def test_delete_user(self):
         toDelete = {
@@ -127,8 +185,9 @@ class KeycloakUserTestCase(unittest.TestCase):
             "emailVerified": False,
             "credentials": [{"temporary": 'false',"type": "password","value": "password"}],
             "clientRoles": [{"clientId": "master-realm","roles": ["manage-clients"]}],
+            "realmRoles": ["uma_authorization","offline_access"],
             "attributes": {"attr1": ["value1"],"attr2": ["value2"]},
-            "realmRoles": ["admin"],
+            "groups": ["testUserGroup1","testUserGroup2"],
             "state":"present",
             "force": False
         }
@@ -136,6 +195,14 @@ class KeycloakUserTestCase(unittest.TestCase):
         user(toDelete)
         toDelete["state"] = "absent"
         results = user(toDelete)
-        print str(results)
         self.assertTrue(results['changed'])
         self.assertEqual(results['stdout'], 'deleted', 'user has been deleted')
+
+    def tearDown(self):
+        #unittest.TestCase.tearDown(self)
+        for theGroup in self.testGroups:
+            theGroup["state"] = "absent"
+            group(theGroup)
+        for theRole in self.testRoles:
+            theRole["state"] = "absent"
+            role(theRole)
