@@ -18,6 +18,7 @@ class KeycloakClientTestCase(unittest.TestCase):
         toCreate["name"] = "test"
         toCreate["description"] = "Ceci est un test"
         toCreate["adminUrl"] = "http://test.com:8080/admin"
+        toCreate["baseUrl"] = "http://test.com:8080"
         toCreate["enabled"] = True
         toCreate["clientAuthenticatorType"] = "client-secret"
         toCreate["redirectUris"] = ["http://test.com:8080/secure","http://test1.com:8080/secure"]
@@ -93,6 +94,7 @@ class KeycloakClientTestCase(unittest.TestCase):
         toDoNotChange["name"] = "test2"
         toDoNotChange["description"] = "Ceci est un test2"
         toDoNotChange["adminUrl"] = "http://test2.com:8080/admin"
+        toDoNotChange["baseUrl"] = "http://test2.com:8080"
         toDoNotChange["enabled"] = True
         toDoNotChange["clientAuthenticatorType"] = "client-secret"
         toDoNotChange["redirectUris"] = ["http://test2.com:8080/secure"]
@@ -152,6 +154,7 @@ class KeycloakClientTestCase(unittest.TestCase):
         toChange["name"] = "test2"
         toChange["description"] = "Ceci est un test2"
         toChange["adminUrl"] = "http://test3.com:8080/admin"
+        toChange["baseUrl"] = "http://test3.com:8080"
         toChange["enabled"] = True
         toChange["clientAuthenticatorType"] = "client-secret"
         toChange["redirectUris"] = ["http://test3.com:8080/secure"]
@@ -242,6 +245,7 @@ class KeycloakClientTestCase(unittest.TestCase):
         toDelete["name"] = "test4"
         toDelete["description"] = "Ceci est un test4"
         toDelete["adminUrl"] = "http://test4.com:8080/admin"
+        toDelete["baseUrl"] = "http://test4.com:8080"
         toDelete["enabled"] = True
         toDelete["clientAuthenticatorType"] = "client-secret"
         toDelete["redirectUris"] = ["http://test4.com:8080/secure"]

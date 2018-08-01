@@ -68,6 +68,10 @@ options:
         description:
             - URL for the admin module for the Application.
         required: false
+    baseUrl:
+        description:
+            - URL for the Application.
+        required: false
     enabled:
         description:
             - enabled.
@@ -264,6 +268,7 @@ def main():
             name=dict(type='str'),
             description = dict(type='str'),
             adminUrl=dict(type='str'),
+            baseUrl=dict(type='str'),
             enabled=dict(type='bool',default=True),
             clientAuthenticatorType = dict(type='str'),
             redirectUris = dict(type='list'),
@@ -335,6 +340,8 @@ def client(params):
         newClientRepresentation["description"] = params['description'].decode("utf-8")
     if "adminUrl" in params and params['adminUrl'] is not None:
         newClientRepresentation["adminUrl"] = params['adminUrl'].decode("utf-8")
+    if "baseUrl" in params and params['baseUrl'] is not None:
+        newClientRepresentation["baseUrl"] = params['baseUrl'].decode("utf-8")
         
     if "enabled" in params:
         newClientRepresentation["enabled"] = params['enabled']
