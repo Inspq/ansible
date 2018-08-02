@@ -72,6 +72,10 @@ options:
         description:
             - URL for the Application.
         required: false
+    defaultRoles:
+        description:
+           - Default roles.
+        required: false
     enabled:
         description:
             - enabled.
@@ -283,6 +287,7 @@ def main():
             bearerOnly = dict(type='bool'),
             publicClient = dict(type='bool'),
             roles = dict(type='list'),
+            defaultRoles = dict(type='list'),
             protocolMappers = dict(type='list'),
             state=dict(choices=["absent", "present"], default='present'),
             force=dict(type='bool', default=False),
@@ -351,6 +356,8 @@ def client(params):
         newClientRepresentation["redirectUris"] = params['redirectUris']
     if "webOrigins" in params and params['webOrigins'] is not None:
         newClientRepresentation["webOrigins"] = params['webOrigins']
+    if "defaultRoles" in params and params['defaultRoles'] is not None:
+        newClientRepresentation["defaultRoles"] = params['defaultRoles']
     if "consentRequired" in params:
         newClientRepresentation["consentRequired"] = params['consentRequired']   
     if "standardFlowEnabled" in params:
