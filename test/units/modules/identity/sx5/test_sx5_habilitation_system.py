@@ -55,12 +55,12 @@ class Sx5SystemTestCase(unittest.TestCase):
         toCreateClient["password"] = "admin"
         toCreateClient["realm"] = "master"
         toCreateClient["state"] = "present"
-        toCreateClient["rootUrl"] = "http://test.com:8080"
+        toCreateClient["rootUrl"] = "http://test.com:18182"
         toCreateClient["description"] = "Ceci est un test"
-        toCreateClient["adminUrl"] = "http://test.com:8080/admin"
+        toCreateClient["adminUrl"] = "http://test.com:18182/admin"
         toCreateClient["enabled"] = True
         toCreateClient["clientAuthenticatorType"] = "client-secret"
-        toCreateClient["redirectUris"] = ["http://test.com:8080/secure","http://test1.com:8080/secure"]
+        toCreateClient["redirectUris"] = ["http://test.com:18182/secure","http://test1.com:18182/secure"]
         toCreateClient["webOrigins"] = ["*"]
         toCreateClient["bearerOnly"] = False
         toCreateClient["publicClient"] = False
@@ -81,6 +81,7 @@ class Sx5SystemTestCase(unittest.TestCase):
         toCreate["habilitationUrl"] = "http://localhost:18182/config"
         toCreate["systemName"] = "system1"
         toCreate["clientKeycloak"] = [{"spClient": "clientsystem11"},{"spClient": "clientsystem12"}]
+        toCreate["clientRoles"] = [{"spClientRoleId": "roleId11", "spClientRoleName": "roleName11", "spClientRoleDescription": "roleDescription11"},{"spClientRoleId": "roleId12", "spClientRoleName": "roleName12", "spClientRoleDescription": "roleDescription12"}]
         toCreate["state"] = "present"
         toCreate["force"] = False
     
@@ -99,6 +100,7 @@ class Sx5SystemTestCase(unittest.TestCase):
         toDoNotChange["habilitationUrl"] = "http://localhost:18182/config"
         toDoNotChange["systemName"] = "system2"
         toDoNotChange["clientKeycloak"] = [{"spClient": "clientsystem21"},{"spClient": "clientsystem22"}]
+        toDoNotChange["clientRoles"] = [{"spClientRoleId": "roleId21", "spClientRoleName": "roleName21", "spClientRoleDescription": "roleDescription21"},{"spClientRoleId": "roleId22", "spClientRoleName": "roleName22", "spClientRoleDescription": "roleDescription22"}]
         toDoNotChange["state"] = "present"
         toDoNotChange["force"] = False
 
@@ -119,6 +121,7 @@ class Sx5SystemTestCase(unittest.TestCase):
         toChange["habilitationUrl"] = "http://localhost:18182/config"
         toChange["systemName"] = "system3"
         toChange["clientKeycloak"] = [{"spClient": "clientsystem31"},{"spClient": "clientsystem32"}]
+        toChange["clientRoles"] = [{"spClientRoleId": "roleId31", "spClientRoleName": "roleName31", "spClientRoleDescription": "roleDescription31"},{"spClientRoleId": "roleId32", "spClientRoleName": "roleName32", "spClientRoleDescription": "roleDescription32"}]
         toChange["state"] = "present"
         toChange["force"] = False
 
@@ -141,6 +144,7 @@ class Sx5SystemTestCase(unittest.TestCase):
         toDelete["habilitationUrl"] = "http://localhost:18182/config"
         toDelete["systemName"] = "system4"
         toDelete["clientKeycloak"] = [{"spClient": "clientsystem41"},{"spClient": "clientsystem42"}]
+        toDelete["clientRoles"] = [{"spClientRoleId": "roleId41", "spClientRoleName": "roleName41", "spClientRoleDescription": "roleDescription41"},{"spClientRoleId": "roleId42", "spClientRoleName": "roleName42", "spClientRoleDescription": "roleDescription42"}]
         toDelete["state"] = "present"
         toDelete["force"] = False
 

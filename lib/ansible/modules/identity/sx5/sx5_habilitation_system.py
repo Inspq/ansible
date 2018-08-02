@@ -68,6 +68,11 @@ options:
         description:
             - list of OIDC Client ID for the client in Keycloak.
         required: true
+    clientRoles:
+        description:
+            - list of role in keycloak.
+        default: 
+        required: false
     force:
         choices: [ "yes", "no" ]
         default: "no"
@@ -98,6 +103,13 @@ EXAMPLES = '''
         clientKeycloak:
         - spClient: client1
         - spClient: client2
+        clientRoles:
+        - spClientRoleId: roleId1
+          spClientRoleName: roleName1
+          spClientRoleDescription: roleDescription1
+        - spClientRoleId: roleId2
+          spClientRoleName: roleName2
+          spClientRoleDescription: roleDescription2
         state: present
 
     - name: Create a system system1 with default settings.
@@ -113,6 +125,13 @@ EXAMPLES = '''
         clientKeycloak:
         - spClient: client1
         - spClient: client2
+        clientRoles:
+        - spClientRoleId: roleId1
+          spClientRoleName: roleName1
+          spClientRoleDescription: roleDescription1
+        - spClientRoleId: roleId2
+          spClientRoleName: roleName2
+          spClientRoleDescription: roleDescription2
         state: present
         force: yes
         
@@ -169,6 +188,7 @@ def main():
             habilitationUrl = dict(type='str', required=True),
             systemName=dict(type='str', required=True),
             clientKeycloak=dict(type='list', default=[]),
+            clientRoles=dict(type='list', default=[]),
             force=dict(type='bool', default=False),
             state=dict(choices=["absent", "present"], default='present'),
         ),
@@ -207,6 +227,8 @@ def system(params):
     newSystemDBRepresentation["habilitationUrl"] = params['habilitationUrl'].decode("utf-8")
     if "clientKeycloak" in params and params['clientKeycloak'] is not None:
         newSystemDBRepresentation["clientKeycloak"] = params['clientKeycloak']
+    if "clientRoles" in params and params['clientRoles'] is not None:
+        newSystemDBRepresentation["clientRoles"] = params['clientRoles']
     rc = 0
     result = dict()
     changed = False
@@ -264,9 +286,19 @@ def system(params):
                                     "description": ""
                                 }
                             client.append(clientS)
+                    role = []
+                    for clientRoles in newSystemDBRepresentation["clientRoles"]:
+                        if "clientRoles" in params and params['clientRoles'] is not None:
+                            roleS={
+                                "roleId": clientRoles["spClientRoleId"],
+                                "nom": clientRoles["spClientRoleName"],
+                                "description": clientRoles["spClientRoleDescription"],
+                            }
+                            role.append(roleS)
                     body = {
                             "nom": newSystemDBRepresentation["systemName"],
-                            "clientsKeycloak": client
+                            "clientsKeycloak": client,
+                            "roles": role
                         }
                     try:
                         requests.delete(dataResponse["_links"]["self"]["href"],headers=headers)
@@ -339,9 +371,19 @@ def system(params):
                                     "description": ""
                                 }
                             client.append(clientS)
+                    role = []
+                    for clientRoles in newSystemDBRepresentation["clientRoles"]:
+                        if "clientRoles" in params and params['clientRoles'] is not None:
+                            roleS={
+                                "roleId": clientRoles["spClientRoleId"],
+                                "nom": clientRoles["spClientRoleName"],
+                                "description": clientRoles["spClientRoleDescription"],
+                            }
+                            role.append(roleS)
                     body = {
                             "nom": newSystemDBRepresentation["systemName"],
-                            "clientsKeycloak": client
+                            "clientsKeycloak": client,
+                            "roles": role
                         }
                     try:
                         requests.post(habilitationUrl+"/systemes/",headers=headers,json=body)
@@ -436,14 +478,24 @@ def system(params):
                                     "description": ""
                                 }
                             client.append(clientS)
+                    role = []
+                    for clientRoles in newSystemDBRepresentation["clientRoles"]:
+                        if "clientRoles" in params and params['clientRoles'] is not None:
+                            roleS={
+                                "roleId": clientRoles["spClientRoleId"],
+                                "nom": clientRoles["spClientRoleName"],
+                                "description": clientRoles["spClientRoleDescription"],
+                            }
+                            role.append(roleS)
                     body = {
                             "nom": newSystemDBRepresentation["systemName"],
-                            "clientsKeycloak": client
+                            "clientsKeycloak": client,
+                            "roles": role
                         }
                     #excludes = []
                     #excludes.append("_links")
                     #isDictEquals(newClientRole, clientRole,excludes):
-                    if body["clientsKeycloak"] == dataResponse["clientsKeycloak"]:
+                    if body["clientsKeycloak"] == dataResponse["clientsKeycloak"] and body["roles"] == dataResponse["roles"]:
                         changed = False
                         fact = dict(
                             systemes = dataResponse
@@ -524,9 +576,19 @@ def system(params):
                                     "description": ""
                                 }
                             client.append(clientS)
+                    role = []
+                    for clientRoles in newSystemDBRepresentation["clientRoles"]:
+                        if "clientRoles" in params and params['clientRoles'] is not None:
+                            roleS={
+                                "roleId": clientRoles["spClientRoleId"],
+                                "nom": clientRoles["spClientRoleName"],
+                                "description": clientRoles["spClientRoleDescription"],
+                            }
+                            role.append(roleS)
                     body = {
                             "nom": newSystemDBRepresentation["systemName"],
-                            "clientsKeycloak": client
+                            "clientsKeycloak": client,
+                            "roles": role
                         }
                     try:
                         requests.post(habilitationUrl+"/systemeConfigurations/",headers=headers,json=body)
