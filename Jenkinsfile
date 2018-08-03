@@ -88,7 +88,7 @@ pipeline {
         stage ('Tests unitaires des modules ansible de sx5-habilitation') {
             steps {
                 sh "source hacking/env-setup; ansible-playbook -i keycloak.hosts -e docker_image=nexus3.inspq.qc.ca:5000/inspq/keycloak -e docker_image_version=latest deploy-keycloak.yml"
-                sh "source hacking/env-setup; ansible-playbook -i sx5-habilitation.hosts -e sx5habilitationservices_image_version=0.2.0-SNAPSHOT deploy-sx5-habilitation.yml"
+                sh "source hacking/env-setup; ansible-playbook -i sx5-habilitation.hosts -e sx5habilitationservices_image_version=0.3.0-SNAPSHOT deploy-sx5-habilitation.yml"
                 script {
                     try {
 		                sh "source hacking/env-setup; nosetests --with-xunit --xunit-file=nosetests-sx5-habilitation.xml test/units/modules/identity/sx5/test_sx5_habilitation*.py"
