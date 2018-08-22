@@ -250,56 +250,39 @@ def system(params):
                     dataResponse = getResponse.json()
                     client = []
                     for clientKeycloak in newSystemDBRepresentation["clientKeycloak"]:
-                        if "clientKeycloak" in params and params['clientKeycloak'] is not None:
-                            getResponseKeycloak = requests.get(clientSvcBaseUrl, headers=headers, params={'clientId': clientKeycloak["spClient"]})
-                            clientS={}
-                            if getResponseKeycloak.status_code == 200:
-                                dataResponseKeycloak = getResponseKeycloak.json()
-                                if not dataResponseKeycloak:
-                                    clientS={
-                                        "nom": clientKeycloak["spClient"],
-                                        "uuidKeycloak":"",
-                                        "clientid": "",
-                                        "description": ""
-                                    }
-                                else:
-                                    for dataKeycloak in dataResponseKeycloak:
-                                        if dataKeycloak["clientId"] == clientKeycloak["spClient"]:
-                                            clientS={
-                                                "nom": dataKeycloak["name"],
-                                                "uuidKeycloak": dataKeycloak["id"],
-                                                "clientid": dataKeycloak["clientId"],
-                                                "description": dataKeycloak["description"]
-                                            }
-                                        else:
-                                            clientS={
-                                                "nom": clientKeycloak["spClient"],
-                                                "uuidKeycloak":"",
-                                                "clientid": "",
-                                                "description": ""
-                                            }
-                            else: 
+                        getResponseKeycloak = requests.get(clientSvcBaseUrl, headers=headers, params={'clientId': clientKeycloak["spClient"]})
+                        clientS={}
+                        if getResponseKeycloak.status_code == 200:
+                            dataResponseKeycloak = getResponseKeycloak.json()
+                            if not dataResponseKeycloak:
                                 clientS={
                                     "nom": clientKeycloak["spClient"],
                                     "uuidKeycloak":"",
                                     "clientid": "",
-                                    "description": ""
+                                    "description": "",
+                                    "roles": []
                                 }
+                            else:
+                                for dataKeycloak in dataResponseKeycloak:
+                                    if dataKeycloak["clientId"] == clientKeycloak["spClient"]:
+                                        role = []
+                                        getResponseKeycloakClientRoles = requests.get(clientSvcBaseUrl+dataKeycloak["id"]+"/roles", headers=headers)
+                                        if getResponseKeycloakClientRoles.status_code == 200:
+                                            dataResponseroles = getResponseKeycloakClientRoles.json()
+                                            for dataKeycloakrole in dataResponseroles:
+                                                for clientRoles in newSystemDBRepresentation["clientRoles"]:
+                                                    if dataKeycloakrole["name"] == clientRoles["spClientRoleId"]:
+                                                        roleS={"roleId": dataKeycloakrole["id"],"nom": clientRoles["spClientRoleId"],"description": clientRoles["spClientRoleDescription"]}
+                                                        role.append(roleS)
+                                        clientS={
+                                            "nom": dataKeycloak["name"],
+                                            "uuidKeycloak": dataKeycloak["id"],
+                                            "clientid": dataKeycloak["clientId"],
+                                            "description": dataKeycloak["description"],
+                                            "roles": role
+                                        }
                             client.append(clientS)
-                    role = []
-                    for clientRoles in newSystemDBRepresentation["clientRoles"]:
-                        if "clientRoles" in params and params['clientRoles'] is not None:
-                            roleS={
-                                "roleId": clientRoles["spClientRoleId"],
-                                "nom": clientRoles["spClientRoleName"],
-                                "description": clientRoles["spClientRoleDescription"],
-                            }
-                            role.append(roleS)
-                    body = {
-                            "nom": newSystemDBRepresentation["systemName"],
-                            "clientsKeycloak": client,
-                            "roles": role
-                        }
+                    body = {"nom": newSystemDBRepresentation["systemName"],"composants": client}
                     try:
                         requests.delete(dataResponse["_links"]["self"]["href"],headers=headers)
                         requests.post(habilitationUrl+"/systemes/",headers=headers,json=body)
@@ -335,59 +318,42 @@ def system(params):
                 elif getResponse.status_code == 404: #systeme n'existe pas, le creer
                     client = []
                     for clientKeycloak in newSystemDBRepresentation["clientKeycloak"]:
-                        if "clientKeycloak" in params and params['clientKeycloak'] is not None:
-                            getResponseKeycloak = requests.get(clientSvcBaseUrl, headers=headers, params={'clientId': clientKeycloak["spClient"]})
-                            clientS={}
-                            if getResponseKeycloak.status_code == 200:
-                                dataResponseKeycloak = getResponseKeycloak.json()
-                                if not dataResponseKeycloak:
-                                    clientS={
-                                        "nom": clientKeycloak["spClient"],
-                                        "uuidKeycloak":"",
-                                        "clientid": "",
-                                        "description": ""
-                                    }
-                                else:
-                                    for dataKeycloak in dataResponseKeycloak:
-                                        if dataKeycloak["clientId"] == clientKeycloak["spClient"]:
-                                            clientS={
-                                                "nom": dataKeycloak["name"],
-                                                "uuidKeycloak": dataKeycloak["id"],
-                                                "clientid": dataKeycloak["clientId"],
-                                                "description": dataKeycloak["description"]
-                                            }
-                                        else:
-                                            clientS={
-                                                "nom": clientKeycloak["spClient"],
-                                                "uuidKeycloak":"",
-                                                "clientid": "",
-                                                "description": ""
-                                            }
-                            else: 
+                        getResponseKeycloak = requests.get(clientSvcBaseUrl, headers=headers, params={'clientId': clientKeycloak["spClient"]})
+                        clientS={}
+                        if getResponseKeycloak.status_code == 200:
+                            dataResponseKeycloak = getResponseKeycloak.json()
+                            if not dataResponseKeycloak:
                                 clientS={
                                     "nom": clientKeycloak["spClient"],
                                     "uuidKeycloak":"",
                                     "clientid": "",
-                                    "description": ""
+                                    "description": "",
+                                    "roles": []
                                 }
+                            else:
+                                for dataKeycloak in dataResponseKeycloak:
+                                    if dataKeycloak["clientId"] == clientKeycloak["spClient"]:
+                                        role = []
+                                        getResponseKeycloakClientRoles = requests.get(clientSvcBaseUrl+dataKeycloak["id"]+"/roles", headers=headers)
+                                        if getResponseKeycloakClientRoles.status_code == 200:
+                                            dataResponseroles = getResponseKeycloakClientRoles.json()
+                                            for dataKeycloakrole in dataResponseroles:
+                                                for clientRoles in newSystemDBRepresentation["clientRoles"]:
+                                                    if dataKeycloakrole["name"] == clientRoles["spClientRoleId"]:
+                                                        roleS={"roleId": dataKeycloakrole["id"],"nom": clientRoles["spClientRoleId"],"description": clientRoles["spClientRoleDescription"]}
+                                                        role.append(roleS)
+                                        clientS={
+                                            "nom": dataKeycloak["name"],
+                                            "uuidKeycloak": dataKeycloak["id"],
+                                            "clientid": dataKeycloak["clientId"],
+                                            "description": dataKeycloak["description"],
+                                            "roles": role
+                                        }
                             client.append(clientS)
-                    role = []
-                    for clientRoles in newSystemDBRepresentation["clientRoles"]:
-                        if "clientRoles" in params and params['clientRoles'] is not None:
-                            roleS={
-                                "roleId": clientRoles["spClientRoleId"],
-                                "nom": clientRoles["spClientRoleName"],
-                                "description": clientRoles["spClientRoleDescription"],
-                            }
-                            role.append(roleS)
-                    body = {
-                            "nom": newSystemDBRepresentation["systemName"],
-                            "clientsKeycloak": client,
-                            "roles": role
-                        }
+                    body = {"nom": newSystemDBRepresentation["systemName"],"composants": client}
                     try:
+                        requests.delete(dataResponse["_links"]["self"]["href"],headers=headers)
                         requests.post(habilitationUrl+"/systemes/",headers=headers,json=body)
-                        getResponse = requests.get(habilitationUrl+"/systemeConfigurations/search/findByNom?nom="+newSystemDBRepresentation["systemName"], headers=headers)
                         dataResponse = getResponse.json()
                         changed = True
                         fact = dict(
@@ -442,63 +408,39 @@ def system(params):
                     dataResponse = getResponse.json()
                     client = []
                     for clientKeycloak in newSystemDBRepresentation["clientKeycloak"]:
-                        if "clientKeycloak" in params and params['clientKeycloak'] is not None:
-                            getResponseKeycloak = requests.get(clientSvcBaseUrl, headers=headers, params={'clientId': clientKeycloak["spClient"]})
-                            clientS={}
-                            if getResponseKeycloak.status_code == 200:
-                                dataResponseKeycloak = getResponseKeycloak.json()
-                                if not dataResponseKeycloak:
-                                    clientS={
-                                        "nom": clientKeycloak["spClient"],
-                                        "uuidKeycloak":"",
-                                        "clientid": "",
-                                        "description": ""
-                                    }
-                                else:
-                                    for dataKeycloak in dataResponseKeycloak:
-                                        if dataKeycloak["clientId"] == clientKeycloak["spClient"]:
-                                            clientS={
-                                                "nom": dataKeycloak["name"],
-                                                "uuidKeycloak": dataKeycloak["id"],
-                                                "clientid": dataKeycloak["clientId"],
-                                                "description": dataKeycloak["description"]
-                                            }
-                                        else:
-                                            clientS={
-                                                "nom": clientKeycloak["spClient"],
-                                                "uuidKeycloak":"",
-                                                "clientid": "",
-                                                "description": ""
-                                            }
-                            else: 
+                        getResponseKeycloak = requests.get(clientSvcBaseUrl, headers=headers, params={'clientId': clientKeycloak["spClient"]})
+                        clientS={}
+                        if getResponseKeycloak.status_code == 200:
+                            dataResponseKeycloak = getResponseKeycloak.json()
+                            for dataKeycloak in dataResponseKeycloak:
+                                role = []
+                                getResponseKeycloakClientRoles = requests.get(clientSvcBaseUrl+dataKeycloak["id"]+"/roles", headers=headers)
+                                if getResponseKeycloakClientRoles.status_code == 200:
+                                    dataResponseroles = getResponseKeycloakClientRoles.json()
+                                    for dataKeycloakrole in dataResponseroles:
+                                        for clientRoles in newSystemDBRepresentation["clientRoles"]:
+                                            if dataKeycloakrole["name"] == clientRoles["spClientRoleId"]:
+                                                roleS={"roleId": dataKeycloakrole["id"],"nom": clientRoles["spClientRoleId"],"description": clientRoles["spClientRoleDescription"]}
+                                                role.append(roleS)    
                                 clientS={
-                                    "nom": clientKeycloak["spClient"],
-                                    "uuidKeycloak":"",
-                                    "clientid": "",
-                                    "description": ""
+                                    "nom": dataKeycloak["name"],
+                                    "uuidKeycloak": dataKeycloak["id"],
+                                    "clientid": dataKeycloak["clientId"],
+                                    "description": dataKeycloak["description"],
+                                    "roles": role
                                 }
-                            client.append(clientS)
-                    role = []
-                    for clientRoles in newSystemDBRepresentation["clientRoles"]:
-                        if "clientRoles" in params and params['clientRoles'] is not None:
-                            roleS={
-                                "roleId": clientRoles["spClientRoleId"],
-                                "nom": clientRoles["spClientRoleName"],
-                                "description": clientRoles["spClientRoleDescription"],
-                            }
-                            role.append(roleS)
-                    body = {
-                            "nom": newSystemDBRepresentation["systemName"],
-                            "clientsKeycloak": client,
-                            "roles": role
-                        }
-                    #excludes = []
-                    #excludes.append("_links")
-                    #isDictEquals(newClientRole, clientRole,excludes):
-                    if body["clientsKeycloak"] == dataResponse["clientsKeycloak"] and body["roles"] == dataResponse["roles"]:
+                                client.append(clientS)
+                    bodyClear = {"nom": newSystemDBRepresentation["systemName"],"composants": []}
+                    body = {"nom": newSystemDBRepresentation["systemName"],"composants": client}
+                    excludes = []
+                    excludes.append("_links")
+                    getResponse = requests.get(dataResponse["_links"]["self"]["href"], headers=headers)
+                    dataResponseS = getResponse.json()
+                    if isDictEquals(body, dataResponseS,excludes):
+                    #if body["nom"] == dataResponse["nom"] and body["composants"] == dataResponse["composants"]:
                         changed = False
                         fact = dict(
-                            systemes = dataResponse
+                            systemes = dataResponse["composants"]
                             )
                         result = dict(
                             ansible_facts = fact,
@@ -507,6 +449,7 @@ def system(params):
                             )
                     else:
                         try:
+                            requests.put(dataResponse["_links"]["self"]["href"],headers=headers,json=bodyClear)
                             requests.put(dataResponse["_links"]["self"]["href"],headers=headers,json=body)
                             getResponse = requests.get(habilitationUrl+"/systemeConfigurations/search/findByNom?nom="+newSystemDBRepresentation["systemName"], headers=headers)
                             dataResponse = getResponse.json()
@@ -540,56 +483,39 @@ def system(params):
                 elif getResponse.status_code == 404: #systeme n'existe pas, le creer
                     client = []
                     for clientKeycloak in newSystemDBRepresentation["clientKeycloak"]:
-                        if "clientKeycloak" in params and params['clientKeycloak'] is not None:
-                            getResponseKeycloak = requests.get(clientSvcBaseUrl, headers=headers, params={'clientId': clientKeycloak["spClient"]})
-                            clientS={}
-                            if getResponseKeycloak.status_code == 200:
-                                dataResponseKeycloak = getResponseKeycloak.json()
-                                if not dataResponseKeycloak:
-                                    clientS={
-                                        "nom": clientKeycloak["spClient"],
-                                        "uuidKeycloak":"",
-                                        "clientid": "",
-                                        "description": ""
-                                    }
-                                else:
-                                    for dataKeycloak in dataResponseKeycloak:
-                                        if dataKeycloak["clientId"] == clientKeycloak["spClient"]:
-                                            clientS={
-                                                "nom": dataKeycloak["name"],
-                                                "uuidKeycloak": dataKeycloak["id"],
-                                                "clientid": dataKeycloak["clientId"],
-                                                "description": dataKeycloak["description"]
-                                            }
-                                        else:
-                                            clientS={
-                                                "nom": clientKeycloak["spClient"],
-                                                "uuidKeycloak":"",
-                                                "clientid": "",
-                                                "description": ""
-                                            }
-                            else: 
+                        getResponseKeycloak = requests.get(clientSvcBaseUrl, headers=headers, params={'clientId': clientKeycloak["spClient"]})
+                        clientS={}
+                        if getResponseKeycloak.status_code == 200:
+                            dataResponseKeycloak = getResponseKeycloak.json()
+                            if not dataResponseKeycloak:
                                 clientS={
                                     "nom": clientKeycloak["spClient"],
                                     "uuidKeycloak":"",
                                     "clientid": "",
-                                    "description": ""
+                                    "description": "",
+                                    "roles": []
                                 }
+                            else:
+                                for dataKeycloak in dataResponseKeycloak:
+                                    if dataKeycloak["clientId"] == clientKeycloak["spClient"] and "clientRoles" in params and params['clientRoles'] is not None:
+                                        role = []
+                                        getResponseKeycloakClientRoles = requests.get(clientSvcBaseUrl+dataKeycloak["id"]+"/roles", headers=headers)
+                                        if getResponseKeycloakClientRoles.status_code == 200:
+                                            dataResponseroles = getResponseKeycloakClientRoles.json()
+                                            for dataKeycloakrole in dataResponseroles:
+                                                for clientRoles in newSystemDBRepresentation["clientRoles"]:
+                                                    if dataKeycloakrole["name"] == clientRoles["spClientRoleId"]:
+                                                        roleS={"roleId": dataKeycloakrole["id"],"nom": clientRoles["spClientRoleId"],"description": clientRoles["spClientRoleDescription"]}
+                                                        role.append(roleS)
+                                        clientS={
+                                            "nom": dataKeycloak["name"],
+                                            "uuidKeycloak": dataKeycloak["id"],
+                                            "clientid": dataKeycloak["clientId"],
+                                            "description": dataKeycloak["description"],
+                                            "roles": role
+                                        }
                             client.append(clientS)
-                    role = []
-                    for clientRoles in newSystemDBRepresentation["clientRoles"]:
-                        if "clientRoles" in params and params['clientRoles'] is not None:
-                            roleS={
-                                "roleId": clientRoles["spClientRoleId"],
-                                "nom": clientRoles["spClientRoleName"],
-                                "description": clientRoles["spClientRoleDescription"],
-                            }
-                            role.append(roleS)
-                    body = {
-                            "nom": newSystemDBRepresentation["systemName"],
-                            "clientsKeycloak": client,
-                            "roles": role
-                        }
+                    body = {"nom": newSystemDBRepresentation["systemName"],"composants": client}
                     try:
                         requests.post(habilitationUrl+"/systemeConfigurations/",headers=headers,json=body)
                         getResponse = requests.get(habilitationUrl+"/systemeConfigurations/search/findByNom?nom="+newSystemDBRepresentation["systemName"], headers=headers)

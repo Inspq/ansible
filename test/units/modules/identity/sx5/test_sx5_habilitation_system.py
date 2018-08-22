@@ -10,43 +10,38 @@ class Sx5SystemTestCase(unittest.TestCase):
         clientsToCreate = [
             {
                 "clientId": "clientsystem11",
-                "name": "clientsystem11"
-                },
-            {
-                "clientId": "clientsystem12",
-                "name": "clientsystem12"
+                "name": "clientsystem11",
+                "roles": [{"name":"test1","description": "test1","composite": "False"},
+                             {"name":"toCreate","description": "toCreate","composite": True,"composites": [{"id": "master-realm","name": "view-users","clientRole": True,"composite": True}]}
+                             ]
                 },
             {
                 "clientId": "clientsystem21",
-                "name": "clientsystem21"
-                },
-            {
-                "clientId": "clientsystem22",
-                "name": "clientsystem22"
+                "name": "clientsystem21",
+                "roles": [{"name":"test2","description": "test2","composite": "False"},
+                             {"name":"toDoNotChange","description": "toDoNotChange","composite": True,"composites": [{"id": "master-realm","name": "view-users","clientRole": True,"composite": True}]}
+                             ]
                 },
             {
                 "clientId": "clientsystem31",
-                "name": "clientsystem31"
-                },
-            {
-                "clientId": "clientsystem32",
-                "name": "clientsystem32"
+                "name": "clientsystem31",
+                "roles": [{"name":"test3","description": "test3","composite": "False"},
+                             {"name":"toChange","description": "toChange","composite": True,"composites": [{"id": "master-realm","name": "view-users","clientRole": True,"composite": True}]}
+                             ]
                 },
             {
                 "clientId": "clientsystemChange31",
-                "name": "clientsystemChange31"
-                },
-            {
-                "clientId": "clientsystemChange32",
-                "name": "clientsystemChange32"
+                "name": "clientsystemChange31",
+                "roles": [{"name":"test3","description": "test3","composite": "False"},
+                             {"name":"toChange","description": "toChange","composite": True,"composites": [{"id": "master-realm","name": "view-users","clientRole": True,"composite": True}]}
+                             ]
                 },
             {
                 "clientId": "clientsystem41",
-                "name": "clientsystem41"
-                },
-            {
-                "clientId": "clientsystem42",
-                "name": "clientsystem42"
+                "name": "clientsystem41",
+                "roles": [{"name":"test4","description": "test4","composite": "False"},
+                             {"name":"toDelete","description": "toDelete","composite": True,"composites": [{"id": "master-realm","name": "view-users","clientRole": True,"composite": True}]}
+                             ]
                 }
             ]
         toCreateClient = {}
@@ -55,12 +50,12 @@ class Sx5SystemTestCase(unittest.TestCase):
         toCreateClient["password"] = "admin"
         toCreateClient["realm"] = "master"
         toCreateClient["state"] = "present"
-        toCreateClient["rootUrl"] = "http://test.com:18182"
+        toCreateClient["rootUrl"] = "http://test.com:8080"
         toCreateClient["description"] = "Ceci est un test"
-        toCreateClient["adminUrl"] = "http://test.com:18182/admin"
+        toCreateClient["adminUrl"] = "http://test.com:8080/admin"
         toCreateClient["enabled"] = True
         toCreateClient["clientAuthenticatorType"] = "client-secret"
-        toCreateClient["redirectUris"] = ["http://test.com:18182/secure","http://test1.com:18182/secure"]
+        toCreateClient["redirectUris"] = ["http://test.com:8080/secure","http://test1.com:8080/secure"]
         toCreateClient["webOrigins"] = ["*"]
         toCreateClient["bearerOnly"] = False
         toCreateClient["publicClient"] = False
@@ -68,6 +63,7 @@ class Sx5SystemTestCase(unittest.TestCase):
         for theClient in clientsToCreate:
             toCreateClient["clientId"] = theClient["clientId"]
             toCreateClient["name"] = theClient["name"]
+            toCreateClient["roles"] = theClient["roles"]
             client(toCreateClient)
         
     def test_create_system(self):
@@ -78,15 +74,15 @@ class Sx5SystemTestCase(unittest.TestCase):
         toCreate["spRealm"] = "master"
         toCreate["habilitationClient_id"] = "admin-cli"
         toCreate["habilitationClient_secret"] = ""
-        toCreate["habilitationUrl"] = "http://localhost:18182/config"
+        toCreate["habilitationUrl"] = "http://localhost:8080/config"
         toCreate["systemName"] = "system1"
-        toCreate["clientKeycloak"] = [{"spClient": "clientsystem11"},{"spClient": "clientsystem12"}]
-        toCreate["clientRoles"] = [{"spClientRoleId": "roleId11", "spClientRoleName": "roleName11", "spClientRoleDescription": "roleDescription11"},{"spClientRoleId": "roleId12", "spClientRoleName": "roleName12", "spClientRoleDescription": "roleDescription12"}]
+        toCreate["clientKeycloak"] = [{"spClient": "clientsystem11"}]
+        toCreate["clientRoles"] = [{"spClientRoleId": "test1", "spClientRoleName": "test1", "spClientRoleDescription": "test1"},{"spClientRoleId": "toCreate", "spClientRoleName": "toCreate", "spClientRoleDescription": "toCreate"}]
         toCreate["state"] = "present"
         toCreate["force"] = False
     
         results = system(toCreate)
-        print str(results)
+        #print str(results)
         self.assertTrue(results['changed'])
 
     def test_system_not_changed(self):
@@ -97,17 +93,17 @@ class Sx5SystemTestCase(unittest.TestCase):
         toDoNotChange["spRealm"] = "master"
         toDoNotChange["habilitationClient_id"] = "admin-cli"
         toDoNotChange["habilitationClient_secret"] = ""
-        toDoNotChange["habilitationUrl"] = "http://localhost:18182/config"
+        toDoNotChange["habilitationUrl"] = "http://localhost:8080/config"
         toDoNotChange["systemName"] = "system2"
-        toDoNotChange["clientKeycloak"] = [{"spClient": "clientsystem21"},{"spClient": "clientsystem22"}]
-        toDoNotChange["clientRoles"] = [{"spClientRoleId": "roleId21", "spClientRoleName": "roleName21", "spClientRoleDescription": "roleDescription21"},{"spClientRoleId": "roleId22", "spClientRoleName": "roleName22", "spClientRoleDescription": "roleDescription22"}]
+        toDoNotChange["clientKeycloak"] = [{"spClient": "clientsystem21"}]
+        toDoNotChange["clientRoles"] = [{"spClientRoleId": "test2", "spClientRoleName": "test2", "spClientRoleDescription": "test2"},{"spClientRoleId": "toDoNotChange", "spClientRoleName": "toDoNotChange", "spClientRoleDescription": "toDoNotChange"}]
         toDoNotChange["state"] = "present"
         toDoNotChange["force"] = False
 
-        system(toDoNotChange)
-        #print str(results)
         results = system(toDoNotChange)
-        #print str(results)
+        print str(results)
+        results = system(toDoNotChange)
+        print str(results)
         self.assertFalse(results['changed'])
 
     def test_modify_system(self):
@@ -118,18 +114,18 @@ class Sx5SystemTestCase(unittest.TestCase):
         toChange["spRealm"] = "master"
         toChange["habilitationClient_id"] = "admin-cli"
         toChange["habilitationClient_secret"] = ""
-        toChange["habilitationUrl"] = "http://localhost:18182/config"
+        toChange["habilitationUrl"] = "http://localhost:8080/config"
         toChange["systemName"] = "system3"
-        toChange["clientKeycloak"] = [{"spClient": "clientsystem31"},{"spClient": "clientsystem32"}]
-        toChange["clientRoles"] = [{"spClientRoleId": "roleId31", "spClientRoleName": "roleName31", "spClientRoleDescription": "roleDescription31"},{"spClientRoleId": "roleId32", "spClientRoleName": "roleName32", "spClientRoleDescription": "roleDescription32"}]
+        toChange["clientKeycloak"] = [{"spClient": "clientsystem31"}]
+        toChange["clientRoles"] = [{"spClientRoleId": "test3", "spClientRoleName": "test3", "spClientRoleDescription": "test3"},{"spClientRoleId": "toChange", "spClientRoleName": "toChange", "spClientRoleDescription": "toChange"}]
         toChange["state"] = "present"
         toChange["force"] = False
 
         results = system(toChange)
-        #print str(results)
-        toChange["clientKeycloak"] = [{"spClient": "clientsystemChange31"},{"spClient": "clientsystemChange32"}]
+        print str(results)
+        toChange["clientKeycloak"] = [{"spClient": "clientsystemChange31"}]
         results = system(toChange)
-        #print str(results)
+        print str(results)
         self.assertTrue(results['changed'])
         
         
@@ -141,10 +137,10 @@ class Sx5SystemTestCase(unittest.TestCase):
         toDelete["spRealm"] = "master"
         toDelete["habilitationClient_id"] = "admin-cli"
         toDelete["habilitationClient_secret"] = ""
-        toDelete["habilitationUrl"] = "http://localhost:18182/config"
+        toDelete["habilitationUrl"] = "http://localhost:8080/config"
         toDelete["systemName"] = "system4"
-        toDelete["clientKeycloak"] = [{"spClient": "clientsystem41"},{"spClient": "clientsystem42"}]
-        toDelete["clientRoles"] = [{"spClientRoleId": "roleId41", "spClientRoleName": "roleName41", "spClientRoleDescription": "roleDescription41"},{"spClientRoleId": "roleId42", "spClientRoleName": "roleName42", "spClientRoleDescription": "roleDescription42"}]
+        toDelete["clientKeycloak"] = [{"spClient": "clientsystem41"}]
+        toDelete["clientRoles"] = [{"spClientRoleId": "test4", "spClientRoleName": "test4", "spClientRoleDescription": "test4"},{"spClientRoleId": "toDelete", "spClientRoleName": "toDelete", "spClientRoleDescription": "toDelete"}]
         toDelete["state"] = "present"
         toDelete["force"] = False
 
