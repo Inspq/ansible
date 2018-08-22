@@ -50,12 +50,12 @@ class Sx5SystemTestCase(unittest.TestCase):
         toCreateClient["password"] = "admin"
         toCreateClient["realm"] = "master"
         toCreateClient["state"] = "present"
-        toCreateClient["rootUrl"] = "http://test.com:8080"
+        toCreateClient["rootUrl"] = "http://test.com:18182"
         toCreateClient["description"] = "Ceci est un test"
-        toCreateClient["adminUrl"] = "http://test.com:8080/admin"
+        toCreateClient["adminUrl"] = "http://test.com:18182/admin"
         toCreateClient["enabled"] = True
         toCreateClient["clientAuthenticatorType"] = "client-secret"
-        toCreateClient["redirectUris"] = ["http://test.com:8080/secure","http://test1.com:8080/secure"]
+        toCreateClient["redirectUris"] = ["http://test.com:18182/secure","http://test1.com:18182/secure"]
         toCreateClient["webOrigins"] = ["*"]
         toCreateClient["bearerOnly"] = False
         toCreateClient["publicClient"] = False
@@ -74,7 +74,7 @@ class Sx5SystemTestCase(unittest.TestCase):
         toCreate["spRealm"] = "master"
         toCreate["habilitationClient_id"] = "admin-cli"
         toCreate["habilitationClient_secret"] = ""
-        toCreate["habilitationUrl"] = "http://localhost:8080/config"
+        toCreate["habilitationUrl"] = "http://localhost:18182/config"
         toCreate["systemName"] = "system1"
         toCreate["clientKeycloak"] = [{"spClient": "clientsystem11"}]
         toCreate["clientRoles"] = [{"spClientRoleId": "test1", "spClientRoleName": "test1", "spClientRoleDescription": "test1"},{"spClientRoleId": "toCreate", "spClientRoleName": "toCreate", "spClientRoleDescription": "toCreate"}]
@@ -93,7 +93,7 @@ class Sx5SystemTestCase(unittest.TestCase):
         toDoNotChange["spRealm"] = "master"
         toDoNotChange["habilitationClient_id"] = "admin-cli"
         toDoNotChange["habilitationClient_secret"] = ""
-        toDoNotChange["habilitationUrl"] = "http://localhost:8080/config"
+        toDoNotChange["habilitationUrl"] = "http://localhost:18182/config"
         toDoNotChange["systemName"] = "system2"
         toDoNotChange["clientKeycloak"] = [{"spClient": "clientsystem21"}]
         toDoNotChange["clientRoles"] = [{"spClientRoleId": "test2", "spClientRoleName": "test2", "spClientRoleDescription": "test2"},{"spClientRoleId": "toDoNotChange", "spClientRoleName": "toDoNotChange", "spClientRoleDescription": "toDoNotChange"}]
@@ -114,7 +114,7 @@ class Sx5SystemTestCase(unittest.TestCase):
         toChange["spRealm"] = "master"
         toChange["habilitationClient_id"] = "admin-cli"
         toChange["habilitationClient_secret"] = ""
-        toChange["habilitationUrl"] = "http://localhost:8080/config"
+        toChange["habilitationUrl"] = "http://localhost:18182/config"
         toChange["systemName"] = "system3"
         toChange["clientKeycloak"] = [{"spClient": "clientsystem31"}]
         toChange["clientRoles"] = [{"spClientRoleId": "test3", "spClientRoleName": "test3", "spClientRoleDescription": "test3"},{"spClientRoleId": "toChange", "spClientRoleName": "toChange", "spClientRoleDescription": "toChange"}]
@@ -137,7 +137,7 @@ class Sx5SystemTestCase(unittest.TestCase):
         toDelete["spRealm"] = "master"
         toDelete["habilitationClient_id"] = "admin-cli"
         toDelete["habilitationClient_secret"] = ""
-        toDelete["habilitationUrl"] = "http://localhost:8080/config"
+        toDelete["habilitationUrl"] = "http://localhost:18182/config"
         toDelete["systemName"] = "system4"
         toDelete["clientKeycloak"] = [{"spClient": "clientsystem41"}]
         toDelete["clientRoles"] = [{"spClientRoleId": "test4", "spClientRoleName": "test4", "spClientRoleDescription": "test4"},{"spClientRoleId": "toDelete", "spClientRoleName": "toDelete", "spClientRoleDescription": "toDelete"}]
