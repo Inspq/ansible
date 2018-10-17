@@ -167,6 +167,10 @@ class KeycloakRoleTestCase(unittest.TestCase):
             "clientId":"master-realm",
             "name":"manage-events"
             })
+        toChange["composites"].append({
+            "clientId":"account",
+            "name":"manage-account"
+            })
         results = role(toChange)
         self.assertTrue(results['ansible_facts']['role']['composite'])
         # self.assertFalse(results['ansible_facts']['role']['scopeParamRequired'])
