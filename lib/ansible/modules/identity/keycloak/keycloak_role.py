@@ -382,63 +382,66 @@ def role(params):
 def createOrUpdateComposites(newComposites,newRoleRepresentation, roleSvcBaseUrl, clientSvcBaseUrl, headers):
     changed = False
     newCompositesToCreate = []
-    
-    getResponse = requests.get(roleSvcBaseUrl + newRoleRepresentation["name"] + '/composites', headers=headers)
-    existingComposites = getResponse.json()
-    if existingComposites is None:
-        existingComposites = []
-    for existingComposite in existingComposites:
-        newCompositesToCreate.append(existingComposite)
-    # Créer assigner les roles composites
-#    if newComposites is not None and newRoleRepresentation["composite"]:
-    if newComposites is not None and newRoleRepresentation["composite"]:
-        for newComposite in newComposites:
-            newCompositeFound = False
-            # Rechercher le composite à assigner au rôle dans le rôle en place sur le serveur
-            for composite in existingComposites:
-                if composite["clientRole"]:
-                    getResponse = requests.get(clientSvcBaseUrl + composite["containerId"], headers=headers)
-                    clientId = getResponse.json()["clientId"]
-                    if composite["name"] == newComposite["name"] and clientId == newComposite["clientId"]:
+    try:
+        getResponse = requests.get(roleSvcBaseUrl + newRoleRepresentation["name"] + '/composites', headers=headers)
+        existingComposites = getResponse.json()
+        if existingComposites is None:
+            existingComposites = []
+        for existingComposite in existingComposites:
+            newCompositesToCreate.append(existingComposite)
+        # Créer assigner les roles composites
+    #    if newComposites is not None and newRoleRepresentation["composite"]:
+        if newComposites is not None and newRoleRepresentation["composite"]:
+            for newComposite in newComposites:
+                newCompositeFound = False
+                # Rechercher le composite à assigner au rôle dans le rôle en place sur le serveur
+                for composite in existingComposites:
+                    if composite["clientRole"]:
+                        getResponse = requests.get(clientSvcBaseUrl + composite["containerId"], headers=headers)
+                        clientId = getResponse.json()["clientId"]
+                        if composite["name"] == newComposite["name"] and clientId == newComposite["clientId"]:
+                            newCompositeFound = True
+                            break
+                    elif composite["name"] == newComposite["name"]:
                         newCompositeFound = True
                         break
-                elif composite["name"] == newComposite["name"]:
-                    newCompositeFound = True
-                    break
-            # Si le role n'est pas déjà assigné au role composite car in n'a pas été trouvé
-            if not newCompositeFound:
-                roles = []
-                # Si le composite est de type role client
-                if "clientId" in newComposite:
-                    # Obtenir id de ce client
-                    client = None
-                    getResponse = requests.get(clientSvcBaseUrl, headers=headers, params={'clientId': newComposite["clientId"]})
-                    for client in getResponse.json():
-                        if client["clientId"] == newComposite["clientId"]:
-                            break
-                    if client is not None:
-                        # Obtenir les rôles de ce client
-                        getResponse = requests.get(clientSvcBaseUrl + client["id"] + "/roles", headers=headers)
+                # Si le role n'est pas déjà assigné au role composite car in n'a pas été trouvé
+                if not newCompositeFound:
+                    roles = []
+                    # Si le composite est de type role client
+                    if "clientId" in newComposite:
+                        # Obtenir id de ce client
+                        client = None
+                        getResponse = requests.get(clientSvcBaseUrl, headers=headers, params={'clientId': newComposite["clientId"]})
+                        for client in getResponse.json():
+                            if client["clientId"] == newComposite["clientId"]:
+                                break
+                        if client is not None:
+                            # Obtenir les rôles de ce client
+                            getResponse = requests.get(clientSvcBaseUrl + client["id"] + "/roles", headers=headers)
+                            roles = getResponse.json()
+                    else: # Sinon, on assume que le rôle a mettre dans le composite en est un de realm
+                        # Obtenir la liste des rôles du realm
+                        getResponse = requests.get(roleSvcBaseUrl, headers=headers)
                         roles = getResponse.json()
-                else: # Sinon, on assume que le rôle a mettre dans le composite en est un de realm
-                    # Obtenir la liste des rôles du realm
-                    getResponse = requests.get(roleSvcBaseUrl, headers=headers)
-                    roles = getResponse.json()
-                # Rechercher le rôle correspondant à celui à assigner
-                for role in roles:                   
-                    # Si le rôle est trouvé
-                    if role["name"] == newComposite["name"]:
-                        newCompositesToCreate.append(role)
-                        changed = True
-    if changed:
-        # Delete existing composites
-        #if len(existingComposites) > 0:
-        #    data=json.dumps(existingComposites)
-        #    requests.delete(roleSvcBaseUrl + newRoleRepresentation["name"] + '/composites', headers=headers, data=data)
-        # Create all composites
-        data=json.dumps(newCompositesToCreate)
-        requests.post(roleSvcBaseUrl + newRoleRepresentation["name"] + '/composites', headers=headers, data=data)
-        
+                    # Rechercher le rôle correspondant à celui à assigner
+                    for role in roles:                   
+                        # Si le rôle est trouvé
+                        if role["name"] == newComposite["name"]:
+                            newCompositesToCreate.append(role)
+                            changed = True
+        if changed:
+            # Delete existing composites
+            #if len(existingComposites) > 0:
+            #    data=json.dumps(existingComposites)
+            #    requests.delete(roleSvcBaseUrl + newRoleRepresentation["name"] + '/composites', headers=headers, data=data)
+            # Create all composites
+            data=json.dumps(newCompositesToCreate)
+            requests.post(roleSvcBaseUrl + newRoleRepresentation["name"] + '/composites', headers=headers, data=data)
+    except requests.exceptions.RequestException, e:
+        raise e
+    except ValueError, e:
+        raise e
     return changed
         
 # import module snippets
