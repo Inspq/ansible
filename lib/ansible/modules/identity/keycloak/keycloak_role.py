@@ -262,7 +262,7 @@ def role(params):
                 # Stocker le role dans un body prêt a être posté
                 data=json.dumps(newRoleRepresentation)
                 # Créer le role
-                postResponse = requests.post(roleSvcBaseUrl, headers=headers, data=data)
+                requests.post(roleSvcBaseUrl, headers=headers, data=data)
                 # Obtenir le nouveau role créé
                 getResponse = requests.get(roleSvcBaseUrl + newRoleRepresentation["name"], headers=headers)
                 if getResponse.status_code == 404:
@@ -318,19 +318,19 @@ def role(params):
             if (state == 'present'): # si le status est présent
                 if force: # Si l'option force est sélectionné
                     # Supprimer le role existant
-                    deleteResponse = requests.delete(roleSvcBaseUrl + roleRepresentation["name"], headers=headers)
+                    requests.delete(roleSvcBaseUrl + roleRepresentation["id"], headers=headers)
                     changed = True
                     # Stocker le role dans un body prêt a être posté
                     data=json.dumps(newRoleRepresentation)
                     # Créer à nouveau le role
-                    postResponse = requests.post(roleSvcBaseUrl, headers=headers, data=data)
+                    requests.post(roleSvcBaseUrl, headers=headers, data=data)
                 else: # Si l'option force n'est pas sélectionné
                     # Comparer les roles
                     if not (isDictEquals(newRoleRepresentation, roleRepresentation)): # Si le nouveau role introduit des modifications aux roles existants
                         # Stocker le role dans un body prêt a être posté
                         data=json.dumps(newRoleRepresentation)
                         # Mettre à jour le role sur le serveur Keycloak
-                        updateResponse = requests.put(roleSvcBaseUrl + roleRepresentation["name"], headers=headers, data=data)
+                        requests.put(roleSvcBaseUrl + roleRepresentation["name"], headers=headers, data=data)
                         changed = True
                 # Obtenir le nouveau role créé
                 getResponse = requests.get(roleSvcBaseUrl + newRoleRepresentation["name"], headers=headers)
@@ -358,7 +358,7 @@ def role(params):
                     
             elif state == 'absent': # Le status est absent
                 # Supprimer le role
-                deleteResponse = requests.delete(roleSvcBaseUrl + roleRepresentation['id'], headers=headers)
+                requests.delete(roleSvcBaseUrl + roleRepresentation['name'], headers=headers)
                 changed = True
                 result = dict(
                     stdout   = 'deleted',
@@ -381,16 +381,28 @@ def role(params):
 
 def createOrUpdateComposites(newComposites,newRoleRepresentation, roleSvcBaseUrl, clientSvcBaseUrl, headers):
     changed = False
-    newCompositeToCreate = []
+    newCompositesToCreate = []
+    
+    getResponse = requests.get(roleSvcBaseUrl + newRoleRepresentation["name"] + '/composites', headers=headers)
+    existingComposites = getResponse.json()
+    if existingComposites is None:
+        existingComposites = []
+    for existingComposite in existingComposites:
+        newCompositesToCreate.append(existingComposite)
     # Créer assigner les roles composites
+#    if newComposites is not None and newRoleRepresentation["composite"]:
     if newComposites is not None and newRoleRepresentation["composite"]:
         for newComposite in newComposites:
             newCompositeFound = False
             # Rechercher le composite à assigner au rôle dans le rôle en place sur le serveur
-            getResponse = requests.get(roleSvcBaseUrl + newRoleRepresentation["name"] + '/composites', headers=headers)
-            composites = getResponse.json()
-            for composite in composites:
-                if composite["name"] == newComposite["name"]:
+            for composite in existingComposites:
+                if composite["clientRole"]:
+                    getResponse = requests.get(clientSvcBaseUrl + composite["containerId"], headers=headers)
+                    clientId = getResponse.json()["clientId"]
+                    if composite["name"] == newComposite["name"] and clientId == newComposite["clientId"]:
+                        newCompositeFound = True
+                        break
+                elif composite["name"] == newComposite["name"]:
                     newCompositeFound = True
                     break
             # Si le role n'est pas déjà assigné au role composite car in n'a pas été trouvé
@@ -416,12 +428,17 @@ def createOrUpdateComposites(newComposites,newRoleRepresentation, roleSvcBaseUrl
                 for role in roles:                   
                     # Si le rôle est trouvé
                     if role["name"] == newComposite["name"]:
-                        newCompositeToCreate.append(role)
-    if len(newCompositeToCreate) > 0:
-        # Créer le composite
-        data=json.dumps(newCompositeToCreate)
-        postResponse = requests.post(roleSvcBaseUrl + newRoleRepresentation["name"] + '/composites', headers=headers, data=data)
-        changed = True
+                        newCompositesToCreate.append(role)
+                        changed = True
+    if changed:
+        # Delete existing composites
+        #if len(existingComposites) > 0:
+        #    data=json.dumps(existingComposites)
+        #    requests.delete(roleSvcBaseUrl + newRoleRepresentation["name"] + '/composites', headers=headers, data=data)
+        # Create all composites
+        data=json.dumps(newCompositesToCreate)
+        requests.post(roleSvcBaseUrl + newRoleRepresentation["name"] + '/composites', headers=headers, data=data)
+        
     return changed
         
 # import module snippets
