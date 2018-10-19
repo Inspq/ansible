@@ -396,7 +396,7 @@ def createOrUpdateComposites(newComposites,newRoleRepresentation, roleSvcBaseUrl
                 newCompositeFound = False
                 # Rechercher le composite à assigner au rôle dans le rôle en place sur le serveur
                 for composite in existingComposites:
-                    if composite["clientRole"]:
+                    if composite["clientRole"] and "clientId" in newComposite:
                         getResponse = requests.get(clientSvcBaseUrl + composite["containerId"], headers=headers)
                         clientId = getResponse.json()["clientId"]
                         if composite["name"] == newComposite["name"] and clientId == newComposite["clientId"]:

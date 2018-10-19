@@ -406,8 +406,6 @@ class KeycloakRoleTestCase(unittest.TestCase):
             keycloakRole = getResponse.json()
             getResponse = requests.get(self.roleSvcBaseUrl + toChangeTwoRoles["name"] + "/composites", headers=self.headers)
             keycloakRoleComposites = getResponse.json()
-            print str(keycloakRole)
-            print str(keycloakRoleComposites)
         except requests.exceptions.RequestException, e:
             print(str(e))
         self.assertTrue(results['changed'])
