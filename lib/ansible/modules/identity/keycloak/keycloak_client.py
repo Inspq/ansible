@@ -383,11 +383,9 @@ def client(params):
     if 'protocolMappers' in params and params['protocolMappers'] is not None:
         newClientProtocolMappers = params['protocolMappers']
     composites = []
-    Repsonse = []
     
     clientSvcBaseUrl = url + "/auth/admin/realms/" + realm + "/clients/"
     
-    rc = 0
     result = dict()
     changed = False
 
@@ -430,7 +428,7 @@ def client(params):
                 # Stocker le client dans un body prêt a être posté
                 data=json.dumps(newClientRepresentation)
                 # Créer le client
-                postResponse = requests.post(clientSvcBaseUrl, headers=headers, data=data)
+                requests.post(clientSvcBaseUrl, headers=headers, data=data)
                 # Obtenir le nouveau client créé
                 getResponse = requests.get(clientSvcBaseUrl, headers=headers, params={'clientId': newClientRepresentation["clientId"]})
                 clientRepresentation = getResponse.json()[0]
@@ -444,7 +442,7 @@ def client(params):
                         newRoleRepresentation["composite"] = newClientRole['composite'] if "composite" in newClientRole else False
                         #data=json.dumps(newClientRole)
                         data=json.dumps(newRoleRepresentation)
-                        postResponse = requests.post(clientSvcBaseUrl + clientRepresentation['id'] + '/roles', headers=headers, data=data)
+                        requests.post(clientSvcBaseUrl + clientRepresentation['id'] + '/roles', headers=headers, data=data)
                         # rôle composites
                         if 'composites' in newClientRole and newClientRole['composites'] is not None:
                             newComposites = newClientRole['composites']
@@ -464,14 +462,14 @@ def client(params):
                                                 newCompositeToCreate.append(newComposite)
                                     # rôle composites
                                     data=json.dumps(newCompositeToCreate)
-                                    postResponse = requests.post(clientSvcBaseUrl + clientRepresentation['id'] + '/roles/'+ newClientRole['name'] +'/composites', headers=headers, data=data)
+                                    requests.post(clientSvcBaseUrl + clientRepresentation['id'] + '/roles/'+ newClientRole['name'] +'/composites', headers=headers, data=data)
                                     getResponse = requests.get(clientSvcBaseUrl + clientRepresentation['id'] + '/roles/'+ newClientRole['name'] +'/composites', headers=headers)
                                     composites.append(getResponse.text)
                 # Créer les protocols mappers
                 if newClientProtocolMappers is not None:
                     for newClientProtocolMapper in newClientProtocolMappers:
                         data=json.dumps(newClientProtocolMapper)
-                        postResponse = requests.post(clientSvcBaseUrl + clientRepresentation['id'] + '/protocol-mappers/models', headers=headers, data=data)
+                        requests.post(clientSvcBaseUrl + clientRepresentation['id'] + '/protocol-mappers/models', headers=headers, data=data)
                 # Obtenir la version finale du nouveau client créé
                 getResponse = getResponse = requests.get(clientSvcBaseUrl, headers=headers, params={'clientId': newClientRepresentation["clientId"]})
                 clientRepresentation = getResponse.json()[0]
@@ -484,13 +482,18 @@ def client(params):
                 # Obtenir les rôles pour le client
                 getResponse = requests.get(clientSvcBaseUrl + clientRepresentation['id'] + '/roles', headers=headers)
                 clientRolesRepresentation = getResponse.json()
+                
+                getResponse = requests.get(clientSvcBaseUrl + clientRepresentation['id'] + '/installation/providers/keycloak-oidc-keycloak-json', headers=headers)
+                keycloakOidcKeycloakJson = getResponse.json()
+                
                 changed = True
                 fact = dict(
                     client = clientRepresentation,
                     clientSecret = clientSecretRepresentation,
                     composites = composites,
                     clientRoles = clientRolesRepresentation)
-                
+                if keycloakOidcKeycloakJson :
+                    fact["keycloakOidcKeycloakJson"] = keycloakOidcKeycloakJson
                 result = dict(
                     ansible_facts = fact,
                     rc = 0,
@@ -527,12 +530,12 @@ def client(params):
             if (state == 'present'): # si le status est présent
                 if force: # Si l'option force est sélectionné
                     # Supprimer le client existant
-                    deleteResponse = requests.delete(clientSvcBaseUrl + clientRepresentation["id"], headers=headers)
+                    requests.delete(clientSvcBaseUrl + clientRepresentation["id"], headers=headers)
                     changed = True
                     # Stocker le client dans un body prêt a être posté
                     data=json.dumps(newClientRepresentation)
                     # Créer le nouveau client
-                    postResponse = requests.post(clientSvcBaseUrl, headers=headers, data=data)
+                    requests.post(clientSvcBaseUrl, headers=headers, data=data)
                 else: # Si l'option force n'est pas sélectionné
                     excludes = []
                     if "webOrigins" in newClientRepresentation and len(newClientRepresentation['webOrigins']) == 0:
@@ -545,10 +548,10 @@ def client(params):
                         # Stocker le client dans un body prêt a être posté
                         data=json.dumps(newClientRepresentation)
                         # Mettre à jour le client sur le serveur Keycloak
-                        updateResponse = requests.put(clientSvcBaseUrl + clientRepresentation["id"], headers=headers, data=data)
+                        requests.put(clientSvcBaseUrl + clientRepresentation["id"], headers=headers, data=data)
                         changed = True
                 # Obtenir le nouveau client créé
-                getResponse = getResponse = requests.get(clientSvcBaseUrl, headers=headers, params={'clientId': newClientRepresentation["clientId"]})
+                getResponse = requests.get(clientSvcBaseUrl, headers=headers, params={'clientId': newClientRepresentation["clientId"]})
                 clientRepresentation = getResponse.json()[0]
                 # Traiter les rôles
                 if newClientRoles is not None:
@@ -581,7 +584,7 @@ def client(params):
                                 newRoleRepresentation["composite"] = newClientRole['composite'] if "composite" in newClientRole else False
                                 #data=json.dumps(newClientRole)
                                 data=json.dumps(newRoleRepresentation)
-                                putResponse=requests.put(clientSvcBaseUrl + clientRepresentation['id'] + '/roles/' + newClientRole['name'], headers=headers, data=data)
+                                requests.put(clientSvcBaseUrl + clientRepresentation['id'] + '/roles/' + newClientRole['name'], headers=headers, data=data)
                                 # rôle composites
                                 if 'composites' in newClientRole and newClientRole['composites'] is not None:
                                     newComposites = newClientRole['composites']
@@ -601,8 +604,8 @@ def client(params):
                                                         newCompositeToCreate.append(newComposite)
                                             # rôle composites
                                             data=json.dumps(newCompositeToCreate)
-                                            delResponse = requests.delete(clientSvcBaseUrl + clientRepresentation['id'] + '/roles/'+ newClientRole['name'] +'/composites', headers=headers, data=data)
-                                            putResponse = requests.post(clientSvcBaseUrl + clientRepresentation['id'] + '/roles/'+ newClientRole['name'] +'/composites', headers=headers, data=data)
+                                            requests.delete(clientSvcBaseUrl + clientRepresentation['id'] + '/roles/'+ newClientRole['name'] +'/composites', headers=headers, data=data)
+                                            requests.post(clientSvcBaseUrl + clientRepresentation['id'] + '/roles/'+ newClientRole['name'] +'/composites', headers=headers, data=data)
                                             getResponse = requests.get(clientSvcBaseUrl + clientRepresentation['id'] + '/roles/'+ newClientRole['name'] +'/composites', headers=headers)
                                             composites.append(getResponse.text)
                         else: # Si le rôle n'existe pas pour ce client
@@ -614,7 +617,7 @@ def client(params):
                             newRoleRepresentation["composite"] = newClientRole['composite'] if "composite" in newClientRole else False
                             #data=json.dumps(newClientRole)
                             data=json.dumps(newRoleRepresentation)
-                            postResponse = requests.post(clientSvcBaseUrl + clientRepresentation['id'] + '/roles', headers=headers, data=data)
+                            requests.post(clientSvcBaseUrl + clientRepresentation['id'] + '/roles', headers=headers, data=data)
                             # rôle composites
                             if 'composites' in newClientRole and newClientRole['composites'] is not None:
                                 newComposites = newClientRole['composites']
@@ -634,7 +637,7 @@ def client(params):
                                                     newCompositeToCreate.append(newComposite)
                                         # rôle composites
                                         data=json.dumps(newCompositeToCreate)
-                                        postResponse = requests.post(clientSvcBaseUrl + clientRepresentation['id'] + '/roles/'+ newClientRole['name'] +'/composites', headers=headers, data=data)
+                                        requests.post(clientSvcBaseUrl + clientRepresentation['id'] + '/roles/'+ newClientRole['name'] +'/composites', headers=headers, data=data)
                                         getResponse = requests.get(clientSvcBaseUrl + clientRepresentation['id'] + '/roles/'+ newClientRole['name'] +'/composites', headers=headers)
                                         composites.append(getResponse.text)
                 # Traiter les protocol Mappers
@@ -656,12 +659,12 @@ def client(params):
                                 changed = True
                                 newClientProtocolMapper["id"] = clientMapper["id"]
                                 data=json.dumps(newClientProtocolMapper)
-                                putResponse=requests.put(clientSvcBaseUrl + clientRepresentation['id'] + '/protocol-mappers/models/' + clientMapper['id'], headers=headers, data=data)
+                                requests.put(clientSvcBaseUrl + clientRepresentation['id'] + '/protocol-mappers/models/' + clientMapper['id'], headers=headers, data=data)
                         else: # Si le mapper n'existe pas pour ce client
                             changed = True
                             # Créer le mapper
                             data=json.dumps(newClientProtocolMapper)
-                            postResponse = requests.post(clientSvcBaseUrl + clientRepresentation['id'] + '/protocol-mappers/models', headers=headers, data=data)
+                            requests.post(clientSvcBaseUrl + clientRepresentation['id'] + '/protocol-mappers/models', headers=headers, data=data)
                 # Obtenir la version finale du client modifié
                 getResponse = getResponse = requests.get(clientSvcBaseUrl, headers=headers, params={'clientId': newClientRepresentation["clientId"]})
                 clientRepresentation = getResponse.json()[0]
@@ -671,11 +674,17 @@ def client(params):
                 # Obtenir les rôles
                 getResponse = requests.get(clientSvcBaseUrl + clientRepresentation['id'] + '/roles', headers=headers)
                 clientRolesRepresentation = getResponse.json()
+                getResponse = requests.get(clientSvcBaseUrl + clientRepresentation['id'] + '/installation/providers/keycloak-oidc-keycloak-json', headers=headers)
+                keycloakOidcKeycloakJson = getResponse.json()
                 fact = dict(
                     client = clientRepresentation,
                     clientSecret = clientSecretRepresentation,
                     composites = composites,
                     clientRoles = clientRolesRepresentation)
+
+                if keycloakOidcKeycloakJson :
+                    fact["keycloakOidcKeycloakJson"] = keycloakOidcKeycloakJson
+
                 result = dict(
                     ansible_facts = fact,
                     rc = 0,
@@ -684,7 +693,7 @@ def client(params):
                     
             elif state == 'absent': # Le status est absent
                 # Supprimer le client
-                deleteResponse = requests.delete(clientSvcBaseUrl + clientRepresentation['id'], headers=headers)
+                requests.delete(clientSvcBaseUrl + clientRepresentation['id'], headers=headers)
                 changed = True
                 result = dict(
                     stdout   = 'deleted',
