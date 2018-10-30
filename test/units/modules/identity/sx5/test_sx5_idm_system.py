@@ -77,6 +77,10 @@ class Sx5SystemTestCase(unittest.TestCase):
         for adressesApprovisionnement in results["ansible_facts"]["systemes"]["adressesApprovisionnement"]:
             if adressesApprovisionnement["principal"]:
                 self.assertEquals(adressesApprovisionnement["adresse"], toChange["sadu_principal"], "sadu_principal: " + adressesApprovisionnement["adresse"] + " : " + toChange["sadu_principal"])
+        
+        self.assertEquals(len(results["ansible_facts"]["systemes"]["clientsKeycloak"]), 
+                          len(toChange["clients"]), 
+                          str(len(results["ansible_facts"]["systemes"]["clientsKeycloak"])) + " : " + str(len(toChange["clients"])))
 
 
     def test_modify_system_add_clients(self):
