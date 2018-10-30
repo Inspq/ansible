@@ -23,8 +23,10 @@ class Sx5SystemTestCase(unittest.TestCase):
         toCreate["force"] = False
     
         results = system(toCreate)
-        print str(results)
+        #print str(results)
         self.assertTrue(results['changed'])
+        self.assertEquals(results["ansible_facts"]["systemes"]["nom"], toCreate["systemName"], "systemName: " + results["ansible_facts"]["systemes"]["nom"] + " : " + toCreate["systemName"])
+        
 
     def test_system_not_changed(self):
         toDoNotChange = {}
@@ -72,6 +74,57 @@ class Sx5SystemTestCase(unittest.TestCase):
         results = system(toChange)
         #print str(results)
         self.assertTrue(results['changed'])
+        for adressesApprovisionnement in results["ansible_facts"]["systemes"]["adressesApprovisionnement"]:
+            if adressesApprovisionnement["principal"]:
+                self.assertEquals(adressesApprovisionnement["adresse"], toChange["sadu_principal"], "sadu_principal: " + adressesApprovisionnement["adresse"] + " : " + toChange["sadu_principal"])
+
+
+    def test_modify_system_add_clients(self):
+        toChange = {}
+ #       toChange["spUrl"] = "http://localhost:18081"
+ #       toChange["spUsername"] = "admin"
+ #       toChange["spPassword"] = "admin"
+ #       toChange["spRealm"] = "master"
+ #       toChange["idmClient_id"] = "admin-cli"
+ #       toChange["idmClient_secret"] = ""
+        toChange["sx5IdmUrl"] = "http://localhost:18085/idm/config"
+        toChange["systemName"] = "test3"
+        toChange["clients"] = [{"nom": "client1"},{"nom": "client2"}]
+        toChange["sadu_principal"] = "http://sadu_principal"
+        toChange["sadu_secondary"] = [{"adresse": "http://sadu_secondary1"},{"adresse": "http://sadu_secondary2"}]
+        toChange["clientRoles_mapper"] = [{"spClientRole": "roleInSp11", "eq_sadu_role": "roleSadu11"},{"spClientRole": "roleInSp12", "eq_sadu_role": "roleSadu12"}]
+        toChange["state"] = "present"
+        toChange["force"] = False
+
+        results = system(toChange)
+        newToChange = {}
+        newToChange["sx5IdmUrl"] = "http://localhost:18085/idm/config"
+        newToChange["systemName"] = "test3"
+        newToChange["clients"] = [{"nom": "client3"},{"nom": "client4"}]
+        newToChange["sadu_principal"] = "http://sadu_principal"
+        newToChange["sadu_secondary"] = [{"adresse": "http://sadu_secondary1"},{"adresse": "http://sadu_secondary2"}]
+        newToChange["clientRoles_mapper"] = [{"spClientRole": "roleInSp11", "eq_sadu_role": "roleSadu11"},{"spClientRole": "roleInSp12", "eq_sadu_role": "roleSadu12"}]
+        newToChange["state"] = "present"
+        newToChange["force"] = False
+
+        results = system(newToChange)
+        #print str(results)
+        self.assertTrue(results['changed'])
+        systemClients = results["ansible_facts"]["systemes"]["clientsKeycloak"]
+        for toChangeClient in toChange["clients"]:
+            clientFound = False
+            for systemClient in systemClients:
+                if toChangeClient["nom"] == systemClient["nom"]:
+                    clientFound = True
+                    break
+            self.assertTrue(clientFound, toChangeClient["nom"] + " not found")
+        for newToChangeClient in newToChange["clients"]:
+            clientFound = False
+            for systemClient in systemClients:
+                if newToChangeClient["nom"] == systemClient["nom"]:
+                    clientFound = True
+                    break
+            self.assertTrue(clientFound, newToChangeClient["nom"] + " not found")
         
         
     def test_delete_system(self):

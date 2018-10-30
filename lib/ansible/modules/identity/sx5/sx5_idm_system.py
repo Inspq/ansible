@@ -434,11 +434,22 @@ def system(params):
                                 "roleSysteme": clientRoles_mapper["eq_sadu_role"]
                             }
                             rolemapper.append(role)
+                    keycloakClients = []
+                    for keycloakClient in dataResponse["clientsKeycloak"]:
+                        keycloakClients.append(keycloakClient)
+                        
+                    for newKeycloakClient in newSystemDBRepresentation["clients"]:
+                        keycloakClientFound = False
+                        for existingKeycloakClient in keycloakClients:
+                            if newKeycloakClient['nom'] == existingKeycloakClient['nom']:
+                                keycloakClientFound = True
+                        if not keycloakClientFound:
+                            keycloakClients.append(newKeycloakClient)
                     body = {
                             "nom": newSystemDBRepresentation["systemName"],
                             "adressesApprovisionnement": adresse,
                             "correspondancesRoles": rolemapper,
-                            "clientsKeycloak": newSystemDBRepresentation["clients"]
+                            "clientsKeycloak": keycloakClients
                         }
                     
                     if body["adressesApprovisionnement"] == dataResponse["adressesApprovisionnement"] and body["clientsKeycloak"] == dataResponse["clientsKeycloak"] and body["correspondancesRoles"] == dataResponse["correspondancesRoles"]:
