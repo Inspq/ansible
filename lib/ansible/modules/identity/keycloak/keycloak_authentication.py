@@ -237,8 +237,8 @@ def main():
             alias=dict(type='str', required=True),
             providerId=dict(type='str'),
             copyFrom = dict(type='str'),
-            authenticationConfig=dict(type='dict', required=True),
-            authenticationExecutions=dict(type='dict', required=True),
+            authenticationConfig=dict(type='dict'),
+            authenticationExecutions=dict(type='dict'),
             state=dict(choices=["absent", "present"], default='present'),
             force=dict(type='bool', default=False),
         ),
@@ -414,13 +414,13 @@ def authentication(params):
                 )
         except requests.exceptions.RequestException, e:
             result = dict(
-                stderr   = 'put or delete authentication: ' + newAuthenticationRepresentation['alias'] + ' error: ' + str(e),
+                stderr   = 'put or delete authentication: ' + newAuthenticationRepresentation['alias'] + ' id: ' + authenticationRepresentation["id"] + ' error: ' + str(e),
                 rc       = 1,
                 changed  = changed
                 )
         except ValueError, e:
             result = dict(
-                stderr   = 'put or delete authentication: ' + newAuthenticationRepresentation['alias'] + ' error: ' + str(e),
+                stderr   = 'put or delete authentication: ' + newAuthenticationRepresentation['alias']  + ' id: ' + authenticationRepresentation["id"] + ' error: ' + str(e),
                 rc       = 1,
                 changed  = changed
                 )

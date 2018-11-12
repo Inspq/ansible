@@ -137,7 +137,29 @@ class KeycloakGroupTestCase(unittest.TestCase):
         }
 
         authentication(toDelete)
-        toDelete["state"] = "absent"
+        toDelete = {
+            "url":  "http://localhost:18081",
+            "username": "admin",
+            "password": "admin",
+            "realm": "master",
+            "alias": "Copy of first broker login 4",
+            "state":"absent",
+            "force":False
+        }
         results = authentication(toDelete)
         self.assertTrue(results['changed'])
-        self.assertEqual(results['stdout'], 'deleted', 'group has been deleted')
+        self.assertEqual(results['stdout'], 'deleted', 'authentication flow has been deleted')
+
+    def test_delete_inexisting_authentication_flow(self):
+        toDelete = {
+            "url":  "http://localhost:18081",
+            "username": "admin",
+            "password": "admin",
+            "realm": "master",
+            "alias": "Non existing first broker login",
+            "state":"absent",
+            "force":False
+        }
+        results = authentication(toDelete)
+        self.assertFalse(results['changed'])
+        self.assertEqual(results['stdout'], toDelete["alias"] + ' absent', 'authentication flow has been deleted')
