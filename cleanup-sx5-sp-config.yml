@@ -1,0 +1,11 @@
+---
+- hosts: all
+  vars:
+    sx5spconfigservices_container_name: sx5spconfigservices
+   
+  tasks:
+  - name: Removing SX5-SP-CONFIG container {{ sx5spconfigservices_container_name }}
+    docker_container:
+      name: "{{ sx5spconfigservices_container_name }}"
+      state: absent
+    
