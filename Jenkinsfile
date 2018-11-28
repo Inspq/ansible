@@ -115,7 +115,7 @@ pipeline {
                 sh "source hacking/env-setup; ansible-playbook -i sx5-sp-config.hosts -e sx5spconfig_image_version=0.0.1-SNAPSHOT deploy-sx5-sp-config.yml"
                 script {
                     try {
-		                sh "source hacking/env-setup; nosetests --with-xunit --xunit-file=nosetests-sx5-sp-config.xml test/units/module_utils/test_sx5_sp_config_system_utils.py test/units/modules/identity/sx5/test_sx5-sp-config*.py"
+		                sh "source hacking/env-setup; nosetests --with-xunit --xunit-file=nosetests-sx5-sp-config.xml test/units/module_utils/test_sx5_sp_config_system_utils.py test/units/modules/identity/sx5/test_sx5_sp_config_system.py"
                     }
                     catch (exc){
                         currentBuild.result = 'UNSTABLE'
