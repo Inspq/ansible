@@ -81,7 +81,7 @@ options:
         description:
             - Princidal provisioning services URL.
         default: 
-        required: true
+        required: false
     sadu_secondary:
         description:
             - list of secondary provisioning services URL.
