@@ -1,7 +1,7 @@
 ---
 - hosts: all
   vars:
-    sx5spconfigservices_container_name: sx5spconfigservices
+    sx5spconfigservices_container_name: sx5spconfig
    
   tasks:
   - name: Removing SX5-SP-CONFIG container {{ sx5spconfigservices_container_name }}
