@@ -51,6 +51,49 @@ class Sx5SystemTestCase(unittest.TestCase):
                              ]
                 },
             {
+                "clientId": "clientsystemNS1",
+                "name": "clientsystemNS1",
+                "roles": [{"name":"testNS1","description": "testNS1","composite": "False"},
+                             {"name":"toCreate","description": "toCreate","composite": True,"composites": [{"id": "master-realm","name": "view-users","clientRole": True,"composite": True}]}
+                             ]
+                },
+            
+            {
+                "clientId": "clientsystemNS21",
+                "name": "clientsystemNS21",
+                "roles": [{"name":"testNS2","description": "testNS2","composite": "False"},
+                             {"name":"toDoNotChange","description": "toDoNotChange","composite": True,"composites": [{"id": "master-realm","name": "view-users","clientRole": True,"composite": True}]}
+                             ]
+                },
+            {
+                "clientId": "clientsystemNS31",
+                "name": "clientsystemNS31",
+                "roles": [{"name":"testNS31","description": "testNS31","composite": "False"},
+                             {"name":"toChange","description": "toChange","composite": True,"composites": [{"id": "master-realm","name": "view-users","clientRole": True,"composite": True}]}
+                             ]
+                },
+            {
+                "clientId": "clientsystemChangeNS31",
+                "name": "clientsystemChangeNS31",
+                "roles": [{"name":"testNS31","description": "testNS31","composite": "False"},
+                             {"name":"toChange","description": "toChange","composite": True,"composites": [{"id": "master-realm","name": "view-users","clientRole": True,"composite": True}]}
+                             ]
+                },
+            {
+                "clientId": "clientsystemNS32",
+                "name": "clientsystemNS32",
+                "roles": [{"name":"testNS32","description": "testNS32","composite": "False"},
+                             {"name":"toChange","description": "toChange","composite": True,"composites": [{"id": "master-realm","name": "view-users","clientRole": True,"composite": True}]}
+                             ]
+                },
+            {
+                "clientId": "clientsystemChangeNS32",
+                "name": "clientsystemChangeNS32",
+                "roles": [{"name":"testNS32","description": "testNS32","composite": "False"},
+                             {"name":"toChange","description": "toChange","composite": True,"composites": [{"id": "master-realm","name": "view-users","clientRole": True,"composite": True}]}
+                             ]
+                },
+            {
                 "clientId": "clientsystem41",
                 "name": "clientsystem41",
                 "roles": [{"name":"test4","description": "test4","composite": "False"},
@@ -103,7 +146,6 @@ class Sx5SystemTestCase(unittest.TestCase):
         #print str(results)
         self.assertTrue(results['changed'])
         self.assertEquals(results["ansible_facts"]["systemes"]["nom"], toCreate["systemName"], "systemName: " + results["ansible_facts"]["systemes"]["nom"] + " : " + toCreate["systemName"])
-        
 
     def test_system_not_changed(self):
         toDoNotChange = {}
@@ -225,7 +267,128 @@ class Sx5SystemTestCase(unittest.TestCase):
                     break
             self.assertTrue(clientFound, newToChangeClient["clientId"] + " not found")
         
-        
+    def test_create_system_no_sadu(self):
+        toCreate = {}
+        toCreate["spUrl"] = "http://localhost:18081"
+        toCreate["spUsername"] = "admin"
+        toCreate["spPassword"] = "admin"
+        toCreate["spRealm"] = "master"
+        toCreate["spConfigClient_id"] = "admin-cli" 
+        toCreate["spConfigClient_secret"] = ""
+        toCreate["spConfigUrl"] = "http://localhost:18182/config"
+        toCreate["systemName"] = "systemNS1"
+        toCreate["systemShortName"] = "NS1"
+        toCreate["clients"] = [{"clientId": "clientsystemNS1"}]
+        toCreate["clientRoles"] = [{"spClientRoleId": "testNS1", "spClientRoleName": "testNS1", "spClientRoleDescription": "testNS1"},{"spClientRoleId": "toCreate", "spClientRoleName": "toCreate", "spClientRoleDescription": "toCreate"}]
+        toCreate["state"] = "present"
+        toCreate["force"] = False
+    
+        results = system(toCreate)
+        #print str(results)
+        self.assertTrue(results['changed'])
+        self.assertEquals(results["ansible_facts"]["systemes"]["nom"], toCreate["systemName"], "systemName: " + results["ansible_facts"]["systemes"]["nom"] + " : " + toCreate["systemName"])
+
+    def test_system_no_sadu_not_changed(self):
+        toDoNotChange = {}
+        toDoNotChange["spUrl"] = "http://localhost:18081"
+        toDoNotChange["spUsername"] = "admin"
+        toDoNotChange["spPassword"] = "admin"
+        toDoNotChange["spRealm"] = "master"
+        toDoNotChange["spConfigClient_id"] = "admin-cli" 
+        toDoNotChange["spConfigClient_secret"] = ""
+        toDoNotChange["spConfigUrl"] = "http://localhost:18182/config"
+        toDoNotChange["systemName"] = "systemNS2"
+        toDoNotChange["systemShortName"] = "SNS2"
+        toDoNotChange["clients"] = [{"clientId": "clientsystemNS21"}]
+        toDoNotChange["clientRoles"] = [{"spClientRoleId": "testNS2", "spClientRoleName": "testNS2", "spClientRoleDescription": "testNS2"},{"spClientRoleId": "toDoNotChange", "spClientRoleName": "toDoNotChange", "spClientRoleDescription": "toDoNotChange"}]
+        toDoNotChange["state"] = "present"
+        toDoNotChange["force"] = False
+
+        system(toDoNotChange)
+        #print str(results)
+        results = system(toDoNotChange)
+        #print str(results)
+        self.assertFalse(results['changed'])
+
+    def test_modify_system_no_sadu(self):
+        toChange = {}
+        toChange["spUrl"] = "http://localhost:18081"
+        toChange["spUsername"] = "admin"
+        toChange["spPassword"] = "admin"
+        toChange["spRealm"] = "master"
+        toChange["spConfigClient_id"] = "admin-cli" 
+        toChange["spConfigClient_secret"] = ""
+        toChange["spConfigUrl"] = "http://localhost:18182/config"
+        toChange["systemName"] = "systemNS3"
+        toChange["systemShortName"] = "SNS3"
+        toChange["clients"] = [{"clientId": "clientsystemNS31"}]
+        toChange["clientRoles"] = [{"spClientRoleId": "testNS31", "spClientRoleName": "testNS31", "spClientRoleDescription": "testNS31"},{"spClientRoleId": "toChange", "spClientRoleName": "toChange", "spClientRoleDescription": "toChange"}]
+        toChange["state"] = "present"
+        toChange["force"] = False
+
+        results = system(toChange)
+        #print str(results)
+        toChange["clients"] = [{"clientId": "clientsystemChangeNS31"}]
+        NnClient=len(toChange["clients"])+1
+        results = system(toChange)
+        #print str(results)
+        self.assertTrue(results['changed'])
+        self.assertEquals(len(results["ansible_facts"]["systemes"]["composants"]), 
+                          NnClient, 
+                          str(len(results["ansible_facts"]["systemes"]["composants"])) + " : " + str(NnClient))
+
+    def test_modify_system_no_sadu_add_clients(self):
+        toChange = {}
+        toChange["spUrl"] = "http://localhost:18081"
+        toChange["spUsername"] = "admin"
+        toChange["spPassword"] = "admin"
+        toChange["spRealm"] = "master"
+        toChange["spConfigClient_id"] = "admin-cli" 
+        toChange["spConfigClient_secret"] = ""
+        toChange["spConfigUrl"] = "http://localhost:18182/config"
+        toChange["systemName"] = "testNS3"
+        toChange["systemShortName"] = "TNS3"
+        toChange["clients"] = [{"clientId": "clientsystemNS32"}]
+        toChange["clientRoles"] = [{"spClientRoleId": "testNS32", "spClientRoleName": "testNS32", "spClientRoleDescription": "testNS32"},{"spClientRoleId": "toChange", "spClientRoleName": "toChange", "spClientRoleDescription": "toChange"}]
+        toChange["state"] = "present"
+        toChange["force"] = False
+
+        results = system(toChange)
+
+        newToChange = {}
+        newToChange["spUrl"] = "http://localhost:18081"
+        newToChange["spUsername"] = "admin"
+        newToChange["spPassword"] = "admin"
+        newToChange["spRealm"] = "master"
+        newToChange["spConfigClient_id"] = "admin-cli" 
+        newToChange["spConfigClient_secret"] = ""
+        newToChange["spConfigUrl"] = "http://localhost:18182/config"
+        newToChange["systemName"] = "testNS3"
+        newToChange["systemShortName"] = "TNS3"
+        newToChange["clients"] = [{"clientId": "clientsystemChangeNS32"}]
+        newToChange["clientRoles"] = [{"spClientRoleId": "testNS32", "spClientRoleName": "testNS32", "spClientRoleDescription": "testNS32"},{"spClientRoleId": "toChange", "spClientRoleName": "toChange", "spClientRoleDescription": "toChange"}]
+        newToChange["state"] = "present"
+        newToChange["force"] = False
+
+        results = system(newToChange)
+        print str(results)
+        self.assertTrue(results['changed'])
+        systemClients = results["ansible_facts"]["systemes"]["composants"]
+        print str(systemClients)
+        for toChangeClient in toChange["clients"]:
+            clientFound = False
+            for systemClient in systemClients:
+                if toChangeClient["clientId"] == systemClient["clientId"]:
+                    clientFound = True
+                    break
+            self.assertTrue(clientFound, toChangeClient["clientId"] + " not found")
+        for newToChangeClient in newToChange["clients"]:
+            clientFound = False
+            for systemClient in systemClients:
+                if newToChangeClient["clientId"] == systemClient["clientId"]:
+                    clientFound = True
+                    break
+            self.assertTrue(clientFound, newToChangeClient["clientId"] + " not found")
     def test_delete_system(self):
         toDelete = {}
         toDelete["spUrl"] = "http://localhost:18081"

@@ -225,7 +225,7 @@ def main():
             spConfigClient_secret=dict(type='str', required=False),
             systemName=dict(type='str', required=True),
             systemShortName=dict(type='str', required=True),
-            sadu_principal = dict(type='str', required=True),
+            sadu_principal = dict(type='str', required=False),
             sadu_secondary = dict(type='list', default=[]),
             clients=dict(type='list', default=[]),
             clientRoles=dict(type='list', default=[]),
@@ -304,26 +304,28 @@ def system(params):
                 if getResponse.status_code == 200:#systeme existe, on le supprime et on le recree
                     dataResponse = getResponse.json()
                     adresse = []
-                    adresseP={
-                        "principale": True,
-                        "adresse": newSystemDBRepresentation["sadu_principal"]
-                    }
-                    adresse.append(adresseP)
-                    for sadu_secondary in newSystemDBRepresentation["sadu_secondary"]:
-                        if "sadu_secondary" in params and params['sadu_secondary'] is not None:
-                            adresseS={
-                                "principale": False,
-                                "adresse": sadu_secondary["adresse"]
-                            }
-                            adresse.append(adresseS)
                     rolemapper = []
-                    for clientRoles_mapper in newSystemDBRepresentation["clientRoles_mapper"]:
-                        if "sadu_secondary" in params and params['sadu_secondary'] is not None:
-                            role={
-                                "roleKeycloak": clientRoles_mapper["spClientRole"],
-                                "roleSysteme": clientRoles_mapper["eq_sadu_role"]
-                            }
-                            rolemapper.append(role)
+                    if "sadu_principal" in params and params['sadu_principal'] is not None:
+                        adresseP={
+                            "principale": True,
+                            "adresse": newSystemDBRepresentation["sadu_principal"]
+                        }
+                        adresse.append(adresseP)
+                        for sadu_secondary in newSystemDBRepresentation["sadu_secondary"]:
+                            if "sadu_secondary" in params and params['sadu_secondary'] is not None:
+                                adresseS={
+                                    "principale": False,
+                                    "adresse": sadu_secondary["adresse"]
+                                }
+                                adresse.append(adresseS)
+                       
+                        for clientRoles_mapper in newSystemDBRepresentation["clientRoles_mapper"]:
+                            if "sadu_secondary" in params and params['sadu_secondary'] is not None:
+                                role={
+                                    "roleKeycloak": clientRoles_mapper["spClientRole"],
+                                    "roleSysteme": clientRoles_mapper["eq_sadu_role"]
+                                }
+                                rolemapper.append(role)
                     client = []
                     for clientKeycloak in newSystemDBRepresentation["clients"]:
                         getResponseKeycloak = requests.get(clientSvcBaseUrl, headers=headers, params={'clientId': clientKeycloak["clientid"]})
@@ -415,26 +417,28 @@ def system(params):
                             )
                 elif getResponse.status_code == 404: #systeme n'existe pas, le creer
                     adresse = []
-                    adresseP={
-                        "principale": True,
-                        "adresse": newSystemDBRepresentation["sadu_principal"]
-                    }
-                    adresse.append(adresseP)
-                    for sadu_secondary in newSystemDBRepresentation["sadu_secondary"]:
-                        if "sadu_secondary" in params and params['sadu_secondary'] is not None:
-                            adresseS={
-                                "principale": False,
-                                "adresse": sadu_secondary["adresse"]
-                            }
-                            adresse.append(adresseS)
                     rolemapper = []
-                    for clientRoles_mapper in newSystemDBRepresentation["clientRoles_mapper"]:
-                        if "sadu_secondary" in params and params['sadu_secondary'] is not None:
-                            role={
-                                "roleKeycloak": clientRoles_mapper["spClientRole"],
-                                "roleSysteme": clientRoles_mapper["eq_sadu_role"]
-                            }
-                            rolemapper.append(role)
+                    if "sadu_principal" in params and params['sadu_principal'] is not None:
+                        adresseP={
+                            "principale": True,
+                            "adresse": newSystemDBRepresentation["sadu_principal"]
+                        }
+                        adresse.append(adresseP)
+                        for sadu_secondary in newSystemDBRepresentation["sadu_secondary"]:
+                            if "sadu_secondary" in params and params['sadu_secondary'] is not None:
+                                adresseS={
+                                    "principale": False,
+                                    "adresse": sadu_secondary["adresse"]
+                                }
+                                adresse.append(adresseS)
+                        
+                        for clientRoles_mapper in newSystemDBRepresentation["clientRoles_mapper"]:
+                            if "sadu_secondary" in params and params['sadu_secondary'] is not None:
+                                role={
+                                    "roleKeycloak": clientRoles_mapper["spClientRole"],
+                                    "roleSysteme": clientRoles_mapper["eq_sadu_role"]
+                                }
+                                rolemapper.append(role)
                     client = []
                     for clientKeycloak in newSystemDBRepresentation["clients"]:
                         getResponseKeycloak = requests.get(clientSvcBaseUrl, headers=headers, params={'clientId': clientKeycloak["clientId"]})
@@ -548,26 +552,28 @@ def system(params):
                 if getResponse.status_code == 200:#systeme exist
                     dataResponse = getResponse.json()
                     adresse = []
-                    adresseP={
-                        "principale": True,
-                        "adresse": newSystemDBRepresentation["sadu_principal"]
-                    }
-                    adresse.append(adresseP)
-                    for sadu_secondary in newSystemDBRepresentation["sadu_secondary"]:
-                        if "sadu_secondary" in params and params['sadu_secondary'] is not None:
-                            adresseS={
-                                "principale": False,
-                                "adresse": sadu_secondary["adresse"]
-                            }
-                            adresse.append(adresseS)
                     rolemapper = []
-                    for clientRoles_mapper in newSystemDBRepresentation["clientRoles_mapper"]:
-                        if "sadu_secondary" in params and params['sadu_secondary'] is not None:
-                            role={
-                                "roleKeycloak": clientRoles_mapper["spClientRole"],
-                                "roleSysteme": clientRoles_mapper["eq_sadu_role"]
-                            }
-                            rolemapper.append(role)
+                    if "sadu_principal" in params and params['sadu_principal'] is not None:
+                        adresseP={
+                            "principale": True,
+                            "adresse": newSystemDBRepresentation["sadu_principal"]
+                        }
+                        adresse.append(adresseP)
+                        for sadu_secondary in newSystemDBRepresentation["sadu_secondary"]:
+                            if "sadu_secondary" in params and params['sadu_secondary'] is not None:
+                                adresseS={
+                                    "principale": False,
+                                    "adresse": sadu_secondary["adresse"]
+                                }
+                                adresse.append(adresseS)
+                        
+                        for clientRoles_mapper in newSystemDBRepresentation["clientRoles_mapper"]:
+                            if "sadu_secondary" in params and params['sadu_secondary'] is not None:
+                                role={
+                                    "roleKeycloak": clientRoles_mapper["spClientRole"],
+                                    "roleSysteme": clientRoles_mapper["eq_sadu_role"]
+                                }
+                                rolemapper.append(role)
                     client = []
                     keycloakClients = []
                     for keycloakClient in dataResponse["composants"]:
@@ -685,26 +691,28 @@ def system(params):
                                 )
                 elif getResponse.status_code == 404: #systeme n'existe pas, le creer
                     adresse = []
-                    adresseP={
-                        "principale": True,
-                        "adresse": newSystemDBRepresentation["sadu_principal"]
-                    }
-                    adresse.append(adresseP)
-                    for sadu_secondary in newSystemDBRepresentation["sadu_secondary"]:
-                        if "sadu_secondary" in params and params['sadu_secondary'] is not None:
-                            adresseS={
-                                "principale": False,
-                                "adresse": sadu_secondary["adresse"]
-                            }
-                            adresse.append(adresseS)
                     rolemapper = []
-                    for clientRoles_mapper in newSystemDBRepresentation["clientRoles_mapper"]:
-                        if "sadu_secondary" in params and params['sadu_secondary'] is not None:
-                            role={
-                                "roleKeycloak": clientRoles_mapper["spClientRole"],
-                                "roleSysteme": clientRoles_mapper["eq_sadu_role"]
-                            }
-                            rolemapper.append(role)
+                    if "sadu_principal" in params and params['sadu_principal'] is not None:
+                        adresseP={
+                            "principale": True,
+                            "adresse": newSystemDBRepresentation["sadu_principal"]
+                        }
+                        adresse.append(adresseP)
+                        for sadu_secondary in newSystemDBRepresentation["sadu_secondary"]:
+                            if "sadu_secondary" in params and params['sadu_secondary'] is not None:
+                                adresseS={
+                                    "principale": False,
+                                    "adresse": sadu_secondary["adresse"]
+                                }
+                                adresse.append(adresseS)
+                        
+                        for clientRoles_mapper in newSystemDBRepresentation["clientRoles_mapper"]:
+                            if "sadu_secondary" in params and params['sadu_secondary'] is not None:
+                                role={
+                                    "roleKeycloak": clientRoles_mapper["spClientRole"],
+                                    "roleSysteme": clientRoles_mapper["eq_sadu_role"]
+                                }
+                                rolemapper.append(role)
                     client = []
                     for clientKeycloak in newSystemDBRepresentation["clients"]:
                         getResponseKeycloak = requests.get(clientSvcBaseUrl, headers=headers, params={'clientId': clientKeycloak["clientId"]})
