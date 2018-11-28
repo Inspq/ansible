@@ -88,7 +88,7 @@ class Sx5SystemTestCase(unittest.TestCase):
         toCreate["spRealm"] = "master"
         toCreate["spConfigClient_id"] = "admin-cli" 
         toCreate["spConfigClient_secret"] = ""
-        toCreate["spConfigUrl"] = "http://localhost:8090/config"
+        toCreate["spConfigUrl"] = "http://localhost:18182/config"
         toCreate["systemName"] = "system1"
         toCreate["systemShortName"] = "S1"
         toCreate["clients"] = [{"clientId": "clientsystem11"}]
@@ -113,7 +113,7 @@ class Sx5SystemTestCase(unittest.TestCase):
         toDoNotChange["spRealm"] = "master"
         toDoNotChange["spConfigClient_id"] = "admin-cli" 
         toDoNotChange["spConfigClient_secret"] = ""
-        toDoNotChange["spConfigUrl"] = "http://localhost:8090/config"
+        toDoNotChange["spConfigUrl"] = "http://localhost:18182/config"
         toDoNotChange["systemName"] = "system2"
         toDoNotChange["systemShortName"] = "S2"
         toDoNotChange["clients"] = [{"clientId": "clientsystem21"}]
@@ -138,7 +138,7 @@ class Sx5SystemTestCase(unittest.TestCase):
         toChange["spRealm"] = "master"
         toChange["spConfigClient_id"] = "admin-cli" 
         toChange["spConfigClient_secret"] = ""
-        toChange["spConfigUrl"] = "http://localhost:8090/config"
+        toChange["spConfigUrl"] = "http://localhost:18182/config"
         toChange["systemName"] = "system3"
         toChange["systemShortName"] = "S3"
         toChange["clients"] = [{"clientId": "clientsystem31"}]
@@ -174,7 +174,7 @@ class Sx5SystemTestCase(unittest.TestCase):
         toChange["spRealm"] = "master"
         toChange["spConfigClient_id"] = "admin-cli" 
         toChange["spConfigClient_secret"] = ""
-        toChange["spConfigUrl"] = "http://localhost:8090/config"
+        toChange["spConfigUrl"] = "http://localhost:18182/config"
         toChange["systemName"] = "test3"
         toChange["systemShortName"] = "T3"
         toChange["clients"] = [{"clientId": "clientsystem32"}]
@@ -194,7 +194,7 @@ class Sx5SystemTestCase(unittest.TestCase):
         newToChange["spRealm"] = "master"
         newToChange["spConfigClient_id"] = "admin-cli" 
         newToChange["spConfigClient_secret"] = ""
-        newToChange["spConfigUrl"] = "http://localhost:8090/config"
+        newToChange["spConfigUrl"] = "http://localhost:18182/config"
         newToChange["systemName"] = "test3"
         newToChange["systemShortName"] = "T3"
         newToChange["clients"] = [{"clientId": "clientsystemChange32"}]
@@ -234,7 +234,7 @@ class Sx5SystemTestCase(unittest.TestCase):
         toDelete["spRealm"] = "master"
         toDelete["spConfigClient_id"] = "admin-cli" 
         toDelete["spConfigClient_secret"] = ""
-        toDelete["spConfigUrl"] = "http://localhost:8090/config"
+        toDelete["spConfigUrl"] = "http://localhost:18182/config"
         toDelete["systemName"] = "system4"
         toDelete["systemShortName"] = "S4"
         toDelete["clients"] = [{"clientId": "clientsystem41"}]
