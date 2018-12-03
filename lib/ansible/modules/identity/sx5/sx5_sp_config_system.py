@@ -250,8 +250,8 @@ def system(params):
     username = params['spUsername']
     password = params['spPassword']
     clientid = params['spConfigClient_id']
-    if "spConfigClient_secret" in params and params['spConfigClient_id'] is not None:
-        clientSecret = params['spConfigClient_id']
+    if "spConfigClient_secret" in params and params['spConfigClient_secret'] is not None:
+        clientSecret = params['spConfigClient_secret']
     else:
         clientSecret = ''
     realm = params['spRealm']
