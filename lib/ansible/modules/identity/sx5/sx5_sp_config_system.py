@@ -246,19 +246,15 @@ def main():
         module.exit_json(**result)
     
 def system(params):
-    spUrl = None
-    if "spUrl" in params and params["spUrl"] is not None:
-        spUrl = params['spUrl']
-    if "spUsername" in params and params["spUsername"] is not None:
-        username = params['spUsername']
-    if "spPassword" in params and params["spPassword"] is not None:
-        password = params['spPassword']
-    if "spConfigClient_id" in params and params["spConfigClient_id"] is not None:
-        clientid = params['spConfigClient_id']
+    spUrl = params['spUrl']
+    username = params['spUsername']
+    password = params['spPassword']
+    clientid = params['spConfigClient_id']
     if "spConfigClient_secret" in params and params['spConfigClient_id'] is not None:
         clientSecret = params['spConfigClient_id']
     else:
         clientSecret = ''
+    realm = params['spRealm']
     force = params['force']
     spConfigUrl = params['spConfigUrl']
     state = params['state']
@@ -266,7 +262,6 @@ def system(params):
     # Créer un représentation du system pour BD SP config
     newSystemDBRepresentation = {}
     if "spRealm" in params and params["spRealm"] is not None:
-        realm = params['spRealm']
         newSystemDBRepresentation["spRealm"] = params['spRealm'].decode("utf-8")
     newSystemDBRepresentation["systemName"] = params['systemName'].decode("utf-8")
     if "systemShortName" in params and params['systemShortName'] is not None:
@@ -286,17 +281,15 @@ def system(params):
     result = dict()
     changed = False
     clientSvcBaseUrl = spUrl + "/auth/admin/realms/" + realm + "/clients/"
-    headers=''
-    if spUrl:
-        try:
-            headers = loginAndSetHeaders(spUrl, realm, username, password, clientid, clientSecret)
-        except Exception, e:
-            result = dict(
-                stderr   = 'login: ' + str(e),
-                rc       = 1,
-                changed  = changed
-                )
-            return result
+    try:
+        headers = loginAndSetHeaders(spUrl, realm, username, password, clientid, clientSecret)
+    except Exception, e:
+        result = dict(
+            stderr   = 'login: ' + str(e),
+            rc       = 1,
+            changed  = changed
+            )
+        return result
     if state == 'present':# Si le status est présent
         if force: # Si force est de yes modifier le systeme meme s'il existe
             try:
