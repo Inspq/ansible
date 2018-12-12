@@ -1,6 +1,0 @@
-[all:vars]
-ansible_user=root
-keycloak_base_url=localhost
-sx5idm_keycloak_enabled=false
-[all]
-localhost

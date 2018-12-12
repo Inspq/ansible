@@ -63,53 +63,7 @@ pipeline {
                 }
             }
         }
-        // stage ('Tests unitaires des modules ansible de sx5-idm') {
-        //     steps {
-        //         sh "source hacking/env-setup; ansible-playbook -i sx5-idm.hosts deploy-sx5-idm.yml"
-        //         script {
-        //             try {
-		//                 sh "source hacking/env-setup; nosetests --with-xunit --xunit-file=nosetests-sx5-idm.xml test/units/module_utils/test_sx5_idm_system_utils.py test/units/modules/identity/sx5/test_sx5_idm*.py"                
-        //             }
-        //             catch (exc){
-        //                 currentBuild.result = 'UNSTABLE'
-        //             }
-        //         }
-        //         sh "source hacking/env-setup; ansible-playbook -i sx5-idm.hosts cleanup-sx5-idm.yml"
-        //     }
-        //     post {
-        //         success {
-        //             junit '**/nosetests-sx5-idm.xml'
-        //         }
-        //         unstable{
-        //             junit '**/nosetests-sx5-idm.xml'
-        //         }
-        //     }
-        // }
-        // stage ('Tests unitaires des modules ansible de sx5-habilitation') {
-        //     steps {
-        //         sh "source hacking/env-setup; ansible-playbook -i keycloak.hosts -e docker_image=nexus3.inspq.qc.ca:5000/inspq/keycloak -e docker_image_version=latest deploy-keycloak.yml"
-        //         sh "source hacking/env-setup; ansible-playbook -i sx5-habilitation.hosts -e sx5habilitationservices_image_version=0.3.0-SNAPSHOT deploy-sx5-habilitation.yml"
-        //         script {
-        //             try {
-		//                 sh "source hacking/env-setup; nosetests --with-xunit --xunit-file=nosetests-sx5-habilitation.xml test/units/modules/identity/sx5/test_sx5_habilitation*.py"
-        //             }
-        //             catch (exc){
-        //                 currentBuild.result = 'UNSTABLE'
-        //             }
-        //         }
-        //         sh "source hacking/env-setup; ansible-playbook -i sx5-habilitation.hosts cleanup-sx5-habilitation.yml"
-        //         sh "source hacking/env-setup; ansible-playbook -i keycloak.hosts cleanup-keycloak.yml"
-        //     }
-        //     post {
-        //         success {
-        //             junit '**/nosetests-sx5-habilitation.xml'
-        //         }
-        //         unstable{
-        //             junit '**/nosetests-sx5-habilitation.xml'
-        //         }
-        //     }
-        // }
-        stage ('Tests unitaires des modules ansible de sx5-sp-config') {
+      stage ('Tests unitaires des modules ansible de sx5-sp-config') {
             steps {
                 sh "source hacking/env-setup; ansible-playbook -i keycloak.hosts -e docker_image=nexus3.inspq.qc.ca:5000/inspq/keycloak -e docker_image_version=latest deploy-keycloak.yml"
                 sh "source hacking/env-setup; ansible-playbook -i sx5-sp-config.hosts -e sx5spconfig_image_version=0.0.1-SNAPSHOT deploy-sx5-sp-config.yml"

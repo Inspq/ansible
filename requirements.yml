@@ -2,7 +2,3 @@
   src: https://gitlab.forge.gouv.qc.ca/ansible-inspq/roles/keycloak.git
   version: master
   scm: git
-- name: sx5-idm-msss
-  src: https://gitlab.forge.gouv.qc.ca/sx5/sx5-roles-ansible/sx5-idm-msss.git
-  version: master
-  scm: git
