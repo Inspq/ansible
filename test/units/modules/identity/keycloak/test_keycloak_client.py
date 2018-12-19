@@ -3,8 +3,38 @@ import os
 import unittest
 
 from ansible.modules.identity.keycloak.keycloak_client import *
+from wheel.signatures import assertTrue
 
 class KeycloakClientTestCase(unittest.TestCase):
+    testClientRoles = [
+            {
+                "name":"test1",
+                "description": "test1",
+                "composite": False
+                },
+            {
+                "name":"test2",
+                "description": "test2",
+                "composite": False
+            }
+        ]
+    testClient = {
+        "url": "http://localhost:18081",
+        "username": "admin",
+        "password": "admin",
+        "realm": "master",
+        "state": "present",
+        "clientId": "basetest",
+        "rootUrl": "http://test.com:8080",
+        "name": "basetest",
+        "description": "Base testing",
+        "publicClient": False,
+        "force": False
+    }
+    
+    def setUp(self):
+        self.testClient["roles"] = self.testClientRoles
+        client(self.testClient)
  
     def test_create_client(self):
         toCreate = {}
@@ -31,9 +61,26 @@ class KeycloakClientTestCase(unittest.TestCase):
         #toCreate["authorizationServicesEnabled"] = False
         toCreate["protocol"] = "openid-connect"
         toCreate["bearerOnly"] = False
-        toCreate["roles"] = [{"name":"test1","description": "test1","composite": "False"},
-                             {"name":"toCreate","description": "toCreate","composite": True,"composites": [{"id": "master-realm","name": "view-users","clientRole": True,"composite": True}]}
-                             ]
+        toCreate["roles"] = [
+            {
+                "name":"test1",
+                "description": "test1",
+                "composite": False
+            },
+            {
+                "name":"toCreate",
+                "description": "toCreate",
+                "composite": True,
+                "composites": [
+                    {
+                        "id": "master-realm",
+                        "name": "view-users",
+                        "clientRole": True,
+                        "composite": False
+                    }
+                ]
+            }
+        ]
         toCreate["protocolMappers"] = [{"name": "test1Mapper",
                                         "protocol": "openid-connect",
                                         "protocolMapper": "oidc-usermodel-attribute-mapper",
@@ -67,7 +114,7 @@ class KeycloakClientTestCase(unittest.TestCase):
         self.assertTrue(results['ansible_facts']['client']['enabled'])
         self.assertTrue(results['changed'])
         self.assertTrue(results['ansible_facts']['clientSecret'])
-        OrderdRoles = sorted(results['ansible_facts']['clientRoles'], key=lambda k: k['name'])
+        OrderdRoles = sorted(results['ansible_facts']['client']['clientRoles'], key=lambda k: k['name'])
         self.assertEqual(OrderdRoles[0]['name'], toCreate["roles"][0]['name'], "roles : " + OrderdRoles[0]['name'])
         self.assertEqual(OrderdRoles[1]['name'], toCreate["roles"][1]['name'], "roles : " + OrderdRoles[1]['name'])
         self.assertEqual(results['ansible_facts']['client']['redirectUris'].sort(),toCreate["redirectUris"].sort(),"redirectUris: " + str(results['ansible_facts']['client']['redirectUris'].sort()))
@@ -108,8 +155,25 @@ class KeycloakClientTestCase(unittest.TestCase):
         toDoNotChange["protocol"] = "openid-connect"
         toDoNotChange["bearerOnly"] = False
         toDoNotChange["publicClient"] = False
-        toDoNotChange["roles"] = [{"name":"test1","description": "test1","composite": "False"},
-                                  {"name":"toDoNotChange","description": "toDoNotChange","composite": True,"composites": [{"id": "test2","name": "test1","clientRole": True,"composite": True}]}
+        toDoNotChange["roles"] = [
+            {
+                "name":"test1",
+                "description": "test1",
+                "composite": False
+            },
+            {
+                "name":"toDoNotChange",
+                "description": "toDoNotChange",
+                "composite": True,
+                "composites": [
+                    {
+                        "id": self.testClient['name'],
+                        "name": self.testClientRoles[0]['name'],
+                        "clientRole": True,
+                        "composite": False
+                    }
+                ]
+            }
                                   ]
         toDoNotChange["protocolMappers"] = [{"name": "test1Mapper",
                                         "protocol": "openid-connect",
@@ -168,9 +232,26 @@ class KeycloakClientTestCase(unittest.TestCase):
         toChange["protocol"] = "openid-connect"
         toChange["bearerOnly"] = False
         toChange["publicClient"] = False
-        toChange["roles"] = [{"name":"test1","description": "test1","composite": "False"},
-                                  {"name":"test2","description": "test2","composite": True,"composites": [{"id": "test3","name": "test1","clientRole": True,"composite": True}]}
-                                  ]
+        toChange["roles"] = [
+            {
+                "name":"test1",
+                "description": "test1",
+                "composite": False
+            },
+            {
+                "name":"test2",
+                "description": "test2",
+                "composite": True,
+                "composites": [
+                    {
+                        "id": self.testClient['name'],
+                        "name": self.testClientRoles[0]['name'],
+                        "clientRole": True,
+                        "composite": False
+                    }
+                ]
+            }
+        ]
         toChange["protocolMappers"] = [{"name": "test1Mapper",
                                         "protocol": "openid-connect",
                                         "protocolMapper": "oidc-usermodel-attribute-mapper",
@@ -217,7 +298,7 @@ class KeycloakClientTestCase(unittest.TestCase):
         self.assertTrue(results['changed'])
         self.assertEqual(results['ansible_facts']['client']['name'], toChange["name"], "name: " + results['ansible_facts']['client']['name'])
         self.assertEqual(results['ansible_facts']['client']['description'], toChange["description"], 'description: ' + results['ansible_facts']['client']['description'])
-        OrderdRoles = sorted(results['ansible_facts']['clientRoles'], key=lambda k: k['name'])
+        OrderdRoles = sorted(results['ansible_facts']['client']['clientRoles'], key=lambda k: k['name'])
         self.assertEqual(OrderdRoles[0]['name'], toChange["roles"][0]['name'], "roles : " + OrderdRoles[0]['name'])
         self.assertEqual(OrderdRoles[1]['name'], toChange["roles"][1]['name'], "roles : " + OrderdRoles[1]['name'])
         self.assertEqual(results['ansible_facts']['client']['redirectUris'].sort(),toChange["redirectUris"].sort(),"redirectUris: " + str(results['ansible_facts']['client']['redirectUris'].sort()))
@@ -232,7 +313,124 @@ class KeycloakClientTestCase(unittest.TestCase):
                 self.assertEqual(mapper["config"]["claim.name"], toChangeMapper["config"]["claim.name"], "claim.name: " + toChangeMapper["config"]["claim.name"] + ": " + mapper["config"]["claim.name"])
                 self.assertEqual(mapper["config"]["user.attribute"], toChangeMapper["config"]["user.attribute"], "user.attribute: " + toChangeMapper["config"]["user.attribute"] + ": " + mapper["config"]["user.attribute"])
  
-        
+    def test_add_client_composite_roles(self):
+        clientRoles = [
+            {
+                "name":"test1",
+                "description": "test1",
+                "composite": False
+                },
+            {
+                "name":"test2",
+                "description": "test2",
+                "composite": True,
+                "composites": [
+                    {
+                        "id": self.testClient['name'],
+                        "name": self.testClientRoles[0]['name'],
+                        "clientRole": True,
+                        "composite": False
+                    }
+                ]
+            }
+        ]
+        toChange = {}
+        toChange["url"] = "http://localhost:18081"
+        toChange["username"] = "admin"
+        toChange["password"] = "admin"
+        toChange["realm"] = "master"
+        toChange["state"] = "present"
+        toChange["clientId"] = "test5"
+        toChange["rootUrl"] = "http://test5.com:8080"
+        toChange["name"] = "test5"
+        toChange["description"] = "Ceci est un test5"
+        toChange["adminUrl"] = "http://test5.com:8080/admin"
+        toChange["baseUrl"] = "http://test5.com:8080"
+        toChange["enabled"] = True
+        toChange["clientAuthenticatorType"] = "client-secret"
+        toChange["redirectUris"] = ["http://test5.com:8080/secure"]
+        toChange["webOrigins"] = ["http://test5.com:8080/secure"]
+        toChange["consentRequired"] = False   
+        toChange["standardFlowEnabled"] = True
+        toChange["implicitFlowEnabled"] = True
+        toChange["directAccessGrantsEnabled"] = True
+        toChange["serviceAccountsEnabled"] = True
+        #toChange["authorizationServicesEnabled"] = False
+        toChange["protocol"] = "openid-connect"
+        toChange["bearerOnly"] = False
+        toChange["publicClient"] = False
+        toChange["roles"] = clientRoles
+        toChange["protocolMappers"] = [{"name": "test1Mapper",
+                                        "protocol": "openid-connect",
+                                        "protocolMapper": "oidc-usermodel-attribute-mapper",
+                                        "consentRequired": False,
+                                        "config": { 
+                                            "multivalued": 'false',
+                                            "userinfo.token.claim": False,
+                                            "user.attribute": "test1",
+                                            "id.token.claim": 'true',
+                                            "access.token.claim": 'true',
+                                            "claim.name": "test1",
+                                            "jsonType.label": "String"}},
+                                       {"name": "test2Mapper",
+                                        "protocol": "openid-connect",
+                                        "protocolMapper": "oidc-usermodel-attribute-mapper",
+                                        "consentRequired": False,
+                                        "config": { 
+                                            "multivalued": 'false',
+                                            "userinfo.token.claim": 'true',
+                                            "user.attribute": "test2",
+                                            "id.token.claim": 'true',
+                                            "access.token.claim": 'true',
+                                            "claim.name": "test2",
+                                            "jsonType.label": "String"}}]
+        toChange["force"] = False
+
+        client(toChange)
+        newClientRoles = [
+            {
+                "name":"test1",
+                "description": "test1",
+                "composite": False
+                },
+            {
+                "name":"test2",
+                "description": "test2",
+                "composite": True,
+                "composites": [
+                    {
+                        "id": self.testClient['name'],
+                        "name": self.testClientRoles[0]['name'],
+                        "clientRole": True,
+                        "composite": False
+                    },
+                    {
+                        "id": self.testClient['name'],
+                        "name": self.testClientRoles[1]['name'],
+                        "clientRole": True,
+                        "composite": False
+                    }
+
+                ]
+            }
+        ]
+        toChange["roles"] = newClientRoles
+        results = client(toChange)
+        print str(results)
+        self.assertTrue(results['changed'])
+        OrderdRoles = sorted(results['ansible_facts']['client']['clientRoles'], key=lambda k: k['name'])
+        self.assertEqual(OrderdRoles[0]['name'], newClientRoles[0]['name'], "roles : " + OrderdRoles[0]['name'])
+        self.assertEqual(OrderdRoles[1]['name'], newClientRoles[1]['name'], "roles : " + OrderdRoles[1]['name'])
+        #self.assertEqual(len(OrderdRoles[1]['composites']), len(newClientRoles[1]['composites']), 'Composite length: ' + len(OrderdRoles[1]['composites']) + ' : ' + len(newClientRoles[1]['composites']))
+        OrderedComposites = sorted(OrderdRoles[1]['composites'], key=lambda k:['name]'])
+        for index, composite in enumerate(OrderedComposites):
+            compositeFound = False
+            for toChangeComposite in newClientRoles[1]['composites']:
+                if toChangeComposite['name'] == composite['name']:
+                    compositeFound = True
+                    break
+            assertTrue(compositeFound, 'Composite ' + composite['name'] + ' not found')
+                        
     def test_delete_client(self):
         toDelete = {}
         toDelete["url"] = "http://localhost:18081"
