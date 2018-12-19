@@ -73,10 +73,11 @@ class KeycloakClientTestCase(unittest.TestCase):
                 "composite": True,
                 "composites": [
                     {
-                        "id": "master-realm",
-                        "name": "view-users",
-                        "clientRole": True,
-                        "composite": False
+                        "id": self.testClient['name'],
+                        "name": self.testClientRoles[0]['name']
+                    },
+                    {
+                        "name": "admin"
                     }
                 ]
             }
@@ -117,6 +118,19 @@ class KeycloakClientTestCase(unittest.TestCase):
         OrderdRoles = sorted(results['ansible_facts']['client']['clientRoles'], key=lambda k: k['name'])
         self.assertEqual(OrderdRoles[0]['name'], toCreate["roles"][0]['name'], "roles : " + OrderdRoles[0]['name'])
         self.assertEqual(OrderdRoles[1]['name'], toCreate["roles"][1]['name'], "roles : " + OrderdRoles[1]['name'])
+        for newComposite in toCreate["roles"][1]['composites']:
+            compositeFound = False
+            for createdComposite in OrderdRoles[1]['composites']:
+                if "id" in newComposite and newComposite["id"] == createdComposite['id'] and newComposite["name"] == createdComposite['name']:
+                    compositeFound = True
+                elif newComposite["name"] == createdComposite['name']:
+                    compositeFound = True
+            if "id" in newComposite:
+                message = "Composite: id:" + newComposite["id"] + " name:" + newComposite["name"] + " not found"
+            else:
+                message = "Composite: name:" + newComposite["name"] + " not found"
+            self.assertTrue(compositeFound, message)
+            
         self.assertEqual(results['ansible_facts']['client']['redirectUris'].sort(),toCreate["redirectUris"].sort(),"redirectUris: " + str(results['ansible_facts']['client']['redirectUris'].sort()))
         for toCreateMapper in toCreate["protocolMappers"]:
             mapperFound = False
@@ -168,9 +182,7 @@ class KeycloakClientTestCase(unittest.TestCase):
                 "composites": [
                     {
                         "id": self.testClient['name'],
-                        "name": self.testClientRoles[0]['name'],
-                        "clientRole": True,
-                        "composite": False
+                        "name": self.testClientRoles[0]['name']
                     }
                 ]
             }
@@ -245,9 +257,7 @@ class KeycloakClientTestCase(unittest.TestCase):
                 "composites": [
                     {
                         "id": self.testClient['name'],
-                        "name": self.testClientRoles[0]['name'],
-                        "clientRole": True,
-                        "composite": False
+                        "name": self.testClientRoles[0]['name']
                     }
                 ]
             }
@@ -327,9 +337,7 @@ class KeycloakClientTestCase(unittest.TestCase):
                 "composites": [
                     {
                         "id": self.testClient['name'],
-                        "name": self.testClientRoles[0]['name'],
-                        "clientRole": True,
-                        "composite": False
+                        "name": self.testClientRoles[0]['name']
                     }
                 ]
             }
@@ -400,17 +408,15 @@ class KeycloakClientTestCase(unittest.TestCase):
                 "composites": [
                     {
                         "id": self.testClient['name'],
-                        "name": self.testClientRoles[0]['name'],
-                        "clientRole": True,
-                        "composite": False
+                        "name": self.testClientRoles[0]['name']
                     },
                     {
                         "id": self.testClient['name'],
-                        "name": self.testClientRoles[1]['name'],
-                        "clientRole": True,
-                        "composite": False
+                        "name": self.testClientRoles[1]['name']
+                    },
+                    {
+                        "name": "admin"
                     }
-
                 ]
             }
         ]

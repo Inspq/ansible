@@ -173,7 +173,7 @@ EXAMPLES = '''
             description: "Role1"
             composite: true
             composites:
-              - Id: existinqClient
+              - id: existinqClient
                 name: role1ofclient
         protocolMappers:
           - name: MapperName
@@ -208,7 +208,7 @@ EXAMPLES = '''
             description: "Role1"
             composite: true
             composites:
-              - Id: existinqClient
+              - id: existinqClient
                 name: role1ofclient
         protocolMappers:
           - name: MapperName
@@ -331,7 +331,7 @@ def client(params):
     force = params['force']
     newClientRoles = None
     newClientProtocolMappers = None
-    newComposites = None
+    #newComposites = None
     #newRoleRepresentation = None
     
     # Créer un représentation du client recu en paramètres
@@ -382,9 +382,9 @@ def client(params):
         newClientRoles = params['roles']
     if 'protocolMappers' in params and params['protocolMappers'] is not None:
         newClientProtocolMappers = params['protocolMappers']
-    composites = []
     
     clientSvcBaseUrl = url + "/auth/admin/realms/" + realm + "/clients/"
+    roleSvcBaseUrl = url + "/auth/admin/realms/" + realm + "/roles/"
     
     result = dict()
     changed = False
@@ -434,35 +434,60 @@ def client(params):
                 clientRepresentation = getResponse.json()[0]
                 # Créer les rôles
                 if newClientRoles is not None:
-                    for newClientRole in newClientRoles:
-                        newRoleRepresentation = {}
-                        newRoleRepresentation["name"] = newClientRole['name'].decode("utf-8")
-                        if "description" in newClientRole and newClientRole['description'] is not None:
-                            newRoleRepresentation["description"] = newClientRole['description'].decode("utf-8")
-                        newRoleRepresentation["composite"] = newClientRole['composite'] if "composite" in newClientRole else False
-                        #data=json.dumps(newClientRole)
-                        data=json.dumps(newRoleRepresentation)
-                        requests.post(clientSvcBaseUrl + clientRepresentation['id'] + '/roles', headers=headers, data=data)
+                    createOrUpdateClientRoles(newClientRoles, clientSvcBaseUrl, roleSvcBaseUrl, clientRepresentation, headers)
+#                    for newClientRole in newClientRoles:
+#                        newRoleRepresentation = {}
+#                        newRoleRepresentation["name"] = newClientRole['name'].decode("utf-8")
+#                        if "description" in newClientRole and newClientRole['description'] is not None:
+#                            newRoleRepresentation["description"] = newClientRole['description'].decode("utf-8")
+#                        newRoleRepresentation["composite"] = newClientRole['composite'] if "composite" in newClientRole else False
+#                        #data=json.dumps(newClientRole)
+#                        data=json.dumps(newRoleRepresentation)
+#                        requests.post(clientSvcBaseUrl + clientRepresentation['id'] + '/roles', headers=headers, data=data)
                         # rôle composites
-                        if 'composites' in newClientRole and newClientRole['composites'] is not None:
-                            newComposites = newClientRole['composites']
-                            getResponse=requests.get(clientSvcBaseUrl, headers=headers)
-                            clientLists = getResponse.json()
-                            for clientList in clientLists:
-                                getResponse=requests.get(clientSvcBaseUrl + clientList['id'] + '/roles', headers=headers)
-                                newCompositeToCreate = []
-                                if getResponse.status_code == 404:
-                                    raise Exception("Role just created not found: " + str(newComposites))
-                                else:# rôle composites update
-                                    roles = getResponse.json()
-                                    for newComposite in newComposites:
-                                        for role in roles:
-                                            if role['name'] == newComposite['name']:
-                                                newComposite['id'] = role['id']
-                                                newCompositeToCreate.append(newComposite)
+#                        if 'composites' in newClientRole and newClientRole['composites'] is not None:
+#                            newCompositeToCreate = []
+#                            newComposites = newClientRole['composites']
+#                            for newComposite in newComposites:
+#                                if "id" in newComposite and newComposite["id"] is not None:
+#                                    getResponse=requests.get(clientSvcBaseUrl, headers=headers)
+#                                    keycloakClients = getResponse.json()
+#                                    for keycloakClient in keycloakClients:
+#                                        if keycloakClient['id'] == newComposite["id"]:
+#                                            getResponse=requests.get(clientSvcBaseUrl + keycloakClient['id'] + '/roles', headers=headers)
+#                                            roles = getResponse.json()
+#                                            for role in roles:
+#                                                if role["name"] == newComposite["name"]:
+#                                                    newComposite['id'] = role['id']
+#                                                    newComposite['clientRole'] = True
+#                                                    break
+#                                else:
+#                                    newComposite['clientRole'] = False
+#                                newCompositeToCreate.append(newComposite)
+#                            data=json.dumps(newCompositeToCreate)
+#                            requests.post(clientSvcBaseUrl + clientRepresentation['id'] + '/roles/'+ newClientRole['name'] +'/composites', headers=headers, data=data)
+                                
+#                            getResponse=requests.get(clientSvcBaseUrl, headers=headers)
+#                            clientLists = getResponse.json()
+#                            for clientList in clientLists:
+#                                getResponse=requests.get(clientSvcBaseUrl + clientList['id'] + '/roles', headers=headers)
+#                                newCompositeToCreate = []
+#                                if getResponse.status_code == 404:
+#                                    raise Exception("Role just created not found: " + str(newComposites))
+#                                else:# rôle composites update
+#                                    roles = getResponse.json()
+#                                    for newComposite in newComposites:
+#                                        for role in roles:
+#                                            if role['name'] == newComposite['name']:
+#                                                if "id" in newComposite and newComposite["id"] == clientList['id']:
+#                                                    newComposite['id'] = role['id']
+#                                                    newComposite['clientRole'] = True
+#                                                else:
+#                                                    newComposite['clientRole'] = False
+#                                                newCompositeToCreate.append(newComposite)
                                     # rôle composites
-                                    data=json.dumps(newCompositeToCreate)
-                                    requests.post(clientSvcBaseUrl + clientRepresentation['id'] + '/roles/'+ newClientRole['name'] +'/composites', headers=headers, data=data)
+#                                    data=json.dumps(newCompositeToCreate)
+#                                    requests.post(clientSvcBaseUrl + clientRepresentation['id'] + '/roles/'+ newClientRole['name'] +'/composites', headers=headers, data=data)
                 # Créer les protocols mappers
                 if newClientProtocolMappers is not None:
                     for newClientProtocolMapper in newClientProtocolMappers:
@@ -558,7 +583,7 @@ def client(params):
                 addComposistesToClientRoleRepresentation(clientSvcBaseUrl, clientRepresentation, clientRolesRepresentation, headers)
                 clientRepresentation["clientRoles"] = clientRolesRepresentation
                 
-                if createOrUpdateClientRoles(newClientRoles, clientSvcBaseUrl, clientRepresentation, headers):
+                if createOrUpdateClientRoles(newClientRoles, clientSvcBaseUrl, roleSvcBaseUrl, clientRepresentation, headers):
                     changed = True
                 # Traiter les protocol Mappers
                 if newClientProtocolMappers is not None:
@@ -642,136 +667,106 @@ def addComposistesToClientRoleRepresentation(clientSvcBaseUrl, clientRepresentat
             getResponse = requests.get(clientSvcBaseUrl + clientRepresentation['id'] + '/roles/'+ clientRole['name'] +'/composites', headers=headers)
             clientRole["composites"] = getResponse.json()
             for roleComposite in clientRole["composites"]:
-                getResponse = requests.get(clientSvcBaseUrl + roleComposite['containerId'], headers=headers)
-                roleCompositeClient = getResponse.json()
-                roleComposite["clientId"] = roleCompositeClient["clientId"]
+                if roleComposite['clientRole']:
+                    getResponse = requests.get(clientSvcBaseUrl + roleComposite['containerId'], headers=headers)
+                    roleCompositeClient = getResponse.json()
+                    roleComposite["clientId"] = roleCompositeClient["clientId"]
 
-def createOrUpdateClientRoles(newClientRoles, clientSvcBaseUrl, clientRepresentation, headers):
+def createOrUpdateClientRoles(newClientRoles, clientSvcBaseUrl, roleSvcBaseUrl, clientRepresentation, headers):
     changed = False
     # Traiter les rôles
     if newClientRoles is not None:
-        # Obtenir la liste des rôles existant pour le client
-        #getResponse = requests.get(clientSvcBaseUrl + clientRepresentation['id'] + '/roles', headers=headers)
-        #clientRoles = getResponse.json()
-        clientRoles = clientRepresentation["clientRoles"]
         for newClientRole in newClientRoles:
+            changeNeeded = False
+            if 'composites' in newClientRole and newClientRole['composites'] is not None:
+                newComposites = newClientRole['composites']
+                for newComposite in newComposites:
+                    if "id" in newComposite and newComposite["id"] is not None:
+                        getResponse=requests.get(clientSvcBaseUrl, headers=headers)
+                        keycloakClients = getResponse.json()
+                        for keycloakClient in keycloakClients:
+                            if keycloakClient['name'] == newComposite["id"]:
+                                getResponse=requests.get(clientSvcBaseUrl + keycloakClient['id'] + '/roles', headers=headers)
+                                roles = getResponse.json()
+                                for role in roles:
+                                    if role["name"] == newComposite["name"]:
+                                        newComposite['id'] = role['id']
+                                        newComposite['clientRole'] = True
+                                        break
+                    else:
+                        getResponse=requests.get(roleSvcBaseUrl, headers=headers)
+                        realmRoles = getResponse.json()
+                        for realmRole in realmRoles:
+                            if realmRole["name"] == newComposite["name"]:
+                                newComposite['id'] = realmRole['id']
+                                newComposite['clientRole'] = False
+                                break;                
             data=json.dumps(newClientRole)
             clientRoleFound = False
-            # Vérifier si le rôle a créer existe déjà pour le client
-            for clientRole in clientRoles:
-                if (clientRole['name'] == newClientRole['name']):
-                    clientRoleFound = True
-                    break
-            # Si le rôle existe pour le client
-            if clientRoleFound:
-                # Obtenir la définition du rôle    
-                #getResponse = requests.get(clientSvcBaseUrl + clientRepresentation['id'] + '/roles/' + newClientRole['name'], headers=headers)
-                #clientRole = getResponse.json()
-                # Comparer le rôle existant avec celui envoyé
-                changeNeeded = False
-                if "composites" in newClientRole and newClientRole["composites"] is not None:
-                    newComposites = newClientRole['composites']
-                    getResponse=requests.get(clientSvcBaseUrl, headers=headers)
-                    clientLists = getResponse.json()
-                    for clientList in clientLists:
-                        getResponse=requests.get(clientSvcBaseUrl + clientList['id'] + '/roles', headers=headers)
-                        if getResponse.status_code == 404:
-                            raise Exception("Role just created not found: " + str(newComposites))
-                        else:# rôle composites update
-                            roles = getResponse.json()
-                            for newComposite in newComposites:
-                                for role in roles:
-                                    if role['name'] == newComposite['name']:
-                                        newComposite['id'] = role['id']
-                    excludes = []
-                    excludes.append("composites")
-                    if not isDictEquals(newClientRole, clientRole, excludes):
-                        changeNeeded = True
-                    else:
-                        for newComposite in newClientRole['composites']:
-                            compositeFound = False
-                            for existingComposite in clientRole['composites']:
-                                if isDictEquals(newComposite,existingComposite):
-                                    compositeFound = True
-                                    break
-                            if not compositeFound:
-                                changeNeeded = True
-                                break
+            if "clientRoles" in clientRepresentation and clientRepresentation["clientRoles"] is not None and len(clientRepresentation["clientRoles"]) > 0:
+                clientRoles = clientRepresentation["clientRoles"]
+                # Vérifier si le rôle a créer existe déjà pour le client
+                for clientRole in clientRoles:
+                    if (clientRole['name'] == newClientRole['name']):
+                        clientRoleFound = True
+                        break
+                # Si le rôle existe pour le client
+                if not clientRoleFound:
+                    changeNeeded = True
                 else:
-                    if not isDictEquals(newClientRole, clientRole):
-                        changeNeeded = True
-                if changeNeeded:
-                    # S'il est différent, le modifier
-                    newRoleRepresentation = {}
-                    newRoleRepresentation["name"] = newClientRole['name'].decode("utf-8")
-                    newRoleRepresentation["description"] = newClientRole['description'].decode("utf-8")
-                    newRoleRepresentation["composite"] = newClientRole['composite'] if "composite" in newClientRole else False
-                    #data=json.dumps(newClientRole)
-                    data=json.dumps(newRoleRepresentation)
-                    requests.put(clientSvcBaseUrl + clientRepresentation['id'] + '/roles/' + newClientRole['name'], headers=headers, data=data)
-                    changed = True
-                    # rôle composites
-                    if 'composites' in newClientRole and newClientRole['composites'] is not None and len(newClientRole['composites']) > 0:
-                        newComposites = newClientRole['composites']
-                        getResponse=requests.get(clientSvcBaseUrl, headers=headers)
-                        clientLists = getResponse.json()
-                        for clientList in clientLists:
-                            getResponse=requests.get(clientSvcBaseUrl + clientList['id'] + '/roles', headers=headers)
-                            newCompositeToCreate = []
-                            if getResponse.status_code == 404:
-                                raise Exception("Role just created not found: " + str(newComposites))
-                            else:# rôle composites update
-                                roles = getResponse.json()
-                                for newComposite in newComposites:
-                                    for role in roles:
-                                        if role['name'] == newComposite['name']:
-                                            newComposite['id'] = role['id']
-                                            newCompositeToCreate.append(newComposite)
-                                # rôle composites
-                                rolesTodelete = []
-                                for roleTodelete in clientRole['composites']:
-                                    tmprole = {}
-                                    tmprole['id'] = roleTodelete['id']
-                                    rolesTodelete.append(tmprole)
-                                data=json.dumps(rolesTodelete)
-                                requests.delete(clientSvcBaseUrl + clientRepresentation['id'] + '/roles/'+ newClientRole['name'] +'/composites', headers=headers, data=data)
-                                data=json.dumps(newCompositeToCreate)
-                                requests.post(clientSvcBaseUrl + clientRepresentation['id'] + '/roles/'+ newClientRole['name'] +'/composites', headers=headers, data=data)
-                                changed = True
-                                #getResponse = requests.get(clientSvcBaseUrl + clientRepresentation['id'] + '/roles/'+ newClientRole['name'] +'/composites', headers=headers)
-                                #composites.append(getResponse.text)
-            else: # Si le rôle n'existe pas pour ce client
-                changed = True
-                # Créer le rôle
+                    if "composites" in newClientRole:
+                        excludes = []
+                        excludes.append("composites")
+                        if not isDictEquals(newClientRole, clientRole, excludes):
+                            changeNeeded = True
+                        else:
+                            for newComposite in newClientRole['composites']:
+                                compositeFound = False
+                                for existingComposite in clientRole['composites']:
+                                    if isDictEquals(newComposite,existingComposite):
+                                        compositeFound = True
+                                        break
+                                if not compositeFound:
+                                    changeNeeded = True
+                                    break
+                    else:
+                        if not isDictEquals(newClientRole, clientRole):
+                            changeNeeded = True
+            else:
+                changeNeeded = True
+            if changeNeeded:
+                # S'il est différent, le modifier
                 newRoleRepresentation = {}
                 newRoleRepresentation["name"] = newClientRole['name'].decode("utf-8")
                 newRoleRepresentation["description"] = newClientRole['description'].decode("utf-8")
                 newRoleRepresentation["composite"] = newClientRole['composite'] if "composite" in newClientRole else False
-                #data=json.dumps(newClientRole)
+                newRoleRepresentation["clientRole"] = newClientRole['clientRole'] if "clientRole" in newClientRole else True
+                    #data=json.dumps(newClientRole)
                 data=json.dumps(newRoleRepresentation)
-                requests.post(clientSvcBaseUrl + clientRepresentation['id'] + '/roles', headers=headers, data=data)
+                if clientRoleFound:
+                    requests.put(clientSvcBaseUrl + clientRepresentation['id'] + '/roles/' + newClientRole['name'], headers=headers, data=data)
+                else:
+                    requests.post(clientSvcBaseUrl + clientRepresentation['id'] + '/roles', headers=headers, data=data)
+                changed = True
                 # rôle composites
-                if 'composites' in newClientRole and newClientRole['composites'] is not None:
+                if 'composites' in newClientRole and newClientRole['composites'] is not None and len(newClientRole['composites']) > 0:
                     newComposites = newClientRole['composites']
-                    getResponse=requests.get(clientSvcBaseUrl, headers=headers)
-                    clientLists = getResponse.json()
-                    for clientList in clientLists:
-                        getResponse=requests.get(clientSvcBaseUrl + clientList['id'] + '/roles', headers=headers)
-                        newCompositeToCreate = []
-                        if getResponse.status_code == 404:
-                            raise Exception("Role just created not found: " + str(newComposites))
-                        else:# rôle composites update
-                            roles = getResponse.json()
-                            for newComposite in newComposites:
-                                for role in roles:
-                                    if role['name'] == newComposite['name']:
-                                        newComposite['id'] = role['id']
-                                        newCompositeToCreate.append(newComposite)
-                            # rôle composites
-                            data=json.dumps(newCompositeToCreate)
-                            requests.post(clientSvcBaseUrl + clientRepresentation['id'] + '/roles/'+ newClientRole['name'] +'/composites', headers=headers, data=data)
-                            #getResponse = requests.get(clientSvcBaseUrl + clientRepresentation['id'] + '/roles/'+ newClientRole['name'] +'/composites', headers=headers)
-                            #composites.append(getResponse.text)
+                    if clientRoleFound and "composites" in clientRole:
+                        rolesToDelete = []
+                        for roleTodelete in clientRole['composites']:
+                            tmprole = {}
+                            tmprole['id'] = roleTodelete['id']
+                            rolesToDelete.append(tmprole)
+                        data=json.dumps(rolesToDelete)
+                        requests.delete(clientSvcBaseUrl + clientRepresentation['id'] + '/roles/'+ newClientRole['name'] +'/composites', headers=headers, data=data)
+                    #rolesToCreate = []
+                    #for roleToCreate in newClientRole["composites"]:
+                    #    tmprole = {}
+                    #    tmprole['id'] = roleToCreate['id']
+                    #    rolesToCreate.append(tmprole)
+                        
+                    data=json.dumps(newClientRole["composites"])
+                    requests.post(clientSvcBaseUrl + clientRepresentation['id'] + '/roles/'+ newClientRole['name'] +'/composites', headers=headers, data=data)
     return changed
     
 # import module snippets
