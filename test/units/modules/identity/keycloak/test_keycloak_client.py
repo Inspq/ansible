@@ -434,7 +434,7 @@ class KeycloakClientTestCase(unittest.TestCase):
                 if toChangeComposite['name'] == composite['name']:
                     compositeFound = True
                     break
-            assertTrue(compositeFound, 'Composite ' + composite['name'] + ' not found')
+            self.assertTrue(compositeFound, 'Composite ' + composite['name'] + ' not found')
                         
     def test_delete_client(self):
         toDelete = {}
