@@ -25,7 +25,7 @@ class KeycloakClientTestCase(unittest.TestCase):
         "state": "present",
         "clientId": "basetest",
         "rootUrl": "http://test.com:8080",
-        "name": "basetest",
+        "name": "basetestname",
         "description": "Base testing",
         "publicClient": False,
         "force": False
@@ -44,7 +44,7 @@ class KeycloakClientTestCase(unittest.TestCase):
         toCreate["state"] = "present"
         toCreate["clientId"] = "test"
         toCreate["rootUrl"] = "http://test.com:8080"
-        toCreate["name"] = "test"
+        toCreate["name"] = "testname"
         toCreate["description"] = "Ceci est un test"
         toCreate["adminUrl"] = "http://test.com:8080/admin"
         toCreate["baseUrl"] = "http://test.com:8080"
@@ -72,7 +72,7 @@ class KeycloakClientTestCase(unittest.TestCase):
                 "composite": True,
                 "composites": [
                     {
-                        "id": self.testClient['name'],
+                        "id": self.testClient['clientId'],
                         "name": self.testClientRoles[0]['name']
                     },
                     {
@@ -151,7 +151,7 @@ class KeycloakClientTestCase(unittest.TestCase):
         toDoNotChange["state"] = "present"
         toDoNotChange["clientId"] = "test2"
         toDoNotChange["rootUrl"] = "http://test2.com:8080"
-        toDoNotChange["name"] = "test2"
+        toDoNotChange["name"] = "test2name"
         toDoNotChange["description"] = "Ceci est un test2"
         toDoNotChange["adminUrl"] = "http://test2.com:8080/admin"
         toDoNotChange["baseUrl"] = "http://test2.com:8080"
@@ -180,7 +180,7 @@ class KeycloakClientTestCase(unittest.TestCase):
                 "composite": True,
                 "composites": [
                     {
-                        "id": self.testClient['name'],
+                        "id": self.testClient['clientId'],
                         "name": self.testClientRoles[0]['name']
                     }
                 ]
@@ -226,7 +226,7 @@ class KeycloakClientTestCase(unittest.TestCase):
         toChange["state"] = "present"
         toChange["clientId"] = "test3"
         toChange["rootUrl"] = "http://test3.com:8080"
-        toChange["name"] = "test2"
+        toChange["name"] = "test2name"
         toChange["description"] = "Ceci est un test2"
         toChange["adminUrl"] = "http://test3.com:8080/admin"
         toChange["baseUrl"] = "http://test3.com:8080"
@@ -255,7 +255,7 @@ class KeycloakClientTestCase(unittest.TestCase):
                 "composite": True,
                 "composites": [
                     {
-                        "id": self.testClient['name'],
+                        "id": self.testClient['clientId'],
                         "name": self.testClientRoles[0]['name']
                     }
                 ]
@@ -335,7 +335,7 @@ class KeycloakClientTestCase(unittest.TestCase):
                 "composite": True,
                 "composites": [
                     {
-                        "id": self.testClient['name'],
+                        "id": self.testClient['clientId'],
                         "name": self.testClientRoles[0]['name']
                     }
                 ]
@@ -349,7 +349,7 @@ class KeycloakClientTestCase(unittest.TestCase):
         toChange["state"] = "present"
         toChange["clientId"] = "test5"
         toChange["rootUrl"] = "http://test5.com:8080"
-        toChange["name"] = "test5"
+        toChange["name"] = "test5name"
         toChange["description"] = "Ceci est un test5"
         toChange["adminUrl"] = "http://test5.com:8080/admin"
         toChange["baseUrl"] = "http://test5.com:8080"
@@ -406,11 +406,11 @@ class KeycloakClientTestCase(unittest.TestCase):
                 "composite": True,
                 "composites": [
                     {
-                        "id": self.testClient['name'],
+                        "id": self.testClient['clientId'],
                         "name": self.testClientRoles[0]['name']
                     },
                     {
-                        "id": self.testClient['name'],
+                        "id": self.testClient['clientId'],
                         "name": self.testClientRoles[1]['name']
                     },
                     {
@@ -445,7 +445,7 @@ class KeycloakClientTestCase(unittest.TestCase):
         toDelete["state"] = "present"
         toDelete["clientId"] = "test4"
         toDelete["rootUrl"] = "http://test4.com:8080"
-        toDelete["name"] = "test4"
+        toDelete["name"] = "test4name"
         toDelete["description"] = "Ceci est un test4"
         toDelete["adminUrl"] = "http://test4.com:8080/admin"
         toDelete["baseUrl"] = "http://test4.com:8080"
