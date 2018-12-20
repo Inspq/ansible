@@ -3,7 +3,6 @@ import os
 import unittest
 
 from ansible.modules.identity.keycloak.keycloak_client import *
-from wheel.signatures import assertTrue
 
 class KeycloakClientTestCase(unittest.TestCase):
     testClientRoles = [
