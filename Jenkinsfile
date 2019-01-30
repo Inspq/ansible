@@ -21,7 +21,14 @@ pipeline {
         }
         stage ('Tests sécurités des modules ansible sx5') {
             steps {
-                sh "docker run -u root --rm -v ${WORKSPACE}/lib/ansible/modules/identity/sx5:/app nexus3.inspq.qc.ca:5000/inspq/bandit:SNAPSHOT bandit -r ./"
+                script {
+                    try{
+                        sh "docker run -u root --rm -v ${WORKSPACE}/lib/ansible/modules/identity/sx5:/app nexus3.inspq.qc.ca:5000/inspq/bandit:SNAPSHOT bandit -r ./"
+                    }
+                    catch (exc){
+                        currentBuild.result = 'UNSTABLE'
+                    }
+                }
            	}
         }
         stage ('Tests sécurités des modules ansible Keycloak') {
@@ -31,7 +38,6 @@ pipeline {
                         sh "docker run -u root --rm -v ${WORKSPACE}/lib/ansible/modules/identity/keycloak:/app nexus3.inspq.qc.ca:5000/inspq/bandit:SNAPSHOT bandit -r ./"
                     }
                     catch (exc){
-                        currentStage.result = 'FAILURE'
                         currentBuild.result = 'UNSTABLE'
                     }
                 }
