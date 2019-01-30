@@ -26,7 +26,12 @@ pipeline {
         }
         stage ('Tests sécurités des modules ansible Keycloak') {
             steps {
-                sh "docker run -u root --rm -v ${WORKSPACE}/lib/ansible/modules/identity/keycloak:/app nexus3.inspq.qc.ca:5000/inspq/bandit:SNAPSHOT bandit -r ./"
+                try{
+                    sh "docker run -u root --rm -v ${WORKSPACE}/lib/ansible/modules/identity/keycloak:/app nexus3.inspq.qc.ca:5000/inspq/bandit:SNAPSHOT bandit -r ./"
+                }
+                catch (exc){
+                    currentBuild.result = 'UNSTABLE'
+                }
            	}
         }
         stage ('Tests unitaires des modules ansible de Keycloak sur la dernière version de Keycloak') {
