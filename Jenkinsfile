@@ -35,7 +35,7 @@ pipeline {
             steps {
                 script {
                     try{
-                        sh "docker run -u root --rm -v ${WORKSPACE}/lib/ansible/modules/identity/keycloak:/app nexus3.inspq.qc.ca:5000/inspq/bandit:SNAPSHOT bandit -r -s -s B501 ./"
+                        sh "docker run -u root --rm -v ${WORKSPACE}/lib/ansible/modules/identity/keycloak:/app nexus3.inspq.qc.ca:5000/inspq/bandit:SNAPSHOT bandit -r -s B501 ./"
                     }
                     catch (exc){
                         currentBuild.result = 'UNSTABLE'
