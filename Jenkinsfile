@@ -19,6 +19,16 @@ pipeline {
                 sh "source hacking/env-setup; ansible-test sanity --test validate-modules"
            	}
         }
+        stage ('Tests sécurités des modules ansible sx5') {
+            steps {
+                sh "docker run -u root --rm -v ${WORKSPACE}/lib/ansible/modules/identity/sx5:/app nexus3.inspq.qc.ca:5000/inspq/bandit:SNAPSHOT bandit -r ./"
+           	}
+        }
+        stage ('Tests sécurités des modules ansible Keycloak') {
+            steps {
+                sh "docker run -u root --rm -v ${WORKSPACE}/lib/ansible/modules/identity/keycloak:/app nexus3.inspq.qc.ca:5000/inspq/bandit:SNAPSHOT bandit -r ./"
+           	}
+        }
         stage ('Tests unitaires des modules ansible de Keycloak sur la dernière version de Keycloak') {
             steps {
                 sh "source hacking/env-setup; ansible-playbook -i keycloak.hosts -e docker_image=nexus3.inspq.qc.ca:5000/inspq/keycloak -e docker_image_version=latest deploy-keycloak.yml"
