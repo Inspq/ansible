@@ -59,6 +59,7 @@ class KeycloakClientTestCase(unittest.TestCase):
         toCreate["serviceAccountsEnabled"] = True
         #toCreate["authorizationServicesEnabled"] = False
         toCreate["protocol"] = "openid-connect"
+        toCreate["fullScopeAllowed"] = True
         toCreate["bearerOnly"] = False
         toCreate["roles"] = [
             {
@@ -163,6 +164,7 @@ class KeycloakClientTestCase(unittest.TestCase):
         toDoNotChange["standardFlowEnabled"] = True
         toDoNotChange["implicitFlowEnabled"] = True
         toDoNotChange["directAccessGrantsEnabled"] = True
+        toDoNotChange["fullScopeAllowed"] = True
         toDoNotChange["serviceAccountsEnabled"] = True
         #toDoNotChange["authorizationServicesEnabled"] = False
         toDoNotChange["protocol"] = "openid-connect"
@@ -239,6 +241,7 @@ class KeycloakClientTestCase(unittest.TestCase):
         toChange["implicitFlowEnabled"] = True
         toChange["directAccessGrantsEnabled"] = True
         toChange["serviceAccountsEnabled"] = True
+        toChange["fullScopeAllowed"] = True
         #toChange["authorizationServicesEnabled"] = False
         toChange["protocol"] = "openid-connect"
         toChange["bearerOnly"] = False
@@ -361,6 +364,7 @@ class KeycloakClientTestCase(unittest.TestCase):
         toChange["standardFlowEnabled"] = True
         toChange["implicitFlowEnabled"] = True
         toChange["directAccessGrantsEnabled"] = True
+        toChange["fullScopeAllowed"] = True
         toChange["serviceAccountsEnabled"] = True
         #toChange["authorizationServicesEnabled"] = False
         toChange["protocol"] = "openid-connect"
@@ -457,6 +461,7 @@ class KeycloakClientTestCase(unittest.TestCase):
         toDelete["standardFlowEnabled"] = True
         toDelete["implicitFlowEnabled"] = True
         toDelete["directAccessGrantsEnabled"] = True
+        toDelete["fullScopeAllowed"] = True
         toDelete["serviceAccountsEnabled"] = True
         #toDelete["authorizationServicesEnabled"] = False
         toDelete["protocol"] = "openid-connect"

@@ -109,6 +109,10 @@ options:
         description:
             - Direct Access Grants Enabled.
         required: false
+    fullScopeAllowed:
+        description:
+            - Allow Full SSO
+        required: false
     serviceAccountsEnabled:
         description:
             - service Accounts Enabled.
@@ -281,6 +285,7 @@ def main():
             standardFlowEnabled = dict(type='bool'),
             implicitFlowEnabled = dict(type='bool'),
             directAccessGrantsEnabled = dict(type='bool'),
+            fullScopeAllowed = dict(type='bool'),
             serviceAccountsEnabled = dict(type='bool'),
             authorizationServicesEnabled = dict(type='bool', default=True),
             protocol = dict(type='str'),
@@ -311,6 +316,8 @@ def main():
         params['authorizationServicesEnabled'] = module.boolean(module.params['authorizationServicesEnabled'])
     if "bearerOnly" in params and params['bearerOnly'] is not None:
         params['bearerOnly'] = module.boolean(module.params['bearerOnly'])
+    if "fullScopeAllowed" in params and params['fullScopeAllowed'] is not None:
+        params['fullScopeAllowed'] = module.boolean(module.params['fullScopeAllowed'])
     if "publicClient" in params and params['publicClient'] is not None:
         params['publicClient'] = module.boolean(module.params['publicClient'])
     
@@ -374,6 +381,8 @@ def client(params):
             newClientRepresentation["serviceAccountsEnabled"] = params['serviceAccountsEnabled']
     if "protocol" in params and params['protocol'] is not None:
         newClientRepresentation["protocol"] = params['protocol'].decode("utf-8")
+    if "fullScopeAllowed" in params:
+        newClientRepresentation["fullScopeAllowed"] = params['fullScopeAllowed']
     if "bearerOnly" in params:
         newClientRepresentation["bearerOnly"] = params['bearerOnly']
     if "publicClient" in params:
