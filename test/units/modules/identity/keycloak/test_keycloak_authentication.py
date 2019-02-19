@@ -31,6 +31,54 @@ class KeycloakGroupTestCase(unittest.TestCase):
         results = authentication(toCreate)
         self.assertEquals(results["ansible_facts"]["flow"]["alias"], toCreate["alias"], results["ansible_facts"]["flow"]["alias"] + "is not" + toCreate["alias"] )
         self.assertTrue(results['changed'])
+
+    def test_create_authentication_flow_without_executions(self):
+        toCreate = {
+            "url":  "http://localhost:18081",
+            "username": "admin",
+            "password": "admin",
+            "realm": "master",
+            "alias": "Second copy of first broker login",
+            "copyFrom": "first broker login",
+            "authenticationConfig": {
+                "alias": "review profile config",
+                "config": {
+                    "update.profile.on.first.login": "on"
+                }
+            }, 
+            "state":"present",
+            "force":False
+        }
+
+        results = authentication(toCreate)
+        self.assertEquals(results["ansible_facts"]["flow"]["alias"], toCreate["alias"], results["ansible_facts"]["flow"]["alias"] + "is not" + toCreate["alias"] )
+        self.assertTrue(results['changed'])
+
+    def test_create_authentication_flow_with_update_profile_on_first_login_on(self):
+        toCreate = {
+            "url":  "http://localhost:18081",
+            "username": "admin",
+            "password": "admin",
+            "realm": "master",
+            "alias": "First broker login with update profile on first login",
+            "copyFrom": "first broker login",
+            "authenticationConfig": {
+                "alias": "New review profile config",
+                "config": {
+                    "update.profile.on.first.login": "on"
+                }
+            }, 
+            "authenticationExecutions":{
+                "providerId": "idp-review-profile",
+                "requirement": "REQUIRED"
+            }, 
+            "state":"present",
+            "force":False
+        }
+
+        results = authentication(toCreate)
+        self.assertEquals(results["ansible_facts"]["flow"]["alias"], toCreate["alias"], results["ansible_facts"]["flow"]["alias"] + "is not" + toCreate["alias"] )
+        self.assertTrue(results['changed'])
         
     def test_create_authentication_flow_without_copy(self):
         toCreate = {

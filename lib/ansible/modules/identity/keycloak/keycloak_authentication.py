@@ -188,43 +188,45 @@ def createEmptyAuthFlow(url, config, headers):
             return flow
     return None
 def addAuthenticationConfig(url, config, headers):
-    # Prepare post to create the execution
-    postJson = dict(
-        provider = config["authenticationExecutions"]["providerId"],
-        )
-    # Create execution without configuration
-    data = json.dumps(postJson)
-    requests.post(url + "flows/" + urllib.quote(config["alias"]) + "/executions/execution", headers=headers, data=data)
-    # get the execution Id
-    getResponse = requests.get(url + "flows/" + urllib.quote(config["alias"]) + "/executions", headers=headers)
-    executions = getResponse.json()
+    toReturn = {}
     execution = None
-    for execution in executions:
-        if "providerId" in execution and execution["providerId"] == config["authenticationExecutions"]["providerId"]:
-            break
+    if "authenticationExecutions" in config and "providerId" in config["authenticationExecutions"]:
+        # Prepare post to create the execution
+        postJson = dict(
+            provider = config["authenticationExecutions"]["providerId"],
+            )
+        # Create execution without configuration
+        data = json.dumps(postJson)
+        requests.post(url + "flows/" + urllib.quote(config["alias"]) + "/executions/execution", headers=headers, data=data)
+        # get the execution Id
+        getResponse = requests.get(url + "flows/" + urllib.quote(config["alias"]) + "/executions", headers=headers)
+        executions = getResponse.json()
+        for execution in executions:
+            if "providerId" in execution and execution["providerId"] == config["authenticationExecutions"]["providerId"]:
+                break
+        toReturn["authenticationExecutions"] = execution
     
-    # Add the autenticatorConfig to the execution
-    data = json.dumps(config["authenticationConfig"])
-    if execution is not None:
-        requests.post(url + "executions/" + execution["id"] + "/config", headers=headers, data=data)
-        # Configure the execution itself
-        config["authenticationExecutions"]["id"] = execution["id"]
-        data = json.dumps(config["authenticationExecutions"])
-        requests.put(url + "flows/" + urllib.quote(config["alias"]) + "/executions", headers=headers, data=data)
-    getResponse = requests.get(url + "flows/" + urllib.quote(config["alias"]) + "/executions", headers=headers)
-    executions = getResponse.json()
-    execution = None
-    for execution in executions:
-        if "providerId" in execution and execution["providerId"] == config["authenticationExecutions"]["providerId"]:
-            break
-    authenticationConfig = None
-    if execution is not None:
-        getResponse = requests.get(url + "config/" + execution["authenticationConfig"], headers=headers)
-        authenticationConfig = getResponse.json()
-    toReturn = dict(
-        authenticationExecutions = execution,
-        authenticationConfig = authenticationConfig
-        )
+    if "authenticationConfig" in config:
+        # Add the autenticatorConfig to the execution
+        data = json.dumps(config["authenticationConfig"])
+        if execution is not None:
+            requests.post(url + "executions/" + execution["id"] + "/config", headers=headers, data=data)
+            # Configure the execution itself
+            config["authenticationExecutions"]["id"] = execution["id"]
+            data = json.dumps(config["authenticationExecutions"])
+            requests.put(url + "flows/" + urllib.quote(config["alias"]) + "/executions", headers=headers, data=data)
+        getResponse = requests.get(url + "flows/" + urllib.quote(config["alias"]) + "/executions", headers=headers)
+        executions = getResponse.json()
+        execution = None
+        for execution in executions:
+            if "authenticationExecutions" in config and "providerId" in execution and execution["providerId"] == config["authenticationExecutions"]["providerId"]:
+                break
+        authenticationConfig = None  
+        if execution is not None and "authenticationConfig" in execution:
+            getResponse = requests.get(url + "config/" + execution["authenticationConfig"], headers=headers)
+            authenticationConfig = getResponse.json()
+            toReturn["authenticationConfig"] = authenticationConfig
+        
     return toReturn
 
 def main():
@@ -325,10 +327,13 @@ def authentication(params):
                 flowConfig = addAuthenticationConfig(authenticationSvcBaseUrl, newAuthenticationRepresentation, headers)
                 changed = True
                 fact = dict(
-                    flow = authenticationRepresentation,
-                    authenticationExecutions = flowConfig["authenticationExecutions"],
-                    authenticationConfig = flowConfig["authenticationConfig"]
-                    )                
+                    flow = authenticationRepresentation
+                    )
+                if "authenticationExecutions" in flowConfig:
+                    fact["authenticationExecutions"] = flowConfig["authenticationExecutions"]
+                if "authenticationConfig" in flowConfig:
+                    fact["authenticationConfig"] = flowConfig["authenticationConfig"]
+                
                 result = dict(
                     ansible_facts = fact,
                     rc = 0,
@@ -375,10 +380,12 @@ def authentication(params):
                     flowConfig = addAuthenticationConfig(authenticationSvcBaseUrl, newAuthenticationRepresentation, headers)
                     changed = True
                     fact = dict(
-                        flow = authenticationRepresentation,
-                        authenticationExecutions = flowConfig["authenticationExecutions"],
-                        authenticationConfig = flowConfig["authenticationConfig"]
+                        flow = authenticationRepresentation
                         )
+                    if "authenticationExecutions" in flowConfig:
+                        fact["authenticationExecutions"] = flowConfig["authenticationExecutions"]
+                    if "authenticationConfig" in flowConfig:
+                        fact["authenticationConfig"] = flowConfig["authenticationConfig"]
                 else:
                     # The module does not modify an existing authentication flow. Use force to delete it and recreate it
                     getResponse = requests.get(authenticationSvcBaseUrl + "flows/" + urllib.quote(newAuthenticationRepresentation["alias"]) + "/executions", headers=headers)
