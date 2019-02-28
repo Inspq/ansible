@@ -384,7 +384,16 @@ def group(params):
                         rc = 0,
                         changed = changed
                         )
-                else: # Si l'option force n'est pas sélectionné
+                else: # If force not selected
+                    # Get existing group attributes
+                    if "attributes" in groupRepresentation:
+                        # Add exiting attributes to the new group representation de preseve them
+                        if "attributes" in newGroupRepresentation:
+                            if not isDictEquals(newGroupRepresentation["attributes"], groupRepresentation["attributes"]):
+                                for attribute in groupRepresentation["attributes"]:
+                                    newGroupRepresentation["attributes"][attribute] = groupRepresentation["attributes"][attribute]
+                        else:
+                            newGroupRepresentation["attributes"] = groupRepresentation["attributes"]
                     # Keep realm roles in a variable and remove them from representation
                     groupRealmRoles = []
                     if "realmRoles" in newGroupRepresentation:
@@ -395,13 +404,12 @@ def group(params):
                     if "clientRoles" in newGroupRepresentation:
                         groupClientRoles = newGroupRepresentation["clientRoles"]
                         newGroupRepresentation["clientRoles"] = {}
-                    # Comparer les groups
+                    # Compare groups
                     excludes = ["realmRoles","clientRoles"]
                     if not (isDictEquals(newGroupRepresentation, groupRepresentation, excludes)): # Si le nouveau group introduit des modifications aux groups existants
-                        # Stocker le group dans un body prêt a être posté
                         data=json.dumps(newGroupRepresentation)
-                        # Mettre à jour le group sur le serveur Keycloak
-                        updateResponse = requests.put(groupSvcBaseUrl + groupRepresentation["id"], headers=headers, data=data)
+                        # Update group on Keycloak server
+                        requests.put(groupSvcBaseUrl + groupRepresentation["id"], headers=headers, data=data)
                         changed = True
                 # Obtenir la nouvelle représentation du groupe
                 getResponse = requests.get(groupSvcBaseUrl + groupRepresentation["id"], headers=headers)
