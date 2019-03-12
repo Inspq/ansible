@@ -63,6 +63,10 @@ options:
             - Key/[values] pairs for the group attributes.
             - To delete all the attribute use an empty dict ({})
         required: false
+    attributes_list:
+        description:
+            - List of key/value pairs to assign as attributes to the group.
+            - If the attributes item is not empty, this list will be added to it.
     realmRoles:
         description:
             - Array of realm roles to assign to the group.
@@ -100,6 +104,11 @@ EXAMPLES = '''
             - value1
           attr2: 
             - value2
+        attributes_list:
+            - name: attr3
+              value: value3
+            - name: attr4
+              value: value4
         realmRoles:
           - uma_authorization
         clientRoles:
@@ -168,6 +177,7 @@ def main():
             name=dict(type='str', required=True),
             path = dict(type='str'),
             attributes=dict(type='dict'),
+            attributes_list=dict(type='list'),
             realmRoles=dict(type='list'),
             clientRoles=dict(type='list'),
             state=dict(choices=["absent", "present"], default='present'),
@@ -193,7 +203,6 @@ def group(params):
     realm = params['realm']
     state = params['state'] if "state" in params else "present"
     force = params['force'] if "force" in params else False
-    newComposites = None
     groupRepresentation = None
     
     # Créer un représentation du group recu en paramètres
@@ -202,6 +211,10 @@ def group(params):
     newGroupRepresentation["path"] = params['path'].decode("utf-8") if "path" in params and params['path'] is not None else "/" + newGroupRepresentation["name"]
     if 'attributes' in params and params['attributes'] is not None:
         newGroupRepresentation["attributes"] = params['attributes']
+    if 'attributes_list' in params and params['attributes_list'] is not None:
+        if "attributes" not in newGroupRepresentation:
+            newGroupRepresentation["attributes"] = {}
+        addAttributesListToAttributesDict(params['attributes_list'], newGroupRepresentation["attributes"])
     if 'realmRoles' in params and params['realmRoles'] is not None:
         newGroupRepresentation["realmRoles"] = params['realmRoles']
     if 'clientRoles' in params and params['clientRoles'] is not None:
@@ -214,7 +227,6 @@ def group(params):
     roleSvcBaseUrl = url + "/auth/admin/realms/" + realm + "/roles/"
     clientSvcBaseUrl = url + "/auth/admin/realms/" + realm + "/clients/"
     
-    rc = 0
     result = dict()
     changed = False
 
@@ -274,7 +286,7 @@ def group(params):
                 # Stocker le group dans un body prêt a être posté
                 data=json.dumps(newGroupRepresentation)
                 # Créer le group
-                postResponse = requests.post(groupSvcBaseUrl, headers=headers, data=data)
+                requests.post(groupSvcBaseUrl, headers=headers, data=data)
 
                 # Rechercher le nouveau groupe qui vient d'être créé
                 getResponse = requests.get(groupSvcBaseUrl, headers=headers)
@@ -338,7 +350,7 @@ def group(params):
             if (state == 'present'): # si le status est présent
                 if force: # Si l'option force est sélectionné
                     # Supprimer le group existant
-                    deleteResponse = requests.delete(groupSvcBaseUrl + groupRepresentation["id"], headers=headers)
+                    requests.delete(groupSvcBaseUrl + groupRepresentation["id"], headers=headers)
                     changed = True
                     # Keep realm roles in a variable and remove them from representation
                     groupRealmRoles = []
@@ -353,7 +365,7 @@ def group(params):
                     # Stocker le group dans un body prêt a être posté
                     data=json.dumps(newGroupRepresentation)
                     # Créer le group
-                    postResponse = requests.post(groupSvcBaseUrl, headers=headers, data=data)
+                    requests.post(groupSvcBaseUrl, headers=headers, data=data)
     
                     # Rechercher le nouveau groupe qui vient d'être créé
                     getResponse = requests.get(groupSvcBaseUrl, headers=headers)
@@ -434,7 +446,7 @@ def group(params):
                     
             elif state == 'absent': # Le status est absent
                 # Supprimer le group
-                deleteResponse = requests.delete(groupSvcBaseUrl + groupRepresentation['id'], headers=headers)
+                requests.delete(groupSvcBaseUrl + groupRepresentation['id'], headers=headers)
                 changed = True
                 result = dict(
                     stdout   = 'deleted',
@@ -478,7 +490,7 @@ def assingRolestoGroup(headers, groupRepresentation, groupRealmRoles, groupClien
     if len(realmRolesRepresentation) > 0 :
         data=json.dumps(realmRolesRepresentation)
         # Assing Role
-        postResp = requests.post(groupSvcBaseUrl + groupRepresentation["id"] + "/role-mappings/realm", headers=headers, data=data)
+        requests.post(groupSvcBaseUrl + groupRepresentation["id"] + "/role-mappings/realm", headers=headers, data=data)
         changed = True
     # Assing clients roles            
     for clientToAssingRole in groupClientRoles.keys():
@@ -509,6 +521,14 @@ def assingRolestoGroup(headers, groupRepresentation, groupRealmRoles, groupClien
             
     return changed             
 
+def addAttributesListToAttributesDict(AttributesList, AttributesDict):
+    if AttributesList is not None:
+        if AttributesDict is None:
+            AttributesDict = {}
+        for attr in AttributesList:
+            if "name" in attr and attr["name"] is not None and "value" in attr:
+                AttributesDict[attr["name"]] = attr["value"]
+            
 # import module snippets
 from ansible.module_utils.basic import *
 

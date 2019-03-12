@@ -7,7 +7,7 @@ from ansible.module_utils.keycloak_utils import isDictEquals
 
 class KeycloakGroupTestCase(unittest.TestCase):
  
-    def test_create_group(self):
+    def test_create_group_with_attibutes_dict(self):
         toCreate = {
             "username":"admin", 
             "password":"admin",
@@ -41,6 +41,100 @@ class KeycloakGroupTestCase(unittest.TestCase):
         self.assertTrue(isDictEquals(results["ansible_facts"]["group"]["clientRoles"], toCreate["clientRoles"]), "clientRoles: " + str(results["ansible_facts"]["group"]["clientRoles"]) + " : " + str(toCreate["clientRoles"]))
         self.assertTrue(isDictEquals(results["ansible_facts"]["group"]["realmRoles"], toCreate["realmRoles"]), "realmRoles: " + str(results["ansible_facts"]["group"]["realmRoles"]) + " : " + str(toCreate["realmRoles"]))
         
+    def test_create_group_with_attributes_list(self):
+        toCreate = {
+            "username":"admin", 
+            "password":"admin",
+            "realm":"master",
+            "url":"http://localhost:18081",
+            "name":"test11",
+            "attributes_list": [
+                {
+                    "name":"attr1",
+                    "value":["value1"]
+                    },
+                {
+                    "name": "attr2",
+                    "value":["value2"]
+                    }
+            ], 
+            "realmRoles": [
+                "uma_authorization"
+            ], 
+            "clientRoles": [{
+                "clientid": "master-realm",
+                "roles": [
+                    "manage-users",
+                    "view-identity-providers"
+                    ]
+                }
+            ], 
+            "state":"present",
+            "force":False
+        }
+        attributes_dict = {
+                "attr1":["value1"],
+                "attr2":["value2"]
+            }
+        
+        results = group(toCreate)
+        print (str(results))
+        self.assertTrue(results['changed'])
+        self.assertEquals(results["ansible_facts"]["group"]["name"], toCreate["name"], "name: " + results["ansible_facts"]["group"]["name"] + " : " + toCreate["name"])
+        self.assertTrue(isDictEquals(results["ansible_facts"]["group"]["attributes"], attributes_dict), "attributes: " + str(results["ansible_facts"]["group"]["attributes"]) + " : " + str(attributes_dict))
+        self.assertTrue(isDictEquals(results["ansible_facts"]["group"]["clientRoles"], toCreate["clientRoles"]), "clientRoles: " + str(results["ansible_facts"]["group"]["clientRoles"]) + " : " + str(toCreate["clientRoles"]))
+        self.assertTrue(isDictEquals(results["ansible_facts"]["group"]["realmRoles"], toCreate["realmRoles"]), "realmRoles: " + str(results["ansible_facts"]["group"]["realmRoles"]) + " : " + str(toCreate["realmRoles"]))
+
+    def test_create_group_with_attributes_dict_and_attributes_list(self):
+        toCreate = {
+            "username":"admin", 
+            "password":"admin",
+            "realm":"master",
+            "url":"http://localhost:18081",
+            "name":"test12",
+            "attributes": {
+                "attr1":["value1"],
+                "attr2":["value2"]
+            }, 
+            "attributes_list": [
+                {
+                    "name":"attr3",
+                    "value":["value3"]
+                    },
+                {
+                    "name": "attr4",
+                    "value":["value4"]
+                    }
+            ], 
+            "realmRoles": [
+                "uma_authorization"
+            ], 
+            "clientRoles": [{
+                "clientid": "master-realm",
+                "roles": [
+                    "manage-users",
+                    "view-identity-providers"
+                    ]
+                }
+            ], 
+            "state":"present",
+            "force":False
+        }
+        attributes_dict = {
+                "attr1":["value1"],
+                "attr2":["value2"],
+                "attr3":["value3"],
+                "attr4":["value4"]
+            }
+        
+        results = group(toCreate)
+        print (str(results))
+        self.assertTrue(results['changed'])
+        self.assertEquals(results["ansible_facts"]["group"]["name"], toCreate["name"], "name: " + results["ansible_facts"]["group"]["name"] + " : " + toCreate["name"])
+        self.assertTrue(isDictEquals(results["ansible_facts"]["group"]["attributes"], attributes_dict), "attributes: " + str(results["ansible_facts"]["group"]["attributes"]) + " : " + str(attributes_dict))
+        self.assertTrue(isDictEquals(results["ansible_facts"]["group"]["clientRoles"], toCreate["clientRoles"]), "clientRoles: " + str(results["ansible_facts"]["group"]["clientRoles"]) + " : " + str(toCreate["clientRoles"]))
+        self.assertTrue(isDictEquals(results["ansible_facts"]["group"]["realmRoles"], toCreate["realmRoles"]), "realmRoles: " + str(results["ansible_facts"]["group"]["realmRoles"]) + " : " + str(toCreate["realmRoles"]))
+
     def test_group_not_changed(self):
         toDoNotChange = {
             "username":"admin", 
