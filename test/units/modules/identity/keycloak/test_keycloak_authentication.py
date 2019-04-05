@@ -117,7 +117,7 @@ class KeycloakGroupTestCase(unittest.TestCase):
             for key in expectedExecutions["authenticationConfig"]["config"]:
                 self.assertEquals(expectedExecutions["authenticationConfig"]["config"][key], execution["authenticationConfig"]["config"][key], execution["authenticationConfig"]["config"][key] + " is not equals to " + expectedExecutions["authenticationConfig"]["config"][key])
 
-    def test_create_authentication_flow_without_two_executions(self):
+    def test_create_authentication_flow_with_two_executions_without_copy(self):
         toCreate = {
             "url":  "http://localhost:18081",
             "username": "admin",
@@ -166,6 +166,56 @@ class KeycloakGroupTestCase(unittest.TestCase):
             for key in expectedExecutions["authenticationConfig"]["config"]:
                 self.assertEquals(expectedExecutions["authenticationConfig"]["config"][key], execution["authenticationConfig"]["config"][key], execution["authenticationConfig"]["config"][key] + " is not equals to " + expectedExecutions["authenticationConfig"]["config"][key])
                 
+    def test_add_execution_to_authentication_flow_without_copy(self):
+        toChange = {
+            "url":  "http://localhost:18081",
+            "username": "admin",
+            "password": "admin",
+            "realm": "master",
+            "alias": "Authentication flow with two executions",
+            "providerId": "basic-flow",
+            "authenticationExecutions": [
+                {
+                    "providerId": "identity-provider-redirector",
+                    "requirement": "ALTERNATIVE",
+                    "authenticationConfig": {
+                        "alias": "name",
+                        "config": {
+                            "defaultProvider": "value"
+                        }
+                    }
+                }
+            ], 
+            "state":"present",
+            "force":False
+        }
+
+        executionToAdd = {
+            "providerId": "auth-conditional-otp-form",
+            "requirement": "ALTERNATIVE",
+            "authenticationConfig": {
+                "alias": "test-conditional-otp",
+                "config": {
+                    "skipOtpRole": "admin",
+                    "forceOtpRole": "broker.read-token",
+                    "defaultOtpOutcome": "skip"
+                }
+            }
+        }
+        authentication(toChange)
+        toChange["authenticationExecutions"].append(executionToAdd)
+        results = authentication(toChange)
+        self.assertEquals(results["ansible_facts"]["flow"]["alias"], toChange["alias"], results["ansible_facts"]["flow"]["alias"] + "is not" + toChange["alias"] )
+        self.assertTrue(results['changed'])
+        for expectedExecutions in toChange["authenticationExecutions"]:
+            executionFound = False
+            for execution in results["ansible_facts"]["flow"]["authenticationExecutions"]:
+                if "providerId" in execution and execution["providerId"] == expectedExecutions["providerId"]:
+                    executionFound = True
+                    break
+            self.assertTrue(executionFound, "Execution " + expectedExecutions["providerId"] + " not found")
+            for key in expectedExecutions["authenticationConfig"]["config"]:
+                self.assertEquals(expectedExecutions["authenticationConfig"]["config"][key], execution["authenticationConfig"]["config"][key], execution["authenticationConfig"]["config"][key] + " is not equals to " + expectedExecutions["authenticationConfig"]["config"][key])
 
     def test_authentication_flow_not_changed(self):
         toDoNotChange = {
