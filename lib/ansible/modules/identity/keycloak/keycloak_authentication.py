@@ -253,34 +253,40 @@ def createOrUpdateExecutions(url, config, headers):
 
                 # Compare the executions to see if it need changes
                 if not isDictEquals(newExecution, existingExecution):
-                    # Delete the existing execution
-                    requests.delete(url + 'executions/' + existingExecution['id'], headers=headers)
-                else:
-                    break
-            # Create the new execution
-            newExec = {}
-            newExec["provider"] = newExecution["providerId"]
-            newExec["requirement"] = newExecution["requirement"]
-            data = json.dumps(newExec)
-            requests.post(url + "flows/" + urllib.quote(config["alias"]) + "/executions/execution", headers=headers, data=data)
-            changed = True
-            # Get existing executions on the Keycloak server for this alias
-            getResponse = requests.get(url + "flows/" + urllib.quote(config["alias"]) + "/executions", headers=headers)
-            existingExecutions = getResponse.json()
-            for newExecution in config["authenticationExecutions"]:
+                    changed = True
+            else:
+                # Create the new execution
+                newExec = {}
+                newExec["provider"] = newExecution["providerId"]
+                newExec["requirement"] = newExecution["requirement"]
+                data = json.dumps(newExec)
+                requests.post(url + "flows/" + urllib.quote(config["alias"]) + "/executions/execution", headers=headers, data=data)
+                changed = True
+            if changed:
+                # Get existing executions on the Keycloak server for this alias
+                getResponse = requests.get(url + "flows/" + urllib.quote(config["alias"]) + "/executions", headers=headers)
+                existingExecutions = getResponse.json()
                 executionFound = False
                 for existingExecution in existingExecutions:
                     if "providerId" in existingExecution and existingExecution["providerId"] == newExecution["providerId"]:
                         executionFound = True
                         break
                 if executionFound:
-                    # create the execution configuration
-                    if "authenticationConfig" in newExecution:
-                        # Add the autenticatorConfig to the execution
-                        data = json.dumps(newExecution["authenticationConfig"])
-                        requests.post(url + "executions/" + existingExecution["id"] + "/config", headers=headers, data=data)
-                        changed = True
+                    # Update the existing execution
+                    updatedExec = {}
+                    updatedExec["id"] = existingExecution["id"]
+                    for key in newExecution:
+                        # create the execution configuration
+                        if key == "authenticationConfig":
+                            # Add the autenticatorConfig to the execution
+                            data = json.dumps(newExecution["authenticationConfig"])
+                            requests.post(url + "executions/" + existingExecution["id"] + "/config", headers=headers, data=data)
+                        else:
+                            updatedExec[key] = newExecution[key]
+                    data = json.dumps(updatedExec)
+                    requests.put(url + "flows/" + urllib.quote(config["alias"]) + "/executions", headers=headers, data=data)
     return changed
+
 def getExecutionsRepresentation(url, config, headers):
     # Get executions created
     getResponse = requests.get(url + "flows/" + urllib.quote(config["alias"]) + "/executions", headers=headers)

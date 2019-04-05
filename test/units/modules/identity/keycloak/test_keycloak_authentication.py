@@ -40,6 +40,7 @@ class KeycloakGroupTestCase(unittest.TestCase):
                     executionFound = True
                     break
             self.assertTrue(executionFound, "Execution " + expectedExecutions["providerId"] + " not found")
+            self.assertEquals(execution["requirement"], expectedExecutions["requirement"], execution["requirement"] + " is not equals to " + expectedExecutions["requirement"])
             for key in expectedExecutions["authenticationConfig"]["config"]:
                 self.assertEquals(expectedExecutions["authenticationConfig"]["config"][key], execution["authenticationConfig"]["config"][key], execution["authenticationConfig"]["config"][key] + " is not equals to " + expectedExecutions["authenticationConfig"]["config"][key])
 
@@ -77,6 +78,7 @@ class KeycloakGroupTestCase(unittest.TestCase):
                     executionFound = True
                     break
             self.assertTrue(executionFound, "Execution " + expectedExecutions["providerId"] + " not found")
+            self.assertEquals(execution["requirement"], expectedExecutions["requirement"], execution["requirement"] + " is not equals to " + expectedExecutions["requirement"])
             for key in expectedExecutions["authenticationConfig"]["config"]:
                 self.assertEquals(expectedExecutions["authenticationConfig"]["config"][key], execution["authenticationConfig"]["config"][key], execution["authenticationConfig"]["config"][key] + " is not equals to " + expectedExecutions["authenticationConfig"]["config"][key])
         
@@ -114,6 +116,7 @@ class KeycloakGroupTestCase(unittest.TestCase):
                     executionFound = True
                     break
             self.assertTrue(executionFound, "Execution " + expectedExecutions["providerId"] + " not found")
+            self.assertEquals(execution["requirement"], expectedExecutions["requirement"], execution["requirement"] + " is not equals to " + expectedExecutions["requirement"])
             for key in expectedExecutions["authenticationConfig"]["config"]:
                 self.assertEquals(expectedExecutions["authenticationConfig"]["config"][key], execution["authenticationConfig"]["config"][key], execution["authenticationConfig"]["config"][key] + " is not equals to " + expectedExecutions["authenticationConfig"]["config"][key])
 
@@ -123,7 +126,7 @@ class KeycloakGroupTestCase(unittest.TestCase):
             "username": "admin",
             "password": "admin",
             "realm": "master",
-            "alias": "Authentication flow with two executions",
+            "alias": "Authentication flow with an execution added",
             "providerId": "basic-flow",
             "authenticationExecutions": [
                 {
@@ -138,7 +141,7 @@ class KeycloakGroupTestCase(unittest.TestCase):
                 },
                 {
                     "providerId": "auth-conditional-otp-form",
-                    "requirement": "ALTERNATIVE",
+                    "requirement": "REQUIRED",
                     "authenticationConfig": {
                         "alias": "test-conditional-otp",
                         "config": {
@@ -163,6 +166,7 @@ class KeycloakGroupTestCase(unittest.TestCase):
                     executionFound = True
                     break
             self.assertTrue(executionFound, "Execution " + expectedExecutions["providerId"] + " not found")
+            self.assertEquals(execution["requirement"], expectedExecutions["requirement"], execution["requirement"] + " is not equals to " + expectedExecutions["requirement"])
             for key in expectedExecutions["authenticationConfig"]["config"]:
                 self.assertEquals(expectedExecutions["authenticationConfig"]["config"][key], execution["authenticationConfig"]["config"][key], execution["authenticationConfig"]["config"][key] + " is not equals to " + expectedExecutions["authenticationConfig"]["config"][key])
                 
@@ -214,6 +218,7 @@ class KeycloakGroupTestCase(unittest.TestCase):
                     executionFound = True
                     break
             self.assertTrue(executionFound, "Execution " + expectedExecutions["providerId"] + " not found")
+            self.assertEquals(execution["requirement"], expectedExecutions["requirement"], execution["requirement"] + " is not equals to " + expectedExecutions["requirement"])
             for key in expectedExecutions["authenticationConfig"]["config"]:
                 self.assertEquals(expectedExecutions["authenticationConfig"]["config"][key], execution["authenticationConfig"]["config"][key], execution["authenticationConfig"]["config"][key] + " is not equals to " + expectedExecutions["authenticationConfig"]["config"][key])
 
@@ -228,7 +233,7 @@ class KeycloakGroupTestCase(unittest.TestCase):
             "authenticationExecutions": [
                 {
                     "providerId": "identity-provider-redirector",
-                    "requirement": "DISABLED",
+                    "requirement": "ALTERNATIVE",
                     "authenticationConfig": {
                         "alias": "name",
                         "config": {
@@ -282,6 +287,7 @@ class KeycloakGroupTestCase(unittest.TestCase):
                     executionFound = True
                     break
             self.assertTrue(executionFound, "Execution " + expectedExecutions["providerId"] + " not found")
+            self.assertEquals(execution["requirement"], expectedExecutions["requirement"], execution["requirement"] + " is not equals to " + expectedExecutions["requirement"])
             for key in expectedExecutions["authenticationConfig"]["config"]:
                 self.assertEquals(expectedExecutions["authenticationConfig"]["config"][key], execution["authenticationConfig"]["config"][key], execution["authenticationConfig"]["config"][key] + " is not equals to " + expectedExecutions["authenticationConfig"]["config"][key])
         
