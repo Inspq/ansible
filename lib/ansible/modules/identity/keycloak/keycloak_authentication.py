@@ -94,13 +94,13 @@ EXAMPLES = '''
           - providerId: "test-execution1"
             requirement: "REQUIRED"
             authenticationConfig: 
-            alias: "test.execution1.property"
+              alias: "test.execution1.property"
               config: 
                 test1.property: "value"
           - providerId: "test-execution2"
             requirement: "REQUIRED"
             authenticationConfig: 
-            alias: "test.execution2.property"
+              alias: "test.execution2.property"
               config: 
                 test2.property: "value"
         state: present
