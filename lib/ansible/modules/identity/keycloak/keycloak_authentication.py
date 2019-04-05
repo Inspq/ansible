@@ -61,14 +61,10 @@ options:
         description:
             - flowAlias of the authentication flow to use for the copy.
         required: false
-    authenticationConfig:
-        description:
-            - Configuration structure for the authenticator. See example.
-        required: true
     authenticationExecutions:
         description:
-            - Configuration structure for the execution
-        required: true
+            - Configuration structure for the executions
+        required: false
     state:
         description:
             - Control if the authentication flow must exists or not
@@ -94,13 +90,19 @@ EXAMPLES = '''
         realm: master
         alias: "Copy of first broker login"
         copyFrom: "first broker login"
-        authenticationConfig: 
-          alias: "test.provisioning.property"
-          config: 
-            test.provisioning.property: "value"
         authenticationExecutions:
-          providerId: "test-provisioning"
-          requirement: "REQUIRED"
+          - providerId: "test-execution1"
+            requirement: "REQUIRED"
+            authenticationConfig: 
+            alias: "test.execution1.property"
+              config: 
+                test1.property: "value"
+          - providerId: "test-execution2"
+            requirement: "REQUIRED"
+            authenticationConfig: 
+            alias: "test.execution2.property"
+              config: 
+                test2.property: "value"
         state: present
 
     - name: Re-create the authentication flow
@@ -111,13 +113,13 @@ EXAMPLES = '''
         realm: master
         alias: "Copy of first broker login"
         copyFrom: "first broker login"
-        authenticationConfig: 
-          alias: "test.provisioning.property"
-          config: 
-            test.provisioning.property: "value"
         authenticationExecutions:
-          providerId: "test-provisioning"
-          requirement: "REQUIRED"
+          - providerId: "test-provisioning"
+            requirement: "REQUIRED"
+            authenticationConfig: 
+              alias: "test.provisioning.property"
+              config: 
+                test.provisioning.property: "value"
         state: present
         force: yes
 
@@ -228,6 +230,69 @@ def addAuthenticationConfig(url, config, headers):
             toReturn["authenticationConfig"] = authenticationConfig
         
     return toReturn
+def createOrUpdateExecutions(url, config, headers):
+    changed = False
+
+    if "authenticationExecutions" in config:
+        for newExecution in config["authenticationExecutions"]:
+            # Get existing executions on the Keycloak server for this alias
+            getResponse = requests.get(url + "flows/" + urllib.quote(config["alias"]) + "/executions", headers=headers)
+            existingExecutions = getResponse.json()
+            executionFound = False
+            for existingExecution in existingExecutions:
+                if "providerId" in existingExecution and existingExecution["providerId"] == newExecution["providerId"]:
+                    executionFound = True
+                    break
+            if executionFound:
+                # Replace config id of the execution config by it's complete representation
+                if "authenticationConfig" in existingExecution:
+                    execConfigId = existingExecution["authenticationConfig"]
+                    getResponse = requests.get(url + "config/" + execConfigId, headers=headers)
+                    execConfig = getResponse.json()
+                    existingExecution["authenticationConfig"] = execConfig
+
+                # Compare the executions to see if it need changes
+                if not isDictEquals(newExecution, existingExecution):
+                    # Delete the existing execution
+                    requests.delete(url + 'executions/' + existingExecution['id'], headers=headers)
+                else:
+                    break
+            # Create the new execution
+            newExec = {}
+            newExec["provider"] = newExecution["providerId"]
+            newExec["requirement"] = newExecution["requirement"]
+            data = json.dumps(newExec)
+            requests.post(url + "flows/" + urllib.quote(config["alias"]) + "/executions/execution", headers=headers, data=data)
+            changed = True
+            # Get existing executions on the Keycloak server for this alias
+            getResponse = requests.get(url + "flows/" + urllib.quote(config["alias"]) + "/executions", headers=headers)
+            existingExecutions = getResponse.json()
+            for newExecution in config["authenticationExecutions"]:
+                executionFound = False
+                for existingExecution in existingExecutions:
+                    if "providerId" in existingExecution and existingExecution["providerId"] == newExecution["providerId"]:
+                        executionFound = True
+                        break
+                if executionFound:
+                    # create the execution configuration
+                    if "authenticationConfig" in newExecution:
+                        # Add the autenticatorConfig to the execution
+                        data = json.dumps(newExecution["authenticationConfig"])
+                        requests.post(url + "executions/" + existingExecution["id"] + "/config", headers=headers, data=data)
+                        changed = True
+    return changed
+def getExecutionsRepresentation(url, config, headers):
+    # Get executions created
+    getResponse = requests.get(url + "flows/" + urllib.quote(config["alias"]) + "/executions", headers=headers)
+    executions = getResponse.json()
+    for execution in executions:
+        if "authenticationConfig" in execution:
+            execConfigId = execution["authenticationConfig"]
+            getResponse = requests.get(url + "config/" + execConfigId, headers=headers)
+            execConfig = getResponse.json()
+            execution["authenticationConfig"] = execConfig
+    return executions
+        
 
 def main():
     module = AnsibleModule(
@@ -239,8 +304,7 @@ def main():
             alias=dict(type='str', required=True),
             providerId=dict(type='str'),
             copyFrom = dict(type='str'),
-            authenticationConfig=dict(type='dict'),
-            authenticationExecutions=dict(type='dict'),
+            authenticationExecutions=dict(type='list'),
             state=dict(choices=["absent", "present"], default='present'),
             force=dict(type='bool', default=False),
         ),
@@ -274,8 +338,6 @@ def authentication(params):
         newAuthenticationRepresentation["copyFrom"] = params["copyFrom"].decode("utf-8")
     if "providerId" in params and params["providerId"] is not None:
         newAuthenticationRepresentation["providerId"] = params["providerId"].decode("utf-8")
-    if "authenticationConfig" in params and params["authenticationConfig"] is not None:
-        newAuthenticationRepresentation["authenticationConfig"] = params["authenticationConfig"]
     if "authenticationExecutions" in params and params["authenticationExecutions"] is not None:
         newAuthenticationRepresentation["authenticationExecutions"] = params["authenticationExecutions"]
    
@@ -324,15 +386,15 @@ def authentication(params):
                 if authenticationRepresentation is None:
                     raise Exception("Authentication just created not found: " + str(newAuthenticationRepresentation))
                 # Configure the executions for the flow
-                flowConfig = addAuthenticationConfig(authenticationSvcBaseUrl, newAuthenticationRepresentation, headers)
+                createOrUpdateExecutions(authenticationSvcBaseUrl, newAuthenticationRepresentation, headers)
                 changed = True
+                # Get executions created
+                executionsRepresentation = getExecutionsRepresentation(authenticationSvcBaseUrl, newAuthenticationRepresentation, headers)
+                if executionsRepresentation is not None:
+                    authenticationRepresentation["authenticationExecutions"] = executionsRepresentation
                 fact = dict(
-                    flow = authenticationRepresentation
+                    flow = authenticationRepresentation,
                     )
-                if "authenticationExecutions" in flowConfig:
-                    fact["authenticationExecutions"] = flowConfig["authenticationExecutions"]
-                if "authenticationConfig" in flowConfig:
-                    fact["authenticationConfig"] = flowConfig["authenticationConfig"]
                 
                 result = dict(
                     ansible_facts = fact,
@@ -372,36 +434,32 @@ def authentication(params):
                     requests.delete(authenticationSvcBaseUrl + "flows/" + authenticationRepresentation["id"], headers=headers)
                     changed = True
                     # Create authentication flow from a copy
-                    authenticationRepresentation = copyAuthFlow(authenticationSvcBaseUrl, newAuthenticationRepresentation, headers)
+                    if "copyFrom" in newAuthenticationRepresentation and newAuthenticationRepresentation["copyFrom"] is not None:
+                        authenticationRepresentation = copyAuthFlow(authenticationSvcBaseUrl, newAuthenticationRepresentation, headers)
+                    else:
+                        authenticationRepresentation = createEmptyAuthFlow(authenticationSvcBaseUrl, newAuthenticationRepresentation, headers)
                     # If the authentication still not exist on the server, raise an exception.
                     if authenticationRepresentation is None:
                         raise Exception("Authentication just created not found: " + str(newAuthenticationRepresentation))
                     # Configure the executions for the flow
-                    flowConfig = addAuthenticationConfig(authenticationSvcBaseUrl, newAuthenticationRepresentation, headers)
+                    createOrUpdateExecutions(authenticationSvcBaseUrl, newAuthenticationRepresentation, headers)
                     changed = True
-                    fact = dict(
-                        flow = authenticationRepresentation
-                        )
-                    if "authenticationExecutions" in flowConfig:
-                        fact["authenticationExecutions"] = flowConfig["authenticationExecutions"]
-                    if "authenticationConfig" in flowConfig:
-                        fact["authenticationConfig"] = flowConfig["authenticationConfig"]
-                else:
-                    # The module does not modify an existing authentication flow. Use force to delete it and recreate it
-                    getResponse = requests.get(authenticationSvcBaseUrl + "flows/" + urllib.quote(newAuthenticationRepresentation["alias"]) + "/executions", headers=headers)
-                    executions = getResponse.json()
-                    execution = None
-                    for execution in executions:
-                        if "providerId" in execution and execution["providerId"] == newAuthenticationRepresentation["authenticationExecutions"]["providerId"]:
-                            break
-                    authenticationConfig = None
-                    if execution is not None:
-                        getResponse = requests.get(authenticationSvcBaseUrl + "config/" + execution["authenticationConfig"], headers=headers)
-                        authenticationConfig = getResponse.json()
+                    # Get executions created
+                    executionsRepresentation = getExecutionsRepresentation(authenticationSvcBaseUrl, newAuthenticationRepresentation, headers)
+                    if executionsRepresentation is not None:
+                        authenticationRepresentation["authenticationExecutions"] = executionsRepresentation
                     fact = dict(
                         flow = authenticationRepresentation,
-                        authenticationExecutions = execution,
-                        authenticationConfig = authenticationConfig
+                        )
+                else:
+                    # Configure the executions for the flow
+                    changed = createOrUpdateExecutions(authenticationSvcBaseUrl, newAuthenticationRepresentation, headers)
+                    # Get executions created
+                    executionsRepresentation = getExecutionsRepresentation(authenticationSvcBaseUrl, newAuthenticationRepresentation, headers)
+                    if executionsRepresentation is not None:
+                        authenticationRepresentation["authenticationExecutions"] = executionsRepresentation
+                    fact = dict(
+                        flow = authenticationRepresentation,
                         )
                              
                 result = dict(

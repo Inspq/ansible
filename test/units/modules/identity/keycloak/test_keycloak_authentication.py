@@ -14,16 +14,18 @@ class KeycloakGroupTestCase(unittest.TestCase):
             "realm": "master",
             "alias": "Copy of first broker login",
             "copyFrom": "first broker login",
-            "authenticationConfig": {
-                "alias": "name",
-                "config": {
-                    "defaultProvider": "value"
-                }
-            },
-            "authenticationExecutions":{
-                "providerId": "identity-provider-redirector",
-                "requirement": "ALTERNATIVE"
-            }, 
+            "authenticationExecutions":[
+                {
+                    "providerId": "identity-provider-redirector",
+                    "requirement": "ALTERNATIVE",
+                    "authenticationConfig": {
+                        "alias": "name",
+                        "config": {
+                            "defaultProvider": "value"
+                        }
+                    }
+                },
+            ], 
             "state":"present",
             "force":False
         }
@@ -31,28 +33,15 @@ class KeycloakGroupTestCase(unittest.TestCase):
         results = authentication(toCreate)
         self.assertEquals(results["ansible_facts"]["flow"]["alias"], toCreate["alias"], results["ansible_facts"]["flow"]["alias"] + "is not" + toCreate["alias"] )
         self.assertTrue(results['changed'])
-
-    def test_create_authentication_flow_without_executions(self):
-        toCreate = {
-            "url":  "http://localhost:18081",
-            "username": "admin",
-            "password": "admin",
-            "realm": "master",
-            "alias": "Second copy of first broker login",
-            "copyFrom": "first broker login",
-            "authenticationConfig": {
-                "alias": "review profile config",
-                "config": {
-                    "update.profile.on.first.login": "on"
-                }
-            }, 
-            "state":"present",
-            "force":False
-        }
-
-        results = authentication(toCreate)
-        self.assertEquals(results["ansible_facts"]["flow"]["alias"], toCreate["alias"], results["ansible_facts"]["flow"]["alias"] + "is not" + toCreate["alias"] )
-        self.assertTrue(results['changed'])
+        for expectedExecutions in toCreate["authenticationExecutions"]:
+            executionFound = False
+            for execution in results["ansible_facts"]["flow"]["authenticationExecutions"]:
+                if "providerId" in execution and execution["providerId"] == expectedExecutions["providerId"]:
+                    executionFound = True
+                    break
+            self.assertTrue(executionFound, "Execution " + expectedExecutions["providerId"] + " not found")
+            for key in expectedExecutions["authenticationConfig"]["config"]:
+                self.assertEquals(expectedExecutions["authenticationConfig"]["config"][key], execution["authenticationConfig"]["config"][key], execution["authenticationConfig"]["config"][key] + " is not equals to " + expectedExecutions["authenticationConfig"]["config"][key])
 
     def test_create_authentication_flow_with_update_profile_on_first_login_on(self):
         toCreate = {
@@ -62,16 +51,18 @@ class KeycloakGroupTestCase(unittest.TestCase):
             "realm": "master",
             "alias": "First broker login with update profile on first login",
             "copyFrom": "first broker login",
-            "authenticationConfig": {
-                "alias": "New review profile config",
-                "config": {
-                    "update.profile.on.first.login": "on"
-                }
-            }, 
-            "authenticationExecutions":{
-                "providerId": "idp-review-profile",
-                "requirement": "REQUIRED"
-            }, 
+            "authenticationExecutions": [
+                {
+                    "providerId": "idp-review-profile",
+                    "requirement": "REQUIRED",
+                    "authenticationConfig": {
+                        "alias": "New review profile config",
+                        "config": {
+                            "update.profile.on.first.login": "on"
+                        }
+                    } 
+                },
+            ], 
             "state":"present",
             "force":False
         }
@@ -79,6 +70,15 @@ class KeycloakGroupTestCase(unittest.TestCase):
         results = authentication(toCreate)
         self.assertEquals(results["ansible_facts"]["flow"]["alias"], toCreate["alias"], results["ansible_facts"]["flow"]["alias"] + "is not" + toCreate["alias"] )
         self.assertTrue(results['changed'])
+        for expectedExecutions in toCreate["authenticationExecutions"]:
+            executionFound = False
+            for execution in results["ansible_facts"]["flow"]["authenticationExecutions"]:
+                if "providerId" in execution and execution["providerId"] == expectedExecutions["providerId"]:
+                    executionFound = True
+                    break
+            self.assertTrue(executionFound, "Execution " + expectedExecutions["providerId"] + " not found")
+            for key in expectedExecutions["authenticationConfig"]["config"]:
+                self.assertEquals(expectedExecutions["authenticationConfig"]["config"][key], execution["authenticationConfig"]["config"][key], execution["authenticationConfig"]["config"][key] + " is not equals to " + expectedExecutions["authenticationConfig"]["config"][key])
         
     def test_create_authentication_flow_without_copy(self):
         toCreate = {
@@ -88,16 +88,18 @@ class KeycloakGroupTestCase(unittest.TestCase):
             "realm": "master",
             "alias": "No Copy broker login",
             "providerId": "basic-flow",
-            "authenticationConfig": {
-                "alias": "name",
-                "config": {
-                    "defaultProvider": "value"
+            "authenticationExecutions": [
+                {
+                    "providerId": "identity-provider-redirector",
+                    "requirement": "ALTERNATIVE",
+                    "authenticationConfig": {
+                        "alias": "name",
+                        "config": {
+                            "defaultProvider": "value"
+                        }
+                    }
                 }
-            },
-            "authenticationExecutions":{
-                "providerId": "identity-provider-redirector",
-                "requirement": "ALTERNATIVE"
-            }, 
+            ], 
             "state":"present",
             "force":False
         }
@@ -105,6 +107,65 @@ class KeycloakGroupTestCase(unittest.TestCase):
         results = authentication(toCreate)
         self.assertEquals(results["ansible_facts"]["flow"]["alias"], toCreate["alias"], results["ansible_facts"]["flow"]["alias"] + "is not" + toCreate["alias"] )
         self.assertTrue(results['changed'])
+        for expectedExecutions in toCreate["authenticationExecutions"]:
+            executionFound = False
+            for execution in results["ansible_facts"]["flow"]["authenticationExecutions"]:
+                if "providerId" in execution and execution["providerId"] == expectedExecutions["providerId"]:
+                    executionFound = True
+                    break
+            self.assertTrue(executionFound, "Execution " + expectedExecutions["providerId"] + " not found")
+            for key in expectedExecutions["authenticationConfig"]["config"]:
+                self.assertEquals(expectedExecutions["authenticationConfig"]["config"][key], execution["authenticationConfig"]["config"][key], execution["authenticationConfig"]["config"][key] + " is not equals to " + expectedExecutions["authenticationConfig"]["config"][key])
+
+    def test_create_authentication_flow_without_two_executions(self):
+        toCreate = {
+            "url":  "http://localhost:18081",
+            "username": "admin",
+            "password": "admin",
+            "realm": "master",
+            "alias": "Authentication flow with two executions",
+            "providerId": "basic-flow",
+            "authenticationExecutions": [
+                {
+                    "providerId": "identity-provider-redirector",
+                    "requirement": "ALTERNATIVE",
+                    "authenticationConfig": {
+                        "alias": "name",
+                        "config": {
+                            "defaultProvider": "value"
+                        }
+                    }
+                },
+                {
+                    "providerId": "auth-conditional-otp-form",
+                    "requirement": "ALTERNATIVE",
+                    "authenticationConfig": {
+                        "alias": "test-conditional-otp",
+                        "config": {
+                            "skipOtpRole": "admin",
+                            "forceOtpRole": "broker.read-token",
+                            "defaultOtpOutcome": "skip"
+                        }
+                    }
+                }
+            ], 
+            "state":"present",
+            "force":False
+        }
+
+        results = authentication(toCreate)
+        self.assertEquals(results["ansible_facts"]["flow"]["alias"], toCreate["alias"], results["ansible_facts"]["flow"]["alias"] + "is not" + toCreate["alias"] )
+        self.assertTrue(results['changed'])
+        for expectedExecutions in toCreate["authenticationExecutions"]:
+            executionFound = False
+            for execution in results["ansible_facts"]["flow"]["authenticationExecutions"]:
+                if "providerId" in execution and execution["providerId"] == expectedExecutions["providerId"]:
+                    executionFound = True
+                    break
+            self.assertTrue(executionFound, "Execution " + expectedExecutions["providerId"] + " not found")
+            for key in expectedExecutions["authenticationConfig"]["config"]:
+                self.assertEquals(expectedExecutions["authenticationConfig"]["config"][key], execution["authenticationConfig"]["config"][key], execution["authenticationConfig"]["config"][key] + " is not equals to " + expectedExecutions["authenticationConfig"]["config"][key])
+                
 
     def test_authentication_flow_not_changed(self):
         toDoNotChange = {
@@ -114,16 +175,18 @@ class KeycloakGroupTestCase(unittest.TestCase):
             "realm": "master",
             "alias": "Copy of first broker login 2",
             "copyFrom": "first broker login",
-            "authenticationConfig": {
-                "alias": "name",
-                "config": {
-                    "defaultProvider": "value"
+            "authenticationExecutions": [
+                {
+                    "providerId": "identity-provider-redirector",
+                    "requirement": "DISABLED",
+                    "authenticationConfig": {
+                        "alias": "name",
+                        "config": {
+                            "defaultProvider": "value"
+                        }
+                    }
                 }
-            },
-            "authenticationExecutions":{
-                "providerId": "identity-provider-redirector",
-                "requirement": "ALTERNATIVE"
-            }, 
+            ], 
             "state":"present",
             "force":False
         }
@@ -142,25 +205,35 @@ class KeycloakGroupTestCase(unittest.TestCase):
             "realm": "master",
             "alias": "Copy of first broker login 3",
             "copyFrom": "first broker login",
-            "authenticationConfig": {
-                "alias": "name",
-                "config": {
-                    "defaultProvider": "value"
+            "authenticationExecutions": [
+                {
+                    "providerId": "identity-provider-redirector",
+                    "requirement": "ALTERNATIVE",
+                    "authenticationConfig": {
+                        "alias": "name",
+                        "config": {
+                            "defaultProvider": "value"
+                        }
+                    }
                 }
-            },
-            "authenticationExecutions":{
-                "providerId": "identity-provider-redirector",
-                "requirement": "ALTERNATIVE"
-            }, 
+            ],
             "state":"present",
             "force":True
         }
         authentication(toChange)
-        toChange["authenticationConfig"]["config"]["defaultProvider"] = "modified value"
+        toChange["authenticationExecutions"][0]["authenticationConfig"]["config"]["defaultProvider"] = "modified value"
         results = authentication(toChange)
         self.assertTrue(results['changed'])
         self.assertEquals(results["ansible_facts"]["flow"]["alias"], toChange["alias"], results["ansible_facts"]["flow"]["alias"] + "is not" + toChange["alias"] )
-        self.assertEquals(results["ansible_facts"]["authenticationConfig"]["config"]["defaultProvider"], toChange["authenticationConfig"]["config"]["defaultProvider"], "config: " + str(results["ansible_facts"]["authenticationConfig"]["config"]) + " : " + str(toChange["authenticationConfig"]["config"]))
+        for expectedExecutions in toChange["authenticationExecutions"]:
+            executionFound = False
+            for execution in results["ansible_facts"]["flow"]["authenticationExecutions"]:
+                if "providerId" in execution and execution["providerId"] == expectedExecutions["providerId"]:
+                    executionFound = True
+                    break
+            self.assertTrue(executionFound, "Execution " + expectedExecutions["providerId"] + " not found")
+            for key in expectedExecutions["authenticationConfig"]["config"]:
+                self.assertEquals(expectedExecutions["authenticationConfig"]["config"][key], execution["authenticationConfig"]["config"][key], execution["authenticationConfig"]["config"][key] + " is not equals to " + expectedExecutions["authenticationConfig"]["config"][key])
         
     def test_delete_authentication_flow(self):
         toDelete = {
@@ -170,16 +243,18 @@ class KeycloakGroupTestCase(unittest.TestCase):
             "realm": "master",
             "alias": "Copy of first broker login 4",
             "copyFrom": "first broker login",
-            "authenticationConfig": {
-                "alias": "name",
-                "config": {
-                    "defaultProvider": "value"
+            "authenticationExecutions": [
+                {
+                    "providerId": "identity-provider-redirector",
+                    "requirement": "ALTERNATIVE",
+                    "authenticationConfig": {
+                        "alias": "name",
+                        "config": {
+                            "defaultProvider": "value"
+                        }
+                    }
                 }
-            },
-            "authenticationExecutions":{
-                "providerId": "identity-provider-redirector",
-                "requirement": "ALTERNATIVE"
-            }, 
+            ], 
             "state":"present",
             "force":False
         }
