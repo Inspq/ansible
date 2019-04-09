@@ -90,7 +90,7 @@ pipeline {
       stage ('Tests unitaires des modules ansible de sx5-sp-config') {
             steps {
                 sh "source hacking/env-setup; ansible-playbook -i keycloak.hosts -e docker_image=nexus3.inspq.qc.ca:5000/inspq/keycloak -e docker_image_version=latest deploy-keycloak.yml"
-                sh "source hacking/env-setup; ansible-playbook -i sx5-sp-config.hosts -e sx5spconfig_image_version=0.0.1-SNAPSHOT deploy-sx5-sp-config.yml"
+                sh "source hacking/env-setup; ansible-playbook -i sx5-sp-config.hosts -e sx5spconfig_image_version=latest deploy-sx5-sp-config.yml"
                 script {
                     try {
 		                sh "source hacking/env-setup; nosetests --with-xunit --xunit-file=nosetests-sx5-sp-config.xml test/units/module_utils/test_sx5_sp_config_system_utils.py test/units/modules/identity/sx5/test_sx5_sp_config_system.py"
