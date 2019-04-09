@@ -1,11 +1,62 @@
 import collections
 import os
 import unittest
-
+import socket
 from ansible.modules.identity.keycloak.keycloak_group import *
+from ansible.modules.identity.keycloak.keycloak_component import *
 from ansible.module_utils.keycloak_utils import isDictEquals
 
 class KeycloakGroupTestCase(unittest.TestCase):
+    userStorageComponent = {
+        "url": "http://localhost:18081",
+        "username": "admin",
+        "password": "admin",
+        "realm": "master",
+        "state": "present",
+        "name": "forGroupUnitTests",
+        "parentId": "master",
+        "providerId": "ldap",
+        "providerType": "org.keycloak.storage.UserStorageProvider",
+        "config": {
+            "vendor": ["rhds"],
+            "usernameLDAPAttribute": ["uid"],
+            "rdnLDAPAttribute": ["uid"],
+            "uuidLDAPAttribute": ["nsuniqueid"],
+            "userObjectClasses": [
+                "inetOrgPerson",
+                "organizationalPerson"
+                ],
+            "connectionUrl": ["ldap://localhost:10389"],
+            "usersDn": ["ou=People,dc=example,dc=com"],
+            "authType": ["simple"],
+            "bindDn": ["cn=Directory Manager"],
+            "bindCredential": ["Admin123"]
+        },
+        "subComponents": {
+            "org.keycloak.storage.ldap.mappers.LDAPStorageMapper": [{
+                "name": "groupMapper",
+                "providerId": "group-ldap-mapper",
+                "config": {
+                    "mode": ["LDAP_ONLY"],
+                    "membership.attribute.type": ["DN"],
+                    "user.roles.retrieve.strategy": ["LOAD_GROUPS_BY_MEMBER_ATTRIBUTE"],
+                    "group.name.ldap.attribute": ["cn"],
+                    "membership.ldap.attribute": ["member"],
+                    "preserve.group.inheritance": ["true"],
+                    "membership.user.ldap.attribute": ["cn"],
+                    "group.object.classes": ["groupOfNames"],
+                    "groups.dn": ["ou=Groups,dc=example,dc=com"],
+                    "drop.non.existing.groups.during.sync": ["false"]
+                }
+            }],
+        },
+        "force": False
+    }
+
+    def setUp(self):
+        localhostname = socket.getfqdn()
+        self.userStorageComponent["config"]["connectionUrl"] = ["ldap://" + localhostname + ":10389"]
+        component(self.userStorageComponent)
  
     def test_create_group_with_attibutes_dict(self):
         toCreate = {
@@ -28,7 +79,7 @@ class KeycloakGroupTestCase(unittest.TestCase):
                     "view-identity-providers"
                     ]
                 }
-            ], 
+            ],
             "state":"present",
             "force":False
         }
@@ -134,6 +185,21 @@ class KeycloakGroupTestCase(unittest.TestCase):
         self.assertTrue(isDictEquals(results["ansible_facts"]["group"]["attributes"], attributes_dict), "attributes: " + str(results["ansible_facts"]["group"]["attributes"]) + " : " + str(attributes_dict))
         self.assertTrue(isDictEquals(results["ansible_facts"]["group"]["clientRoles"], toCreate["clientRoles"]), "clientRoles: " + str(results["ansible_facts"]["group"]["clientRoles"]) + " : " + str(toCreate["clientRoles"]))
         self.assertTrue(isDictEquals(results["ansible_facts"]["group"]["realmRoles"], toCreate["realmRoles"]), "realmRoles: " + str(results["ansible_facts"]["group"]["realmRoles"]) + " : " + str(toCreate["realmRoles"]))
+
+    def test_create_group_with_user_storage_sync(self):
+        toCreate = {
+            "username":"admin", 
+            "password":"admin",
+            "realm":"master",
+            "url":"http://localhost:18081",
+            "name":"test10",
+            "syncLdapMappers": True, 
+            "state":"present",
+            "force":False
+        }
+        results = group(toCreate)
+        print (str(results))
+        self.assertTrue(results['changed'])
 
     def test_group_not_changed(self):
         toDoNotChange = {

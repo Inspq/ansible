@@ -45,6 +45,7 @@ pipeline {
         }
         stage ('Tests unitaires des modules ansible de Keycloak sur la dernière version de Keycloak') {
             steps {
+                sh "docker run -d --rm --name testldap -p 10389:389 minkwe/389ds"
                 sh "source hacking/env-setup; ansible-playbook -i keycloak.hosts -e docker_image=nexus3.inspq.qc.ca:5000/inspq/keycloak -e docker_image_version=latest deploy-keycloak.yml"
                 script {
                     try {
@@ -55,6 +56,7 @@ pipeline {
                     }
                 }
                 sh "source hacking/env-setup; ansible-playbook -i keycloak.hosts cleanup-keycloak.yml"
+                sh "docker stop testldap"
             }
             post {
                 success {
@@ -67,6 +69,7 @@ pipeline {
         }
         stage ('Tests unitaires des modules ansible de Keycloak sur la dernière version de RHSSO') {
             steps {
+                sh "docker run -d --rm --name testldap -p 10389:389 minkwe/389ds"
                 sh "source hacking/env-setup; ansible-playbook -i keycloak.hosts -e docker_image=nexus3.inspq.qc.ca:5000/inspq/rhsso -e docker_image_version=latest deploy-keycloak.yml"
                 script {
                     try {
@@ -77,6 +80,7 @@ pipeline {
                     }
                 }
                 sh "source hacking/env-setup; ansible-playbook -i keycloak.hosts cleanup-keycloak.yml"
+                sh "docker stop testldap"
             }
             post {
                 success {

@@ -75,6 +75,14 @@ options:
         description:
             - Array of client roles to assign to group.
         required: false
+    syncLdapMappers:
+        description:
+            - Sync groups between Keycloak and LDAP Users Storages
+            - A fedToKeycloak will be made before adding, modifying or deleting the keycloak groupe.
+            - And a keycloakToFed will be made at the end.
+            - If true, the sync will be made.
+        required: false
+        default: false
     state:
         description:
             - Control if the group must exists or not
@@ -116,6 +124,7 @@ EXAMPLES = '''
             roles:
               - manage-clients
               - manage-users
+        syncLdapMappers: true
         state: present
 
     - name: Re-create group group1
@@ -180,6 +189,7 @@ def main():
             attributes_list=dict(type='list'),
             realmRoles=dict(type='list'),
             clientRoles=dict(type='list'),
+            syncLdapMappers=dict(type='bool', default=False),
             state=dict(choices=["absent", "present"], default='present'),
             force=dict(type='bool', default=False),
         ),
@@ -204,7 +214,7 @@ def group(params):
     state = params['state'] if "state" in params else "present"
     force = params['force'] if "force" in params else False
     groupRepresentation = None
-    
+    syncLdapMappers = False
     # Créer un représentation du group recu en paramètres
     newGroupRepresentation = {}
     newGroupRepresentation["name"] = params['name'].decode("utf-8")
@@ -219,13 +229,17 @@ def group(params):
         newGroupRepresentation["realmRoles"] = params['realmRoles']
     if 'clientRoles' in params and params['clientRoles'] is not None:
         newGroupRepresentation["clientRoles"] = ansible2keycloakClientRoles(params['clientRoles'])
-    
+    if 'syncLdapMappers' in params:
+        syncLdapMappers = params['syncLdapMappers']
+        
     #f = open('/tmp/ansible_debug.log', 'a')
     #f.write(str(newGroupRepresentation))
     
     groupSvcBaseUrl = url + "/auth/admin/realms/" + realm + "/groups/"
     roleSvcBaseUrl = url + "/auth/admin/realms/" + realm + "/roles/"
     clientSvcBaseUrl = url + "/auth/admin/realms/" + realm + "/clients/"
+    userStorageBaseUrl = url + "/auth/admin/realms/" + realm + "/user-storage/"
+    componentSvcBaseUrl = url + "/auth/admin/realms/" + realm + "/components/"
     
     result = dict()
     changed = False
@@ -273,6 +287,9 @@ def group(params):
         
         if (state == 'present'): # Si le status est présent
             try:
+                if syncLdapMappers:
+                    # Sync User Storages groups to Keycloak
+                    syncLDAPGroups(componentSvcBaseUrl, userStorageBaseUrl, "fedToKeycloak", headers)
                 # Keep realm roles in a variable and remove them from representation
                 groupRealmRoles = []
                 if "realmRoles" in newGroupRepresentation:
@@ -317,6 +334,9 @@ def group(params):
                     rc = 0,
                     changed = changed
                     )
+                if changed and syncLdapMappers:
+                    # Sync Keycloak groups to User Storages
+                    syncLDAPGroups(componentSvcBaseUrl, userStorageBaseUrl, "keycloakToFed", headers)
             except requests.exceptions.RequestException, e:
                 fact = dict(
                     group = newGroupRepresentation)
@@ -344,6 +364,9 @@ def group(params):
                 
     else:  # Le group existe déjà
         try:
+            if syncLdapMappers:
+                # Sync User Storages groups to Keycloak
+                syncLDAPGroups(componentSvcBaseUrl, userStorageBaseUrl, "fedToKeycloak", headers)
             # Obtenir les détails du group a modifier
             getResponse = requests.get(groupSvcBaseUrl + groupRepresentation["id"], headers=headers)
             groupRepresentation = getResponse.json()
@@ -445,6 +468,9 @@ def group(params):
                     )
                     
             elif state == 'absent': # Le status est absent
+                if syncLdapMappers:
+                    # Sync User Storages groups to Keycloak
+                    syncLDAPGroups(componentSvcBaseUrl, userStorageBaseUrl, "fedToKeycloak", headers)
                 # Supprimer le group
                 requests.delete(groupSvcBaseUrl + groupRepresentation['id'], headers=headers)
                 changed = True
@@ -453,6 +479,10 @@ def group(params):
                     rc       = 0,
                     changed  = changed
                 )
+            if changed and syncLdapMappers:
+                # Sync Keycloak groups to User Storages
+                syncLDAPGroups(componentSvcBaseUrl, userStorageBaseUrl, "keycloakToFed", headers)
+        
         except requests.exceptions.RequestException, e:
             result = dict(
                 stderr   = 'put or delete group: ' + newGroupRepresentation['name'] + ' error: ' + str(e),
@@ -528,7 +558,22 @@ def addAttributesListToAttributesDict(AttributesList, AttributesDict):
         for attr in AttributesList:
             if "name" in attr and attr["name"] is not None and "value" in attr:
                 AttributesDict[attr["name"]] = attr["value"]
-            
+
+def syncLDAPGroups(componentSvcBaseUrl, userStorageBaseUrl, syncLdapMappers, headers):
+    LDAPUserStorageProviderType = "org.keycloak.storage.UserStorageProvider" 
+    # Get all components of type org.keycloak.storage.UserStorageProvider
+    getResponse = requests.get(componentSvcBaseUrl, headers=headers, params={"type": LDAPUserStorageProviderType})
+    components = getResponse.json()
+    for component in components:
+        # Get all sub components of type group-ldap-mapper
+        getResponse = requests.get(componentSvcBaseUrl, headers=headers, params={"parent": component["id"], "providerId": "group-ldap-mapper"})
+        subComponents = getResponse.json()
+        # For each group mappers
+        for subComponent in subComponents:
+            if subComponent["providerId"] == 'group-ldap-mapper':
+                # Sync groups
+                requests.post(userStorageBaseUrl + subComponent["parentId"] + "/mappers/" + subComponent["id"] + "/sync", headers=headers, params={"direction": syncLdapMappers})
+      
 # import module snippets
 from ansible.module_utils.basic import *
 
