@@ -4,7 +4,7 @@ import unittest
 
 from ansible.modules.identity.keycloak.keycloak_authentication import *
 
-class KeycloakGroupTestCase(unittest.TestCase):
+class KeycloakAuthenticationTestCase(unittest.TestCase):
  
     def test_create_authentication_flow(self):
         toCreate = {
