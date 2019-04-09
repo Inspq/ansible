@@ -57,7 +57,12 @@ class KeycloakGroupTestCase(unittest.TestCase):
         localhostname = socket.getfqdn()
         self.userStorageComponent["config"]["connectionUrl"] = ["ldap://" + localhostname + ":10389"]
         component(self.userStorageComponent)
- 
+        
+    def tearDown(self):
+        self.userStorageComponent["state"] = "absent"
+        component(self.userStorageComponent)
+        unittest.TestCase.tearDown(self)
+        
     def test_create_group_with_attibutes_dict(self):
         toCreate = {
             "username":"admin", 
