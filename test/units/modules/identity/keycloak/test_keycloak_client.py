@@ -306,7 +306,7 @@ class KeycloakClientTestCase(unittest.TestCase):
                                             "claim.name": "test12",
                                             "jsonType.label": "String"}}]
         results = client(toChange)
-        print str(results)
+        
         self.assertTrue(results['changed'])
         self.assertEqual(results['ansible_facts']['client']['name'], toChange["name"], "name: " + results['ansible_facts']['client']['name'])
         self.assertEqual(results['ansible_facts']['client']['description'], toChange["description"], 'description: ' + results['ansible_facts']['client']['description'])
@@ -425,7 +425,7 @@ class KeycloakClientTestCase(unittest.TestCase):
         ]
         toChange["roles"] = newClientRoles
         results = client(toChange)
-        print str(results)
+        
         self.assertTrue(results['changed'])
         OrderdRoles = sorted(results['ansible_facts']['client']['clientRoles'], key=lambda k: k['name'])
         self.assertEqual(OrderdRoles[0]['name'], newClientRoles[0]['name'], "roles : " + OrderdRoles[0]['name'])
@@ -439,7 +439,103 @@ class KeycloakClientTestCase(unittest.TestCase):
                     compositeFound = True
                     break
             self.assertTrue(compositeFound, 'Composite ' + composite['name'] + ' not found')
-                        
+    
+    def test_remove_mapper_from_client(self):
+        toChange = {
+            "url": "http://localhost:18081",
+            "username": "admin",
+            "password": "admin",
+            "realm": "master",
+            "state": "present",
+            "clientId": "testremovemapper",
+            "rootUrl": "http://test.com:8080",
+            "name": "Test remove mapper",
+            "description": "Client from which we remove a mapper",
+            "publicClient": False,
+            "protocolMappers": [
+                {
+                    "name": "thismapperstays",
+                    "protocol": "openid-connect",
+                    "protocolMapper": "oidc-usermodel-attribute-mapper",
+                    "consentRequired": False,
+                    "config": { 
+                        "multivalued": 'false',
+                        "userinfo.token.claim": False,
+                        "user.attribute": "test1",
+                        "id.token.claim": 'true',
+                        "access.token.claim": 'true',
+                        "claim.name": "test1",
+                        "jsonType.label": "String"},
+                    "state": "present"
+                },
+                {
+                    "name": "thismappermustbedeleted",
+                    "protocol": "openid-connect",
+                    "protocolMapper": "oidc-usermodel-attribute-mapper",
+                    "consentRequired": False,
+                    "config": { 
+                        "multivalued": 'false',
+                        "userinfo.token.claim": 'true',
+                        "user.attribute": "test2",
+                        "id.token.claim": 'true',
+                        "access.token.claim": 'true',
+                        "claim.name": "test2",
+                        "jsonType.label": "String"},
+                    "state": "present"
+                    }
+                ],
+            "force": False
+            }
+        client(toChange)
+        toChange["protocolMappers"][1]["state"] = "absent"
+        results = client(toChange)
+        self.assertTrue(results['changed'])
+        mapperFound = False
+        for mapper in results['ansible_facts']['client']['protocolMappers']:
+            if mapper["name"] == toChange["protocolMappers"][1]["name"]:
+                mapperFound = True
+                break
+        self.assertFalse(mapperFound, "Mapper " + toChange["protocolMappers"][1]["name"] + " has not been deleted")
+         
+    def test_remove_role_from_client(self):
+        toChange = {
+            "url": "http://localhost:18081",
+            "username": "admin",
+            "password": "admin",
+            "realm": "master",
+            "state": "present",
+            "clientId": "testremoverole",
+            "rootUrl": "http://test.com:8080",
+            "name": "Test remove role",
+            "description": "Client from which we remove a role",
+            "publicClient": False,
+            "roles": [
+                {
+                    "name":"thisrolestays",
+                    "description": "This role must stay after the test",
+                    "composite": False,
+                    "state": "present"
+                    },
+                {
+                    "name":"thisrolemustbedeleted",
+                    "description": "This role mus be deleted by the module",
+                    "composite": False,
+                    "state": "present"
+                }
+            ],
+            "force": False
+        }
+        client(toChange)
+        toChange["roles"][1]["state"] = "absent"
+        results = client(toChange)
+        self.assertTrue(results['changed'])
+        roleFound = False
+        for role in results['ansible_facts']['client']['clientRoles']:
+            if role["name"] == toChange["roles"][1]["name"]:
+                roleFound = True
+                break
+        self.assertFalse(roleFound, "Role " + toChange["roles"][1]["name"] + " has not been deleted")
+
     def test_delete_client(self):
         toDelete = {}
         toDelete["url"] = "http://localhost:18081"
