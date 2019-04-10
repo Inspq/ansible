@@ -142,12 +142,14 @@ EXAMPLES = '''
             config:
               claim: claim1
               user.attribute: attr1
+            state: present
           - name: MyRoleMapper
             identityProviderMapper: oidc-role-idp-mapper
             config:
               claim: claimName
               claim.value: valueThatGiveRole
               role: roleName
+            state: absent
         state: present
 
     - name: Re-create the Idp1 without mappers. The existing Idp will be deleted.
@@ -214,10 +216,6 @@ paramètres:
     type: str
     description: URL de la configuration OpenID connect à intérroger
     '''
-#    url = None
-#    if 'openIdConfigurationUrl' in idPConfiguration.keys():
-#        url = idPConfiguration["openIdConfigurationUrl"]
-#        del idPConfiguration["openIdConfigurationUrl"]
     if url is not None:
         try:
             openidConfigRequest = requests.get(url, verify=False)
@@ -254,7 +252,6 @@ def deleteAllMappers(url, bearerHeader):
 
 def createOrUpdateMappers(url, headers, alias, idPMappers):
     changed = False
-    create = False
    
     try:
         # Obtenir la liste des mappers existant
@@ -263,10 +260,12 @@ def createOrUpdateMappers(url, headers, alias, idPMappers):
             mappers = getMappersRequest.json()
         except ValueError: # Il n'y a pas de mapper de défini pour cet IdP
             mappers = []
-            create = True
         for idPMapper in idPMappers:
+            desiredState = "present"
+            if "state" in idPMapper:
+                desiredState = idPMapper["state"]
+                del(idPMapper["state"])
             mapperFound = False
-            mapperId = ""
             for mapper in mappers:
                 if mapper['name'] == idPMapper['name']:
                     mapperFound = True
@@ -277,10 +276,14 @@ def createOrUpdateMappers(url, headers, alias, idPMappers):
                 for key in idPMapper.keys():
                     mapper[key] = idPMapper[key]
                     data=json.dumps(mapper)
-                    response = requests.put(url + '/mappers/' + mapper["id"], headers=headers, data=data)
+                    requests.put(url + '/mappers/' + mapper["id"], headers=headers, data=data)
+                changed = True
+            elif mapperFound and desiredState == "absent":
+                # delete the mapper
+                requests.delete(url + '/mappers/' + mapper["id"], headers=headers)
                 changed = True
             # If the mapper does not already exist
-            if not mapperFound:
+            elif not mapperFound and desiredState != "absent":
                 # Complete the mapper settings with defaults
                 if 'identityProviderMapper' not in idPMapper.keys(): # si le type de mapper a été fourni
                     idPMapper['identityProviderMapper'] = 'oidc-user-attribute-idp-mapper'                
@@ -288,7 +291,7 @@ def createOrUpdateMappers(url, headers, alias, idPMappers):
  
                 # Create it
                 data=json.dumps(idPMapper)
-                response = requests.post(url + '/mappers', headers=headers, data=data)
+                requests.post(url + '/mappers', headers=headers, data=data)
                 changed = True
                 
     except Exception ,e :
@@ -340,7 +343,6 @@ def idp(params, module = None):
     realm = params['realm']
     state = params['state']
     force = module.boolean(module.params['force']) if module is not None else params['force']
-    rc = 0
     result = dict()
     changed = False
     idPExists = False
@@ -471,7 +473,7 @@ def idp(params, module = None):
                 # Stocker le IdP dans un body prêt a être posté
                 data=json.dumps(newIdPRepresentation)
                 # Créer le IdP
-                postResponse = requests.post(idPSvcBaseUrl, headers=headers, data=data)
+                requests.post(idPSvcBaseUrl, headers=headers, data=data)
                 # S'il y a des mappers de définis pour l'IdP
                 if newIdPMappers is not None and len(newIdPMappers) > 0:
                     createOrUpdateMappers(idPSvcUrl, headers, newIdPRepresentation["alias"], newIdPMappers)
@@ -527,14 +529,14 @@ def idp(params, module = None):
                 
                 if force: # Si l'option force est sélectionné
                     # Supprimer les mappings existants
-                    deleteAllMappers(idPSvcUrl, bearerHeader)
+                    deleteAllMappers(idPSvcUrl, headers)
                     # Supprimer le IdP existant
-                    deleteResponse = requests.delete(idPSvcUrl, headers=headers)
+                    requests.delete(idPSvcUrl, headers=headers)
                     changed = True
                     # Stocker le IdP dans un body prêt a être posté
                     data=json.dumps(newIdPRepresentation)
                     # Créer le nouveau IdP
-                    postResponse = requests.post(idPSvcBaseUrl, headers=headers, data=data)
+                    requests.post(idPSvcBaseUrl, headers=headers, data=data)
                 else: # Si l'option force n'est pas sélectionné
                     # Comparer les realms
                     if not isDictEquals(newIdPRepresentation, idPRepresentation, ["clientSecret", "openIdConfigurationUrl", "mappers"]) or ("config" in newIdPRepresentation and "clientSecret" in newIdPRepresentation["config"] and newIdPRepresentation["config"]["clientSecret"] is not None): # Si le nouveau IdP n'introduit pas de modification au IdP existant
