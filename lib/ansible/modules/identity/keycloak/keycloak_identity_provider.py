@@ -239,10 +239,10 @@ def deleteAllMappers(url, bearerHeader):
     changed = False
     try:
         # Obtenir la liste des mappers existant
-        getMappersRequest = requests.get(url + '/mappers', headers={'Authorization' : bearerHeader})
+        getMappersRequest = requests.get(url + '/mappers', headers=bearerHeader)
         mappers = getMappersRequest.json()
         for mapper in mappers:
-            requests.delete(url + '/mappers/' + mapper['id'], headers={'Authorization' : bearerHeader})
+            requests.delete(url + '/mappers/' + mapper['id'], headers=bearerHeader)
     except requests.exceptions.RequestException, ValueError:
         return False
     except Exception, e:
