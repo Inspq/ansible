@@ -5,6 +5,7 @@
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> Sx5-868 Update the keycloak_client module documentation for support of
 =======
@@ -46,6 +47,8 @@
 >>>>>>> Sx5-868 Update the keycloak_client module documentation for support of
 =======
 >>>>>>> SX5-868 Add role management to keycloak_group module. Add
+=======
+>>>>>>> SX5-868 Manage client roles (add, delete update), remove protocolMappers
 import collections
 import os
 import unittest
@@ -67,9 +70,15 @@ class KeycloakClientTestCase(ModuleTestCase):
         }
     ]
     testClient = {
+<<<<<<< HEAD
         "auth_keycloak_url": "http://localhost:18081/auth",
         "auth_username": "admin",
         "auth_password": "admin",
+=======
+        "url": "http://localhost:18081/auth",
+        "username": "admin",
+        "password": "admin",
+>>>>>>> SX5-868 Manage client roles (add, delete update), remove protocolMappers
         "realm": "master",
         "state": "present",
         "clientId": "basetest",
@@ -80,9 +89,15 @@ class KeycloakClientTestCase(ModuleTestCase):
         "force": False
     }
     toModifyClient = {
+<<<<<<< HEAD
         "auth_keycloak_url": "http://localhost:18081/auth",
         "auth_username": "admin",
         "auth_password": "admin",
+=======
+        "url": "http://localhost:18081/auth",
+        "username": "admin",
+        "password": "admin",
+>>>>>>> SX5-868 Manage client roles (add, delete update), remove protocolMappers
         "realm": "master",
         "state": "present",
         "clientId": "test_modify_client",
@@ -152,9 +167,15 @@ class KeycloakClientTestCase(ModuleTestCase):
         }
     
     toAddCompositesForClientRole = {
+<<<<<<< HEAD
         "auth_keycloak_url": "http://localhost:18081/auth",
         "auth_username": "admin",
         "auth_password": "admin",
+=======
+        "url": "http://localhost:18081/auth",
+        "username": "admin",
+        "password": "admin",
+>>>>>>> SX5-868 Manage client roles (add, delete update), remove protocolMappers
         "realm": "master",
         "state": "present",
         "clientId": "test_add_client_composite_roles",
@@ -222,9 +243,15 @@ class KeycloakClientTestCase(ModuleTestCase):
         ]
     }
     toRemoveMapperFromClient = {
+<<<<<<< HEAD
         "auth_keycloak_url": "http://localhost:18081/auth",
         "auth_username": "admin",
         "auth_password": "admin",
+=======
+        "url": "http://localhost:18081/auth",
+        "username": "admin",
+        "password": "admin",
+>>>>>>> SX5-868 Manage client roles (add, delete update), remove protocolMappers
         "realm": "master",
         "state": "present",
         "clientId": "test_remove_mapper_from_client",
@@ -266,9 +293,15 @@ class KeycloakClientTestCase(ModuleTestCase):
         "force": False
     }
     toRemoveRoleFromClient = {
+<<<<<<< HEAD
         "auth_keycloak_url": "http://localhost:18081/auth",
         "auth_username": "admin",
         "auth_password": "admin",
+=======
+        "url": "http://localhost:18081/auth",
+        "username": "admin",
+        "password": "admin",
+>>>>>>> SX5-868 Manage client roles (add, delete update), remove protocolMappers
         "realm": "master",
         "state": "present",
         "clientId": "test_remove_role_from_client",
@@ -293,9 +326,15 @@ class KeycloakClientTestCase(ModuleTestCase):
         "force": False
     }
     toDeleteClient = {
+<<<<<<< HEAD
         "auth_keycloak_url": "http://localhost:18081/auth",
         "auth_username": "admin",
         "auth_password": "admin",
+=======
+        "url": "http://localhost:18081/auth",
+        "username": "admin",
+        "password": "admin",
+>>>>>>> SX5-868 Manage client roles (add, delete update), remove protocolMappers
         "realm": "master",
         "state": "present",
         "clientId": "test_delete_client",
@@ -337,9 +376,15 @@ class KeycloakClientTestCase(ModuleTestCase):
  
     def test_create_client(self):
         toCreate = {}
+<<<<<<< HEAD
         toCreate["auth_keycloak_url"] = "http://localhost:18081/auth"
         toCreate["auth_username"] = "admin"
         toCreate["auth_password"] = "admin"
+=======
+        toCreate["url"] = "http://localhost:18081/auth"
+        toCreate["username"] = "admin"
+        toCreate["password"] = "admin"
+>>>>>>> SX5-868 Manage client roles (add, delete update), remove protocolMappers
         toCreate["realm"] = "master"
         toCreate["state"] = "present"
         toCreate["clientId"] = "test_create_client"
