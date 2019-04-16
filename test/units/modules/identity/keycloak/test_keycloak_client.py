@@ -73,6 +73,7 @@
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> SX5-868 Add role management to keycloak_group module. Add
 
@@ -153,6 +154,8 @@
 
 
 >>>>>>> Sx5-868 Update the keycloak_client module documentation for support of
+=======
+>>>>>>> SX5-868 Manage client roles (add, delete update), remove protocolMappers
 import collections
 import os
 import unittest
