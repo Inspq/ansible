@@ -191,15 +191,21 @@ class KeycloakAPI(object):
                                       % (id, realm, str(e)))
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 
     def get_client_secret_by_id(self, id, realm='master'):
         """ Obtain client representation by id
 
 =======
+=======
+>>>>>>> SX5-868 Manage client roles (add, delete update), remove protocolMappers
 
     def get_client_secret_by_id(self, id, realm='master'):
         """ Obtain client representation by id
 
+<<<<<<< HEAD
+>>>>>>> SX5-868 Manage client roles (add, delete update), remove protocolMappers
+=======
 >>>>>>> SX5-868 Manage client roles (add, delete update), remove protocolMappers
 =======
 
@@ -280,6 +286,7 @@ class KeycloakAPI(object):
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
                 self.create_or_update_client_roles(client_roles, roles_url, clients_url, client_roles_url)
 =======
                 self.create_or_update_client_roles(client_roles, roles_url, clients_url, client_roles_url, clientrep)
@@ -293,6 +300,12 @@ class KeycloakAPI(object):
 =======
                 self.create_or_update_client_roles(client_roles, roles_url, clients_url, client_roles_url)
 >>>>>>> Sx5-868 Update the keycloak_client module documentation for support of
+=======
+                self.create_or_update_client_roles(client_roles, roles_url, clients_url, client_roles_url)
+=======
+                self.create_or_update_client_roles(client_roles, roles_url, clients_url, client_roles_url, clientrep)
+>>>>>>> SX5-868 Manage client roles (add, delete update), remove protocolMappers
+>>>>>>> SX5-868 Manage client roles (add, delete update), remove protocolMappers
             return putResponse
 
         except Exception as e:
@@ -329,6 +342,7 @@ class KeycloakAPI(object):
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
                 self.create_or_update_client_roles(client_roles, roles_url, clients_url, client_roles_url)
 =======
                 self.create_or_update_client_roles(client_roles, roles_url, clients_url, client_roles_url, clientrep)
@@ -342,6 +356,12 @@ class KeycloakAPI(object):
 =======
                 self.create_or_update_client_roles(client_roles, roles_url, clients_url, client_roles_url)
 >>>>>>> Sx5-868 Update the keycloak_client module documentation for support of
+=======
+                self.create_or_update_client_roles(client_roles, roles_url, clients_url, client_roles_url)
+=======
+                self.create_or_update_client_roles(client_roles, roles_url, clients_url, client_roles_url, clientrep)
+>>>>>>> SX5-868 Manage client roles (add, delete update), remove protocolMappers
+>>>>>>> SX5-868 Manage client roles (add, delete update), remove protocolMappers
         
             return postResponse
             
@@ -632,10 +652,13 @@ class KeycloakAPI(object):
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> Sx5-868 Update the keycloak_client module documentation for support of
 =======
 >>>>>>> Sx5-868 Update the keycloak_client module documentation for support of
+=======
+>>>>>>> SX5-868 Manage client roles (add, delete update), remove protocolMappers
         """ Add client roles and their composites to the client representation in order to return this information to the user
 
         :param clientSvcBaseUrl: url of the client
@@ -645,6 +668,7 @@ class KeycloakAPI(object):
         """
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> SX5-868 Manage client roles (add, delete update), remove protocolMappers
 =======
@@ -653,6 +677,10 @@ class KeycloakAPI(object):
 >>>>>>> SX5-868 Manage client roles (add, delete update), remove protocolMappers
 =======
 >>>>>>> Sx5-868 Update the keycloak_client module documentation for support of
+=======
+=======
+>>>>>>> SX5-868 Manage client roles (add, delete update), remove protocolMappers
+>>>>>>> SX5-868 Manage client roles (add, delete update), remove protocolMappers
         
         clientRolesRepresentation = json.load(open_url(clientRolesUrl, method='GET', headers=self.restheaders))
         for clientRole in clientRolesRepresentation:
@@ -669,10 +697,13 @@ class KeycloakAPI(object):
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> Sx5-868 Update the keycloak_client module documentation for support of
 =======
 >>>>>>> Sx5-868 Update the keycloak_client module documentation for support of
+=======
+>>>>>>> SX5-868 Manage client roles (add, delete update), remove protocolMappers
     def create_or_update_client_roles(self, newClientRoles, roleSvcBaseUrl, clientSvcBaseUrl, clientRolesUrl):
         """ Create or update client roles. Client roles can be added, updated or removed depending of the state.
 
@@ -685,10 +716,14 @@ class KeycloakAPI(object):
         changed = False
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> SX5-868 Manage client roles (add, delete update), remove protocolMappers
 =======
     def create_or_update_client_roles(self, newClientRoles, roleSvcBaseUrl, clientSvcBaseUrl, clientRolesUrl, clientRepresentation):
         #changed = False
 >>>>>>> SX5-868 Manage client roles (add, delete update), remove protocolMappers
+<<<<<<< HEAD
 =======
 >>>>>>> Sx5-868 Update the keycloak_client module documentation for support of
 =======
@@ -697,6 +732,8 @@ class KeycloakAPI(object):
 >>>>>>> SX5-868 Manage client roles (add, delete update), remove protocolMappers
 =======
 >>>>>>> Sx5-868 Update the keycloak_client module documentation for support of
+=======
+>>>>>>> SX5-868 Manage client roles (add, delete update), remove protocolMappers
         
         # Manage the roles
         if newClientRoles is not None:
@@ -707,6 +744,7 @@ class KeycloakAPI(object):
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
                 # If state key is included in the client role representation, save its value and remove the key from the representation.
 =======
 >>>>>>> SX5-868 Manage client roles (add, delete update), remove protocolMappers
@@ -718,6 +756,11 @@ class KeycloakAPI(object):
 =======
                 # If state key is included in the client role representation, save its value and remove the key from the representation.
 >>>>>>> Sx5-868 Update the keycloak_client module documentation for support of
+=======
+                # If state key is included in the client role representation, save its value and remove the key from the representation.
+=======
+>>>>>>> SX5-868 Manage client roles (add, delete update), remove protocolMappers
+>>>>>>> SX5-868 Manage client roles (add, delete update), remove protocolMappers
                 if "state" in newClientRole:
                     desiredState = newClientRole["state"]
                     del(newClientRole["state"])
@@ -809,6 +852,9 @@ class KeycloakAPI(object):
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> SX5-868 Manage client roles (add, delete update), remove protocolMappers
                     changed = True
         return changed
     
@@ -821,6 +867,9 @@ class KeycloakAPI(object):
         """
         changed = False
 =======
+<<<<<<< HEAD
+=======
+>>>>>>> SX5-868 Manage client roles (add, delete update), remove protocolMappers
 =======
 >>>>>>> SX5-868 Manage client roles (add, delete update), remove protocolMappers
                     #changed = True
@@ -829,6 +878,7 @@ class KeycloakAPI(object):
     def create_or_update_client_mappers(self, clientUrl, clientRepresentation):
         #changed = False
 <<<<<<< HEAD
+<<<<<<< HEAD
 >>>>>>> SX5-868 Manage client roles (add, delete update), remove protocolMappers
 =======
                     changed = True
@@ -854,6 +904,9 @@ class KeycloakAPI(object):
 >>>>>>> SX5-868 Manage client roles (add, delete update), remove protocolMappers
 =======
 >>>>>>> Sx5-868 Update the keycloak_client module documentation for support of
+=======
+>>>>>>> SX5-868 Manage client roles (add, delete update), remove protocolMappers
+>>>>>>> SX5-868 Manage client roles (add, delete update), remove protocolMappers
         if camel('protocol_mappers') in clientRepresentation and clientRepresentation[camel('protocol_mappers')] is not None:
             newClientProtocolMappers = clientRepresentation[camel('protocol_mappers')]
             # Get existing mappers from the client
@@ -865,6 +918,7 @@ class KeycloakAPI(object):
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
                 # If state key is included in the mapper representation, save its value and remove the key from the representation.
 =======
 >>>>>>> SX5-868 Manage client roles (add, delete update), remove protocolMappers
@@ -876,6 +930,11 @@ class KeycloakAPI(object):
 =======
                 # If state key is included in the mapper representation, save its value and remove the key from the representation.
 >>>>>>> Sx5-868 Update the keycloak_client module documentation for support of
+=======
+                # If state key is included in the mapper representation, save its value and remove the key from the representation.
+=======
+>>>>>>> SX5-868 Manage client roles (add, delete update), remove protocolMappers
+>>>>>>> SX5-868 Manage client roles (add, delete update), remove protocolMappers
                 if "state" in newClientProtocolMapper:
                     desiredState = newClientProtocolMapper["state"]
                     del(newClientProtocolMapper["state"])
@@ -894,12 +953,18 @@ class KeycloakAPI(object):
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> SX5-868 Manage client roles (add, delete update), remove protocolMappers
                         changed = True
                     else:
                         if not isDictEquals(newClientProtocolMapper, clientMapper):
                             # If changed has been introduced for the mapper
                             changed = True
 =======
+<<<<<<< HEAD
+=======
+>>>>>>> SX5-868 Manage client roles (add, delete update), remove protocolMappers
 =======
 >>>>>>> SX5-868 Manage client roles (add, delete update), remove protocolMappers
                         #changed = True
@@ -907,6 +972,7 @@ class KeycloakAPI(object):
                         if not isDictEquals(newClientProtocolMapper, clientMapper):
                             # If changed has been introduced for the mapper
                             #changed = True
+<<<<<<< HEAD
 <<<<<<< HEAD
 >>>>>>> SX5-868 Manage client roles (add, delete update), remove protocolMappers
 =======
@@ -925,6 +991,9 @@ class KeycloakAPI(object):
                             # If changed has been introduced for the mapper
                             changed = True
 >>>>>>> Sx5-868 Update the keycloak_client module documentation for support of
+=======
+>>>>>>> SX5-868 Manage client roles (add, delete update), remove protocolMappers
+>>>>>>> SX5-868 Manage client roles (add, delete update), remove protocolMappers
                             newClientProtocolMapper["id"] = clientMapper["id"]
                             data=json.dumps(newClientProtocolMapper)
                             # Modify the mapper
@@ -935,6 +1004,7 @@ class KeycloakAPI(object):
                         # Create the mapper
                         data=json.dumps(newClientProtocolMapper)
                         open_url(clientUrl + '/protocol-mappers/models', method='POST', headers=self.restheaders, data=data)
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -1049,3 +1119,11 @@ class KeycloakAPI(object):
                         changed = True
         return changed
 >>>>>>> Sx5-868 Update the keycloak_client module documentation for support of
+=======
+                        changed = True
+        return changed
+=======
+                        #changed = True
+        #return changed
+>>>>>>> SX5-868 Manage client roles (add, delete update), remove protocolMappers
+>>>>>>> SX5-868 Manage client roles (add, delete update), remove protocolMappers
