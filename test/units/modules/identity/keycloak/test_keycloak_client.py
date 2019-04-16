@@ -15,6 +15,7 @@
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> SX5-868 Manage client roles (add, delete update), remove protocolMappers
 =======
@@ -142,11 +143,19 @@ import os
 import unittest
 =======
 >>>>>>> SX5-868 Correction de problème de merge lors du rebase de la branche.
+=======
+import collections
+import os
+import unittest
+>>>>>>> SX5-868 Manage client roles (add, delete update), remove protocolMappers
 
 from ansible.modules.identity.keycloak import keycloak_client
 from units.modules.utils import AnsibleExitJson, AnsibleFailJson, ModuleTestCase, set_module_args
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> SX5-868 Manage client roles (add, delete update), remove protocolMappers
 class KeycloakClientTestCase(ModuleTestCase):
     testClientRoles = [
         {
@@ -163,6 +172,7 @@ class KeycloakClientTestCase(ModuleTestCase):
     testClient = {
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
         "auth_keycloak_url": "http://localhost:18081/auth",
         "auth_username": "admin",
         "auth_password": "admin",
@@ -176,6 +186,11 @@ class KeycloakClientTestCase(ModuleTestCase):
         "auth_username": "admin",
         "auth_password": "admin",
 >>>>>>> SX5-868 Add keycloak_user module and non mock unit tests.
+=======
+        "url": "http://localhost:18081/auth",
+        "username": "admin",
+        "password": "admin",
+>>>>>>> SX5-868 Manage client roles (add, delete update), remove protocolMappers
         "realm": "master",
         "state": "present",
         "clientId": "basetest",
@@ -188,6 +203,7 @@ class KeycloakClientTestCase(ModuleTestCase):
     toModifyClient = {
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
         "auth_keycloak_url": "http://localhost:18081/auth",
         "auth_username": "admin",
         "auth_password": "admin",
@@ -201,6 +217,11 @@ class KeycloakClientTestCase(ModuleTestCase):
         "auth_username": "admin",
         "auth_password": "admin",
 >>>>>>> SX5-868 Add keycloak_user module and non mock unit tests.
+=======
+        "url": "http://localhost:18081/auth",
+        "username": "admin",
+        "password": "admin",
+>>>>>>> SX5-868 Manage client roles (add, delete update), remove protocolMappers
         "realm": "master",
         "state": "present",
         "clientId": "test_modify_client",
@@ -272,6 +293,7 @@ class KeycloakClientTestCase(ModuleTestCase):
     toAddCompositesForClientRole = {
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
         "auth_keycloak_url": "http://localhost:18081/auth",
         "auth_username": "admin",
         "auth_password": "admin",
@@ -285,6 +307,11 @@ class KeycloakClientTestCase(ModuleTestCase):
         "auth_username": "admin",
         "auth_password": "admin",
 >>>>>>> SX5-868 Add keycloak_user module and non mock unit tests.
+=======
+        "url": "http://localhost:18081/auth",
+        "username": "admin",
+        "password": "admin",
+>>>>>>> SX5-868 Manage client roles (add, delete update), remove protocolMappers
         "realm": "master",
         "state": "present",
         "clientId": "test_add_client_composite_roles",
@@ -354,6 +381,7 @@ class KeycloakClientTestCase(ModuleTestCase):
     toRemoveMapperFromClient = {
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
         "auth_keycloak_url": "http://localhost:18081/auth",
         "auth_username": "admin",
         "auth_password": "admin",
@@ -367,6 +395,11 @@ class KeycloakClientTestCase(ModuleTestCase):
         "auth_username": "admin",
         "auth_password": "admin",
 >>>>>>> SX5-868 Add keycloak_user module and non mock unit tests.
+=======
+        "url": "http://localhost:18081/auth",
+        "username": "admin",
+        "password": "admin",
+>>>>>>> SX5-868 Manage client roles (add, delete update), remove protocolMappers
         "realm": "master",
         "state": "present",
         "clientId": "test_remove_mapper_from_client",
@@ -410,6 +443,7 @@ class KeycloakClientTestCase(ModuleTestCase):
     toRemoveRoleFromClient = {
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
         "auth_keycloak_url": "http://localhost:18081/auth",
         "auth_username": "admin",
         "auth_password": "admin",
@@ -423,6 +457,11 @@ class KeycloakClientTestCase(ModuleTestCase):
         "auth_username": "admin",
         "auth_password": "admin",
 >>>>>>> SX5-868 Add keycloak_user module and non mock unit tests.
+=======
+        "url": "http://localhost:18081/auth",
+        "username": "admin",
+        "password": "admin",
+>>>>>>> SX5-868 Manage client roles (add, delete update), remove protocolMappers
         "realm": "master",
         "state": "present",
         "clientId": "test_remove_role_from_client",
@@ -449,6 +488,7 @@ class KeycloakClientTestCase(ModuleTestCase):
     toDeleteClient = {
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
         "auth_keycloak_url": "http://localhost:18081/auth",
         "auth_username": "admin",
         "auth_password": "admin",
@@ -462,6 +502,11 @@ class KeycloakClientTestCase(ModuleTestCase):
         "auth_username": "admin",
         "auth_password": "admin",
 >>>>>>> SX5-868 Add keycloak_user module and non mock unit tests.
+=======
+        "url": "http://localhost:18081/auth",
+        "username": "admin",
+        "password": "admin",
+>>>>>>> SX5-868 Manage client roles (add, delete update), remove protocolMappers
         "realm": "master",
         "state": "present",
         "clientId": "test_delete_client",
@@ -505,6 +550,7 @@ class KeycloakClientTestCase(ModuleTestCase):
         toCreate = {}
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
         toCreate["auth_keycloak_url"] = "http://localhost:18081/auth"
         toCreate["auth_username"] = "admin"
         toCreate["auth_password"] = "admin"
@@ -518,6 +564,11 @@ class KeycloakClientTestCase(ModuleTestCase):
         toCreate["auth_username"] = "admin"
         toCreate["auth_password"] = "admin"
 >>>>>>> SX5-868 Add keycloak_user module and non mock unit tests.
+=======
+        toCreate["url"] = "http://localhost:18081/auth"
+        toCreate["username"] = "admin"
+        toCreate["password"] = "admin"
+>>>>>>> SX5-868 Manage client roles (add, delete update), remove protocolMappers
         toCreate["realm"] = "master"
         toCreate["state"] = "present"
         toCreate["clientId"] = "test_create_client"
