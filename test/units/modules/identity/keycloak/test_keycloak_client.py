@@ -12,8 +12,11 @@
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> SX5-868 Manage client roles (add, delete update), remove protocolMappers
+=======
+>>>>>>> Sx5-868 Update the keycloak_client module documentation for support of
 =======
 >>>>>>> Sx5-868 Update the keycloak_client module documentation for support of
 =======
@@ -42,6 +45,10 @@
 >>>>>>> Sx5-868 Update the keycloak_client module documentation for support of
 =======
 >>>>>>> SX5-868 Manage client roles (add, delete update), remove protocolMappers
+=======
+=======
+>>>>>>> Sx5-868 Update the keycloak_client module documentation for support of
+>>>>>>> Sx5-868 Update the keycloak_client module documentation for support of
 # -*- coding: utf-8 -*-
 # This unit test class need a Keycloak server running on localhost using port 18081.
 # An admin user must exist and his password need to be admin.
@@ -57,15 +64,19 @@
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> Sx5-868 Update the keycloak_client module documentation for support of
 =======
 >>>>>>> SX5-868 Manage client roles (add, delete update), remove protocolMappers
 =======
+>>>>>>> Sx5-868 Update the keycloak_client module documentation for support of
+=======
 >>>>>>> SX5-868 Manage client roles (add, delete update), remove protocolMappers
 =======
 >>>>>>> Sx5-868 Update the keycloak_client module documentation for support of
 =======
+<<<<<<< HEAD
 <<<<<<< HEAD
 >>>>>>> Sx5-868 Update the keycloak_client module documentation for support of
 =======
@@ -99,6 +110,10 @@
 >>>>>>> Sx5-868 Update the keycloak_client module documentation for support of
 =======
 >>>>>>> SX5-868 Manage client roles (add, delete update), remove protocolMappers
+=======
+>>>>>>> Sx5-868 Update the keycloak_client module documentation for support of
+=======
+>>>>>>> Sx5-868 Update the keycloak_client module documentation for support of
 >>>>>>> SX5-868 Manage client roles (add, delete update), remove protocolMappers
 =======
 >>>>>>> Sx5-868 Update the keycloak_client module documentation for support of
@@ -106,6 +121,8 @@
 =======
 >>>>>>> SX5-868 Manage client roles (add, delete update), remove protocolMappers
 >>>>>>> SX5-868 Manage client roles (add, delete update), remove protocolMappers
+=======
+>>>>>>> Sx5-868 Update the keycloak_client module documentation for support of
 import collections
 import os
 import unittest
