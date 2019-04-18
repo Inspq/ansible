@@ -37,9 +37,13 @@ from ansible.module_utils.six.moves.urllib.parse import urlencode
 from ansible.module_utils.six.moves.urllib.error import HTTPError
 from ansible.module_utils.keycloak_utils import isDictEquals 
 <<<<<<< HEAD
+<<<<<<< HEAD
 from ansible.module_utils.keycloak_utils import keycloak2ansibleClientRoles
 =======
 >>>>>>> SX5-868 Manage client roles (add, delete update), remove protocolMappers
+=======
+from ansible.module_utils.keycloak_utils import keycloak2ansibleClientRoles
+>>>>>>> SX5-868 Add role management to keycloak_group module. Add
 
 URL_TOKEN = "{url}/realms/{realm}/protocol/openid-connect/token"
 URL_CLIENT = "{url}/admin/realms/{realm}/clients/{id}"
@@ -192,6 +196,7 @@ class KeycloakAPI(object):
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 
     def get_client_secret_by_id(self, id, realm='master'):
         """ Obtain client representation by id
@@ -208,11 +213,11 @@ class KeycloakAPI(object):
 =======
 >>>>>>> SX5-868 Manage client roles (add, delete update), remove protocolMappers
 =======
+=======
+>>>>>>> SX5-868 Add role management to keycloak_group module. Add
 
     def get_client_secret_by_id(self, id, realm='master'):
         """ Obtain client representation by id
-
->>>>>>> SX5-868 Manage client roles (add, delete update), remove protocolMappers
         :param id: id (not clientId) of client to be queried
         :param realm: client from this realm
         :return: dict of client representation or None if none matching exist
@@ -288,6 +293,7 @@ class KeycloakAPI(object):
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
                 self.create_or_update_client_roles(client_roles, roles_url, clients_url, client_roles_url)
 =======
                 self.create_or_update_client_roles(client_roles, roles_url, clients_url, client_roles_url, clientrep)
@@ -315,6 +321,9 @@ class KeycloakAPI(object):
                 self.create_or_update_client_roles(client_roles, roles_url, clients_url, client_roles_url)
 >>>>>>> Sx5-868 Update the keycloak_client module documentation for support of
 >>>>>>> Sx5-868 Update the keycloak_client module documentation for support of
+=======
+                self.create_or_update_client_roles(client_roles, roles_url, clients_url, client_roles_url)
+>>>>>>> SX5-868 Add role management to keycloak_group module. Add
             return putResponse
 
         except Exception as e:
@@ -353,6 +362,7 @@ class KeycloakAPI(object):
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
                 self.create_or_update_client_roles(client_roles, roles_url, clients_url, client_roles_url)
 =======
                 self.create_or_update_client_roles(client_roles, roles_url, clients_url, client_roles_url, clientrep)
@@ -380,6 +390,9 @@ class KeycloakAPI(object):
                 self.create_or_update_client_roles(client_roles, roles_url, clients_url, client_roles_url)
 >>>>>>> Sx5-868 Update the keycloak_client module documentation for support of
 >>>>>>> Sx5-868 Update the keycloak_client module documentation for support of
+=======
+                self.create_or_update_client_roles(client_roles, roles_url, clients_url, client_roles_url)
+>>>>>>> SX5-868 Add role management to keycloak_group module. Add
         
             return postResponse
             
@@ -672,6 +685,7 @@ class KeycloakAPI(object):
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> Sx5-868 Update the keycloak_client module documentation for support of
 =======
@@ -682,6 +696,8 @@ class KeycloakAPI(object):
 =======
 >>>>>>> Sx5-868 Update the keycloak_client module documentation for support of
 >>>>>>> Sx5-868 Update the keycloak_client module documentation for support of
+=======
+>>>>>>> SX5-868 Add role management to keycloak_group module. Add
         """ Add client roles and their composites to the client representation in order to return this information to the user
 
         :param clientSvcBaseUrl: url of the client
@@ -689,6 +705,7 @@ class KeycloakAPI(object):
         :param clientRepresentation: actual representation of the client
         :return: nothing, the roles representation is added to the client representation as clientRoles key
         """
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -710,6 +727,8 @@ class KeycloakAPI(object):
 =======
 >>>>>>> Sx5-868 Update the keycloak_client module documentation for support of
         
+=======
+>>>>>>> SX5-868 Add role management to keycloak_group module. Add
         clientRolesRepresentation = json.load(open_url(clientRolesUrl, method='GET', headers=self.restheaders))
         for clientRole in clientRolesRepresentation:
             if clientRole["composite"]:
@@ -727,6 +746,7 @@ class KeycloakAPI(object):
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> Sx5-868 Update the keycloak_client module documentation for support of
 =======
@@ -737,6 +757,8 @@ class KeycloakAPI(object):
 =======
 >>>>>>> Sx5-868 Update the keycloak_client module documentation for support of
 >>>>>>> Sx5-868 Update the keycloak_client module documentation for support of
+=======
+>>>>>>> SX5-868 Add role management to keycloak_group module. Add
     def create_or_update_client_roles(self, newClientRoles, roleSvcBaseUrl, clientSvcBaseUrl, clientRolesUrl):
         """ Create or update client roles. Client roles can be added, updated or removed depending of the state.
 
@@ -747,6 +769,7 @@ class KeycloakAPI(object):
         :return: True if the client roles have changed, False otherwise
         """
         changed = False
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -776,6 +799,8 @@ class KeycloakAPI(object):
 >>>>>>> Sx5-868 Update the keycloak_client module documentation for support of
 >>>>>>> Sx5-868 Update the keycloak_client module documentation for support of
         
+=======
+>>>>>>> SX5-868 Add role management to keycloak_group module. Add
         # Manage the roles
         if newClientRoles is not None:
             for newClientRole in newClientRoles:
@@ -787,6 +812,7 @@ class KeycloakAPI(object):
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> Sx5-868 Update the keycloak_client module documentation for support of
                 # If state key is included in the client role representation, save its value and remove the key from the representation.
@@ -808,6 +834,9 @@ class KeycloakAPI(object):
 >>>>>>> SX5-868 Manage client roles (add, delete update), remove protocolMappers
 =======
 >>>>>>> Sx5-868 Update the keycloak_client module documentation for support of
+=======
+                # If state key is included in the client role representation, save its value and remove the key from the representation.
+>>>>>>> SX5-868 Add role management to keycloak_group module. Add
                 if "state" in newClientRole:
                     desiredState = newClientRole["state"]
                     del(newClientRole["state"])
@@ -901,6 +930,7 @@ class KeycloakAPI(object):
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> SX5-868 Manage client roles (add, delete update), remove protocolMappers
 =======
@@ -958,6 +988,8 @@ class KeycloakAPI(object):
 >>>>>>> SX5-868 Manage client roles (add, delete update), remove protocolMappers
 >>>>>>> SX5-868 Manage client roles (add, delete update), remove protocolMappers
 =======
+=======
+>>>>>>> SX5-868 Add role management to keycloak_group module. Add
                     changed = True
         return changed
     
@@ -969,7 +1001,6 @@ class KeycloakAPI(object):
         :return: True if the client roles have changed, False otherwise
         """
         changed = False
->>>>>>> Sx5-868 Update the keycloak_client module documentation for support of
         if camel('protocol_mappers') in clientRepresentation and clientRepresentation[camel('protocol_mappers')] is not None:
             newClientProtocolMappers = clientRepresentation[camel('protocol_mappers')]
             # Get existing mappers from the client
@@ -983,6 +1014,7 @@ class KeycloakAPI(object):
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
                 # If state key is included in the mapper representation, save its value and remove the key from the representation.
 =======
 >>>>>>> SX5-868 Manage client roles (add, delete update), remove protocolMappers
@@ -1004,6 +1036,9 @@ class KeycloakAPI(object):
 =======
                 # If state key is included in the mapper representation, save its value and remove the key from the representation.
 >>>>>>> Sx5-868 Update the keycloak_client module documentation for support of
+=======
+                # If state key is included in the mapper representation, save its value and remove the key from the representation.
+>>>>>>> SX5-868 Add role management to keycloak_group module. Add
                 if "state" in newClientProtocolMapper:
                     desiredState = newClientProtocolMapper["state"]
                     del(newClientProtocolMapper["state"])
@@ -1018,6 +1053,7 @@ class KeycloakAPI(object):
                     if desiredState == "absent":
                         # Delete the mapper
                         open_url(clientUrl + '/protocol-mappers/models/' + clientMapper['id'], method='DELETE', headers=self.restheaders)
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -1067,12 +1103,13 @@ class KeycloakAPI(object):
 >>>>>>> SX5-868 Manage client roles (add, delete update), remove protocolMappers
 >>>>>>> SX5-868 Manage client roles (add, delete update), remove protocolMappers
 =======
+=======
+>>>>>>> SX5-868 Add role management to keycloak_group module. Add
                         changed = True
                     else:
                         if not isDictEquals(newClientProtocolMapper, clientMapper):
                             # If changed has been introduced for the mapper
                             changed = True
->>>>>>> Sx5-868 Update the keycloak_client module documentation for support of
                             newClientProtocolMapper["id"] = clientMapper["id"]
                             data=json.dumps(newClientProtocolMapper)
                             # Modify the mapper
@@ -1083,6 +1120,7 @@ class KeycloakAPI(object):
                         # Create the mapper
                         data=json.dumps(newClientProtocolMapper)
                         open_url(clientUrl + '/protocol-mappers/models', method='POST', headers=self.restheaders, data=data)
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -1175,9 +1213,12 @@ class KeycloakAPI(object):
                         data=json.dumps(rolesToAssing)
                         # Assing Role
                         open_url(URL_GROUP_CLIENT_ROLE_MAPPING.format(url=self.baseurl, realm=realm, groupid=gid, clientid=clientId), method='POST', headers=self.restheaders, data=data)
+=======
+>>>>>>> SX5-868 Add role management to keycloak_group module. Add
                         changed = True
                 
         return changed
+<<<<<<< HEAD
     
     def sync_ldap_groups(self, syncLdapMappers, realm='master'):
         LDAPUserStorageProviderType = "org.keycloak.storage.UserStorageProvider"
@@ -1199,8 +1240,83 @@ class KeycloakAPI(object):
         #return changed
 >>>>>>> SX5-868 Manage client roles (add, delete update), remove protocolMappers
 =======
+=======
+
+    def add_attributes_list_to_attributes_dict(self, AttributesList, AttributesDict):
+        if AttributesList is not None:
+            if AttributesDict is None:
+                AttributesDict = {}
+            for attr in AttributesList:
+                if "name" in attr and attr["name"] is not None and "value" in attr:
+                    AttributesDict[attr["name"]] = attr["value"]
+                    
+    def assing_roles_to_group(self, groupRepresentation, groupRealmRoles, groupClientRoles, realm='master'):
+        roleSvcBaseUrl = URL_REALM_ROLES.format(url=self.baseurl, realm=realm)
+        clientSvcBaseUrl = URL_CLIENTS.format(url=self.baseurl, realm=realm)
+        # Get the id of the group
+        if 'id' in groupRepresentation:
+            gid = groupRepresentation['id']
+        else:
+            gid = self.get_group_by_name(name=groupRepresentation['name'], realm=realm)['id']
+        changed = False
+        # Assing Realm Roles
+        realmRolesRepresentation = []
+        if groupRealmRoles is not None:
+            for realmRole in groupRealmRoles:
+                # Look for existing role into group representation
+                if not "realmRoles" in groupRepresentation or not realmRole in groupRepresentation["realmRoles"]:
+                    roleid = None
+                    # Get all realm roles
+                    realmRoles = json.load(open_url(roleSvcBaseUrl, method='GET', headers=self.restheaders))
+                    # Find the role id
+                    for role in realmRoles:
+                        if role["name"] == realmRole:
+                            roleid = role["id"]
+                            break
+                    if roleid is not None:
+                        realmRoleRepresentation = {}
+                        realmRoleRepresentation["id"] = roleid
+                        realmRoleRepresentation["name"] = realmRole
+                        realmRolesRepresentation.append(realmRoleRepresentation)
+            if len(realmRolesRepresentation) > 0 :
+                data=json.dumps(realmRolesRepresentation)
+                # Assing Role
+                open_url(URL_GROUP_REALM_ROLE_MAPPING.format(url=self.baseurl, realm=realm, groupid=gid), method='POST', headers=self.restheaders, data=data)
+                changed = True
+
+        if groupClientRoles is not None:
+            # If there is change to do for client roles
+            if not "clientRoles" in groupRepresentation or not isDictEquals(groupClientRoles, groupRepresentation["clientRoles"]):
+                # Assing clients roles            
+                for clientRolesToAssing in groupClientRoles:    
+                    rolesToAssing = []
+                    clientIdOfClientRole = clientRolesToAssing['clientid']
+                    # Get the id of the client
+                    clients = json.load(open_url(clientSvcBaseUrl + '?clientId=' + clientIdOfClientRole, method='GET', headers=self.restheaders))
+                    if len(clients) > 0 and "id" in clients[0]:
+                        clientId = clients[0]["id"]
+                        # Get the client roles
+                        clientRoles = json.load(open_url(URL_CLIENT_ROLES.format(url=self.baseurl, realm=realm, id=clientId), method='GET', headers=self.restheaders))
+                        for clientRoleToAssing in clientRolesToAssing["roles"]:
+                            # Find his Id
+                            for clientRole in clientRoles:
+                                if clientRole["name"] == clientRoleToAssing:
+                                    newRole = {}
+                                    newRole["id"] = clientRole["id"]
+                                    newRole["name"] = clientRole["name"]
+                                    rolesToAssing.append(newRole)
+                                    break
+                    if len(rolesToAssing) > 0:
+                        # Delete exiting client Roles
+                        open_url(URL_GROUP_CLIENT_ROLE_MAPPING.format(url=self.baseurl, realm=realm, groupid=gid, clientid=clientId), method='DELETE', headers=self.restheaders)
+                        data=json.dumps(rolesToAssing)
+                        # Assing Role
+                        open_url(URL_GROUP_CLIENT_ROLE_MAPPING.format(url=self.baseurl, realm=realm, groupid=gid, clientid=clientId), method='POST', headers=self.restheaders, data=data)
+>>>>>>> SX5-868 Add role management to keycloak_group module. Add
                         changed = True
+                
         return changed
+<<<<<<< HEAD
 >>>>>>> Sx5-868 Update the keycloak_client module documentation for support of
 =======
                         changed = True
@@ -1213,3 +1329,20 @@ class KeycloakAPI(object):
 =======
 >>>>>>> Sx5-868 Update the keycloak_client module documentation for support of
 >>>>>>> Sx5-868 Update the keycloak_client module documentation for support of
+=======
+    
+    def sync_ldap_groups(self, syncLdapMappers, realm='master'):
+        LDAPUserStorageProviderType = "org.keycloak.storage.UserStorageProvider"
+        componentSvcBaseUrl = URL_COMPONENTS.format(url=self.baseurl, realm=realm)
+        userStorageBaseUrl = URL_USER_STORAGE.format(url=self.baseurl, realm=realm)
+        # Get all components of type org.keycloak.storage.UserStorageProvider
+        components = json.load(open_url(componentSvcBaseUrl + '?type=' + LDAPUserStorageProviderType, method='GET', headers=self.restheaders))
+        for component in components:
+            # Get all sub components of type group-ldap-mapper
+            subComponents = json.load(open_url(componentSvcBaseUrl, method='GET', headers=self.restheaders, params={"parent": component["id"], "providerId": "group-ldap-mapper"}))
+            # For each group mappers
+            for subComponent in subComponents:
+                if subComponent["providerId"] == 'group-ldap-mapper':
+                    # Sync groups
+                    open_url(userStorageBaseUrl + '/' + subComponent["parentId"] + "/mappers/" + subComponent["id"] + "/sync", method='POST', headers=self.restheaders, params={"direction": syncLdapMappers}) 
+>>>>>>> SX5-868 Add role management to keycloak_group module. Add
