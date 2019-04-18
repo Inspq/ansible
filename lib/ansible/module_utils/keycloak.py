@@ -433,6 +433,7 @@ class KeycloakAPI(object):
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
                 self.create_or_update_client_roles(client_roles, roles_url, clients_url, client_roles_url)
 =======
                 self.create_or_update_client_roles(client_roles, roles_url, clients_url, client_roles_url, clientrep)
@@ -480,6 +481,9 @@ class KeycloakAPI(object):
 >>>>>>> Sx5-868 Update the keycloak_client module documentation for support of
 >>>>>>> Sx5-868 Update the keycloak_client module documentation for support of
 >>>>>>> Sx5-868 Update the keycloak_client module documentation for support of
+=======
+                self.create_or_update_client_roles(client_roles, roles_url, clients_url, client_roles_url)
+>>>>>>> SX5-868 Add role management to keycloak_group module. Add
             return putResponse
 
         except Exception as e:
@@ -513,6 +517,7 @@ class KeycloakAPI(object):
                 self.create_or_update_client_mappers(client_url, clientrep)
             if client_roles is not None:
                 client_roles_url = URL_CLIENT_ROLES.format(url=self.baseurl, realm=realm, id=self.get_client_id(clientrep[camel('client_id')], realm))
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -573,6 +578,9 @@ class KeycloakAPI(object):
         
 >>>>>>> Sx5-868 Update the keycloak_client module documentation for support of
 >>>>>>> Sx5-868 Update the keycloak_client module documentation for support of
+=======
+                self.create_or_update_client_roles(client_roles, roles_url, clients_url, client_roles_url)
+>>>>>>> SX5-868 Add role management to keycloak_group module. Add
             return postResponse
         except Exception as e:
             self.module.fail_json(msg='Could not create client %s in realm %s: %s'
@@ -883,6 +891,7 @@ class KeycloakAPI(object):
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> Sx5-868 Update the keycloak_client module documentation for support of
 =======
@@ -905,6 +914,8 @@ class KeycloakAPI(object):
 >>>>>>> Sx5-868 Update the keycloak_client module documentation for support of
 >>>>>>> Sx5-868 Update the keycloak_client module documentation for support of
 >>>>>>> Sx5-868 Update the keycloak_client module documentation for support of
+=======
+>>>>>>> SX5-868 Add role management to keycloak_group module. Add
         """ Add client roles and their composites to the client representation in order to return this information to the user
 
         :param clientSvcBaseUrl: url of the client
@@ -912,6 +923,7 @@ class KeycloakAPI(object):
         :param clientRepresentation: actual representation of the client
         :return: nothing, the roles representation is added to the client representation as clientRoles key
         """
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -954,6 +966,8 @@ class KeycloakAPI(object):
 >>>>>>> SX5-868 PR Added role management for keycloak_client module.
 =======
 >>>>>>> Sx5-868 Update the keycloak_client module documentation for support of
+=======
+>>>>>>> SX5-868 Add role management to keycloak_group module. Add
         try:
             clientRolesRepresentation = json.load(open_url(clientRolesUrl, method='GET', headers=self.restheaders))
             for clientRole in clientRolesRepresentation:
@@ -1006,6 +1020,7 @@ class KeycloakAPI(object):
 >>>>>>> SX5-868 Codestyle fix
 =======
 
+<<<<<<< HEAD
 =======
 <<<<<<< HEAD
 =======
@@ -1030,6 +1045,8 @@ class KeycloakAPI(object):
 >>>>>>> Sx5-868 Update the keycloak_client module documentation for support of
 >>>>>>> Sx5-868 Update the keycloak_client module documentation for support of
 >>>>>>> Sx5-868 Update the keycloak_client module documentation for support of
+=======
+>>>>>>> SX5-868 Add role management to keycloak_group module. Add
     def create_or_update_client_roles(self, newClientRoles, roleSvcBaseUrl, clientSvcBaseUrl, clientRolesUrl):
         """ Create or update client roles. Client roles can be added, updated or removed depending of the state.
 
@@ -1039,6 +1056,7 @@ class KeycloakAPI(object):
         :param clientRolesUrl: Url of the actual client roles
         :return: True if the client roles have changed, False otherwise
         """
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -1157,6 +1175,8 @@ class KeycloakAPI(object):
 >>>>>>> SX5-868 PR Added role management for keycloak_client module.
 =======
 >>>>>>> Sx5-868 Update the keycloak_client module documentation for support of
+=======
+>>>>>>> SX5-868 Add role management to keycloak_group module. Add
         try:
             changed = False
             # Manage the roles
@@ -1187,6 +1207,7 @@ class KeycloakAPI(object):
                                                 newComposite['id'] = role['id']
                                                 newComposite['clientRole'] = True
                                                 break
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 >>>>>>> SX5-868 Add keycloak_component module with non mock unit tests.
@@ -1259,6 +1280,8 @@ class KeycloakAPI(object):
                                 changeNeeded = True
 >>>>>>> Sx5-868 Update the keycloak_client module documentation for support of
 >>>>>>> Sx5-868 Update the keycloak_client module documentation for support of
+=======
+>>>>>>> SX5-868 Add role management to keycloak_group module. Add
                             else:
                                 realmRoles = json.load(
                                     open_url(roleSvcBaseUrl,
@@ -1318,6 +1341,7 @@ class KeycloakAPI(object):
                         if clientRoleFound:
                             open_url(clientRolesUrl + '/' + newClientRole['name'], method='PUT', headers=self.restheaders, data=data)
                         else:
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -1426,6 +1450,8 @@ class KeycloakAPI(object):
 >>>>>>> SX5-868 PR Added role management for keycloak_client module.
 =======
 >>>>>>> Sx5-868 Update the keycloak_client module documentation for support of
+=======
+>>>>>>> SX5-868 Add role management to keycloak_group module. Add
                             open_url(clientRolesUrl, method='POST', headers=self.restheaders, data=data)
                         changed = True
                         # Composites role
@@ -1449,6 +1475,7 @@ class KeycloakAPI(object):
             return changed
         except Exception as e:
             self.module.fail_json(msg="Unable to create or update client roles %s: %s" % (clientRolesUrl, str(e)))
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -1503,6 +1530,8 @@ class KeycloakAPI(object):
         """ Create or update client protocol mappers. Mappers can be added, updated or removed depending of the state.
 >>>>>>> Sx5-868 Update the keycloak_client module documentation for support of
 >>>>>>> Sx5-868 Update the keycloak_client module documentation for support of
+=======
+>>>>>>> SX5-868 Add role management to keycloak_group module. Add
 
     def create_or_update_client_mappers(self, clientUrl, clientRepresentation):
         """
@@ -1512,6 +1541,7 @@ class KeycloakAPI(object):
         :param clientRepresentation: Desired representation of the client including protocolMappers list
         :return: True if the client roles have changed, False otherwise
         """
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
         changed = False
@@ -1626,6 +1656,8 @@ class KeycloakAPI(object):
 =======
 =======
 >>>>>>> SX5-868 PR Added role management for keycloak_client module.
+=======
+>>>>>>> SX5-868 Add role management to keycloak_group module. Add
         try:
             changed = False
             if camel('protocol_mappers') in clientRepresentation and clientRepresentation[camel('protocol_mappers')] is not None:
@@ -2714,7 +2746,6 @@ class KeycloakAPI(object):
         :return: True if mappers have been deleted, False otherwise.
         """
         changed = False
-<<<<<<< HEAD
         try:
             # Get idp's mappers list
             mappers_url = URL_IDP_MAPPERS.format(
@@ -3817,6 +3848,7 @@ class KeycloakAPI(object):
             raise e
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 >>>>>>> SX5-868 Add keycloak_user module and non mock unit tests.
 =======
 >>>>>>> SX5-868 PR Added role management for keycloak_client module.
@@ -3916,3 +3948,5 @@ class KeycloakAPI(object):
 >>>>>>> Sx5-868 Update the keycloak_client module documentation for support of
 >>>>>>> Sx5-868 Update the keycloak_client module documentation for support of
 >>>>>>> Sx5-868 Update the keycloak_client module documentation for support of
+=======
+>>>>>>> SX5-868 Add role management to keycloak_group module. Add
