@@ -81,6 +81,7 @@ options:
             - A dict of key/value pairs list to set as custom attributes for the group.
             - Those attributes will be added to attributes dict.
             - The purpose of this option is to be able tu user Ansible variable as attribute name.
+<<<<<<< HEAD
         suboptions:
             name: 
                 description:
@@ -92,29 +93,52 @@ options:
                 type: str
         version_added: 2.9
 
+=======
+        subOptions:
+            name: 
+                description:
+                    - Name of the attribute
+            value:
+                description:
+                    - Value of the attribute
+>>>>>>> SX5-868 Add role management to keycloak_group module. Add
     realmRoles:
         type: list
         description:
             - List of realm roles to assign to the group.
+<<<<<<< HEAD
         version_added: 2.9
+=======
+>>>>>>> SX5-868 Add role management to keycloak_group module. Add
     clientRoles:
         type: list
         description:
             - List of client roles to assign to group.
+<<<<<<< HEAD
         suboptions:
             clientid:
                 type: str
+=======
+        subOptions:
+            clientid:
+>>>>>>> SX5-868 Add role management to keycloak_group module. Add
                 description:
                     - Client Id of the client role
             roles:
                 type: list
                 description:
                     - List of roles for this client to assing to group
+<<<<<<< HEAD
         version_added: 2.9
     path:
         description:
             Group path
         version_added: 2.9
+=======
+    path:
+        description:
+            Group path
+>>>>>>> SX5-868 Add role management to keycloak_group module. Add
     syncLdapMappers:
         type: bool
         description:
@@ -122,13 +146,19 @@ options:
             - All user storages defined as user federation will be synchronized.
             - A sync is done from LDAP to Keycloak before doing the job and from Keycloak to LDAP after.
         default: False 
+<<<<<<< HEAD
         version_added: 2.9
+=======
+>>>>>>> SX5-868 Add role management to keycloak_group module. Add
     force:
         type: bool
         description:
             - If true and the group already exist on the Keycloak server, it will be deleted and re-created with the new specification.
         default: False
+<<<<<<< HEAD
         version_added: 2.9
+=======
+>>>>>>> SX5-868 Add role management to keycloak_group module. Add
 notes:
     - Presently, the I(access) attribute returned by the Keycloak API is read-only for groups. 
       This version of this module now support the I(realmRoles), I(clientRoles) as read-write attributes.
