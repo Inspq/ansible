@@ -13,6 +13,7 @@
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> SX5-868 Manage client roles (add, delete update), remove protocolMappers
 =======
@@ -33,6 +34,8 @@
 >>>>>>> SX5-868 Add role management to keycloak_group module. Add
 =======
 =======
+>>>>>>> SX5-868 Add role management to keycloak_group module. Add
+=======
 >>>>>>> Sx5-868 Update the keycloak_client module documentation for support of
 >>>>>>> Sx5-868 Update the keycloak_client module documentation for support of
 =======
@@ -49,6 +52,8 @@
 =======
 >>>>>>> Sx5-868 Update the keycloak_client module documentation for support of
 >>>>>>> Sx5-868 Update the keycloak_client module documentation for support of
+=======
+>>>>>>> SX5-868 Add role management to keycloak_group module. Add
 # -*- coding: utf-8 -*-
 # This unit test class need a Keycloak server running on localhost using port 18081.
 # An admin user must exist and his password need to be admin.
@@ -56,6 +61,9 @@
 # docker run -d --rm --name testkc -p 18081:8080 -e KEYCLOAK_USER=admin -e KEYCLOAK_PASSWORD=admin jboss/keycloak:latest
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> SX5-868 Add role management to keycloak_group module. Add
 
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -123,6 +131,8 @@
 >>>>>>> SX5-868 Manage client roles (add, delete update), remove protocolMappers
 =======
 >>>>>>> Sx5-868 Update the keycloak_client module documentation for support of
+=======
+>>>>>>> SX5-868 Add role management to keycloak_group module. Add
 import collections
 import os
 import unittest
