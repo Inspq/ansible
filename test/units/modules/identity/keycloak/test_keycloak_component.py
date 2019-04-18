@@ -2,6 +2,7 @@ import collections
 import os
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 
 from ansible.modules.identity.keycloak import keycloak_component
 from units.modules.utils import AnsibleExitJson, AnsibleFailJson, ModuleTestCase, set_module_args
@@ -85,6 +86,12 @@ from ansible.modules.identity.keycloak import keycloak_component
 from units.modules.utils import AnsibleExitJson, AnsibleFailJson, ModuleTestCase, set_module_args
 
 <<<<<<< HEAD
+=======
+import unittest
+
+from ansible.modules.identity.keycloak.keycloak_component import *
+
+>>>>>>> SX5-868 Add role management to keycloak_group module. Add
 class KeycloakComponentTestCase(unittest.TestCase):
  
     def test_create_component_ldap_user_storage_provider(self):
@@ -112,6 +119,7 @@ class KeycloakComponentTestCase(unittest.TestCase):
             )
         toCreate["subComponents"] = {
             "org.keycloak.storage.ldap.mappers.LDAPStorageMapper": [{
+<<<<<<< HEAD
 >>>>>>> SX5-868 Add role management to keycloak_group module. Add
 =======
 class KeycloakComponentTestCase(ModuleTestCase):
@@ -186,6 +194,8 @@ class KeycloakComponentTestCase(ModuleTestCase):
             "org.keycloak.storage.ldap.mappers.LDAPStorageMapper": [
                 {
 >>>>>>> SX5-868 Add keycloak_component module with non mock unit tests.
+=======
+>>>>>>> SX5-868 Add role management to keycloak_group module. Add
                     "name": "groupMapper",
                     "providerId": "group-ldap-mapper",
                     "config": {
@@ -220,6 +230,7 @@ class KeycloakComponentTestCase(ModuleTestCase):
             ]
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
         },
         "force": False
     }
@@ -249,6 +260,8 @@ class KeycloakComponentTestCase(ModuleTestCase):
             "org.keycloak.storage.ldap.mappers.LDAPStorageMapper": [
                 {
 =======
+=======
+>>>>>>> SX5-868 Add role management to keycloak_group module. Add
         }
         toCreate["force"] = False
 
@@ -303,6 +316,7 @@ class KeycloakComponentTestCase(ModuleTestCase):
             )
         toModify["subComponents"] = {
                 "org.keycloak.storage.ldap.mappers.LDAPStorageMapper": [{
+<<<<<<< HEAD
 >>>>>>> SX5-868 Add role management to keycloak_group module. Add
 =======
         },
@@ -334,6 +348,8 @@ class KeycloakComponentTestCase(ModuleTestCase):
             "org.keycloak.storage.ldap.mappers.LDAPStorageMapper": [
                 {
 >>>>>>> SX5-868 Add keycloak_component module with non mock unit tests.
+=======
+>>>>>>> SX5-868 Add role management to keycloak_group module. Add
                     "name": "groupMapper",
                     "providerId": "group-ldap-mapper",
                     "config": {
@@ -345,6 +361,7 @@ class KeycloakComponentTestCase(ModuleTestCase):
                         "preserve.group.inheritance": ["true"],
                         "membership.user.ldap.attribute": ["uid"],
                         "group.object.classes": ["groupOfNames"],
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -400,6 +417,8 @@ class KeycloakComponentTestCase(ModuleTestCase):
             "org.keycloak.storage.ldap.mappers.LDAPStorageMapper": [
                 {
 =======
+=======
+>>>>>>> SX5-868 Add role management to keycloak_group module. Add
                         "groups.dn": ["cn=groups,OU=SEC,DC=SANTEPUBLIQUE,DC=RTSS,DC=QC,DC=CA"],
                         "drop.non.existing.groups.during.sync": ["false"]
                     }
@@ -410,6 +429,7 @@ class KeycloakComponentTestCase(ModuleTestCase):
         toModify["config"]["connectionUrl"][0] = "TestURL"
         toModify["subComponents"] = {
             "org.keycloak.storage.ldap.mappers.LDAPStorageMapper": [{
+<<<<<<< HEAD
 >>>>>>> SX5-868 Add role management to keycloak_group module. Add
 =======
                         "groups.dn": ["cn=groups,OU=SEC,DC=SANTEPUBLIQUE,DC=RTSS,DC=QC,DC=CA"],
@@ -446,6 +466,8 @@ class KeycloakComponentTestCase(ModuleTestCase):
             "org.keycloak.storage.ldap.mappers.LDAPStorageMapper": [
                 {
 >>>>>>> SX5-868 Add keycloak_component module with non mock unit tests.
+=======
+>>>>>>> SX5-868 Add role management to keycloak_group module. Add
                     "name": "groupMapper",
                     "providerId": "group-ldap-mapper",
                     "config": {
@@ -478,6 +500,7 @@ class KeycloakComponentTestCase(ModuleTestCase):
                     }
                 }
             ]
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
         },
@@ -516,6 +539,8 @@ class KeycloakComponentTestCase(ModuleTestCase):
         toCreate["providerType"] = "org.keycloak.storage.UserStorageProvider"
         toCreate["config"] = dict(
 =======
+=======
+>>>>>>> SX5-868 Add role management to keycloak_group module. Add
         }
         results = component(toModify)
         #print str(results)
@@ -554,6 +579,7 @@ class KeycloakComponentTestCase(ModuleTestCase):
         toDoNotModify["providerId"] = "ldap"
         toDoNotModify["providerType"] = "org.keycloak.storage.UserStorageProvider"
         toDoNotModify["config"] = dict(
+<<<<<<< HEAD
 >>>>>>> SX5-868 Add role management to keycloak_group module. Add
 =======
         },
@@ -592,6 +618,8 @@ class KeycloakComponentTestCase(ModuleTestCase):
         toCreate["providerType"] = "org.keycloak.storage.UserStorageProvider"
         toCreate["config"] = dict(
 >>>>>>> SX5-868 Add keycloak_component module with non mock unit tests.
+=======
+>>>>>>> SX5-868 Add role management to keycloak_group module. Add
             vendor=["ad"],
             usernameLDAPAttribute=["sAMAccountName"],
             rdnLDAPAttribute=["cn"],
@@ -605,6 +633,7 @@ class KeycloakComponentTestCase(ModuleTestCase):
             )
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
         toCreate["subComponents"] = {
 =======
         toDoNotModify["subComponents"] = {
@@ -612,6 +641,9 @@ class KeycloakComponentTestCase(ModuleTestCase):
 =======
         toCreate["subComponents"] = {
 >>>>>>> SX5-868 Add keycloak_component module with non mock unit tests.
+=======
+        toDoNotModify["subComponents"] = {
+>>>>>>> SX5-868 Add role management to keycloak_group module. Add
             "org.keycloak.storage.ldap.mappers.LDAPStorageMapper": [{
                     "name": "groupMapper",
                     "providerId": "group-ldap-mapper",
@@ -648,6 +680,7 @@ class KeycloakComponentTestCase(ModuleTestCase):
         }
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> SX5-868 Add keycloak_component module with non mock unit tests.
         toCreate["force"] = False
@@ -665,6 +698,8 @@ class KeycloakComponentTestCase(ModuleTestCase):
         for subComponent in results.exception.args[0]['subComponents']:
             if subComponent["name"] == toCreate["subComponents"]["org.keycloak.storage.ldap.mappers.LDAPStorageMapper"][0]["name"]:
 =======
+=======
+>>>>>>> SX5-868 Add role management to keycloak_group module. Add
         toDoNotModify["force"] = False
         component(toDoNotModify)
         results = component(toDoNotModify)
@@ -676,16 +711,20 @@ class KeycloakComponentTestCase(ModuleTestCase):
         subComponentFound = False
         for subComponent in results['ansible_facts']['subComponents']:
             if subComponent["name"] == toDoNotModify["subComponents"]["org.keycloak.storage.ldap.mappers.LDAPStorageMapper"][0]["name"]:
+<<<<<<< HEAD
 >>>>>>> SX5-868 Add role management to keycloak_group module. Add
 =======
         subComponentFound = False
         for subComponent in results.exception.args[0]['subComponents']:
             if subComponent["name"] == toCreate["subComponents"]["org.keycloak.storage.ldap.mappers.LDAPStorageMapper"][0]["name"]:
 >>>>>>> SX5-868 Add keycloak_component module with non mock unit tests.
+=======
+>>>>>>> SX5-868 Add role management to keycloak_group module. Add
                 subComponentFound = True
                 break
         self.assertTrue(subComponentFound,"Sub component not found in the sub components")
         self.assertEquals(subComponent["config"]["groups.dn"][0], 
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
                      toCreate["subComponents"]["org.keycloak.storage.ldap.mappers.LDAPStorageMapper"][0]["config"]["groups.dn"][0],
@@ -694,11 +733,14 @@ class KeycloakComponentTestCase(ModuleTestCase):
         for subComponent in results.exception.args[0]['subComponents']:
             if subComponent["name"] == toCreate["subComponents"]["org.keycloak.storage.ldap.mappers.LDAPStorageMapper"][1]["name"]:
 =======
+=======
+>>>>>>> SX5-868 Add role management to keycloak_group module. Add
                      toDoNotModify["subComponents"]["org.keycloak.storage.ldap.mappers.LDAPStorageMapper"][0]["config"]["groups.dn"][0],
                      "groups.dn: " + subComponent["config"]["groups.dn"][0] + ": " + toDoNotModify["subComponents"]["org.keycloak.storage.ldap.mappers.LDAPStorageMapper"][0]["config"]["groups.dn"][0])
         subComponentFound = False
         for subComponent in results['ansible_facts']['subComponents']:
             if subComponent["name"] == toDoNotModify["subComponents"]["org.keycloak.storage.ldap.mappers.LDAPStorageMapper"][1]["name"]:
+<<<<<<< HEAD
 >>>>>>> SX5-868 Add role management to keycloak_group module. Add
 =======
                      toCreate["subComponents"]["org.keycloak.storage.ldap.mappers.LDAPStorageMapper"][0]["config"]["groups.dn"][0],
@@ -707,10 +749,13 @@ class KeycloakComponentTestCase(ModuleTestCase):
         for subComponent in results.exception.args[0]['subComponents']:
             if subComponent["name"] == toCreate["subComponents"]["org.keycloak.storage.ldap.mappers.LDAPStorageMapper"][1]["name"]:
 >>>>>>> SX5-868 Add keycloak_component module with non mock unit tests.
+=======
+>>>>>>> SX5-868 Add role management to keycloak_group module. Add
                 subComponentFound = True
                 break
         self.assertTrue(subComponentFound,"Sub component not found in the sub components")
         self.assertEquals(subComponent["config"]["groups.dn"][0], 
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -724,6 +769,8 @@ class KeycloakComponentTestCase(ModuleTestCase):
         self.modifyComponentLdapUserStorageProvider["subComponents"] = {
 <<<<<<< HEAD
 =======
+=======
+>>>>>>> SX5-868 Add role management to keycloak_group module. Add
                      toDoNotModify["subComponents"]["org.keycloak.storage.ldap.mappers.LDAPStorageMapper"][1]["config"]["groups.dn"][0],
                      "groups.dn: " + subComponent["config"]["groups.dn"][0] + ": " + toDoNotModify["subComponents"]["org.keycloak.storage.ldap.mappers.LDAPStorageMapper"][1]["config"]["groups.dn"][0])
 
@@ -750,9 +797,12 @@ class KeycloakComponentTestCase(ModuleTestCase):
             bindCredential=["LeTresLongMotDePasse"]
             )
         toDelete["subComponents"] = {
+<<<<<<< HEAD
 >>>>>>> SX5-868 Add role management to keycloak_group module. Add
 =======
 >>>>>>> SX5-868 Add keycloak_component module with non mock unit tests.
+=======
+>>>>>>> SX5-868 Add role management to keycloak_group module. Add
             "org.keycloak.storage.ldap.mappers.LDAPStorageMapper": [{
                     "name": "groupMapper",
                     "providerId": "group-ldap-mapper",
@@ -787,6 +837,7 @@ class KeycloakComponentTestCase(ModuleTestCase):
                 }
             ]
         }
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -885,6 +936,8 @@ class KeycloakComponentTestCase(ModuleTestCase):
         self.assertTrue(results.exception.args[0]['changed'])
         self.assertRegexpMatches(results.exception.args[0]['msg'], 'deleted', 'component not deleted')
 =======
+=======
+>>>>>>> SX5-868 Add role management to keycloak_group module. Add
         toDelete["force"] = False
         component(toDelete)
         toDelete["state"] = "absent"
@@ -892,6 +945,7 @@ class KeycloakComponentTestCase(ModuleTestCase):
     
         self.assertTrue(results['changed'])
         self.assertEqual(results['stdout'], 'deleted', 'client has been deleted')
+<<<<<<< HEAD
 >>>>>>> SX5-868 Add role management to keycloak_group module. Add
 =======
     
@@ -955,3 +1009,5 @@ class KeycloakComponentTestCase(ModuleTestCase):
         self.assertTrue(results.exception.args[0]['changed'])
         self.assertRegexpMatches(results.exception.args[0]['msg'], 'deleted', 'component not deleted')
 >>>>>>> SX5-868 Add keycloak_component module with non mock unit tests.
+=======
+>>>>>>> SX5-868 Add role management to keycloak_group module. Add
