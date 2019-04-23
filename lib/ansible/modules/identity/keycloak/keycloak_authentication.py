@@ -170,6 +170,7 @@ EXAMPLES = '''
 
 RETURN = '''
 <<<<<<< HEAD
+<<<<<<< HEAD
 flow:
   description: JSON representation for the authentication.
   returned: on success
@@ -180,23 +181,30 @@ msg:
   type: str
 =======
 ansible_facts:
+=======
+flow:
+>>>>>>> SX5-868 Code cleaning and documentation for keycloak_authentication
   description: JSON representation for the authentication.
   returned: on success
   type: dict
-stderr:
+msg:
   description: Error message if it is the case
   returned: on error
   type: str
+<<<<<<< HEAD
 rc:
   description: return code, 0 if success, 1 otherwise.
   returned: always
   type: bool
 >>>>>>> SX5-868 Add keycloak_authentication module to manage Authentication
+=======
+>>>>>>> SX5-868 Code cleaning and documentation for keycloak_authentication
 changed:
   description: Return True if the operation changed the authentication on the keycloak server, false otherwise.
   returned: always
   type: bool
 '''
+<<<<<<< HEAD
 <<<<<<< HEAD
 from ansible.module_utils.keycloak import KeycloakAPI, keycloak_argument_spec
 from ansible.module_utils.basic import AnsibleModule
@@ -312,6 +320,11 @@ from ansible.module_utils.basic import AnsibleModule
         
 
 >>>>>>> SX5-868 Add keycloak_authentication module to manage Authentication
+=======
+from ansible.module_utils.keycloak import KeycloakAPI, keycloak_argument_spec
+from ansible.module_utils.basic import AnsibleModule
+
+>>>>>>> SX5-868 Code cleaning and documentation for keycloak_authentication
 def main():
     """
     Module execution
@@ -348,6 +361,7 @@ def main():
     force = module.params.get('force')
     
 <<<<<<< HEAD
+<<<<<<< HEAD
     newAuthenticationRepresentation = {}
     newAuthenticationRepresentation["alias"] = module.params.get("alias")
     newAuthenticationRepresentation["copyFrom"] = module.params.get("copyFrom")
@@ -355,17 +369,19 @@ def main():
     newAuthenticationRepresentation["authenticationExecutions"] = module.params.get("authenticationExecutions")
 =======
     # Créer un représentation du authentication recu en paramètres
+=======
+>>>>>>> SX5-868 Code cleaning and documentation for keycloak_authentication
     newAuthenticationRepresentation = {}
     newAuthenticationRepresentation["alias"] = module.params.get("alias")
-    #if "copyFrom" in params and params["copyFrom"] is not None:
     newAuthenticationRepresentation["copyFrom"] = module.params.get("copyFrom")
-    #if "providerId" in params and params["providerId"] is not None:
     newAuthenticationRepresentation["providerId"] = module.params.get("providerId")
-    #if "authenticationExecutions" in params and params["authenticationExecutions"] is not None:
     newAuthenticationRepresentation["authenticationExecutions"] = module.params.get("authenticationExecutions")
+<<<<<<< HEAD
    
     #authenticationSvcBaseUrl = url + "/auth/admin/realms/" + realm + "/authentication/"
 >>>>>>> SX5-868 Add keycloak_authentication module to manage Authentication
+=======
+>>>>>>> SX5-868 Code cleaning and documentation for keycloak_authentication
     
     changed = False
 
@@ -376,6 +392,7 @@ def main():
             # If copyFrom is defined, create authentication flow from a copy
             if "copyFrom" in newAuthenticationRepresentation and newAuthenticationRepresentation["copyFrom"] is not None:
 <<<<<<< HEAD
+<<<<<<< HEAD
                 authenticationRepresentation = kc.copy_auth_flow(config=newAuthenticationRepresentation, realm=realm)
             else: # Create an empty authentication flow
 =======
@@ -384,12 +401,17 @@ def main():
             else: # Create an empty authentication flow
                 #authenticationRepresentation = createEmptyAuthFlow(authenticationSvcBaseUrl, newAuthenticationRepresentation, headers)
 >>>>>>> SX5-868 Add keycloak_authentication module to manage Authentication
+=======
+                authenticationRepresentation = kc.copy_auth_flow(config=newAuthenticationRepresentation, realm=realm)
+            else: # Create an empty authentication flow
+>>>>>>> SX5-868 Code cleaning and documentation for keycloak_authentication
                 authenticationRepresentation = kc.create_empty_auth_flow(config=newAuthenticationRepresentation, realm=realm)
             # If the authentication still not exist on the server, raise an exception.
             if authenticationRepresentation is None:
                 result['msg'] = "Authentication just created not found: " + str(newAuthenticationRepresentation)
                 module.fail_json(**result)
             # Configure the executions for the flow
+<<<<<<< HEAD
 <<<<<<< HEAD
             kc.create_or_update_executions(config=newAuthenticationRepresentation, realm=realm)
             changed = True
@@ -401,6 +423,11 @@ def main():
             # Get executions created
             #executionsRepresentation = getExecutionsRepresentation(authenticationSvcBaseUrl, newAuthenticationRepresentation, headers)
 >>>>>>> SX5-868 Add keycloak_authentication module to manage Authentication
+=======
+            kc.create_or_update_executions(config=newAuthenticationRepresentation, realm=realm)
+            changed = True
+            # Get executions created
+>>>>>>> SX5-868 Code cleaning and documentation for keycloak_authentication
             executionsRepresentation = kc.get_executions_representation(config=newAuthenticationRepresentation, realm=realm)
             if executionsRepresentation is not None:
                 authenticationRepresentation["authenticationExecutions"] = executionsRepresentation
@@ -408,24 +435,32 @@ def main():
             result['changed'] = changed
             result['flow'] = authenticationRepresentation
 <<<<<<< HEAD
+<<<<<<< HEAD
         elif state == 'absent': # If desired state is absent.
 =======
         elif state == 'absent': # Sinon, le status est absent
 >>>>>>> SX5-868 Add keycloak_authentication module to manage Authentication
+=======
+        elif state == 'absent': # If desired state is absent.
+>>>>>>> SX5-868 Code cleaning and documentation for keycloak_authentication
             result['msg'] = newAuthenticationRepresentation["alias"] + ' absent'
                 
     else:  # The authentication flow already exist
         if (state == 'present'): # if desired state is present
             if force: # If force option is true
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
                 #requests.delete(authenticationSvcBaseUrl + "flows/" + authenticationRepresentation["id"], headers=headers)
 >>>>>>> SX5-868 Add keycloak_authentication module to manage Authentication
+=======
+>>>>>>> SX5-868 Code cleaning and documentation for keycloak_authentication
                 # Delete the actual authentication flow
                 kc.delete_authentication_flow_by_id(id=authenticationRepresentation["id"], realm=realm)
                 changed = True
                 # If copyFrom is defined, create authentication flow from a copy
                 if "copyFrom" in newAuthenticationRepresentation and newAuthenticationRepresentation["copyFrom"] is not None:
+<<<<<<< HEAD
 <<<<<<< HEAD
                     authenticationRepresentation = kc.copy_auth_flow(config=newAuthenticationRepresentation, realm=realm)
                 else: # Create an empty authentication flow
@@ -435,6 +470,10 @@ def main():
                 else: # Create an empty authentication flow
                     #authenticationRepresentation = createEmptyAuthFlow(authenticationSvcBaseUrl, newAuthenticationRepresentation, headers)
 >>>>>>> SX5-868 Add keycloak_authentication module to manage Authentication
+=======
+                    authenticationRepresentation = kc.copy_auth_flow(config=newAuthenticationRepresentation, realm=realm)
+                else: # Create an empty authentication flow
+>>>>>>> SX5-868 Code cleaning and documentation for keycloak_authentication
                     authenticationRepresentation = kc.create_empty_auth_flow(config=newAuthenticationRepresentation, realm=realm)
                 # If the authentication still not exist on the server, raise an exception.
                 if authenticationRepresentation is None:
@@ -442,6 +481,7 @@ def main():
                     result['changed'] = changed
                     module.fail_json(**result)
             # Configure the executions for the flow
+<<<<<<< HEAD
 <<<<<<< HEAD
             if kc.create_or_update_executions(config=newAuthenticationRepresentation, realm=realm):
                 changed = True
@@ -453,6 +493,11 @@ def main():
             # Get executions created
             #executionsRepresentation = getExecutionsRepresentation(authenticationSvcBaseUrl, newAuthenticationRepresentation, headers)
 >>>>>>> SX5-868 Add keycloak_authentication module to manage Authentication
+=======
+            if kc.create_or_update_executions(config=newAuthenticationRepresentation, realm=realm):
+                changed = True
+            # Get executions created
+>>>>>>> SX5-868 Code cleaning and documentation for keycloak_authentication
             executionsRepresentation = kc.get_executions_representation(config=newAuthenticationRepresentation, realm=realm)
             if executionsRepresentation is not None:
                 authenticationRepresentation["authenticationExecutions"] = executionsRepresentation
@@ -461,9 +506,12 @@ def main():
         elif state == 'absent': # If desired state is absent
             # Delete the authentication flow alias.
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
             #requests.delete(authenticationSvcBaseUrl + "flows/" + authenticationRepresentation["id"], headers=headers)
 >>>>>>> SX5-868 Add keycloak_authentication module to manage Authentication
+=======
+>>>>>>> SX5-868 Code cleaning and documentation for keycloak_authentication
             kc.delete_authentication_flow_by_id(id=authenticationRepresentation["id"], realm=realm)
             changed = True
             result['msg'] = 'Authentication flow: ' + newAuthenticationRepresentation['alias'] + ' id: ' + authenticationRepresentation["id"] + ' is deleted'
