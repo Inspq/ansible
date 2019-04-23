@@ -6,9 +6,15 @@ from units.modules.utils import AnsibleExitJson, AnsibleFailJson, ModuleTestCase
 
 class KeycloakAuthenticationTestCase(ModuleTestCase):
     addExecutionToAuthenticationFlowWithoutCopy = {
+<<<<<<< HEAD
         "auth_keycloak_url":  "http://localhost:18081/auth",
         "auth_username": "admin",
         "auth_password": "admin",
+=======
+        "url":  "http://localhost:18081/auth",
+        "username": "admin",
+        "password": "admin",
+>>>>>>> SX5-868 Add keycloak_authentication module to manage Authentication
         "realm": "master",
         "alias": "Test add execution to authentication flow without copy",
         "providerId": "basic-flow",
@@ -28,9 +34,15 @@ class KeycloakAuthenticationTestCase(ModuleTestCase):
         "force":False
     }
     authenticationFlowNotChanged = {
+<<<<<<< HEAD
         "auth_keycloak_url":  "http://localhost:18081/auth",
         "auth_username": "admin",
         "auth_password": "admin",
+=======
+        "url":  "http://localhost:18081/auth",
+        "username": "admin",
+        "password": "admin",
+>>>>>>> SX5-868 Add keycloak_authentication module to manage Authentication
         "realm": "master",
         "alias": "Test authentication flow not changed",
         "copyFrom": "first broker login",
@@ -50,9 +62,15 @@ class KeycloakAuthenticationTestCase(ModuleTestCase):
         "force":False
     }
     modifyAuthenticationFlow = {
+<<<<<<< HEAD
         "auth_keycloak_url":  "http://localhost:18081/auth",
         "auth_username": "admin",
         "auth_password": "admin",
+=======
+        "url":  "http://localhost:18081/auth",
+        "username": "admin",
+        "password": "admin",
+>>>>>>> SX5-868 Add keycloak_authentication module to manage Authentication
         "realm": "master",
         "alias": "Test modify authentication flow",
         "copyFrom": "first broker login",
@@ -72,9 +90,15 @@ class KeycloakAuthenticationTestCase(ModuleTestCase):
         "force":False
     }
     deleteAuthenticationFlow = {
+<<<<<<< HEAD
         "auth_keycloak_url":  "http://localhost:18081/auth",
         "auth_username": "admin",
         "auth_password": "admin",
+=======
+        "url":  "http://localhost:18081/auth",
+        "username": "admin",
+        "password": "admin",
+>>>>>>> SX5-868 Add keycloak_authentication module to manage Authentication
         "realm": "master",
         "alias": "Test delete authentication flow",
         "copyFrom": "first broker login",
@@ -114,9 +138,15 @@ class KeycloakAuthenticationTestCase(ModuleTestCase):
                 
     def test_create_authentication_flow_copy(self):
         toCreate = {
+<<<<<<< HEAD
             "auth_keycloak_url":  "http://localhost:18081/auth",
             "auth_username": "admin",
             "auth_password": "admin",
+=======
+            "url":  "http://localhost:18081/auth",
+            "username": "admin",
+            "password": "admin",
+>>>>>>> SX5-868 Add keycloak_authentication module to manage Authentication
             "realm": "master",
             "alias": "Test create authentication flow copy",
             "copyFrom": "first broker login",
@@ -154,9 +184,15 @@ class KeycloakAuthenticationTestCase(ModuleTestCase):
 
     def test_create_authentication_flow_set_update_profile_on_first_login_to_on(self):
         toCreate = {
+<<<<<<< HEAD
             "auth_keycloak_url":  "http://localhost:18081/auth",
             "auth_username": "admin",
             "auth_password": "admin",
+=======
+            "url":  "http://localhost:18081/auth",
+            "username": "admin",
+            "password": "admin",
+>>>>>>> SX5-868 Add keycloak_authentication module to manage Authentication
             "realm": "master",
             "alias": "Test create authentication flow set update profile on first login to on",
             "copyFrom": "first broker login",
@@ -194,9 +230,15 @@ class KeycloakAuthenticationTestCase(ModuleTestCase):
         
     def test_create_authentication_flow_without_copy(self):
         toCreate = {
+<<<<<<< HEAD
             "auth_keycloak_url":  "http://localhost:18081/auth",
             "auth_username": "admin",
             "auth_password": "admin",
+=======
+            "url":  "http://localhost:18081/auth",
+            "username": "admin",
+            "password": "admin",
+>>>>>>> SX5-868 Add keycloak_authentication module to manage Authentication
             "realm": "master",
             "alias": "Test create authentication flow without copy",
             "providerId": "basic-flow",
@@ -234,9 +276,15 @@ class KeycloakAuthenticationTestCase(ModuleTestCase):
 
     def test_create_authentication_flow_with_two_executions_without_copy(self):
         toCreate = {
+<<<<<<< HEAD
             "auth_keycloak_url":  "http://localhost:18081/auth",
             "auth_username": "admin",
             "auth_password": "admin",
+=======
+            "url":  "http://localhost:18081/auth",
+            "username": "admin",
+            "password": "admin",
+>>>>>>> SX5-868 Add keycloak_authentication module to manage Authentication
             "realm": "master",
             "alias": "Test create authentication flow with two executions without copy",
             "providerId": "basic-flow",
@@ -348,9 +396,15 @@ class KeycloakAuthenticationTestCase(ModuleTestCase):
 
     def test_delete_inexisting_authentication_flow(self):
         toDelete = {
+<<<<<<< HEAD
             "auth_keycloak_url":  "http://localhost:18081/auth",
             "auth_username": "admin",
             "auth_password": "admin",
+=======
+            "url":  "http://localhost:18081/auth",
+            "username": "admin",
+            "password": "admin",
+>>>>>>> SX5-868 Add keycloak_authentication module to manage Authentication
             "realm": "master",
             "alias": "Test delete inexisting authentication flow",
             "state":"absent",
