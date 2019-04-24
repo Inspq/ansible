@@ -26,6 +26,7 @@ DOCUMENTATION = '''
 ---
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 author: "Philippe Gauthier (philippe.gauthier@inspq.qc.ca"
 >>>>>>> SX5-868 Add keycloak_component module with non mock unit tests.
@@ -35,6 +36,13 @@ module: keycloak_component
 short_description: Configure a component in Keycloak
 description:
     - This module creates, removes or update Keycloak component.
+=======
+author: "Philippe Gauthier (philippe.gauthier@inspq.qc.ca"
+module: keycloak_component
+short_description: Configure a component in Keycloak
+description:
+    - This module creates, removes or update Keycloak component. 
+>>>>>>> SX5-868 Add keycloak_component module with non mock unit tests.
     - It can be use to create a LDAP and AD user federation to a realm in the Keycloak server
 version_added: "2.3"
 options:
@@ -80,7 +88,11 @@ options:
     syncUserStorage:
         description:
             - Type of user storage synchronization must be triggerd for
+<<<<<<< HEAD
             - org.keycloak.storage.UserStorageProvider component.
+=======
+            - org.keycloak.storage.UserStorageProvider component. 
+>>>>>>> SX5-868 Add keycloak_component module with non mock unit tests.
             - If the parameter is absent, no sync will be triggered
         required: false
         choices: ["triggerFullSync", "triggerChangedUsersSync"]
@@ -107,6 +119,7 @@ extends_documentation_fragment:
     - keycloak
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 
 author:
     - Philippe Gauthier (philippe.gauthier@inspq.qc.ca)
@@ -117,11 +130,14 @@ author:
 author: 
     - Philippe Gauthier (philippe.gauthier@inspq.qc.ca)
 >>>>>>> SX5-868 Mise à jour de la documentation des modules Keycloak suite à la
+=======
+>>>>>>> SX5-868 Add keycloak_component module with non mock unit tests.
 '''
 
 EXAMPLES = '''
     - name: Create a LDAP User Storage provider. A full sync of users and a fedToKeycloak sync for group mappers will be triggered.
       keycloak_component:
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
         auth_keycloak_url: http://localhost:8080/auth
@@ -137,6 +153,11 @@ EXAMPLES = '''
         auth_sername: admin
         auth_password: password
 >>>>>>> SX5-868 Mise à jour de la documentation des modules Keycloak suite à la
+=======
+        url: http://localhost:8080/auth
+        username: admin
+        password: admin
+>>>>>>> SX5-868 Add keycloak_component module with non mock unit tests.
         realm: master
         name: ActiveDirectory
         providerId: ldap
@@ -158,7 +179,11 @@ EXAMPLES = '''
           - "ldap://ldap.server.com:389"
           usersDn:
           - "OU=USERS,DC=server,DC=com"
+<<<<<<< HEAD
           authType:
+=======
+          authType: 
+>>>>>>> SX5-868 Add keycloak_component module with non mock unit tests.
           - "simple"
           bindDn:
           - "CN=keycloak,OU=USERS,DC=server,DC=com"
@@ -167,6 +192,7 @@ EXAMPLES = '''
           changedSyncPeriod:
           - "86400"
           fullSyncPeriod:
+<<<<<<< HEAD
           - "604800"
         subComponents:
           org.keycloak.storage.ldap.mappers.LDAPStorageMapper:
@@ -192,6 +218,33 @@ EXAMPLES = '''
               groups.dn:
                 - "cn=groups,OU=SEC,DC=SANTEPUBLIQUE,DC=RTSS,DC=QC,DC=CA"
               drop.non.existing.groups.during.sync:
+=======
+          - "604800"  
+        subComponents:
+          org.keycloak.storage.ldap.mappers.LDAPStorageMapper: 
+          - name: "groupMapper"
+            providerId: "group-ldap-mapper"
+            config: 
+              mode: 
+                - "READ_ONLY"
+              membership.attribute.type:
+                - "DN"
+              user.roles.retrieve.strategy: 
+                - "LOAD_GROUPS_BY_MEMBER_ATTRIBUTE"
+              group.name.ldap.attribute: 
+                - "cn"
+              membership.ldap.attribute: 
+                - "member"
+              preserve.group.inheritance: 
+                - "true"
+              membership.user.ldap.attribute: 
+                - "uid"
+              group.object.classes: 
+                - "groupOfNames"
+              groups.dn: 
+                - "cn=groups,OU=SEC,DC=SANTEPUBLIQUE,DC=RTSS,DC=QC,DC=CA"
+              drop.non.existing.groups.during.sync: 
+>>>>>>> SX5-868 Add keycloak_component module with non mock unit tests.
                 - "false"
         syncUserStorage: triggerFullSync
         syncLdapMappers: fedToKeycloak
@@ -199,6 +252,7 @@ EXAMPLES = '''
 
     - name: Re-create LDAP User Storage provider.
       keycloak_component:
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
         auth_keycloak_url: http://localhost:8080/auth
@@ -214,6 +268,11 @@ EXAMPLES = '''
         auth_sername: admin
         auth_password: password
 >>>>>>> SX5-868 Mise à jour de la documentation des modules Keycloak suite à la
+=======
+        url: http://localhost:8080/auth
+        username: admin
+        password: admin
+>>>>>>> SX5-868 Add keycloak_component module with non mock unit tests.
         realm: master
         name: ActiveDirectory
         providerId: ldap
@@ -235,7 +294,11 @@ EXAMPLES = '''
           - "ldap://ldap.server.com:389"
           usersDn:
           - "OU=USERS,DC=server,DC=com"
+<<<<<<< HEAD
           authType:
+=======
+          authType: 
+>>>>>>> SX5-868 Add keycloak_component module with non mock unit tests.
           - "simple"
           bindDn:
           - "CN=keycloak,OU=USERS,DC=server,DC=com"
@@ -244,6 +307,7 @@ EXAMPLES = '''
           changedSyncPeriod:
           - "86400"
           fullSyncPeriod:
+<<<<<<< HEAD
           - "604800"
         subComponents:
           org.keycloak.storage.ldap.mappers.LDAPStorageMapper:
@@ -290,6 +354,42 @@ EXAMPLES = '''
         auth_sername: admin
         auth_password: password
 >>>>>>> SX5-868 Mise à jour de la documentation des modules Keycloak suite à la
+=======
+          - "604800"  
+        subComponents:
+          org.keycloak.storage.ldap.mappers.LDAPStorageMapper: 
+          - name: "groupMapper"
+            providerId: "group-ldap-mapper"
+            config: 
+              mode: 
+                - "READ_ONLY"
+              membership.attribute.type:
+                - "DN"
+              user.roles.retrieve.strategy: 
+                - "LOAD_GROUPS_BY_MEMBER_ATTRIBUTE"
+              group.name.ldap.attribute: 
+                - "cn"
+              membership.ldap.attribute: 
+                - "member"
+              preserve.group.inheritance: 
+                - "true"
+              membership.user.ldap.attribute: 
+                - "uid"
+              group.object.classes: 
+                - "groupOfNames"
+              groups.dn: 
+                - "cn=groups,OU=SEC,DC=SANTEPUBLIQUE,DC=RTSS,DC=QC,DC=CA"
+              drop.non.existing.groups.during.sync: 
+                - "false"
+        state: present
+        force: yes
+        
+    - name: Remove User Storage Provider.
+      keycloak_component:
+        url: http://localhost:8080/auth
+        username: admin
+        password: admin
+>>>>>>> SX5-868 Add keycloak_component module with non mock unit tests.
         realm: master
         name: ActiveDirectory
         providerId: ldap
@@ -321,13 +421,17 @@ from ansible.module_utils.keycloak_utils import isDictEquals
 # import module snippets
 from ansible.module_utils.basic import AnsibleModule
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> SX5-868 Add keycloak_component module with non mock unit tests.
 def main():
     argument_spec = keycloak_argument_spec()
     meta_args = dict(
         id=dict(type='str'),
         name=dict(type='str', required=True),
         realm=dict(type='str', default='master'),
+<<<<<<< HEAD
         providerId=dict(
             choices=[
                 "ldap",
@@ -347,6 +451,10 @@ def main():
                 "authenticatorConfig",
                 "requiredActions"],
             required=True),
+=======
+        providerId=dict(choices=["ldap","allowed-client-templates","trusted-hosts","allowed-protocol-mappers","max-clients","scope","consent-required","rsa-generated"], required=True),
+        providerType=dict(choices=["org.keycloak.storage.UserStorageProvider", "org.keycloak.services.clientregistration.policy.ClientRegistrationPolicy","org.keycloak.keys.KeyProvider","authenticatorConfig","requiredActions"], required=True),
+>>>>>>> SX5-868 Add keycloak_component module with non mock unit tests.
         parentId=dict(type='str'),
         config=dict(type='dict'),
         subComponents=dict(type='dict'),
@@ -360,11 +468,16 @@ def main():
     module = AnsibleModule(argument_spec=argument_spec,
                            supports_check_mode=True,
                            required_one_of=([['name', 'providerId', 'providerType']]))
+<<<<<<< HEAD
 
+=======
+        
+>>>>>>> SX5-868 Add keycloak_component module with non mock unit tests.
     result = dict(changed=False, msg='', diff={}, component='', subComponents='')
 
     # Obtain access token, initialize API
     kc = KeycloakAPI(module)
+<<<<<<< HEAD
 
     realm = module.params.get('realm')
     state = module.params.get('state')
@@ -401,12 +514,47 @@ def main():
                 realm=realm)
             subComponents = kc.get_all_sub_components(parent_id=component["id"], realm=realm)
             if syncUserStorage != 'no':  # If user synchronization is needed
+=======
+    
+    realm = module.params.get('realm')
+    state = module.params.get('state')
+    force = module.params.get('force')
+    
+    # Créer un représentation du component recu en paramètres
+    newComponent = {}
+    #if "id" in params and params["id"] is not None:
+    newComponent["id"] = module.params.get('id')
+    #if "name" in params and params["name"] is not None:
+    newComponent["name"] = module.params.get('name')
+    #if "providerId" in params and params["providerId"] is not None:
+    newComponent["providerId"] =module.params.get('providerId')
+    #if "providerType" in params and params["providerType"] is not None:
+    newComponent["providerType"] = module.params.get('providerType')
+    newComponent["parentId"] = module.params.get('parentId') if module.params.get('parentId') is not None else realm
+    #if "config" in params:
+    newComponent["config"] = module.params.get("config")
+    newSubComponents = module.params.get("subComponents")
+    syncUserStorage = module.params.get('syncUserStorage') if module.params.get('syncUserStorage') is not None else "no"    
+    syncLdapMappers = module.params.get('syncLdapMappers') if module.params.get('syncLdapMappers') is not None else "no"    
+
+    changed = False
+    
+    component = kc.get_component_by_name_provider_and_parent(name=newComponent["name"], provider_type=newComponent["providerType"], provider_id=newComponent["providerId"], parent_id=newComponent["parentId"], realm=realm)
+        
+    if component == {}: # If component does not exist
+        if (state == 'present'): # If desired stat is present
+            # Create the component and it's sub-components
+            component = kc.create_component(newComponent=newComponent, newSubComponents=newSubComponents, syncLdapMappers=syncLdapMappers, realm=realm)
+            subComponents = kc.get_all_sub_components(parent_id=component["id"], realm=realm)
+            if syncUserStorage != 'no': # If user synchronization is needed
+>>>>>>> SX5-868 Add keycloak_component module with non mock unit tests.
                 kc.sync_user_storage(component_id=component['id'], action=syncUserStorage, realm=realm)
                 result['component'] = component
             changed = True
             result['component'] = component
             result['subComponents'] = subComponents
             result['changed'] = changed
+<<<<<<< HEAD
         elif state == 'absent':  # Id desired state is absent, return absent and do nothing.
             result['msg'] = newComponent["name"] + ' absent'
             result['component'] = newComponent
@@ -415,24 +563,44 @@ def main():
     else:  # If component already exist
         if (state == 'present'):  # if desired state is present
             if force:  # If force option is true
+=======
+        elif state == 'absent': # Id desired state is absent, return absent and do nothing.
+            result['msg'] = newComponent["name"] + ' absent'
+            result['component'] = newComponent
+            result['changed'] = changed
+               
+    else:  # If component already exist
+        if (state == 'present'): # if desired state is present
+            if force: # If force option is true
+>>>>>>> SX5-868 Add keycloak_component module with non mock unit tests.
                 # Delete the existing component
                 kc.delete_component(component_id=component["id"], realm=realm)
                 changed = True
                 # Re-create the component.
                 component = kc.create_component(newComponent=newComponent, newSubComponents=newSubComponents, syncLdapMappers=syncLdapMappers, realm=realm)
+<<<<<<< HEAD
             else:  # If force option is false
+=======
+            else: # If force option is false
+>>>>>>> SX5-868 Add keycloak_component module with non mock unit tests.
                 # Copy existing id in new component
                 newComponent['id'] = component['id']
                 newComponent['parentId'] = component['parentId']
                 excludes = []
                 # Compare the new component with the existing
                 excludes.append("bindCredential")
+<<<<<<< HEAD
                 if not isDictEquals(newComponent, component, excludes):  # If the component need to be changed
+=======
+                #excludes.append("id")
+                if not isDictEquals(newComponent, component, excludes): # If the component need to be changed
+>>>>>>> SX5-868 Add keycloak_component module with non mock unit tests.
                     # Update the component
                     component = kc.update_component(newComponent=newComponent, realm=realm)
                     changed = True
                 # Update sub components
                 if kc.update_sub_components(component=newComponent, newSubComponents=newSubComponents, syncLdapMappers=syncLdapMappers, realm=realm):
+<<<<<<< HEAD
                     changed = True
             if syncUserStorage != 'no':  # If user synchronization is needed
                 kc.sync_user_storage(component_id=component['id'], action=syncUserStorage, realm=realm)
@@ -442,6 +610,17 @@ def main():
             result['changed'] = changed
 
         elif state == 'absent':  # if desired state is absent
+=======
+                    changed=True
+            if syncUserStorage != 'no': # If user synchronization is needed
+                kc.sync_user_storage(component_id=component['id'], action=syncUserStorage, realm=realm)
+            
+            result['component'] = component
+            result['subComponents'] = kc.get_all_sub_components(parent_id=component["id"], realm=realm)
+            result['changed'] = changed
+                
+        elif state == 'absent': # if desired state is absent
+>>>>>>> SX5-868 Add keycloak_component module with non mock unit tests.
             # Delete the component
             kc.delete_component(component_id=component['id'], realm=realm)
             changed = True
@@ -450,6 +629,9 @@ def main():
 
     module.exit_json(**result)
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> SX5-868 Add keycloak_component module with non mock unit tests.
 if __name__ == '__main__':
     main()
