@@ -52,6 +52,7 @@ version_added: "2.9"
 >>>>>>> SX5-868 Mise à jour de la documentation des modules Keycloak suite à la
 options:
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 version_added: "2.3"
 options:
@@ -75,6 +76,8 @@ options:
 >>>>>>> SX5-868 Update documentation for keycloak_authentication module.
 =======
 >>>>>>> SX5-868 Add keycloak_authentication module to manage Authentication
+=======
+>>>>>>> SX5-868 Update documentation for keycloak_authentication module.
     realm:
         description:
             - The name of the realm in which is the authentication.
@@ -110,6 +113,9 @@ options:
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> SX5-868 Update documentation for keycloak_authentication module.
 extends_documentation_fragment:
     - keycloak
 notes:
