@@ -39,6 +39,7 @@ options:
 =======
 version_added: "2.3"
 options:
+<<<<<<< HEAD
     url:
         description:
             - The url of the Keycloak server.
@@ -53,6 +54,8 @@ options:
             - The password for the user to logon the master realm.
         required: true
 >>>>>>> SX5-868 Add keycloak_authentication module to manage Authentication
+=======
+>>>>>>> SX5-868 Update documentation for keycloak_authentication module.
     realm:
         description:
             - The name of the realm in which is the authentication.
@@ -86,6 +89,7 @@ options:
             - If yes, allows to remove the authentication flow and recreate it.
         required: false
 <<<<<<< HEAD
+<<<<<<< HEAD
 extends_documentation_fragment:
     - keycloak
 notes:
@@ -93,6 +97,10 @@ notes:
 author: 
     - Philippe Gauthier (philippe.gauthier@inspq.qc.ca)
 =======
+=======
+extends_documentation_fragment:
+    - keycloak
+>>>>>>> SX5-868 Update documentation for keycloak_authentication module.
 notes:
     - This module has very limited functions at the moment. Please contribute if you need more...
 >>>>>>> SX5-868 Add keycloak_authentication module to manage Authentication
