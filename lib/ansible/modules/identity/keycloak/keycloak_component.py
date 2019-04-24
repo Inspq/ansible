@@ -24,6 +24,10 @@ ANSIBLE_METADATA = {'metadata_version': '1.1',
 
 DOCUMENTATION = '''
 ---
+<<<<<<< HEAD
+=======
+author: "Philippe Gauthier (philippe.gauthier@inspq.qc.ca"
+>>>>>>> SX5-868 Add keycloak_component module with non mock unit tests.
 module: keycloak_component
 short_description: Configure a component in Keycloak
 description:
@@ -98,17 +102,26 @@ options:
         required: false
 extends_documentation_fragment:
     - keycloak
+<<<<<<< HEAD
 
 author: 
     - Philippe Gauthier (philippe.gauthier@inspq.qc.ca)
+=======
+>>>>>>> SX5-868 Add keycloak_component module with non mock unit tests.
 '''
 
 EXAMPLES = '''
     - name: Create a LDAP User Storage provider. A full sync of users and a fedToKeycloak sync for group mappers will be triggered.
       keycloak_component:
+<<<<<<< HEAD
         auth_keycloak_url: http://localhost:8080/auth
         auth_sername: admin
         auth_password: password
+=======
+        url: http://localhost:8080/auth
+        username: admin
+        password: admin
+>>>>>>> SX5-868 Add keycloak_component module with non mock unit tests.
         realm: master
         name: ActiveDirectory
         providerId: ldap
@@ -171,9 +184,15 @@ EXAMPLES = '''
 
     - name: Re-create LDAP User Storage provider.
       keycloak_component:
+<<<<<<< HEAD
         auth_keycloak_url: http://localhost:8080/auth
         auth_sername: admin
         auth_password: password
+=======
+        url: http://localhost:8080/auth
+        username: admin
+        password: admin
+>>>>>>> SX5-868 Add keycloak_component module with non mock unit tests.
         realm: master
         name: ActiveDirectory
         providerId: ldap
@@ -235,9 +254,15 @@ EXAMPLES = '''
         
     - name: Remove User Storage Provider.
       keycloak_component:
+<<<<<<< HEAD
         auth_keycloak_url: http://localhost:8080/auth
         auth_sername: admin
         auth_password: password
+=======
+        url: http://localhost:8080/auth
+        username: admin
+        password: admin
+>>>>>>> SX5-868 Add keycloak_component module with non mock unit tests.
         realm: master
         name: ActiveDirectory
         providerId: ldap
