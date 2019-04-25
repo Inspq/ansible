@@ -26,15 +26,20 @@ DOCUMENTATION = '''
 ---
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 author: "Philippe Gauthier (philippe.gauthier@inspq.qc.ca)"
 >>>>>>> Sx5-868 Add module keycloak_identity_provider and non mock unit tests.
 =======
 >>>>>>> SX5-868 Mise à jour de la documentation des modules Keycloak suite à la
+=======
+author: "Philippe Gauthier (philippe.gauthier@inspq.qc.ca)"
+>>>>>>> Sx5-868 Add module keycloak_identity_provider and non mock unit tests.
 module: keycloak_identity_provider
 short_description: Configure an identity provider in Keycloak
 description:
   - This module creates, removes or update Keycloak identity provider.
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 version_added: "2.9"
@@ -44,6 +49,9 @@ version_added: "1.1"
 =======
 version_added: "2.9"
 >>>>>>> SX5-868 Mise à jour de la documentation des modules Keycloak suite à la
+=======
+version_added: "1.1"
+>>>>>>> Sx5-868 Add module keycloak_identity_provider and non mock unit tests.
 options:
   realm:
     description:
@@ -71,7 +79,11 @@ options:
     - update Profile First Login Mode.
     required: false
   trustEmail:
+<<<<<<< HEAD
     description:
+=======
+    description: 
+>>>>>>> Sx5-868 Add module keycloak_identity_provider and non mock unit tests.
     - trust Email.
     required: false
   storeToken:
@@ -102,7 +114,11 @@ options:
     default: False
   config:
     description:
+<<<<<<< HEAD
     - Detailed configuration of the identity provider.
+=======
+    - Detailed configuration of the identity provider. 
+>>>>>>> Sx5-868 Add module keycloak_identity_provider and non mock unit tests.
     required: false
   mappers:
     description:
@@ -127,6 +143,7 @@ notes:
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 author: 
     - Philippe Gauthier (philippe.gauthier@inspq.qc.ca)
 =======
@@ -138,6 +155,8 @@ author:
 >>>>>>> SX5-868 Ajustement du codestyle des modules Keycloak en préparation des
     - Philippe Gauthier (philippe.gauthier@inspq.qc.ca)
 >>>>>>> SX5-868 Mise à jour de la documentation des modules Keycloak suite à la
+=======
+>>>>>>> Sx5-868 Add module keycloak_identity_provider and non mock unit tests.
 '''
 
 EXAMPLES = '''
@@ -145,15 +164,19 @@ EXAMPLES = '''
       keycloak_identity_provider:
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
         auth_keycloak_url: http://localhost:8080/auth
         auth_sername: admin
         auth_password: password
         realm: "master"
 =======
+=======
+>>>>>>> Sx5-868 Add module keycloak_identity_provider and non mock unit tests.
         realm: "master"
         url: "http://localhost:8080/auth"
         username: "admin"
         password: "password"  
+<<<<<<< HEAD
 >>>>>>> Sx5-868 Add module keycloak_identity_provider and non mock unit tests.
 =======
         auth_keycloak_url: http://localhost:8080/auth
@@ -161,6 +184,8 @@ EXAMPLES = '''
         auth_password: password
         realm: "master"
 >>>>>>> SX5-868 Mise à jour de la documentation des modules Keycloak suite à la
+=======
+>>>>>>> Sx5-868 Add module keycloak_identity_provider and non mock unit tests.
         alias: "IdP1"
         displayName: "My super dooper IdP"
         providerId: "oidc"
@@ -192,15 +217,19 @@ EXAMPLES = '''
       keycloak_identity_provider:
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
         auth_keycloak_url: http://localhost:8080/auth
         auth_sername: admin
         auth_password: password
         realm: "master"
 =======
+=======
+>>>>>>> Sx5-868 Add module keycloak_identity_provider and non mock unit tests.
         realm: "master"
         url: "http://localhost:8080/auth"
         username: "admin"
         password: "password"  
+<<<<<<< HEAD
 >>>>>>> Sx5-868 Add module keycloak_identity_provider and non mock unit tests.
 =======
         auth_keycloak_url: http://localhost:8080/auth
@@ -208,6 +237,8 @@ EXAMPLES = '''
         auth_password: password
         realm: "master"
 >>>>>>> SX5-868 Mise à jour de la documentation des modules Keycloak suite à la
+=======
+>>>>>>> Sx5-868 Add module keycloak_identity_provider and non mock unit tests.
         alias: "IdP1"
         displayName: "My super dooper IdP"
         providerId: "oidc"
@@ -226,15 +257,19 @@ EXAMPLES = '''
       keycloak_identity_provider:
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
         auth_keycloak_url: http://localhost:8080/auth
         auth_sername: admin
         auth_password: password
         realm: "master"
 =======
+=======
+>>>>>>> Sx5-868 Add module keycloak_identity_provider and non mock unit tests.
         realm: "master"
         url: "http://localhost:8080/auth"
         username: "admin"
         password: "password"  
+<<<<<<< HEAD
 >>>>>>> Sx5-868 Add module keycloak_identity_provider and non mock unit tests.
 =======
         auth_keycloak_url: http://localhost:8080/auth
@@ -242,6 +277,8 @@ EXAMPLES = '''
         auth_password: password
         realm: "master"
 >>>>>>> SX5-868 Mise à jour de la documentation des modules Keycloak suite à la
+=======
+>>>>>>> Sx5-868 Add module keycloak_identity_provider and non mock unit tests.
         alias: IdP1
         state: absent
 '''
@@ -255,6 +292,7 @@ mappers:
   description: List of idp's mappers
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
   returned: on success
 =======
   returnd: on success
@@ -262,6 +300,9 @@ mappers:
 =======
   returned: on success
 >>>>>>> SX5-868 Mise à jour de la documentation des modules Keycloak suite à la
+=======
+  returnd: on success
+>>>>>>> Sx5-868 Add module keycloak_identity_provider and non mock unit tests.
   type: list
 msg:
   description: Error message if it is the case
@@ -276,7 +317,10 @@ import copy
 from ansible.module_utils.keycloak_utils import isDictEquals
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
+=======
+>>>>>>> Sx5-868 Add module keycloak_identity_provider and non mock unit tests.
 
 """    
 def addIdPEndpoints(idPConfiguration, url):
@@ -376,6 +420,7 @@ def createOrUpdateMappers(url, headers, alias, idPMappers):
     return changed
                     
 """
+<<<<<<< HEAD
 >>>>>>> Sx5-868 Add module keycloak_identity_provider and non mock unit tests.
 =======
 >>>>>>> Sx5-868 Add keycloak_realm module with non mock unit tests.
@@ -383,6 +428,11 @@ from ansible.module_utils.keycloak import KeycloakAPI, keycloak_argument_spec
 from ansible.module_utils.basic import AnsibleModule
 
 
+=======
+from ansible.module_utils.keycloak import KeycloakAPI, keycloak_argument_spec
+from ansible.module_utils.basic import AnsibleModule
+
+>>>>>>> Sx5-868 Add module keycloak_identity_provider and non mock unit tests.
 def main():
     argument_spec = keycloak_argument_spec()
 
@@ -391,6 +441,7 @@ def main():
         alias=dict(type='str', required=True),
         displayName=dict(type='str'),
         providerId=dict(type='str'),
+<<<<<<< HEAD
         enabled=dict(type='bool', default=True),
         updateProfileFirstLoginMode=dict(type='str'),
         trustEmail=dict(type='bool'),
@@ -406,6 +457,23 @@ def main():
         force=dict(type='bool', default=False),
     )
 
+=======
+        enabled = dict(type='bool', default=True),
+        updateProfileFirstLoginMode=dict(type='str'),
+        trustEmail=dict(type='bool'),
+        storeToken = dict(type='bool', default=True),
+        addReadTokenRoleOnCreate = dict(type='bool'),
+        authenticateByDefault = dict(type='bool'),
+        firstBrokerLoginFlowAlias = dict(type='str'),
+        postBrokerLoginFlowAlias = dict(type='str'),
+        linkOnly = dict(type='bool', default=False),
+        config = dict(type='dict'),
+        mappers = dict(type='list'),
+        state=dict(choices=["absent", "present"], default='present'),
+        force=dict(type='bool', default=False),
+    )
+    
+>>>>>>> Sx5-868 Add module keycloak_identity_provider and non mock unit tests.
     argument_spec.update(meta_args)
 
     module = AnsibleModule(argument_spec=argument_spec,
@@ -446,6 +514,7 @@ def main():
         newIdPConfig = module.params.get('config').copy()
         if 'openIdConfigurationUrl' in newIdPConfig:
             del(newIdPConfig['openIdConfigurationUrl'])
+<<<<<<< HEAD
 
     if 'providerId' in newIdPRepresentation and newIdPRepresentation["providerId"] == 'google' and 'userIp' in module.params.get("config"):
         newIdPConfig["userIp"] = module.params.get("config")["userIp"]
@@ -465,6 +534,28 @@ def main():
 
     if idPRepresentation == {}:  # IdP does not exist on Keycloak server
         if (state == 'present'):  # If desired state is present
+=======
+  
+    if 'providerId' in newIdPRepresentation and newIdPRepresentation["providerId"] == 'google' and 'userIp' in module.params.get("config"):
+        newIdPConfig["userIp"] = module.params.get("config")["userIp"]
+    
+    newIdPMappers = module.params.get('mappers')
+    
+    if newIdPConfig is not None:
+            if module.params.get('config') is not None and 'openIdConfigurationUrl' in module.params.get('config') and module.params.get("config")['openIdConfigurationUrl'] is not None:
+                kc.add_idp_endpoints(newIdPConfig, module.params.get("config")['openIdConfigurationUrl'])
+            newIdPRepresentation["config"] = newIdPConfig
+    
+    # Search the Idp on Keycloak server.
+    # By its alias        
+    idPRepresentation = kc.search_idp_by_alias(alias=newIdPRepresentation["alias"], realm=realm)
+    # If no Idp have been found by alias, search by client id if there is one in the config.
+    #if idPRepresentation == {} and 'config' in newIdPRepresentation and newIdPRepresentation["config"] is not None and 'clientId' in newIdPRepresentation["config"] and newIdPRepresentation["config"]["clientId"] is not None:
+    #    idPRepresentation = kc.search_idp_by_client_id(client_id=newIdPRepresentation["config"]["clientId"], realm=realm)
+    
+    if idPRepresentation == {}: # IdP does not exist on Keycloak server
+        if (state == 'present'): # If desired state is present
+>>>>>>> Sx5-868 Add module keycloak_identity_provider and non mock unit tests.
             # Create IdP
             changed = True
             idPRepresentation = kc.create_idp(newIdPRepresentation=newIdPRepresentation, realm=realm)
@@ -472,6 +563,7 @@ def main():
             if newIdPMappers is not None and len(newIdPMappers) > 0:
                 kc.create_or_update_idp_mappers(alias=newIdPRepresentation["alias"], idPMappers=newIdPMappers, realm=realm)
             mappersRepresentation = kc.get_idp_mappers(alias=newIdPRepresentation["alias"], realm=realm)
+<<<<<<< HEAD
             result["mappers"] = mappersRepresentation
         else:  # Sinon, le status est absent
             result["msg"] = newIdPRepresentation["alias"] + ' absent'
@@ -479,6 +571,15 @@ def main():
         alias = idPRepresentation['alias']
         if (state == 'present'):  # if desired state is present
             if force:  # If force option is true
+=======
+            result["mappers"] = mappersRepresentation    
+        else: # Sinon, le status est absent
+            result["msg"] = newIdPRepresentation["alias"] + ' absent'
+    else:  # if IdP already exists
+        alias = idPRepresentation['alias']
+        if (state == 'present'): # if desired state is present
+            if force: # If force option is true
+>>>>>>> Sx5-868 Add module keycloak_identity_provider and non mock unit tests.
                 # Delete all idp's mappers
                 kc.delete_all_idp_mappers(alias=alias, realm=realm)
                 # Delete the existing IdP
@@ -486,11 +587,17 @@ def main():
                 # Re-create the IdP
                 idPRepresentation = kc.create_idp(newIdPRepresentation=newIdPRepresentation, realm=realm)
                 changed = True
+<<<<<<< HEAD
             else:  # if force option is false
                 # Compare the new Idp with the existing IdP
                 if (not isDictEquals(newIdPRepresentation, idPRepresentation, ["clientSecret", "openIdConfigurationUrl", "mappers"]) or
                     ("config" in newIdPRepresentation and "clientSecret" in newIdPRepresentation["config"] and
                      newIdPRepresentation["config"]["clientSecret"] is not None)):
+=======
+            else: # if force option is false
+                # Compare the new Idp with the existing IdP
+                if not isDictEquals(newIdPRepresentation, idPRepresentation, ["clientSecret", "openIdConfigurationUrl", "mappers"]) or ("config" in newIdPRepresentation and "clientSecret" in newIdPRepresentation["config"] and newIdPRepresentation["config"]["clientSecret"] is not None): 
+>>>>>>> Sx5-868 Add module keycloak_identity_provider and non mock unit tests.
                     # If they are different
                     # Create an updated representation of the IdP
                     updatedIdP = copy.deepcopy(idPRepresentation)
@@ -504,21 +611,37 @@ def main():
                     changed = True
             if newIdPMappers is not None and len(newIdPMappers) > 0:
                 if kc.create_or_update_idp_mappers(alias=newIdPRepresentation["alias"], idPMappers=newIdPMappers, realm=realm):
+<<<<<<< HEAD
                     changed = True
             mappersRepresentation = kc.get_idp_mappers(alias=newIdPRepresentation["alias"], realm=realm)
             result["idp"] = idPRepresentation
             result["mappers"] = mappersRepresentation
         else:  # If desired state is absent
+=======
+                    changed=True
+            mappersRepresentation = kc.get_idp_mappers(alias=newIdPRepresentation["alias"], realm=realm)
+            result["idp"] = idPRepresentation
+            result["mappers"] = mappersRepresentation
+        else: # If desired state is absent
+>>>>>>> Sx5-868 Add module keycloak_identity_provider and non mock unit tests.
             # Delete all idp's mappers
             kc.delete_all_idp_mappers(alias=alias, realm=realm)
             # Delete the existing IdP
             kc.delete_idp(alias=alias, realm=realm)
+<<<<<<< HEAD
             changed = True
+=======
+            changed=True
+>>>>>>> Sx5-868 Add module keycloak_identity_provider and non mock unit tests.
             result["msg"] = 'IdP %s is deleted' % (alias)
 
     result["changed"] = changed
     module.exit_json(**result)
+<<<<<<< HEAD
 
 
+=======
+        
+>>>>>>> Sx5-868 Add module keycloak_identity_provider and non mock unit tests.
 if __name__ == '__main__':
     main()
