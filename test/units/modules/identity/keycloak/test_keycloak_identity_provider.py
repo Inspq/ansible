@@ -7,10 +7,17 @@ from units.modules.utils import AnsibleExitJson, AnsibleFailJson, ModuleTestCase
 class KeycloakIdentityProviderTestCase(ModuleTestCase):
 
     toCreateIdP = {
+<<<<<<< HEAD
         "auth_username": "admin", 
         "auth_password": "admin",
         "realm": "master",
         "auth_keycloak_url": "http://localhost:18081/auth",
+=======
+        "username": "admin", 
+        "password": "admin",
+        "realm": "master",
+        "url": "http://localhost:18081/auth",
+>>>>>>> Sx5-868 Add module keycloak_identity_provider and non mock unit tests.
         "alias": "test_create_idp",
         "providerId": "oidc",
         "displayName": "test_create_idp",
@@ -63,10 +70,17 @@ class KeycloakIdentityProviderTestCase(ModuleTestCase):
     }
 
     toDoNotChange = {
+<<<<<<< HEAD
         "auth_username": "admin", 
         "auth_password": "admin",
         "realm": "master",
         "auth_keycloak_url": "http://localhost:18081/auth",
+=======
+        "username": "admin", 
+        "password": "admin",
+        "realm": "master",
+        "url": "http://localhost:18081/auth",
+>>>>>>> Sx5-868 Add module keycloak_identity_provider and non mock unit tests.
         "alias": "test_idp_not_changed",
         "providerId": "oidc",
         "displayName": "test idp not changed",
@@ -118,10 +132,17 @@ class KeycloakIdentityProviderTestCase(ModuleTestCase):
         "force": False
     }
     toModifyIdp = {
+<<<<<<< HEAD
         "auth_username": "admin", 
         "auth_password": "admin",
         "realm": "master",
         "auth_keycloak_url": "http://localhost:18081/auth",
+=======
+        "username": "admin", 
+        "password": "admin",
+        "realm": "master",
+        "url": "http://localhost:18081/auth",
+>>>>>>> Sx5-868 Add module keycloak_identity_provider and non mock unit tests.
         "alias": "test_modify_idp",
         "providerId": "oidc",
         "displayName": "test modify idp",
@@ -173,10 +194,17 @@ class KeycloakIdentityProviderTestCase(ModuleTestCase):
         "force": False
     }
     toModifyIdpForce = {
+<<<<<<< HEAD
         "auth_username": "admin", 
         "auth_password": "admin",
         "realm": "master",
         "auth_keycloak_url": "http://localhost:18081/auth",
+=======
+        "username": "admin", 
+        "password": "admin",
+        "realm": "master",
+        "url": "http://localhost:18081/auth",
+>>>>>>> Sx5-868 Add module keycloak_identity_provider and non mock unit tests.
         "alias": "test_modify_idp_force",
         "providerId": "oidc",
         "displayName": "Test the force option for modify",
@@ -228,10 +256,17 @@ class KeycloakIdentityProviderTestCase(ModuleTestCase):
         "force": False
     }
     toModifyIdpMappers = {
+<<<<<<< HEAD
         "auth_username": "admin", 
         "auth_password": "admin",
         "realm": "master",
         "auth_keycloak_url": "http://localhost:18081/auth",
+=======
+        "username": "admin", 
+        "password": "admin",
+        "realm": "master",
+        "url": "http://localhost:18081/auth",
+>>>>>>> Sx5-868 Add module keycloak_identity_provider and non mock unit tests.
         "alias": "test_modify_idp_mappers",
         "providerId": "oidc",
         "displayName": "test modify idp mappers",
@@ -282,10 +317,17 @@ class KeycloakIdentityProviderTestCase(ModuleTestCase):
     }
 
     toModifyIdpRemoveMappers = {
+<<<<<<< HEAD
         "auth_username": "admin",
         "auth_password":"admin",
         "realm": "master",
         "auth_keycloak_url": "http://localhost:18081/auth",
+=======
+        "username": "admin",
+        "password":"admin",
+        "realm": "master",
+        "url": "http://localhost:18081/auth",
+>>>>>>> Sx5-868 Add module keycloak_identity_provider and non mock unit tests.
         "alias": "test_modify_idp_remove_mappers",
         "providerId": "oidc",
         "displayName": "Test removal of mappers",
@@ -329,10 +371,17 @@ class KeycloakIdentityProviderTestCase(ModuleTestCase):
         }
     
     toDeleteIdp = {
+<<<<<<< HEAD
         "auth_username": "admin", 
         "auth_password": "admin",
         "realm": "master",
         "auth_keycloak_url": "http://localhost:18081/auth",
+=======
+        "username": "admin", 
+        "password": "admin",
+        "realm": "master",
+        "url": "http://localhost:18081/auth",
+>>>>>>> Sx5-868 Add module keycloak_identity_provider and non mock unit tests.
         "alias": "test_delete_idp",
         "providerId": "oidc",
         "displayName": "Test delete IdP",
@@ -384,10 +433,17 @@ class KeycloakIdentityProviderTestCase(ModuleTestCase):
         "force": False
     }
     toChangeIdPClientSecret = {
+<<<<<<< HEAD
         "auth_username": "admin", 
         "auth_password": "admin",
         "realm": "master",
         "auth_keycloak_url": "http://localhost:18081/auth",
+=======
+        "username": "admin", 
+        "password": "admin",
+        "realm": "master",
+        "url": "http://localhost:18081/auth",
+>>>>>>> Sx5-868 Add module keycloak_identity_provider and non mock unit tests.
         "alias": "test_change_client_secret",
         "providerId": "oidc",
         "displayName": "Test change IdP client secret",
@@ -471,10 +527,17 @@ class KeycloakIdentityProviderTestCase(ModuleTestCase):
 
     def test_modify_idp(self):
         newToChange = {
+<<<<<<< HEAD
             "auth_username": "admin",
             "auth_password":"admin",
             "realm": "master",
             "auth_keycloak_url": "http://localhost:18081/auth",
+=======
+            "username": "admin",
+            "password":"admin",
+            "realm": "master",
+            "url": "http://localhost:18081/auth",
+>>>>>>> Sx5-868 Add module keycloak_identity_provider and non mock unit tests.
             "alias": "test_modify_idp",
             "providerId": "oidc",
             "storeToken": False,
@@ -514,10 +577,17 @@ class KeycloakIdentityProviderTestCase(ModuleTestCase):
 
     def test_modify_idp_mappers(self):
         newToChange = {
+<<<<<<< HEAD
             "auth_username": "admin",
             "auth_password":"admin",
             "realm": "master",
             "auth_keycloak_url": "http://localhost:18081/auth",
+=======
+            "username": "admin",
+            "password":"admin",
+            "realm": "master",
+            "url": "http://localhost:18081/auth",
+>>>>>>> Sx5-868 Add module keycloak_identity_provider and non mock unit tests.
             "alias": "test_modify_idp_mappers",
             "providerId": "oidc",
             "mappers": [
@@ -581,10 +651,17 @@ class KeycloakIdentityProviderTestCase(ModuleTestCase):
 
     def test_change_client_secret(self):
         toChangeSecret = dict(
+<<<<<<< HEAD
             auth_username = "admin", 
             auth_password = "admin",
             realm = "master",
             auth_keycloak_url = "http://localhost:18081/auth",
+=======
+            username = "admin", 
+            password = "admin",
+            realm = "master",
+            url = "http://localhost:18081/auth",
+>>>>>>> Sx5-868 Add module keycloak_identity_provider and non mock unit tests.
             alias = "test_change_client_secret",
             config = dict(
                 clientId = "test4",
@@ -600,10 +677,17 @@ class KeycloakIdentityProviderTestCase(ModuleTestCase):
         
     def test_change_client_secret_without_alias(self):
         toChangeSecret = dict(
+<<<<<<< HEAD
             auth_username = "admin", 
             auth_password = "admin",
             realm = "master",
             auth_keycloak_url = "http://localhost:18081/auth",
+=======
+            username = "admin", 
+            password = "admin",
+            realm = "master",
+            url = "http://localhost:18081/auth",
+>>>>>>> Sx5-868 Add module keycloak_identity_provider and non mock unit tests.
             config = dict(
                 clientId = "test4",
                 clientSecret = "CeciEstMonSecret"

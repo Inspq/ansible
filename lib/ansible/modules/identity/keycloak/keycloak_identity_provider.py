@@ -24,11 +24,19 @@ ANSIBLE_METADATA = {'metadata_version': '1.1',
 
 DOCUMENTATION = '''
 ---
+<<<<<<< HEAD
+=======
+author: "Philippe Gauthier (philippe.gauthier@inspq.qc.ca)"
+>>>>>>> Sx5-868 Add module keycloak_identity_provider and non mock unit tests.
 module: keycloak_identity_provider
 short_description: Configure an identity provider in Keycloak
 description:
   - This module creates, removes or update Keycloak identity provider.
+<<<<<<< HEAD
 version_added: "2.9"
+=======
+version_added: "1.1"
+>>>>>>> Sx5-868 Add module keycloak_identity_provider and non mock unit tests.
 options:
   realm:
     description:
@@ -109,17 +117,27 @@ extends_documentation_fragment:
     - keycloak
 notes:
   - module does not modify identity provider alias.
+<<<<<<< HEAD
 author: 
     - Philippe Gauthier (philippe.gauthier@inspq.qc.ca)
+=======
+>>>>>>> Sx5-868 Add module keycloak_identity_provider and non mock unit tests.
 '''
 
 EXAMPLES = '''
     - name: Create IdP1 fully configured with idp user attribute mapper and a role mapper
       keycloak_identity_provider:
+<<<<<<< HEAD
         auth_keycloak_url: http://localhost:8080/auth
         auth_sername: admin
         auth_password: password
         realm: "master"
+=======
+        realm: "master"
+        url: "http://localhost:8080/auth"
+        username: "admin"
+        password: "password"  
+>>>>>>> Sx5-868 Add module keycloak_identity_provider and non mock unit tests.
         alias: "IdP1"
         displayName: "My super dooper IdP"
         providerId: "oidc"
@@ -149,10 +167,17 @@ EXAMPLES = '''
 
     - name: Re-create the Idp1 without mappers. The existing Idp will be deleted.
       keycloak_identity_provider:
+<<<<<<< HEAD
         auth_keycloak_url: http://localhost:8080/auth
         auth_sername: admin
         auth_password: password
         realm: "master"
+=======
+        realm: "master"
+        url: "http://localhost:8080/auth"
+        username: "admin"
+        password: "password"  
+>>>>>>> Sx5-868 Add module keycloak_identity_provider and non mock unit tests.
         alias: "IdP1"
         displayName: "My super dooper IdP"
         providerId: "oidc"
@@ -169,10 +194,17 @@ EXAMPLES = '''
 
     - name: Remove a the Idp IdP1.
       keycloak_identity_provider:
+<<<<<<< HEAD
         auth_keycloak_url: http://localhost:8080/auth
         auth_sername: admin
         auth_password: password
         realm: "master"
+=======
+        realm: "master"
+        url: "http://localhost:8080/auth"
+        username: "admin"
+        password: "password"  
+>>>>>>> Sx5-868 Add module keycloak_identity_provider and non mock unit tests.
         alias: IdP1
         state: absent
 '''
@@ -184,7 +216,11 @@ idp:
   type: dict
 mappers:
   description: List of idp's mappers
+<<<<<<< HEAD
   returned: on success
+=======
+  returnd: on success
+>>>>>>> Sx5-868 Add module keycloak_identity_provider and non mock unit tests.
   type: list
 msg:
   description: Error message if it is the case
@@ -197,6 +233,108 @@ changed:
 '''
 import copy
 from ansible.module_utils.keycloak_utils import isDictEquals
+<<<<<<< HEAD
+=======
+
+"""    
+def addIdPEndpoints(idPConfiguration, url):
+    '''
+fonction :      addIdPEndpoints
+description:    Cette fonction permet d'intéroger le endpoint openid-configuration d'un fournisseur
+                d'identité afin d'en extraire les différents endpoints à mettre dans l'objet
+                config de keycloak.
+paramètres:
+    idPConfiguration:
+    type: dict
+    description: Dictionnaire contenant ls structure config à compléter.
+    url:
+    type: str
+    description: URL de la configuration OpenID connect à intérroger
+    '''
+    if url is not None:
+        try:
+            openidConfigRequest = requests.get(url, verify=False)
+            openIdConfig = openidConfigRequest.json()
+            if 'userinfo_endpoint' in openIdConfig.keys():
+                idPConfiguration["userInfoUrl"] = openIdConfig["userinfo_endpoint"]
+            if 'token_endpoint' in openIdConfig.keys():
+                idPConfiguration["tokenUrl"] = openIdConfig["token_endpoint"]
+            if 'jwks_uri' in openIdConfig.keys():
+                idPConfiguration["jwksUrl"] = openIdConfig["jwks_uri"]
+            if 'issuer' in openIdConfig.keys():
+                idPConfiguration["issuer"] = openIdConfig["issuer"]
+            if 'authorization_endpoint' in openIdConfig.keys():
+                idPConfiguration["authorizationUrl"] = openIdConfig["authorization_endpoint"]
+            if 'end_session_endpoint' in openIdConfig.keys():
+                idPConfiguration["logoutUrl"] = openIdConfig["end_session_endpoint"]        
+        except Exception, e:
+            raise e
+
+def deleteAllMappers(url, bearerHeader):
+    changed = False
+    try:
+        # Obtenir la liste des mappers existant
+        getMappersRequest = requests.get(url + '/mappers', headers=bearerHeader)
+        mappers = getMappersRequest.json()
+        for mapper in mappers:
+            requests.delete(url + '/mappers/' + mapper['id'], headers=bearerHeader)
+    except requests.exceptions.RequestException, ValueError:
+        return False
+    except Exception, e:
+        raise e
+     
+    return changed
+
+def createOrUpdateMappers(url, headers, alias, idPMappers):
+    changed = False
+   
+    try:
+        # Obtenir la liste des mappers existant
+        getMappersRequest = requests.get(url + '/mappers', headers=headers)
+        try:
+            mappers = getMappersRequest.json()
+        except ValueError: # Il n'y a pas de mapper de défini pour cet IdP
+            mappers = []
+        for idPMapper in idPMappers:
+            desiredState = "present"
+            if "state" in idPMapper:
+                desiredState = idPMapper["state"]
+                del(idPMapper["state"])
+            mapperFound = False
+            for mapper in mappers:
+                if mapper['name'] == idPMapper['name']:
+                    mapperFound = True
+                    break
+            # If mapper already exist and is different
+            if mapperFound and not isDictEquals(idPMapper,mapper):
+                # update the existing mapper
+                for key in idPMapper.keys():
+                    mapper[key] = idPMapper[key]
+                    data=json.dumps(mapper)
+                    requests.put(url + '/mappers/' + mapper["id"], headers=headers, data=data)
+                changed = True
+            elif mapperFound and desiredState == "absent":
+                # delete the mapper
+                requests.delete(url + '/mappers/' + mapper["id"], headers=headers)
+                changed = True
+            # If the mapper does not already exist
+            elif not mapperFound and desiredState != "absent":
+                # Complete the mapper settings with defaults
+                if 'identityProviderMapper' not in idPMapper.keys(): # si le type de mapper a été fourni
+                    idPMapper['identityProviderMapper'] = 'oidc-user-attribute-idp-mapper'                
+                idPMapper['identityProviderAlias'] = alias
+ 
+                # Create it
+                data=json.dumps(idPMapper)
+                requests.post(url + '/mappers', headers=headers, data=data)
+                changed = True
+                
+    except Exception ,e :
+        raise e
+    return changed
+                    
+"""
+>>>>>>> Sx5-868 Add module keycloak_identity_provider and non mock unit tests.
 from ansible.module_utils.keycloak import KeycloakAPI, keycloak_argument_spec
 from ansible.module_utils.basic import AnsibleModule
 
