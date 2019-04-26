@@ -24,12 +24,20 @@ ANSIBLE_METADATA = {'metadata_version': '1.1',
 
 DOCUMENTATION = '''
 ---
+<<<<<<< HEAD
+=======
+author: "Philippe Gauthier (philippe.gauthier@inspq.qc.ca"
+>>>>>>> Sx5-868 Add a keycloak_role modules and non mock unit tests.
 module: keycloak_role
 short_description: Configure a role in Keycloak
 description:
     - This module creates, removes or update Keycloak realm level role.
     - For client level role, use keycloak_client module.
+<<<<<<< HEAD
 version_added: "2.9"
+=======
+version_added: "2.8"
+>>>>>>> Sx5-868 Add a keycloak_role modules and non mock unit tests.
 options:
     realm:
         description:
@@ -65,7 +73,11 @@ options:
             - List of roles to include to the composite realm role.
             - If the composite role is a client role, the clientId (not id of the client) must be specified.
         required: false
+<<<<<<< HEAD
         suboptions:
+=======
+        subOptions:
+>>>>>>> Sx5-868 Add a keycloak_role modules and non mock unit tests.
             name:
                 description:
                     - Name of the role. This can be the name of a REALM role or a client role.
@@ -91,16 +103,25 @@ extends_documentation_fragment:
     - keycloak
 notes:
     - module does not modify role name.
+<<<<<<< HEAD
 author: 
     - Philippe Gauthier (philippe.gauthier@inspq.qc.ca)
+=======
+>>>>>>> Sx5-868 Add a keycloak_role modules and non mock unit tests.
 '''
 
 EXAMPLES = '''
     - name: Create the composite realm role role1 with composite roles.
       keycloak_role:
+<<<<<<< HEAD
         auth_keycloak_url: http://localhost:8080/auth
         auth_sername: admin
         auth_password: password
+=======
+        url: http://localhost:8080
+        username: admin
+        password: password
+>>>>>>> Sx5-868 Add a keycloak_role modules and non mock unit tests.
         realm: master
         name: role1
         description: Super composite role
@@ -113,9 +134,15 @@ EXAMPLES = '''
 
     - name: Re-create realm role role1
       keycloak_role:
+<<<<<<< HEAD
         auth_keycloak_url: http://localhost:8080/auth
         auth_sername: admin
         auth_password: password
+=======
+        url: http://localhost:8080
+        username: admin
+        password: password
+>>>>>>> Sx5-868 Add a keycloak_role modules and non mock unit tests.
         realm: master
         name: role1
         description: Super composite role
@@ -129,9 +156,15 @@ EXAMPLES = '''
 
     - name: Remove realm role role1.
       keycloak_role:
+<<<<<<< HEAD
         auth_keycloak_url: http://localhost:8080/auth
         auth_sername: admin
         auth_password: password
+=======
+        url: http://localhost:8080
+        username: admin
+        password: admin
+>>>>>>> Sx5-868 Add a keycloak_role modules and non mock unit tests.
         realm: master
         name: role1
         state: absent
@@ -162,10 +195,13 @@ from ansible.module_utils.basic import AnsibleModule
 def main():
     argument_spec = keycloak_argument_spec()
 
+<<<<<<< HEAD
     composites_spec = dict(
         name=dict(type='str', required=True),
         clientId= dict(type='str')
     )
+=======
+>>>>>>> Sx5-868 Add a keycloak_role modules and non mock unit tests.
     meta_args =  dict(
         realm=dict(type='str', default='master'),
         name=dict(type='str', required=True),
@@ -173,7 +209,11 @@ def main():
         composite=dict(type='bool',default=False),
         clientRole = dict(type='bool',default=False),
         containerId = dict(type='str', required=False),
+<<<<<<< HEAD
         composites = dict(type='list', default=[], options=composites_spec),
+=======
+        composites = dict(type='list', default=[]),
+>>>>>>> Sx5-868 Add a keycloak_role modules and non mock unit tests.
         state=dict(choices=["absent", "present"], default='present'),
         force=dict(type='bool', default=False),
     )
