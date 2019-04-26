@@ -63,15 +63,19 @@ class KeycloakRoleTestCase(ModuleTestCase):
     toCreateRole = {
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
         "auth_username":"admin", 
         "auth_password":"admin",
         "realm":"master",
         "auth_keycloak_url":"http://localhost:18081/auth",
 =======
+=======
+>>>>>>> Sx5-868 Add a keycloak_role modules and non mock unit tests.
         "username":"admin", 
         "password":"admin",
         "realm":"master",
         "url":"http://localhost:18081/auth",
+<<<<<<< HEAD
 >>>>>>> Sx5-868 Add a keycloak_role modules and non mock unit tests.
 =======
         "auth_username":"admin", 
@@ -79,6 +83,8 @@ class KeycloakRoleTestCase(ModuleTestCase):
         "realm":"master",
         "auth_keycloak_url":"http://localhost:18081/auth",
 >>>>>>> SX5-868 Add keycloak_user module and non mock unit tests.
+=======
+>>>>>>> Sx5-868 Add a keycloak_role modules and non mock unit tests.
         "name":"test_create_role",
         "description":"Test create role",
         "composite":True,
@@ -100,15 +106,19 @@ class KeycloakRoleTestCase(ModuleTestCase):
     toDoNotChangeRole = {
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
         "auth_username":"admin", 
         "auth_password":"admin",
         "realm":"master",
         "auth_keycloak_url":"http://localhost:18081/auth",
 =======
+=======
+>>>>>>> Sx5-868 Add a keycloak_role modules and non mock unit tests.
         "username":"admin", 
         "password":"admin",
         "realm":"master",
         "url":"http://localhost:18081/auth",
+<<<<<<< HEAD
 >>>>>>> Sx5-868 Add a keycloak_role modules and non mock unit tests.
 =======
         "auth_username":"admin", 
@@ -116,6 +126,8 @@ class KeycloakRoleTestCase(ModuleTestCase):
         "realm":"master",
         "auth_keycloak_url":"http://localhost:18081/auth",
 >>>>>>> SX5-868 Add keycloak_user module and non mock unit tests.
+=======
+>>>>>>> Sx5-868 Add a keycloak_role modules and non mock unit tests.
         "name":"test_role_not_changed",
         "description":"Test role not changed",
         "composite":True,
@@ -137,15 +149,19 @@ class KeycloakRoleTestCase(ModuleTestCase):
     toDoNotChangeRoleForce = {
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
         "auth_username":"admin", 
         "auth_password":"admin",
         "realm":"master",
         "auth_keycloak_url":"http://localhost:18081/auth",
 =======
+=======
+>>>>>>> Sx5-868 Add a keycloak_role modules and non mock unit tests.
         "username":"admin", 
         "password":"admin",
         "realm":"master",
         "url":"http://localhost:18081/auth",
+<<<<<<< HEAD
 >>>>>>> Sx5-868 Add a keycloak_role modules and non mock unit tests.
 =======
         "auth_username":"admin", 
@@ -153,6 +169,8 @@ class KeycloakRoleTestCase(ModuleTestCase):
         "realm":"master",
         "auth_keycloak_url":"http://localhost:18081/auth",
 >>>>>>> SX5-868 Add keycloak_user module and non mock unit tests.
+=======
+>>>>>>> Sx5-868 Add a keycloak_role modules and non mock unit tests.
         "name":"test_role_modify_force",
         "description":"test_role_modify_force",
         "composite":True,
@@ -174,15 +192,19 @@ class KeycloakRoleTestCase(ModuleTestCase):
     toChangeRole = {
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
         "auth_username":"admin", 
         "auth_password":"admin",
         "realm":"master",
         "auth_keycloak_url":"http://localhost:18081/auth",
 =======
+=======
+>>>>>>> Sx5-868 Add a keycloak_role modules and non mock unit tests.
         "username":"admin", 
         "password":"admin",
         "realm":"master",
         "url":"http://localhost:18081/auth",
+<<<<<<< HEAD
 >>>>>>> Sx5-868 Add a keycloak_role modules and non mock unit tests.
 =======
         "auth_username":"admin", 
@@ -190,6 +212,8 @@ class KeycloakRoleTestCase(ModuleTestCase):
         "realm":"master",
         "auth_keycloak_url":"http://localhost:18081/auth",
 >>>>>>> SX5-868 Add keycloak_user module and non mock unit tests.
+=======
+>>>>>>> Sx5-868 Add a keycloak_role modules and non mock unit tests.
         "name":"test_modify_role",
         "description":"Test modify role",
         "composite":True,
@@ -211,15 +235,19 @@ class KeycloakRoleTestCase(ModuleTestCase):
     toDeleteRole = {
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
         "auth_username":"admin", 
         "auth_password":"admin",
         "realm":"master",
         "auth_keycloak_url":"http://localhost:18081/auth",
 =======
+=======
+>>>>>>> Sx5-868 Add a keycloak_role modules and non mock unit tests.
         "username":"admin", 
         "password":"admin",
         "realm":"master",
         "url":"http://localhost:18081/auth",
+<<<<<<< HEAD
 >>>>>>> Sx5-868 Add a keycloak_role modules and non mock unit tests.
 =======
         "auth_username":"admin", 
@@ -227,6 +255,8 @@ class KeycloakRoleTestCase(ModuleTestCase):
         "realm":"master",
         "auth_keycloak_url":"http://localhost:18081/auth",
 >>>>>>> SX5-868 Add keycloak_user module and non mock unit tests.
+=======
+>>>>>>> Sx5-868 Add a keycloak_role modules and non mock unit tests.
         "name":"test_delete_role",
         "description":"Test delete role",
         "composite":True,
@@ -249,15 +279,19 @@ class KeycloakRoleTestCase(ModuleTestCase):
     toChangeRoleTwoRoles = {
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
         "auth_username":"admin", 
         "auth_password":"admin",
         "realm":"master",
         "auth_keycloak_url":"http://localhost:18081/auth",
 =======
+=======
+>>>>>>> Sx5-868 Add a keycloak_role modules and non mock unit tests.
         "username":"admin", 
         "password":"admin",
         "realm":"master",
         "url":"http://localhost:18081/auth",
+<<<<<<< HEAD
 >>>>>>> Sx5-868 Add a keycloak_role modules and non mock unit tests.
 =======
         "auth_username":"admin", 
@@ -265,6 +299,8 @@ class KeycloakRoleTestCase(ModuleTestCase):
         "realm":"master",
         "auth_keycloak_url":"http://localhost:18081/auth",
 >>>>>>> SX5-868 Add keycloak_user module and non mock unit tests.
+=======
+>>>>>>> Sx5-868 Add a keycloak_role modules and non mock unit tests.
         "name":"test_modify_role_two_client_role_with_same_name",
         "description":"Test modify role two client roles with same name",
         "composite":True,
@@ -284,6 +320,7 @@ class KeycloakRoleTestCase(ModuleTestCase):
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
     roleExcudes = ["auth_keycloak_url","auth_username","auth_password","state","force","realm","composites","_ansible_keep_remote_files","_ansible_remote_tmp"]
 =======
     roleExcudes = ["url","username","password","state","force","realm","composites","_ansible_keep_remote_files","_ansible_remote_tmp"]
@@ -291,6 +328,9 @@ class KeycloakRoleTestCase(ModuleTestCase):
 =======
     roleExcudes = ["auth_keycloak_url","auth_username","auth_password","state","force","realm","composites","_ansible_keep_remote_files","_ansible_remote_tmp"]
 >>>>>>> SX5-868 Add keycloak_user module and non mock unit tests.
+=======
+    roleExcudes = ["url","username","password","state","force","realm","composites","_ansible_keep_remote_files","_ansible_remote_tmp"]
+>>>>>>> Sx5-868 Add a keycloak_role modules and non mock unit tests.
 
     def setUp(self):
         super(KeycloakRoleTestCase, self).setUp()
