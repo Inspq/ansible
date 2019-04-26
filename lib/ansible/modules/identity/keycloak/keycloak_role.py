@@ -290,7 +290,14 @@ def main():
 def main():
     argument_spec = keycloak_argument_spec()
 
+<<<<<<< HEAD
 >>>>>>> Sx5-868 Add a keycloak_role modules and non mock unit tests.
+=======
+    composites_spec = dict(
+        name=dict(type='str', required=True),
+        clientId= dict(type='str')
+    )
+>>>>>>> Sx5-868 Add composites spec to keycloak_role module specs.
     meta_args =  dict(
         realm=dict(type='str', default='master'),
         name=dict(type='str', required=True),
@@ -298,6 +305,7 @@ def main():
         composite=dict(type='bool',default=False),
         clientRole = dict(type='bool',default=False),
         containerId = dict(type='str', required=False),
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -321,6 +329,9 @@ def main():
 =======
         composites = dict(type='list', default=[]),
 >>>>>>> Sx5-868 Add a keycloak_role modules and non mock unit tests.
+=======
+        composites = dict(type='list', default=[], options=composites_spec),
+>>>>>>> Sx5-868 Add composites spec to keycloak_role module specs.
         state=dict(choices=["absent", "present"], default='present'),
         force=dict(type='bool', default=False),
     )
