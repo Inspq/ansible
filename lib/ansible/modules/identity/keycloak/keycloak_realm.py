@@ -28,15 +28,20 @@ DOCUMENTATION = '''
 ---
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 author: "Philippe Gauthier (philippe.gauthier@inspq.qc.ca"
 >>>>>>> Sx5-868 Add keycloak_realm module with non mock unit tests.
 =======
 >>>>>>> SX5-868 Mise à jour de la documentation des modules Keycloak suite à la
+=======
+author: "Philippe Gauthier (philippe.gauthier@inspq.qc.ca"
+>>>>>>> Sx5-868 Add keycloak_realm module with non mock unit tests.
 module: keycloak_realm
 short_description: Configure a realm in Keycloak
 description:
   - This module creates, removes or update Keycloak realms.
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 version_added: "2.9"
@@ -46,6 +51,9 @@ version_added: "2.8"
 =======
 version_added: "2.9"
 >>>>>>> SX5-868 Mise à jour de la documentation des modules Keycloak suite à la
+=======
+version_added: "2.8"
+>>>>>>> Sx5-868 Add keycloak_realm module with non mock unit tests.
 options:
   realm:
     description:
@@ -95,7 +103,11 @@ options:
     default: 60
     required: false
   accessCodeLifespanLogin:
+<<<<<<< HEAD
     description:
+=======
+    description: 
+>>>>>>> Sx5-868 Add keycloak_realm module with non mock unit tests.
     - access code lifespan login.
     default: 1800
     required: false
@@ -336,6 +348,7 @@ notes:
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 author: 
     - Philippe Gauthier (philippe.gauthier@inspq.qc.ca)
 =======
@@ -347,11 +360,14 @@ author:
 >>>>>>> SX5-868 Ajustement du codestyle des modules Keycloak en préparation des
     - Philippe Gauthier (philippe.gauthier@inspq.qc.ca)
 >>>>>>> SX5-868 Mise à jour de la documentation des modules Keycloak suite à la
+=======
+>>>>>>> Sx5-868 Add keycloak_realm module with non mock unit tests.
 '''
 
 EXAMPLES = '''
     - name: Create a realm
       keycloak_realm:
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
         auth_keycloak_url: http://localhost:8080/auth
@@ -361,12 +377,15 @@ EXAMPLES = '''
         name: "realm1"
         namehtml: "The first Realm"
 =======
+=======
+>>>>>>> Sx5-868 Add keycloak_realm module with non mock unit tests.
         realm: realm1
         name: "realm1"
         namehtml: "The first Realm"
         url: "http://localhost:8080/auth"
         username: "admin"
         password: "admin"
+<<<<<<< HEAD
 >>>>>>> Sx5-868 Add keycloak_realm module with non mock unit tests.
 =======
         auth_keycloak_url: http://localhost:8080/auth
@@ -381,6 +400,9 @@ EXAMPLES = '''
 =======
         smtpServer:
 >>>>>>> SX5-868 Ajustement du codestyle des modules Keycloak en préparation des
+=======
+        smtpServer: 
+>>>>>>> Sx5-868 Add keycloak_realm module with non mock unit tests.
           replyToDisplayName: root
           starttls: ""
           auth: ""
@@ -404,6 +426,7 @@ EXAMPLES = '''
       keycloak_realm:
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
         auth_keycloak_url: http://localhost:8080/auth
         auth_sername: admin
         auth_password: password
@@ -411,12 +434,15 @@ EXAMPLES = '''
         name: "realm1"
         namehtml: "The first Realm"
 =======
+=======
+>>>>>>> Sx5-868 Add keycloak_realm module with non mock unit tests.
         realm: realm1
         name: "realm1"
         namehtml: "The first Realm"
         url: "http://localhost:8080/auth"
         username: "admin"
         password: "admin"
+<<<<<<< HEAD
 >>>>>>> Sx5-868 Add keycloak_realm module with non mock unit tests.
 =======
         auth_keycloak_url: http://localhost:8080/auth
@@ -426,6 +452,8 @@ EXAMPLES = '''
         name: "realm1"
         namehtml: "The first Realm"
 >>>>>>> SX5-868 Mise à jour de la documentation des modules Keycloak suite à la
+=======
+>>>>>>> Sx5-868 Add keycloak_realm module with non mock unit tests.
         state : present
         force: yes
 
@@ -433,6 +461,7 @@ EXAMPLES = '''
       keycloak_realm:
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
         auth_keycloak_url: http://localhost:8080/auth
         auth_sername: admin
         auth_password: password
@@ -443,6 +472,8 @@ EXAMPLES = '''
         auth_sername: admin
         auth_password: password
 >>>>>>> SX5-868 Mise à jour de la documentation des modules Keycloak suite à la
+=======
+>>>>>>> Sx5-868 Add keycloak_realm module with non mock unit tests.
         name: realm1
         state: absent
 '''
@@ -470,7 +501,10 @@ from ansible.module_utils.keycloak_utils import isDictEquals
 from ansible.module_utils.keycloak import KeycloakAPI, keycloak_argument_spec
 from ansible.module_utils.basic import AnsibleModule
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> Sx5-868 Add keycloak_realm module with non mock unit tests.
 def main():
     argument_spec = keycloak_argument_spec()
 
@@ -487,6 +521,7 @@ def main():
         defaultLocale=dict(type="str"),
         accessCodeLifespan=dict(type='int', default=60),
         accessCodeLifespanLogin=dict(type='int', default=1800),
+<<<<<<< HEAD
         accessCodeLifespanUserAction=dict(type='int', default=300),
         notBefore=dict(type='int', default=0),
         revokeRefreshToken=dict(type='bool', default=False),
@@ -530,12 +565,61 @@ def main():
         directGrantFlow=dict(type='str', default="direct grant"),
         resetCredentialsFlow=dict(type='str', default="reset credentials"),
         clientAuthenticationFlow=dict(type='str', default="clients"),
+=======
+        accessCodeLifespanUserAction=dict(type='int',default=300),
+        notBefore = dict(type='int',default=0),
+        revokeRefreshToken = dict(type='bool', default=False),
+        accessTokenLifespan = dict(type='int', default=300),
+        accessTokenLifespanForImplicitFlow = dict(type='int', default=900),
+        ssoSessionIdleTimeout = dict(type='int', default=1800),
+        ssoSessionMaxLifespan = dict(type='int', default=36000),
+        offlineSessionIdleTimeout = dict(type='int', default=2592000),
+        enabled = dict(type='bool', default=True),
+        sslRequired = dict(type='str', default="external"),
+        registrationAllowed = dict(type='bool', default=False),
+        registrationEmailAsUsername = dict(type='bool', default=False),
+        rememberMe = dict(type='bool', default=False),
+        verifyEmail = dict(type='bool', default=False),
+        loginWithEmailAllowed = dict(type='bool', default=True),
+        duplicateEmailsAllowed = dict(type='bool', default=False),
+        resetPasswordAllowed = dict(type='bool', default=False),
+        editUsernameAllowed = dict(type='bool', default=False),
+        bruteForceProtected = dict(type='bool', default=False),
+        permanentLockout = dict(type='bool', default=False),
+        maxFailureWaitSeconds = dict(type='int', default=900),
+        minimumQuickLoginWaitSeconds = dict(type='int', default=60),
+        waitIncrementSeconds = dict(type='int', default=60),
+        quickLoginCheckMilliSeconds = dict(type='int', default=1000),
+        maxDeltaTimeSeconds = dict(type='int', default=43200),
+        failureFactor = dict(type='int', default=30),
+        defaultRoles = dict(type='list', default=[ "offline_access", "uma_authorization" ]),
+        requiredCredentials = dict(type='list', default=[ "password" ]),
+        passwordPolicy = dict(type='str', default="hashIterations(20000)"),
+        otpPolicyType = dict(type='str', default="totp"),
+        otpPolicyAlgorithm = dict(type='str', default="HmacSHA1"),
+        otpPolicyInitialCounter = dict(type='int', default=0),
+        otpPolicyDigits = dict(type='int', default=6),
+        otpPolicyLookAheadWindow = dict(type='int', default=1),
+        otpPolicyPeriod = dict(type='int', default=30),
+        smtpServer = dict(type='dict', default={}),
+        eventsExpiration = dict(type='int'),
+        eventsConfig = dict(type='dict'),
+        browserFlow= dict(type='str', default="browser"),
+        registrationFlow= dict(type='str', default="registration"),
+        directGrantFlow= dict(type='str', default="direct grant"),
+        resetCredentialsFlow= dict(type='str', default="reset credentials"),
+        clientAuthenticationFlow= dict(type='str', default="clients"),
+>>>>>>> Sx5-868 Add keycloak_realm module with non mock unit tests.
         state=dict(choices=["absent", "present"], default='present'),
         force=dict(type='bool', default=False),
         attributes=dict(type='dict', default=None),
         browserSecurityHeaders=dict(type='dict', default=None)
     )
+<<<<<<< HEAD
 
+=======
+    
+>>>>>>> Sx5-868 Add keycloak_realm module with non mock unit tests.
     argument_spec.update(meta_args)
 
     module = AnsibleModule(argument_spec=argument_spec,
@@ -547,6 +631,7 @@ def main():
     # Obtain access token, initialize API
     kc = KeycloakAPI(module)
     defaultAttributes = dict(
+<<<<<<< HEAD
         _browser_header=dict(
             contentSecurityPolicy=dict(type='unicode', default="frame-src 'self'"),
             xContentTypeOptions=dict(type='unicode', default="nosniff"),
@@ -566,6 +651,27 @@ def main():
         xRobotsTag=dict(type='unicode', default="none"),
         xXSSProtection=dict(type='unicode', default="1; mode=block")
     )
+=======
+        _browser_header = dict(
+            contentSecurityPolicy = dict(type='unicode', default= "frame-src 'self'"), 
+            xContentTypeOptions = dict(type='unicode', default="nosniff"), 
+            xFrameOptions = dict(type='unicode', default = "SAMEORIGIN"), 
+            xRobotsTag = dict(type='unicode', default = "none"), 
+            xXSSProtection = dict(type='unicode', default="1; mode=block")
+            ), 
+        actionTokenGeneratedByAdminLifespan = dict(type='int', default=43200), 
+        actionTokenGeneratedByUserLifespan = dict(type='int', default=300), 
+        displayName = dict(type='unicode', default=module.params.get('name')), 
+        displayNameHtml = dict(type='unicode', default=module.params.get('namehtml')), 
+        )
+    defaultBrowserSecurityHeaders = dict(
+        contentSecurityPolicy = dict(type='unicode', default="frame-src 'self'"), 
+        xContentTypeOptions = dict(type='unicode', default="nosniff"), 
+        xFrameOptions = dict(type='unicode', default="SAMEORIGIN"), 
+        xRobotsTag = dict(type='unicode', default="none"), 
+        xXSSProtection = dict(type='unicode', default="1; mode=block")
+        )
+>>>>>>> Sx5-868 Add keycloak_realm module with non mock unit tests.
 
     state = module.params.get('state')
     force = module.params.get('force')
@@ -577,7 +683,11 @@ def main():
     newRealmRepresentation["displayName"] = module.params.get('displayName')
     newRealmRepresentation["displayNameHtml"] = module.params.get('displayNameHtml')
     if module.params.get("loginTheme") is not None:
+<<<<<<< HEAD
         newRealmRepresentation["loginTheme"] = module.params.get("loginTheme")
+=======
+        newRealmRepresentation["loginTheme"] =  module.params.get("loginTheme")
+>>>>>>> Sx5-868 Add keycloak_realm module with non mock unit tests.
     if module.params.get("adminTheme") is not None:
         newRealmRepresentation["adminTheme"] = module.params.get("adminTheme")
     if module.params.get("emailTheme") is not None:
@@ -643,45 +753,77 @@ def main():
     newEventsConfig = module.params.get("eventsConfig")
     if module.params.get("browserSecurityHeaders") is not None:
         newRealmRepresentation["browserSecurityHeaders"] = module.params.get("browserSecurityHeaders")
+<<<<<<< HEAD
 
     changed = False
     # Find realm on Keycloak server
     realmRepresentation = kc.search_realm(realm=newRealmRepresentation["realm"])
     if realmRepresentation == {}:  # Realm does not exist
         if (state == 'present'):  # If desired state is present
+=======
+        
+    changed = False
+    # Find realm on Keycloak server
+    realmRepresentation = kc.search_realm(realm=newRealmRepresentation["realm"])
+    if realmRepresentation == {}: # Realm does not exist
+        if (state == 'present'): # If desired state is present
+>>>>>>> Sx5-868 Add keycloak_realm module with non mock unit tests.
             # Create the realm
             result["realm"] = kc.create_realm(newRealmRepresentation=newRealmRepresentation)
             if newEventsConfig is not None:
                 eventsConfig = kc.update_realm_events_config(realm=newRealmRepresentation["realm"], newEventsConfig=newEventsConfig)
                 result["eventsConfig"] = eventsConfig
             changed = True
+<<<<<<< HEAD
         else:  # if desired state is absent
             result['msg'] = 'Realm %s is absent' % (newRealmRepresentation["realm"])
 
     else:  # Realm already exists
         if (state == 'present'):  # If desired state is present
             if force:  # If force option is true
+=======
+        else: # if desired state is absent
+            result['msg'] = 'Realm %s is absent' %(newRealmRepresentation["realm"])
+                
+    else:  # Realm already exists
+        if (state == 'present'): # If desired state is present
+            if force: # If force option is true
+>>>>>>> Sx5-868 Add keycloak_realm module with non mock unit tests.
                 # Delete the existing realm
                 kc.delete_realm(newRealmRepresentation["realm"])
                 # Create realm
                 realmRepresentation = kc.create_realm(newRealmRepresentation=newRealmRepresentation)
                 changed = True
+<<<<<<< HEAD
             else:  # If force option is false
                 # Compare realms
                 if not isDictEquals(newRealmRepresentation, realmRepresentation):  # If new realm introduces changes
+=======
+            else: # If force option is false
+                # Compare realms
+                if not isDictEquals(newRealmRepresentation, realmRepresentation): # If new realm introduces changes
+>>>>>>> Sx5-868 Add keycloak_realm module with non mock unit tests.
                     # Update REALM
                     realmRepresentation = kc.update_realm(newRealmRepresentation=newRealmRepresentation)
                     changed = True
                 else:
                     realmRepresentation = kc.get_realm(realm=newRealmRepresentation["realm"])
+<<<<<<< HEAD
             if newEventsConfig is not None:  # If there is event configuration
                 # Get the existing events config
                 eventsConfig = kc.get_realm_events_config(realm=newRealmRepresentation["realm"])
                 if not isDictEquals(newEventsConfig, eventsConfig):  # If realm needs changed
+=======
+            if newEventsConfig is not None: # If there is event configuration
+                # Get the existing events config
+                eventsConfig = kc.get_realm_events_config(realm=newRealmRepresentation["realm"])
+                if not isDictEquals(newEventsConfig, eventsConfig): # If realm needs changed
+>>>>>>> Sx5-868 Add keycloak_realm module with non mock unit tests.
                     # Update event config
                     eventsConfig = kc.update_realm_events_config(realm=newRealmRepresentation["realm"], newEventsConfig=newEventsConfig)
                 result["eventsConfig"] = eventsConfig
             result["realm"] = realmRepresentation
+<<<<<<< HEAD
         else:  # If desired state is absent
             # Delete Realm
             kc.delete_realm(newRealmRepresentation["realm"])
@@ -691,5 +833,15 @@ def main():
     module.exit_json(**result)
 
 
+=======
+        else: # If desired state is absent
+            # Delete Realm
+            kc.delete_realm(newRealmRepresentation["realm"])
+            changed = True
+            result["msg"] = 'Realm %s deleted' %(newRealmRepresentation["realm"])
+    result["changed"] = changed
+    module.exit_json(**result)
+
+>>>>>>> Sx5-868 Add keycloak_realm module with non mock unit tests.
 if __name__ == '__main__':
     main()

@@ -318,6 +318,7 @@ from ansible.module_utils.keycloak_utils import isDictEquals
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 =======
 >>>>>>> Sx5-868 Add module keycloak_identity_provider and non mock unit tests.
@@ -422,6 +423,8 @@ def createOrUpdateMappers(url, headers, alias, idPMappers):
 """
 <<<<<<< HEAD
 >>>>>>> Sx5-868 Add module keycloak_identity_provider and non mock unit tests.
+=======
+>>>>>>> Sx5-868 Add keycloak_realm module with non mock unit tests.
 =======
 >>>>>>> Sx5-868 Add keycloak_realm module with non mock unit tests.
 from ansible.module_utils.keycloak import KeycloakAPI, keycloak_argument_spec
