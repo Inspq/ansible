@@ -27,18 +27,25 @@ ANSIBLE_METADATA = {'metadata_version': '1.1',
 DOCUMENTATION = '''
 ---
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 author: "Philippe Gauthier (philippe.gauthier@inspq.qc.ca"
 >>>>>>> Sx5-868 Add keycloak_realm module with non mock unit tests.
+=======
+>>>>>>> SX5-868 Mise à jour de la documentation des modules Keycloak suite à la
 module: keycloak_realm
 short_description: Configure a realm in Keycloak
 description:
   - This module creates, removes or update Keycloak realms.
 <<<<<<< HEAD
+<<<<<<< HEAD
 version_added: "2.9"
 =======
 version_added: "2.8"
 >>>>>>> Sx5-868 Add keycloak_realm module with non mock unit tests.
+=======
+version_added: "2.9"
+>>>>>>> SX5-868 Mise à jour de la documentation des modules Keycloak suite à la
 options:
   realm:
     description:
@@ -327,15 +334,21 @@ extends_documentation_fragment:
 notes:
   - module does not modify realm name.
 <<<<<<< HEAD
+<<<<<<< HEAD
 author: 
     - Philippe Gauthier (philippe.gauthier@inspq.qc.ca)
 =======
 >>>>>>> Sx5-868 Add keycloak_realm module with non mock unit tests.
+=======
+author: 
+    - Philippe Gauthier (philippe.gauthier@inspq.qc.ca)
+>>>>>>> SX5-868 Mise à jour de la documentation des modules Keycloak suite à la
 '''
 
 EXAMPLES = '''
     - name: Create a realm
       keycloak_realm:
+<<<<<<< HEAD
 <<<<<<< HEAD
         auth_keycloak_url: http://localhost:8080/auth
         auth_sername: admin
@@ -351,6 +364,14 @@ EXAMPLES = '''
         username: "admin"
         password: "admin"
 >>>>>>> Sx5-868 Add keycloak_realm module with non mock unit tests.
+=======
+        auth_keycloak_url: http://localhost:8080/auth
+        auth_sername: admin
+        auth_password: password
+        realm: realm1
+        name: "realm1"
+        namehtml: "The first Realm"
+>>>>>>> SX5-868 Mise à jour de la documentation des modules Keycloak suite à la
         smtpServer: 
           replyToDisplayName: root
           starttls: ""
@@ -374,6 +395,7 @@ EXAMPLES = '''
     - name: Re-create the realm realm1
       keycloak_realm:
 <<<<<<< HEAD
+<<<<<<< HEAD
         auth_keycloak_url: http://localhost:8080/auth
         auth_sername: admin
         auth_password: password
@@ -388,17 +410,31 @@ EXAMPLES = '''
         username: "admin"
         password: "admin"
 >>>>>>> Sx5-868 Add keycloak_realm module with non mock unit tests.
+=======
+        auth_keycloak_url: http://localhost:8080/auth
+        auth_sername: admin
+        auth_password: password
+        realm: realm1
+        name: "realm1"
+        namehtml: "The first Realm"
+>>>>>>> SX5-868 Mise à jour de la documentation des modules Keycloak suite à la
         state : present
         force: yes
 
     - name: Remove a the realm realm1.
       keycloak_realm:
 <<<<<<< HEAD
+<<<<<<< HEAD
         auth_keycloak_url: http://localhost:8080/auth
         auth_sername: admin
         auth_password: password
 =======
 >>>>>>> Sx5-868 Add keycloak_realm module with non mock unit tests.
+=======
+        auth_keycloak_url: http://localhost:8080/auth
+        auth_sername: admin
+        auth_password: password
+>>>>>>> SX5-868 Mise à jour de la documentation des modules Keycloak suite à la
         name: realm1
         state: absent
 '''

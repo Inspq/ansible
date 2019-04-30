@@ -82,6 +82,7 @@ options:
             - Those attributes will be added to attributes dict.
             - The purpose of this option is to be able tu user Ansible variable as attribute name.
 <<<<<<< HEAD
+<<<<<<< HEAD
         suboptions:
             name: 
                 description:
@@ -95,25 +96,40 @@ options:
 
 =======
         subOptions:
+=======
+        suboptions:
+>>>>>>> SX5-868 Mise à jour de la documentation des modules Keycloak suite à la
             name: 
                 description:
                     - Name of the attribute
+                type: str
             value:
                 description:
                     - Value of the attribute
+<<<<<<< HEAD
 >>>>>>> SX5-868 Add role management to keycloak_group module. Add
+=======
+                type: str
+        version_added: 2.9
+
+>>>>>>> SX5-868 Mise à jour de la documentation des modules Keycloak suite à la
     realmRoles:
         type: list
         description:
             - List of realm roles to assign to the group.
 <<<<<<< HEAD
+<<<<<<< HEAD
         version_added: 2.9
 =======
 >>>>>>> SX5-868 Add role management to keycloak_group module. Add
+=======
+        version_added: 2.9
+>>>>>>> SX5-868 Mise à jour de la documentation des modules Keycloak suite à la
     clientRoles:
         type: list
         description:
             - List of client roles to assign to group.
+<<<<<<< HEAD
 <<<<<<< HEAD
         suboptions:
             clientid:
@@ -122,12 +138,18 @@ options:
         subOptions:
             clientid:
 >>>>>>> SX5-868 Add role management to keycloak_group module. Add
+=======
+        suboptions:
+            clientid:
+                type: str
+>>>>>>> SX5-868 Mise à jour de la documentation des modules Keycloak suite à la
                 description:
                     - Client Id of the client role
             roles:
                 type: list
                 description:
                     - List of roles for this client to assing to group
+<<<<<<< HEAD
 <<<<<<< HEAD
         version_added: 2.9
     path:
@@ -139,6 +161,13 @@ options:
         description:
             Group path
 >>>>>>> SX5-868 Add role management to keycloak_group module. Add
+=======
+        version_added: 2.9
+    path:
+        description:
+            Group path
+        version_added: 2.9
+>>>>>>> SX5-868 Mise à jour de la documentation des modules Keycloak suite à la
     syncLdapMappers:
         type: bool
         description:
@@ -147,18 +176,26 @@ options:
             - A sync is done from LDAP to Keycloak before doing the job and from Keycloak to LDAP after.
         default: False 
 <<<<<<< HEAD
+<<<<<<< HEAD
         version_added: 2.9
 =======
 >>>>>>> SX5-868 Add role management to keycloak_group module. Add
+=======
+        version_added: 2.9
+>>>>>>> SX5-868 Mise à jour de la documentation des modules Keycloak suite à la
     force:
         type: bool
         description:
             - If true and the group already exist on the Keycloak server, it will be deleted and re-created with the new specification.
         default: False
 <<<<<<< HEAD
+<<<<<<< HEAD
         version_added: 2.9
 =======
 >>>>>>> SX5-868 Add role management to keycloak_group module. Add
+=======
+        version_added: 2.9
+>>>>>>> SX5-868 Mise à jour de la documentation des modules Keycloak suite à la
 notes:
     - Presently, the I(access) attribute returned by the Keycloak API is read-only for groups. 
       This version of this module now support the I(realmRoles), I(clientRoles) as read-write attributes.

@@ -25,18 +25,25 @@ ANSIBLE_METADATA = {'metadata_version': '1.1',
 DOCUMENTATION = '''
 ---
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 author: "Philippe Gauthier (philippe.gauthier@inspq.qc.ca)"
 >>>>>>> Sx5-868 Add module keycloak_identity_provider and non mock unit tests.
+=======
+>>>>>>> SX5-868 Mise à jour de la documentation des modules Keycloak suite à la
 module: keycloak_identity_provider
 short_description: Configure an identity provider in Keycloak
 description:
   - This module creates, removes or update Keycloak identity provider.
 <<<<<<< HEAD
+<<<<<<< HEAD
 version_added: "2.9"
 =======
 version_added: "1.1"
 >>>>>>> Sx5-868 Add module keycloak_identity_provider and non mock unit tests.
+=======
+version_added: "2.9"
+>>>>>>> SX5-868 Mise à jour de la documentation des modules Keycloak suite à la
 options:
   realm:
     description:
@@ -118,15 +125,21 @@ extends_documentation_fragment:
 notes:
   - module does not modify identity provider alias.
 <<<<<<< HEAD
+<<<<<<< HEAD
 author: 
     - Philippe Gauthier (philippe.gauthier@inspq.qc.ca)
 =======
 >>>>>>> Sx5-868 Add module keycloak_identity_provider and non mock unit tests.
+=======
+author: 
+    - Philippe Gauthier (philippe.gauthier@inspq.qc.ca)
+>>>>>>> SX5-868 Mise à jour de la documentation des modules Keycloak suite à la
 '''
 
 EXAMPLES = '''
     - name: Create IdP1 fully configured with idp user attribute mapper and a role mapper
       keycloak_identity_provider:
+<<<<<<< HEAD
 <<<<<<< HEAD
         auth_keycloak_url: http://localhost:8080/auth
         auth_sername: admin
@@ -138,6 +151,12 @@ EXAMPLES = '''
         username: "admin"
         password: "password"  
 >>>>>>> Sx5-868 Add module keycloak_identity_provider and non mock unit tests.
+=======
+        auth_keycloak_url: http://localhost:8080/auth
+        auth_sername: admin
+        auth_password: password
+        realm: "master"
+>>>>>>> SX5-868 Mise à jour de la documentation des modules Keycloak suite à la
         alias: "IdP1"
         displayName: "My super dooper IdP"
         providerId: "oidc"
@@ -168,6 +187,7 @@ EXAMPLES = '''
     - name: Re-create the Idp1 without mappers. The existing Idp will be deleted.
       keycloak_identity_provider:
 <<<<<<< HEAD
+<<<<<<< HEAD
         auth_keycloak_url: http://localhost:8080/auth
         auth_sername: admin
         auth_password: password
@@ -178,6 +198,12 @@ EXAMPLES = '''
         username: "admin"
         password: "password"  
 >>>>>>> Sx5-868 Add module keycloak_identity_provider and non mock unit tests.
+=======
+        auth_keycloak_url: http://localhost:8080/auth
+        auth_sername: admin
+        auth_password: password
+        realm: "master"
+>>>>>>> SX5-868 Mise à jour de la documentation des modules Keycloak suite à la
         alias: "IdP1"
         displayName: "My super dooper IdP"
         providerId: "oidc"
@@ -195,6 +221,7 @@ EXAMPLES = '''
     - name: Remove a the Idp IdP1.
       keycloak_identity_provider:
 <<<<<<< HEAD
+<<<<<<< HEAD
         auth_keycloak_url: http://localhost:8080/auth
         auth_sername: admin
         auth_password: password
@@ -205,6 +232,12 @@ EXAMPLES = '''
         username: "admin"
         password: "password"  
 >>>>>>> Sx5-868 Add module keycloak_identity_provider and non mock unit tests.
+=======
+        auth_keycloak_url: http://localhost:8080/auth
+        auth_sername: admin
+        auth_password: password
+        realm: "master"
+>>>>>>> SX5-868 Mise à jour de la documentation des modules Keycloak suite à la
         alias: IdP1
         state: absent
 '''
@@ -217,10 +250,14 @@ idp:
 mappers:
   description: List of idp's mappers
 <<<<<<< HEAD
+<<<<<<< HEAD
   returned: on success
 =======
   returnd: on success
 >>>>>>> Sx5-868 Add module keycloak_identity_provider and non mock unit tests.
+=======
+  returned: on success
+>>>>>>> SX5-868 Mise à jour de la documentation des modules Keycloak suite à la
   type: list
 msg:
   description: Error message if it is the case
