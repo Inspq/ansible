@@ -191,6 +191,7 @@ class KeycloakClientTestCase(ModuleTestCase):
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
         "auth_keycloak_url": "http://localhost:18081/auth",
         "auth_username": "admin",
         "auth_password": "admin",
@@ -209,6 +210,11 @@ class KeycloakClientTestCase(ModuleTestCase):
         "username": "admin",
         "password": "admin",
 >>>>>>> SX5-868 Manage client roles (add, delete update), remove protocolMappers
+=======
+        "auth_keycloak_url": "http://localhost:18081/auth",
+        "auth_username": "admin",
+        "auth_password": "admin",
+>>>>>>> SX5-868 Add keycloak_user module and non mock unit tests.
         "realm": "master",
         "state": "present",
         "clientId": "basetest",
@@ -222,6 +228,7 @@ class KeycloakClientTestCase(ModuleTestCase):
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
         "auth_keycloak_url": "http://localhost:18081/auth",
         "auth_username": "admin",
         "auth_password": "admin",
@@ -240,6 +247,11 @@ class KeycloakClientTestCase(ModuleTestCase):
         "username": "admin",
         "password": "admin",
 >>>>>>> SX5-868 Manage client roles (add, delete update), remove protocolMappers
+=======
+        "auth_keycloak_url": "http://localhost:18081/auth",
+        "auth_username": "admin",
+        "auth_password": "admin",
+>>>>>>> SX5-868 Add keycloak_user module and non mock unit tests.
         "realm": "master",
         "state": "present",
         "clientId": "test_modify_client",
@@ -312,6 +324,7 @@ class KeycloakClientTestCase(ModuleTestCase):
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
         "auth_keycloak_url": "http://localhost:18081/auth",
         "auth_username": "admin",
         "auth_password": "admin",
@@ -330,6 +343,11 @@ class KeycloakClientTestCase(ModuleTestCase):
         "username": "admin",
         "password": "admin",
 >>>>>>> SX5-868 Manage client roles (add, delete update), remove protocolMappers
+=======
+        "auth_keycloak_url": "http://localhost:18081/auth",
+        "auth_username": "admin",
+        "auth_password": "admin",
+>>>>>>> SX5-868 Add keycloak_user module and non mock unit tests.
         "realm": "master",
         "state": "present",
         "clientId": "test_add_client_composite_roles",
@@ -400,6 +418,7 @@ class KeycloakClientTestCase(ModuleTestCase):
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
         "auth_keycloak_url": "http://localhost:18081/auth",
         "auth_username": "admin",
         "auth_password": "admin",
@@ -418,6 +437,11 @@ class KeycloakClientTestCase(ModuleTestCase):
         "username": "admin",
         "password": "admin",
 >>>>>>> SX5-868 Manage client roles (add, delete update), remove protocolMappers
+=======
+        "auth_keycloak_url": "http://localhost:18081/auth",
+        "auth_username": "admin",
+        "auth_password": "admin",
+>>>>>>> SX5-868 Add keycloak_user module and non mock unit tests.
         "realm": "master",
         "state": "present",
         "clientId": "test_remove_mapper_from_client",
@@ -462,6 +486,7 @@ class KeycloakClientTestCase(ModuleTestCase):
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
         "auth_keycloak_url": "http://localhost:18081/auth",
         "auth_username": "admin",
         "auth_password": "admin",
@@ -480,6 +505,11 @@ class KeycloakClientTestCase(ModuleTestCase):
         "username": "admin",
         "password": "admin",
 >>>>>>> SX5-868 Manage client roles (add, delete update), remove protocolMappers
+=======
+        "auth_keycloak_url": "http://localhost:18081/auth",
+        "auth_username": "admin",
+        "auth_password": "admin",
+>>>>>>> SX5-868 Add keycloak_user module and non mock unit tests.
         "realm": "master",
         "state": "present",
         "clientId": "test_remove_role_from_client",
@@ -507,6 +537,7 @@ class KeycloakClientTestCase(ModuleTestCase):
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
         "auth_keycloak_url": "http://localhost:18081/auth",
         "auth_username": "admin",
         "auth_password": "admin",
@@ -525,6 +556,11 @@ class KeycloakClientTestCase(ModuleTestCase):
         "username": "admin",
         "password": "admin",
 >>>>>>> SX5-868 Manage client roles (add, delete update), remove protocolMappers
+=======
+        "auth_keycloak_url": "http://localhost:18081/auth",
+        "auth_username": "admin",
+        "auth_password": "admin",
+>>>>>>> SX5-868 Add keycloak_user module and non mock unit tests.
         "realm": "master",
         "state": "present",
         "clientId": "test_delete_client",
@@ -569,6 +605,7 @@ class KeycloakClientTestCase(ModuleTestCase):
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
         toCreate["auth_keycloak_url"] = "http://localhost:18081/auth"
         toCreate["auth_username"] = "admin"
         toCreate["auth_password"] = "admin"
@@ -587,6 +624,11 @@ class KeycloakClientTestCase(ModuleTestCase):
         toCreate["username"] = "admin"
         toCreate["password"] = "admin"
 >>>>>>> SX5-868 Manage client roles (add, delete update), remove protocolMappers
+=======
+        toCreate["auth_keycloak_url"] = "http://localhost:18081/auth"
+        toCreate["auth_username"] = "admin"
+        toCreate["auth_password"] = "admin"
+>>>>>>> SX5-868 Add keycloak_user module and non mock unit tests.
         toCreate["realm"] = "master"
         toCreate["state"] = "present"
         toCreate["clientId"] = "test_create_client"

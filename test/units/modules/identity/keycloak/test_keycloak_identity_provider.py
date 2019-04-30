@@ -10,6 +10,7 @@ class KeycloakIdentityProviderTestCase(ModuleTestCase):
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
         "auth_username": "admin", 
         "auth_password": "admin",
         "realm": "master",
@@ -31,6 +32,12 @@ class KeycloakIdentityProviderTestCase(ModuleTestCase):
 >>>>>>> SX5-868 Add keycloak_user module and non mock unit tests.
 =======
 >>>>>>> Sx5-868 Add module keycloak_identity_provider and non mock unit tests.
+=======
+        "auth_username": "admin", 
+        "auth_password": "admin",
+        "realm": "master",
+        "auth_keycloak_url": "http://localhost:18081/auth",
+>>>>>>> SX5-868 Add keycloak_user module and non mock unit tests.
         "alias": "test_create_idp",
         "providerId": "oidc",
         "displayName": "test_create_idp",
@@ -86,6 +93,7 @@ class KeycloakIdentityProviderTestCase(ModuleTestCase):
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
         "auth_username": "admin", 
         "auth_password": "admin",
         "realm": "master",
@@ -107,6 +115,12 @@ class KeycloakIdentityProviderTestCase(ModuleTestCase):
 >>>>>>> SX5-868 Add keycloak_user module and non mock unit tests.
 =======
 >>>>>>> Sx5-868 Add module keycloak_identity_provider and non mock unit tests.
+=======
+        "auth_username": "admin", 
+        "auth_password": "admin",
+        "realm": "master",
+        "auth_keycloak_url": "http://localhost:18081/auth",
+>>>>>>> SX5-868 Add keycloak_user module and non mock unit tests.
         "alias": "test_idp_not_changed",
         "providerId": "oidc",
         "displayName": "test idp not changed",
@@ -161,6 +175,7 @@ class KeycloakIdentityProviderTestCase(ModuleTestCase):
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
         "auth_username": "admin", 
         "auth_password": "admin",
         "realm": "master",
@@ -182,6 +197,12 @@ class KeycloakIdentityProviderTestCase(ModuleTestCase):
 >>>>>>> SX5-868 Add keycloak_user module and non mock unit tests.
 =======
 >>>>>>> Sx5-868 Add module keycloak_identity_provider and non mock unit tests.
+=======
+        "auth_username": "admin", 
+        "auth_password": "admin",
+        "realm": "master",
+        "auth_keycloak_url": "http://localhost:18081/auth",
+>>>>>>> SX5-868 Add keycloak_user module and non mock unit tests.
         "alias": "test_modify_idp",
         "providerId": "oidc",
         "displayName": "test modify idp",
@@ -236,6 +257,7 @@ class KeycloakIdentityProviderTestCase(ModuleTestCase):
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
         "auth_username": "admin", 
         "auth_password": "admin",
         "realm": "master",
@@ -257,6 +279,12 @@ class KeycloakIdentityProviderTestCase(ModuleTestCase):
 >>>>>>> SX5-868 Add keycloak_user module and non mock unit tests.
 =======
 >>>>>>> Sx5-868 Add module keycloak_identity_provider and non mock unit tests.
+=======
+        "auth_username": "admin", 
+        "auth_password": "admin",
+        "realm": "master",
+        "auth_keycloak_url": "http://localhost:18081/auth",
+>>>>>>> SX5-868 Add keycloak_user module and non mock unit tests.
         "alias": "test_modify_idp_force",
         "providerId": "oidc",
         "displayName": "Test the force option for modify",
@@ -311,6 +339,7 @@ class KeycloakIdentityProviderTestCase(ModuleTestCase):
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
         "auth_username": "admin", 
         "auth_password": "admin",
         "realm": "master",
@@ -332,6 +361,12 @@ class KeycloakIdentityProviderTestCase(ModuleTestCase):
 >>>>>>> SX5-868 Add keycloak_user module and non mock unit tests.
 =======
 >>>>>>> Sx5-868 Add module keycloak_identity_provider and non mock unit tests.
+=======
+        "auth_username": "admin", 
+        "auth_password": "admin",
+        "realm": "master",
+        "auth_keycloak_url": "http://localhost:18081/auth",
+>>>>>>> SX5-868 Add keycloak_user module and non mock unit tests.
         "alias": "test_modify_idp_mappers",
         "providerId": "oidc",
         "displayName": "test modify idp mappers",
@@ -385,6 +420,7 @@ class KeycloakIdentityProviderTestCase(ModuleTestCase):
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
         "auth_username": "admin",
         "auth_password":"admin",
         "realm": "master",
@@ -406,6 +442,12 @@ class KeycloakIdentityProviderTestCase(ModuleTestCase):
 >>>>>>> SX5-868 Add keycloak_user module and non mock unit tests.
 =======
 >>>>>>> Sx5-868 Add module keycloak_identity_provider and non mock unit tests.
+=======
+        "auth_username": "admin",
+        "auth_password":"admin",
+        "realm": "master",
+        "auth_keycloak_url": "http://localhost:18081/auth",
+>>>>>>> SX5-868 Add keycloak_user module and non mock unit tests.
         "alias": "test_modify_idp_remove_mappers",
         "providerId": "oidc",
         "displayName": "Test removal of mappers",
@@ -452,6 +494,7 @@ class KeycloakIdentityProviderTestCase(ModuleTestCase):
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
         "auth_username": "admin", 
         "auth_password": "admin",
         "realm": "master",
@@ -473,6 +516,12 @@ class KeycloakIdentityProviderTestCase(ModuleTestCase):
 >>>>>>> SX5-868 Add keycloak_user module and non mock unit tests.
 =======
 >>>>>>> Sx5-868 Add module keycloak_identity_provider and non mock unit tests.
+=======
+        "auth_username": "admin", 
+        "auth_password": "admin",
+        "realm": "master",
+        "auth_keycloak_url": "http://localhost:18081/auth",
+>>>>>>> SX5-868 Add keycloak_user module and non mock unit tests.
         "alias": "test_delete_idp",
         "providerId": "oidc",
         "displayName": "Test delete IdP",
@@ -527,6 +576,7 @@ class KeycloakIdentityProviderTestCase(ModuleTestCase):
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
         "auth_username": "admin", 
         "auth_password": "admin",
         "realm": "master",
@@ -548,6 +598,12 @@ class KeycloakIdentityProviderTestCase(ModuleTestCase):
 >>>>>>> SX5-868 Add keycloak_user module and non mock unit tests.
 =======
 >>>>>>> Sx5-868 Add module keycloak_identity_provider and non mock unit tests.
+=======
+        "auth_username": "admin", 
+        "auth_password": "admin",
+        "realm": "master",
+        "auth_keycloak_url": "http://localhost:18081/auth",
+>>>>>>> SX5-868 Add keycloak_user module and non mock unit tests.
         "alias": "test_change_client_secret",
         "providerId": "oidc",
         "displayName": "Test change IdP client secret",
@@ -634,6 +690,7 @@ class KeycloakIdentityProviderTestCase(ModuleTestCase):
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
             "auth_username": "admin",
             "auth_password":"admin",
             "realm": "master",
@@ -655,6 +712,12 @@ class KeycloakIdentityProviderTestCase(ModuleTestCase):
 >>>>>>> SX5-868 Add keycloak_user module and non mock unit tests.
 =======
 >>>>>>> Sx5-868 Add module keycloak_identity_provider and non mock unit tests.
+=======
+            "auth_username": "admin",
+            "auth_password":"admin",
+            "realm": "master",
+            "auth_keycloak_url": "http://localhost:18081/auth",
+>>>>>>> SX5-868 Add keycloak_user module and non mock unit tests.
             "alias": "test_modify_idp",
             "providerId": "oidc",
             "storeToken": False,
@@ -697,6 +760,7 @@ class KeycloakIdentityProviderTestCase(ModuleTestCase):
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
             "auth_username": "admin",
             "auth_password":"admin",
             "realm": "master",
@@ -718,6 +782,12 @@ class KeycloakIdentityProviderTestCase(ModuleTestCase):
 >>>>>>> SX5-868 Add keycloak_user module and non mock unit tests.
 =======
 >>>>>>> Sx5-868 Add module keycloak_identity_provider and non mock unit tests.
+=======
+            "auth_username": "admin",
+            "auth_password":"admin",
+            "realm": "master",
+            "auth_keycloak_url": "http://localhost:18081/auth",
+>>>>>>> SX5-868 Add keycloak_user module and non mock unit tests.
             "alias": "test_modify_idp_mappers",
             "providerId": "oidc",
             "mappers": [
@@ -784,6 +854,7 @@ class KeycloakIdentityProviderTestCase(ModuleTestCase):
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
             auth_username = "admin", 
             auth_password = "admin",
             realm = "master",
@@ -805,6 +876,12 @@ class KeycloakIdentityProviderTestCase(ModuleTestCase):
 >>>>>>> SX5-868 Add keycloak_user module and non mock unit tests.
 =======
 >>>>>>> Sx5-868 Add module keycloak_identity_provider and non mock unit tests.
+=======
+            auth_username = "admin", 
+            auth_password = "admin",
+            realm = "master",
+            auth_keycloak_url = "http://localhost:18081/auth",
+>>>>>>> SX5-868 Add keycloak_user module and non mock unit tests.
             alias = "test_change_client_secret",
             config = dict(
                 clientId = "test4",
@@ -823,6 +900,7 @@ class KeycloakIdentityProviderTestCase(ModuleTestCase):
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
             auth_username = "admin", 
             auth_password = "admin",
             realm = "master",
@@ -844,6 +922,12 @@ class KeycloakIdentityProviderTestCase(ModuleTestCase):
 >>>>>>> SX5-868 Add keycloak_user module and non mock unit tests.
 =======
 >>>>>>> Sx5-868 Add module keycloak_identity_provider and non mock unit tests.
+=======
+            auth_username = "admin", 
+            auth_password = "admin",
+            realm = "master",
+            auth_keycloak_url = "http://localhost:18081/auth",
+>>>>>>> SX5-868 Add keycloak_user module and non mock unit tests.
             config = dict(
                 clientId = "test4",
                 clientSecret = "CeciEstMonSecret"

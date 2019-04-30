@@ -472,6 +472,7 @@ def main():
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
             url=dict(type='str', required=True),
             username=dict(type='str', required=True),
@@ -484,6 +485,8 @@ def main():
             username=dict(type='str', required=True),
             password=dict(required=True),
 >>>>>>> SX5-868 Add keycloak_authentication module to manage Authentication
+=======
+>>>>>>> SX5-868 Add keycloak_user module and non mock unit tests.
             realm=dict(type='str', required=True),
             alias=dict(type='str', required=True),
             providerId=dict(type='str'),

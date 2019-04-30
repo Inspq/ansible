@@ -15,6 +15,7 @@ class KeycloakComponentTestCase(ModuleTestCase):
         "auth_username": "admin",
         "auth_password": "admin",
 <<<<<<< HEAD
+<<<<<<< HEAD
         "realm": "master",
         "state": "present",
         "name": "test_modify_component_ldap_user_storage_provider",
@@ -140,6 +141,8 @@ class KeycloakComponentTestCase(ModuleTestCase):
 >>>>>>> SX5-868 Add keycloak_user module and non mock unit tests.
 =======
 >>>>>>> SX5-868 Add keycloak_component module with non mock unit tests.
+=======
+>>>>>>> SX5-868 Add keycloak_user module and non mock unit tests.
         "realm": "master",
         "state": "present",
         "name": "test_modify_component_ldap_user_storage_provider",
@@ -181,6 +184,7 @@ class KeycloakComponentTestCase(ModuleTestCase):
     }
     doNotModifyComponentLdapUserStorageProvider = {
 <<<<<<< HEAD
+<<<<<<< HEAD
         "auth_keycloak_url": "http://localhost:18081/auth",
         "auth_username": "admin",
         "auth_password": "admin",
@@ -189,6 +193,11 @@ class KeycloakComponentTestCase(ModuleTestCase):
         "username": "admin",
         "password": "admin",
 >>>>>>> SX5-868 Add keycloak_component module with non mock unit tests.
+=======
+        "auth_keycloak_url": "http://localhost:18081/auth",
+        "auth_username": "admin",
+        "auth_password": "admin",
+>>>>>>> SX5-868 Add keycloak_user module and non mock unit tests.
         "realm": "master",
         "state": "present",
         "name":"test_do_not_modify_component_ldap_user_storage_provider",
@@ -353,10 +362,16 @@ class KeycloakComponentTestCase(ModuleTestCase):
     }
     
     modifyComponentLdapUserStorageProviderForce = {
+<<<<<<< HEAD
         "url": "http://localhost:18081/auth",
         "username": "admin",
         "password": "admin",
 >>>>>>> SX5-868 Add keycloak_component module with non mock unit tests.
+=======
+        "auth_keycloak_url": "http://localhost:18081/auth",
+        "auth_username": "admin",
+        "auth_password": "admin",
+>>>>>>> SX5-868 Add keycloak_user module and non mock unit tests.
         "realm": "master",
         "state": "present",
         "name":"test_modify_component_ldap_user_storage_provider_force",
@@ -485,6 +500,7 @@ class KeycloakComponentTestCase(ModuleTestCase):
 
     deleteComponentLdapUserStorageProvider = {
 <<<<<<< HEAD
+<<<<<<< HEAD
         "auth_keycloak_url": "http://localhost:18081/auth",
         "auth_username": "admin",
         "auth_password": "admin",
@@ -493,6 +509,11 @@ class KeycloakComponentTestCase(ModuleTestCase):
         "username": "admin",
         "password": "admin",
 >>>>>>> SX5-868 Add keycloak_component module with non mock unit tests.
+=======
+        "auth_keycloak_url": "http://localhost:18081/auth",
+        "auth_username": "admin",
+        "auth_password": "admin",
+>>>>>>> SX5-868 Add keycloak_user module and non mock unit tests.
         "realm": "master",
         "state": "present",
         "name": "test_delete_component_ldap_user_storage_provider",
@@ -666,6 +687,7 @@ class KeycloakComponentTestCase(ModuleTestCase):
     def test_create_component_ldap_user_storage_provider(self):
         toCreate = {}
 <<<<<<< HEAD
+<<<<<<< HEAD
         toCreate["auth_keycloak_url"] = "http://localhost:18081/auth"
         toCreate["auth_username"] = "admin"
         toCreate["auth_password"] = "admin"
@@ -674,6 +696,11 @@ class KeycloakComponentTestCase(ModuleTestCase):
         toCreate["username"] = "admin"
         toCreate["password"] = "admin"
 >>>>>>> SX5-868 Add keycloak_component module with non mock unit tests.
+=======
+        toCreate["auth_keycloak_url"] = "http://localhost:18081/auth"
+        toCreate["auth_username"] = "admin"
+        toCreate["auth_password"] = "admin"
+>>>>>>> SX5-868 Add keycloak_user module and non mock unit tests.
         toCreate["realm"] = "master"
         toCreate["state"] = "present"
         toCreate["name"] = "test_create_component_ldap_user_storage_provider"
