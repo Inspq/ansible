@@ -67,9 +67,9 @@ class KeycloakClientTestCase(ModuleTestCase):
         }
     ]
     testClient = {
-        "url": "http://localhost:18081/auth",
-        "username": "admin",
-        "password": "admin",
+        "auth_keycloak_url": "http://localhost:18081/auth",
+        "auth_username": "admin",
+        "auth_password": "admin",
         "realm": "master",
         "state": "present",
         "clientId": "basetest",
@@ -80,9 +80,9 @@ class KeycloakClientTestCase(ModuleTestCase):
         "force": False
     }
     toModifyClient = {
-        "url": "http://localhost:18081/auth",
-        "username": "admin",
-        "password": "admin",
+        "auth_keycloak_url": "http://localhost:18081/auth",
+        "auth_username": "admin",
+        "auth_password": "admin",
         "realm": "master",
         "state": "present",
         "clientId": "test_modify_client",
@@ -152,9 +152,9 @@ class KeycloakClientTestCase(ModuleTestCase):
         }
     
     toAddCompositesForClientRole = {
-        "url": "http://localhost:18081/auth",
-        "username": "admin",
-        "password": "admin",
+        "auth_keycloak_url": "http://localhost:18081/auth",
+        "auth_username": "admin",
+        "auth_password": "admin",
         "realm": "master",
         "state": "present",
         "clientId": "test_add_client_composite_roles",
@@ -222,9 +222,9 @@ class KeycloakClientTestCase(ModuleTestCase):
         ]
     }
     toRemoveMapperFromClient = {
-        "url": "http://localhost:18081/auth",
-        "username": "admin",
-        "password": "admin",
+        "auth_keycloak_url": "http://localhost:18081/auth",
+        "auth_username": "admin",
+        "auth_password": "admin",
         "realm": "master",
         "state": "present",
         "clientId": "test_remove_mapper_from_client",
@@ -266,9 +266,9 @@ class KeycloakClientTestCase(ModuleTestCase):
         "force": False
     }
     toRemoveRoleFromClient = {
-        "url": "http://localhost:18081/auth",
-        "username": "admin",
-        "password": "admin",
+        "auth_keycloak_url": "http://localhost:18081/auth",
+        "auth_username": "admin",
+        "auth_password": "admin",
         "realm": "master",
         "state": "present",
         "clientId": "test_remove_role_from_client",
@@ -293,9 +293,9 @@ class KeycloakClientTestCase(ModuleTestCase):
         "force": False
     }
     toDeleteClient = {
-        "url": "http://localhost:18081/auth",
-        "username": "admin",
-        "password": "admin",
+        "auth_keycloak_url": "http://localhost:18081/auth",
+        "auth_username": "admin",
+        "auth_password": "admin",
         "realm": "master",
         "state": "present",
         "clientId": "test_delete_client",
@@ -337,9 +337,9 @@ class KeycloakClientTestCase(ModuleTestCase):
  
     def test_create_client(self):
         toCreate = {}
-        toCreate["url"] = "http://localhost:18081/auth"
-        toCreate["username"] = "admin"
-        toCreate["password"] = "admin"
+        toCreate["auth_keycloak_url"] = "http://localhost:18081/auth"
+        toCreate["auth_username"] = "admin"
+        toCreate["auth_password"] = "admin"
         toCreate["realm"] = "master"
         toCreate["state"] = "present"
         toCreate["clientId"] = "test_create_client"
