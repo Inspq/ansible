@@ -27,6 +27,7 @@ DOCUMENTATION = '''
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 author: "Etienne Sadio (etienne.sadio@inspq.qc.ca)"
 >>>>>>> SX5-868 Add keycloak_user module and non mock unit tests.
@@ -35,6 +36,8 @@ author: "Etienne Sadio (etienne.sadio@inspq.qc.ca)"
 =======
 author: "Etienne Sadio (etienne.sadio@inspq.qc.ca)"
 >>>>>>> SX5-868 Add keycloak_user module and non mock unit tests.
+=======
+>>>>>>> SX5-868 Mise à jour de la documentation des modules Keycloak suite à la
 module: keycloak_user
 short_description: create and Configure a user in Keycloak
 description:
@@ -42,6 +45,7 @@ description:
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 version_added: "2.9"
 =======
 version_added: "2.8"
@@ -52,6 +56,9 @@ version_added: "2.9"
 =======
 version_added: "2.8"
 >>>>>>> SX5-868 Add keycloak_user module and non mock unit tests.
+=======
+version_added: "2.9"
+>>>>>>> SX5-868 Mise à jour de la documentation des modules Keycloak suite à la
 options:
     realm:
         description:
@@ -118,8 +125,12 @@ options:
             - client Authenticator Type.
         required: false
         type: list
+<<<<<<< HEAD
         subOptions:
 >>>>>>> SX5-868 Add keycloak_user module and non mock unit tests.
+=======
+        suboptions:
+>>>>>>> SX5-868 Mise à jour de la documentation des modules Keycloak suite à la
             clientId:
                 description:
                 - Client ID of the client role. Not the technical id of the client.
@@ -214,6 +225,7 @@ notes:
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 author: 
     - Etienne Sadio (etienne.sadio@inspq.qc.ca)
 =======
@@ -227,11 +239,16 @@ author:
 >>>>>>> SX5-868 Mise à jour de la documentation des modules Keycloak suite à la
 =======
 >>>>>>> SX5-868 Add keycloak_user module and non mock unit tests.
+=======
+author: 
+    - Etienne Sadio (etienne.sadio@inspq.qc.ca)
+>>>>>>> SX5-868 Mise à jour de la documentation des modules Keycloak suite à la
 '''
 
 EXAMPLES = '''
     - name: Create a user user1
       keycloak_user:
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -253,6 +270,11 @@ EXAMPLES = '''
         masterUsername: admin
         masterpassword: password
 >>>>>>> SX5-868 Add keycloak_user module and non mock unit tests.
+=======
+        auth_keycloak_url: http://localhost:8080/auth
+        auth_sername: admin
+        auth_password: password
+>>>>>>> SX5-868 Mise à jour de la documentation des modules Keycloak suite à la
         realm: master
         username: user1
         firstName: user1
@@ -299,6 +321,7 @@ EXAMPLES = '''
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
         auth_keycloak_url: http://localhost:8080/auth
         auth_sername: admin
         auth_password: password
@@ -317,6 +340,11 @@ EXAMPLES = '''
         masterUsername: admin
         masterpassword: password
 >>>>>>> SX5-868 Add keycloak_user module and non mock unit tests.
+=======
+        auth_keycloak_url: http://localhost:8080/auth
+        auth_sername: admin
+        auth_password: password
+>>>>>>> SX5-868 Mise à jour de la documentation des modules Keycloak suite à la
         realm: master
         username: user1
         firstName: user1
@@ -364,6 +392,7 @@ EXAMPLES = '''
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
         auth_keycloak_url: http://localhost:8080/auth
         auth_sername: admin
         auth_password: password
@@ -382,6 +411,11 @@ EXAMPLES = '''
         masterUsername: admin
         masterpassword: password
 >>>>>>> SX5-868 Add keycloak_user module and non mock unit tests.
+=======
+        auth_keycloak_url: http://localhost:8080/auth
+        auth_sername: admin
+        auth_password: password
+>>>>>>> SX5-868 Mise à jour de la documentation des modules Keycloak suite à la
         realm: master
         username: user1
         state: absent

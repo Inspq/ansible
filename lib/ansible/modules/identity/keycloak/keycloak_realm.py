@@ -29,6 +29,7 @@ DOCUMENTATION = '''
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 author: "Philippe Gauthier (philippe.gauthier@inspq.qc.ca"
 >>>>>>> Sx5-868 Add keycloak_realm module with non mock unit tests.
@@ -37,6 +38,8 @@ author: "Philippe Gauthier (philippe.gauthier@inspq.qc.ca"
 =======
 author: "Philippe Gauthier (philippe.gauthier@inspq.qc.ca"
 >>>>>>> Sx5-868 Add keycloak_realm module with non mock unit tests.
+=======
+>>>>>>> SX5-868 Mise à jour de la documentation des modules Keycloak suite à la
 module: keycloak_realm
 short_description: Configure a realm in Keycloak
 description:
@@ -44,6 +47,7 @@ description:
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 version_added: "2.9"
 =======
 version_added: "2.8"
@@ -54,6 +58,9 @@ version_added: "2.9"
 =======
 version_added: "2.8"
 >>>>>>> Sx5-868 Add keycloak_realm module with non mock unit tests.
+=======
+version_added: "2.9"
+>>>>>>> SX5-868 Mise à jour de la documentation des modules Keycloak suite à la
 options:
   realm:
     description:
@@ -349,6 +356,7 @@ notes:
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 author: 
     - Philippe Gauthier (philippe.gauthier@inspq.qc.ca)
 =======
@@ -362,11 +370,16 @@ author:
 >>>>>>> SX5-868 Mise à jour de la documentation des modules Keycloak suite à la
 =======
 >>>>>>> Sx5-868 Add keycloak_realm module with non mock unit tests.
+=======
+author: 
+    - Philippe Gauthier (philippe.gauthier@inspq.qc.ca)
+>>>>>>> SX5-868 Mise à jour de la documentation des modules Keycloak suite à la
 '''
 
 EXAMPLES = '''
     - name: Create a realm
       keycloak_realm:
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -401,6 +414,14 @@ EXAMPLES = '''
         smtpServer:
 >>>>>>> SX5-868 Ajustement du codestyle des modules Keycloak en préparation des
 =======
+=======
+        auth_keycloak_url: http://localhost:8080/auth
+        auth_sername: admin
+        auth_password: password
+        realm: realm1
+        name: "realm1"
+        namehtml: "The first Realm"
+>>>>>>> SX5-868 Mise à jour de la documentation des modules Keycloak suite à la
         smtpServer: 
 >>>>>>> Sx5-868 Add keycloak_realm module with non mock unit tests.
           replyToDisplayName: root
@@ -424,6 +445,7 @@ EXAMPLES = '''
 
     - name: Re-create the realm realm1
       keycloak_realm:
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -454,11 +476,20 @@ EXAMPLES = '''
 >>>>>>> SX5-868 Mise à jour de la documentation des modules Keycloak suite à la
 =======
 >>>>>>> Sx5-868 Add keycloak_realm module with non mock unit tests.
+=======
+        auth_keycloak_url: http://localhost:8080/auth
+        auth_sername: admin
+        auth_password: password
+        realm: realm1
+        name: "realm1"
+        namehtml: "The first Realm"
+>>>>>>> SX5-868 Mise à jour de la documentation des modules Keycloak suite à la
         state : present
         force: yes
 
     - name: Remove a the realm realm1.
       keycloak_realm:
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -474,6 +505,11 @@ EXAMPLES = '''
 >>>>>>> SX5-868 Mise à jour de la documentation des modules Keycloak suite à la
 =======
 >>>>>>> Sx5-868 Add keycloak_realm module with non mock unit tests.
+=======
+        auth_keycloak_url: http://localhost:8080/auth
+        auth_sername: admin
+        auth_password: password
+>>>>>>> SX5-868 Mise à jour de la documentation des modules Keycloak suite à la
         name: realm1
         state: absent
 '''

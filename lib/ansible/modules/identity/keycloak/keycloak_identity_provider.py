@@ -27,6 +27,7 @@ DOCUMENTATION = '''
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 author: "Philippe Gauthier (philippe.gauthier@inspq.qc.ca)"
 >>>>>>> Sx5-868 Add module keycloak_identity_provider and non mock unit tests.
@@ -35,6 +36,8 @@ author: "Philippe Gauthier (philippe.gauthier@inspq.qc.ca)"
 =======
 author: "Philippe Gauthier (philippe.gauthier@inspq.qc.ca)"
 >>>>>>> Sx5-868 Add module keycloak_identity_provider and non mock unit tests.
+=======
+>>>>>>> SX5-868 Mise à jour de la documentation des modules Keycloak suite à la
 module: keycloak_identity_provider
 short_description: Configure an identity provider in Keycloak
 description:
@@ -42,6 +45,7 @@ description:
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 version_added: "2.9"
 =======
 version_added: "1.1"
@@ -52,6 +56,9 @@ version_added: "2.9"
 =======
 version_added: "1.1"
 >>>>>>> Sx5-868 Add module keycloak_identity_provider and non mock unit tests.
+=======
+version_added: "2.9"
+>>>>>>> SX5-868 Mise à jour de la documentation des modules Keycloak suite à la
 options:
   realm:
     description:
@@ -144,6 +151,7 @@ notes:
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 author: 
     - Philippe Gauthier (philippe.gauthier@inspq.qc.ca)
 =======
@@ -157,11 +165,16 @@ author:
 >>>>>>> SX5-868 Mise à jour de la documentation des modules Keycloak suite à la
 =======
 >>>>>>> Sx5-868 Add module keycloak_identity_provider and non mock unit tests.
+=======
+author: 
+    - Philippe Gauthier (philippe.gauthier@inspq.qc.ca)
+>>>>>>> SX5-868 Mise à jour de la documentation des modules Keycloak suite à la
 '''
 
 EXAMPLES = '''
     - name: Create IdP1 fully configured with idp user attribute mapper and a role mapper
       keycloak_identity_provider:
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -186,6 +199,12 @@ EXAMPLES = '''
 >>>>>>> SX5-868 Mise à jour de la documentation des modules Keycloak suite à la
 =======
 >>>>>>> Sx5-868 Add module keycloak_identity_provider and non mock unit tests.
+=======
+        auth_keycloak_url: http://localhost:8080/auth
+        auth_sername: admin
+        auth_password: password
+        realm: "master"
+>>>>>>> SX5-868 Mise à jour de la documentation des modules Keycloak suite à la
         alias: "IdP1"
         displayName: "My super dooper IdP"
         providerId: "oidc"
@@ -218,6 +237,7 @@ EXAMPLES = '''
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
         auth_keycloak_url: http://localhost:8080/auth
         auth_sername: admin
         auth_password: password
@@ -239,6 +259,12 @@ EXAMPLES = '''
 >>>>>>> SX5-868 Mise à jour de la documentation des modules Keycloak suite à la
 =======
 >>>>>>> Sx5-868 Add module keycloak_identity_provider and non mock unit tests.
+=======
+        auth_keycloak_url: http://localhost:8080/auth
+        auth_sername: admin
+        auth_password: password
+        realm: "master"
+>>>>>>> SX5-868 Mise à jour de la documentation des modules Keycloak suite à la
         alias: "IdP1"
         displayName: "My super dooper IdP"
         providerId: "oidc"
@@ -258,6 +284,7 @@ EXAMPLES = '''
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
         auth_keycloak_url: http://localhost:8080/auth
         auth_sername: admin
         auth_password: password
@@ -279,6 +306,12 @@ EXAMPLES = '''
 >>>>>>> SX5-868 Mise à jour de la documentation des modules Keycloak suite à la
 =======
 >>>>>>> Sx5-868 Add module keycloak_identity_provider and non mock unit tests.
+=======
+        auth_keycloak_url: http://localhost:8080/auth
+        auth_sername: admin
+        auth_password: password
+        realm: "master"
+>>>>>>> SX5-868 Mise à jour de la documentation des modules Keycloak suite à la
         alias: IdP1
         state: absent
 '''
@@ -293,6 +326,7 @@ mappers:
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
   returned: on success
 =======
   returnd: on success
@@ -303,6 +337,9 @@ mappers:
 =======
   returnd: on success
 >>>>>>> Sx5-868 Add module keycloak_identity_provider and non mock unit tests.
+=======
+  returned: on success
+>>>>>>> SX5-868 Mise à jour de la documentation des modules Keycloak suite à la
   type: list
 msg:
   description: Error message if it is the case

@@ -27,6 +27,7 @@ DOCUMENTATION = '''
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 author: "Philippe Gauthier (philippe.gauthier@inspq.qc.ca"
 >>>>>>> SX5-868 Add keycloak_component module with non mock unit tests.
@@ -38,6 +39,8 @@ description:
     - This module creates, removes or update Keycloak component.
 =======
 author: "Philippe Gauthier (philippe.gauthier@inspq.qc.ca"
+=======
+>>>>>>> SX5-868 Mise à jour de la documentation des modules Keycloak suite à la
 module: keycloak_component
 short_description: Configure a component in Keycloak
 description:
@@ -120,6 +123,7 @@ extends_documentation_fragment:
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 
 author:
     - Philippe Gauthier (philippe.gauthier@inspq.qc.ca)
@@ -132,11 +136,17 @@ author:
 >>>>>>> SX5-868 Mise à jour de la documentation des modules Keycloak suite à la
 =======
 >>>>>>> SX5-868 Add keycloak_component module with non mock unit tests.
+=======
+
+author: 
+    - Philippe Gauthier (philippe.gauthier@inspq.qc.ca)
+>>>>>>> SX5-868 Mise à jour de la documentation des modules Keycloak suite à la
 '''
 
 EXAMPLES = '''
     - name: Create a LDAP User Storage provider. A full sync of users and a fedToKeycloak sync for group mappers will be triggered.
       keycloak_component:
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -158,6 +168,11 @@ EXAMPLES = '''
         username: admin
         password: admin
 >>>>>>> SX5-868 Add keycloak_component module with non mock unit tests.
+=======
+        auth_keycloak_url: http://localhost:8080/auth
+        auth_sername: admin
+        auth_password: password
+>>>>>>> SX5-868 Mise à jour de la documentation des modules Keycloak suite à la
         realm: master
         name: ActiveDirectory
         providerId: ldap
@@ -255,6 +270,7 @@ EXAMPLES = '''
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
         auth_keycloak_url: http://localhost:8080/auth
         auth_sername: admin
         auth_password: password
@@ -273,6 +289,11 @@ EXAMPLES = '''
         username: admin
         password: admin
 >>>>>>> SX5-868 Add keycloak_component module with non mock unit tests.
+=======
+        auth_keycloak_url: http://localhost:8080/auth
+        auth_sername: admin
+        auth_password: password
+>>>>>>> SX5-868 Mise à jour de la documentation des modules Keycloak suite à la
         realm: master
         name: ActiveDirectory
         providerId: ldap
@@ -386,10 +407,16 @@ EXAMPLES = '''
         
     - name: Remove User Storage Provider.
       keycloak_component:
+<<<<<<< HEAD
         url: http://localhost:8080/auth
         username: admin
         password: admin
 >>>>>>> SX5-868 Add keycloak_component module with non mock unit tests.
+=======
+        auth_keycloak_url: http://localhost:8080/auth
+        auth_sername: admin
+        auth_password: password
+>>>>>>> SX5-868 Mise à jour de la documentation des modules Keycloak suite à la
         realm: master
         name: ActiveDirectory
         providerId: ldap

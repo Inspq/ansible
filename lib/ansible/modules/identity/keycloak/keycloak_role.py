@@ -27,6 +27,7 @@ DOCUMENTATION = '''
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 author: "Philippe Gauthier (philippe.gauthier@inspq.qc.ca"
 >>>>>>> Sx5-868 Add a keycloak_role modules and non mock unit tests.
@@ -35,6 +36,8 @@ author: "Philippe Gauthier (philippe.gauthier@inspq.qc.ca"
 =======
 author: "Philippe Gauthier (philippe.gauthier@inspq.qc.ca"
 >>>>>>> Sx5-868 Add a keycloak_role modules and non mock unit tests.
+=======
+>>>>>>> SX5-868 Mise à jour de la documentation des modules Keycloak suite à la
 module: keycloak_role
 short_description: Configure a role in Keycloak
 description:
@@ -43,6 +46,7 @@ description:
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 version_added: "2.9"
 =======
 version_added: "2.8"
@@ -53,6 +57,9 @@ version_added: "2.9"
 =======
 version_added: "2.8"
 >>>>>>> Sx5-868 Add a keycloak_role modules and non mock unit tests.
+=======
+version_added: "2.9"
+>>>>>>> SX5-868 Mise à jour de la documentation des modules Keycloak suite à la
 options:
     realm:
         description:
@@ -95,6 +102,7 @@ options:
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
         suboptions:
 =======
         subOptions:
@@ -105,6 +113,9 @@ options:
 =======
         subOptions:
 >>>>>>> Sx5-868 Add a keycloak_role modules and non mock unit tests.
+=======
+        suboptions:
+>>>>>>> SX5-868 Mise à jour de la documentation des modules Keycloak suite à la
             name:
                 description:
                     - Name of the role. This can be the name of a REALM role or a client role.
@@ -134,6 +145,7 @@ notes:
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 author: 
     - Philippe Gauthier (philippe.gauthier@inspq.qc.ca)
 =======
@@ -147,11 +159,16 @@ author:
 >>>>>>> SX5-868 Mise à jour de la documentation des modules Keycloak suite à la
 =======
 >>>>>>> Sx5-868 Add a keycloak_role modules and non mock unit tests.
+=======
+author: 
+    - Philippe Gauthier (philippe.gauthier@inspq.qc.ca)
+>>>>>>> SX5-868 Mise à jour de la documentation des modules Keycloak suite à la
 '''
 
 EXAMPLES = '''
     - name: Create the composite realm role role1 with composite roles.
       keycloak_role:
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -173,6 +190,11 @@ EXAMPLES = '''
         username: admin
         password: password
 >>>>>>> Sx5-868 Add a keycloak_role modules and non mock unit tests.
+=======
+        auth_keycloak_url: http://localhost:8080/auth
+        auth_sername: admin
+        auth_password: password
+>>>>>>> SX5-868 Mise à jour de la documentation des modules Keycloak suite à la
         realm: master
         name: role1
         description: Super composite role
@@ -188,6 +210,7 @@ EXAMPLES = '''
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
         auth_keycloak_url: http://localhost:8080/auth
         auth_sername: admin
         auth_password: password
@@ -206,6 +229,11 @@ EXAMPLES = '''
         username: admin
         password: password
 >>>>>>> Sx5-868 Add a keycloak_role modules and non mock unit tests.
+=======
+        auth_keycloak_url: http://localhost:8080/auth
+        auth_sername: admin
+        auth_password: password
+>>>>>>> SX5-868 Mise à jour de la documentation des modules Keycloak suite à la
         realm: master
         name: role1
         description: Super composite role
@@ -222,6 +250,7 @@ EXAMPLES = '''
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
         auth_keycloak_url: http://localhost:8080/auth
         auth_sername: admin
         auth_password: password
@@ -240,6 +269,11 @@ EXAMPLES = '''
         username: admin
         password: admin
 >>>>>>> Sx5-868 Add a keycloak_role modules and non mock unit tests.
+=======
+        auth_keycloak_url: http://localhost:8080/auth
+        auth_sername: admin
+        auth_password: password
+>>>>>>> SX5-868 Mise à jour de la documentation des modules Keycloak suite à la
         realm: master
         name: role1
         state: absent

@@ -27,6 +27,7 @@ DOCUMENTATION = '''
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 author: "Philippe Gauthier (philippe.gauthier@inspq.qc.ca"
 >>>>>>> SX5-868 Add keycloak_authentication module to manage Authentication
@@ -35,6 +36,8 @@ author: "Philippe Gauthier (philippe.gauthier@inspq.qc.ca"
 =======
 author: "Philippe Gauthier (philippe.gauthier@inspq.qc.ca"
 >>>>>>> SX5-868 Add keycloak_authentication module to manage Authentication
+=======
+>>>>>>> SX5-868 Mise à jour de la documentation des modules Keycloak suite à la
 module: keycloak_authentication
 short_description: Configure authentication in Keycloak
 description:
@@ -43,10 +46,14 @@ description:
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 version_added: "2.9"
 options:
 =======
 version_added: "2.3"
+=======
+version_added: "2.9"
+>>>>>>> SX5-868 Mise à jour de la documentation des modules Keycloak suite à la
 =======
 version_added: "2.9"
 >>>>>>> SX5-868 Mise à jour de la documentation des modules Keycloak suite à la
@@ -120,6 +127,7 @@ extends_documentation_fragment:
     - keycloak
 notes:
     - This module has very limited functions at the moment. Please contribute if you need more...
+<<<<<<< HEAD
 author:
     - Philippe Gauthier (philippe.gauthier@inspq.qc.ca)
 <<<<<<< HEAD
@@ -137,11 +145,16 @@ notes:
 notes:
     - This module has very limited functions at the moment. Please contribute if you need more...
 >>>>>>> SX5-868 Add keycloak_authentication module to manage Authentication
+=======
+author: 
+    - Philippe Gauthier (philippe.gauthier@inspq.qc.ca)
+>>>>>>> SX5-868 Mise à jour de la documentation des modules Keycloak suite à la
 '''
 
 EXAMPLES = '''
     - name: Create an authentication flow from first broker login and add an execution to it.
       keycloak_authentication:
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -163,6 +176,11 @@ EXAMPLES = '''
         username: admin
         password: password
 >>>>>>> SX5-868 Add keycloak_authentication module to manage Authentication
+=======
+        auth_keycloak_url: http://localhost:8080/auth
+        auth_sername: admin
+        auth_password: password
+>>>>>>> SX5-868 Mise à jour de la documentation des modules Keycloak suite à la
         realm: master
         alias: "Copy of first broker login"
         copyFrom: "first broker login"
@@ -198,6 +216,7 @@ EXAMPLES = '''
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
         auth_keycloak_url: http://localhost:8080/auth
         auth_sername: admin
         auth_password: password
@@ -216,6 +235,11 @@ EXAMPLES = '''
         username: admin
         password: password
 >>>>>>> SX5-868 Add keycloak_authentication module to manage Authentication
+=======
+        auth_keycloak_url: http://localhost:8080/auth
+        auth_sername: admin
+        auth_password: password
+>>>>>>> SX5-868 Mise à jour de la documentation des modules Keycloak suite à la
         realm: master
         alias: "Copy of first broker login"
         copyFrom: "first broker login"
@@ -240,6 +264,7 @@ EXAMPLES = '''
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
         auth_keycloak_url: http://localhost:8080/auth
         auth_sername: admin
         auth_password: password
@@ -258,6 +283,11 @@ EXAMPLES = '''
         username: admin
         password: admin
 >>>>>>> SX5-868 Add keycloak_authentication module to manage Authentication
+=======
+        auth_keycloak_url: http://localhost:8080/auth
+        auth_sername: admin
+        auth_password: password
+>>>>>>> SX5-868 Mise à jour de la documentation des modules Keycloak suite à la
         realm: master
         alias: "Copy of first broker login"
         state: absent
