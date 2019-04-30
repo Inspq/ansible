@@ -766,7 +766,6 @@ def main():
     meta_args = dict(
         state=dict(default='present', choices=['present', 'absent']),
         realm=dict(type='str', default='master'),
-        
         id=dict(type='str'),
         client_id=dict(type='str', aliases=['clientId']),
         name=dict(type='str'),
@@ -841,6 +840,7 @@ def main():
     client_params = [x for x in module.params
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
                      if x not in list(keycloak_argument_spec().keys()) + ['state', 'realm', 'url', 'force'] and
 =======
                      if x not in list(keycloak_argument_spec().keys()) + ['state', 'realm','username','password','url','force'] and
@@ -848,6 +848,9 @@ def main():
 =======
                      if x not in list(keycloak_argument_spec().keys()) + ['state', 'realm', 'url','force'] and
 >>>>>>> SX5-868 Code clean after shippable comments.
+=======
+                     if x not in list(keycloak_argument_spec().keys()) + ['state', 'realm', 'url', 'force'] and
+>>>>>>> SX5-868 code cleanup for shippable
                      module.params.get(x) is not None]
     keycloak_argument_spec().keys()
     # See whether the client already exists in Keycloak
@@ -918,10 +921,14 @@ def main():
         if client_secret is not None:
             result['clientSecret'] = client_secret
 <<<<<<< HEAD
+<<<<<<< HEAD
 
 =======
             
 >>>>>>> SX5-868 PR Added role management for keycloak_client module.
+=======
+
+>>>>>>> SX5-868 code cleanup for shippable
         result['msg'] = 'Client %s has been created.' % updated_client['clientId']
         module.exit_json(**result)
     else:
