@@ -12,6 +12,7 @@ class KeycloakComponentTestCase(ModuleTestCase):
         "auth_keycloak_url": "http://localhost:18081/auth",
         "auth_username": "admin",
         "auth_password": "admin",
+<<<<<<< HEAD
         "realm": "master",
         "state": "present",
         "name": "test_modify_component_ldap_user_storage_provider",
@@ -119,6 +120,8 @@ class KeycloakComponentTestCase(ModuleTestCase):
         "url": "http://localhost:18081/auth",
         "username": "admin",
         "password": "admin",
+=======
+>>>>>>> SX5-868 Add keycloak_user module and non mock unit tests.
         "realm": "master",
         "state": "present",
         "name": "test_modify_component_ldap_user_storage_provider",
@@ -159,9 +162,9 @@ class KeycloakComponentTestCase(ModuleTestCase):
         "force": False
     }
     doNotModifyComponentLdapUserStorageProvider = {
-        "url": "http://localhost:18081/auth",
-        "username": "admin",
-        "password": "admin",
+        "auth_keycloak_url": "http://localhost:18081/auth",
+        "auth_username": "admin",
+        "auth_password": "admin",
         "realm": "master",
         "state": "present",
         "name":"test_do_not_modify_component_ldap_user_storage_provider",
@@ -307,9 +310,9 @@ class KeycloakComponentTestCase(ModuleTestCase):
     }
     
     modifyComponentLdapUserStorageProviderForce = {
-        "url": "http://localhost:18081/auth",
-        "username": "admin",
-        "password": "admin",
+        "auth_keycloak_url": "http://localhost:18081/auth",
+        "auth_username": "admin",
+        "auth_password": "admin",
         "realm": "master",
         "state": "present",
         "name":"test_modify_component_ldap_user_storage_provider_force",
@@ -419,9 +422,9 @@ class KeycloakComponentTestCase(ModuleTestCase):
     }
 
     deleteComponentLdapUserStorageProvider = {
-        "url": "http://localhost:18081/auth",
-        "username": "admin",
-        "password": "admin",
+        "auth_keycloak_url": "http://localhost:18081/auth",
+        "auth_username": "admin",
+        "auth_password": "admin",
         "realm": "master",
         "state": "present",
         "name": "test_delete_component_ldap_user_storage_provider",
@@ -578,9 +581,9 @@ class KeycloakComponentTestCase(ModuleTestCase):
  
     def test_create_component_ldap_user_storage_provider(self):
         toCreate = {}
-        toCreate["url"] = "http://localhost:18081/auth"
-        toCreate["username"] = "admin"
-        toCreate["password"] = "admin"
+        toCreate["auth_keycloak_url"] = "http://localhost:18081/auth"
+        toCreate["auth_username"] = "admin"
+        toCreate["auth_password"] = "admin"
         toCreate["realm"] = "master"
         toCreate["state"] = "present"
         toCreate["name"] = "test_create_component_ldap_user_storage_provider"
