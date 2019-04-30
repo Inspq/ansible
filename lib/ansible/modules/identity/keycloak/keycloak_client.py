@@ -524,6 +524,7 @@ options:
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
         version_added: "2.9"
 <<<<<<< HEAD
 =======
@@ -541,6 +542,9 @@ options:
 >>>>>>> SX5-868 Remove aliases url, username and password for
 =======
 >>>>>>> SX5-868 PR Added role management for keycloak_client module.
+=======
+        version_added: "2.9"
+>>>>>>> SX5-868 Code clean after shippable comments.
 extends_documentation_fragment:
     - keycloak
 
@@ -763,6 +767,7 @@ def main():
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
         state=dict(type='str', choices=['absent', 'present'], default='present'),
 =======
         state=dict(type='str', choices=['absent','present'], default='present'),
@@ -773,6 +778,9 @@ def main():
 =======
         state=dict(type='str', choices=['absent','present'], default='present'),
 >>>>>>> SX5-868 PR Added role management for keycloak_client module.
+=======
+        state=dict(type='str', choices=['absent', 'present'], default='present'),
+>>>>>>> SX5-868 Code clean after shippable comments.
     )
     clientrolecomposites_spec = dict(
         name=dict(type='str'),
@@ -786,6 +794,7 @@ def main():
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
         state=dict(type='str', choices=['absent', 'present'], default='present'),
 =======
         state=dict(type='str', choices=['absent','present'], default='present'),
@@ -796,6 +805,9 @@ def main():
 =======
         state=dict(type='str', choices=['absent','present'], default='present'),
 >>>>>>> SX5-868 PR Added role management for keycloak_client module.
+=======
+        state=dict(type='str', choices=['absent', 'present'], default='present'),
+>>>>>>> SX5-868 Code clean after shippable comments.
     )
     meta_args = dict(
         state=dict(default='present', choices=['present', 'absent']),
@@ -812,6 +824,7 @@ def main():
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
         admin_url=dict(type='str', aliases=['adminUrl', 'url']),
 =======
         admin_url=dict(type='str', aliases=['adminUrl','url']),
@@ -822,6 +835,9 @@ def main():
 =======
         admin_url=dict(type='str', aliases=['adminUrl','url']),
 >>>>>>> SX5-868 PR Added role management for keycloak_client module.
+=======
+        admin_url=dict(type='str', aliases=['adminUrl', 'url']),
+>>>>>>> SX5-868 Code clean after shippable comments.
         base_url=dict(type='str', aliases=['baseUrl']),
         surrogate_auth_required=dict(type='bool', aliases=['surrogateAuthRequired']),
         enabled=dict(type='bool'),
@@ -855,6 +871,7 @@ def main():
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
         client_roles=dict(type='list', elements='dict', options=clientroles_spec, aliases=['clientRoles', 'roles']),
 =======
         client_roles=dict(type='list', elements='dict', options=clientroles_spec, aliases=['clientRoles','roles']),
@@ -865,6 +882,9 @@ def main():
 =======
         client_roles=dict(type='list', elements='dict', options=clientroles_spec, aliases=['clientRoles','roles']),
 >>>>>>> SX5-868 PR Added role management for keycloak_client module.
+=======
+        client_roles=dict(type='list', elements='dict', options=clientroles_spec, aliases=['clientRoles', 'roles']),
+>>>>>>> SX5-868 Code clean after shippable comments.
         force=dict(type='bool', default=False),
     )
     argument_spec.update(meta_args)
@@ -888,6 +908,7 @@ def main():
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
                      if x not in list(keycloak_argument_spec().keys()) + ['state', 'realm', 'url', 'force'] and
 =======
                      if x not in list(keycloak_argument_spec().keys()) + ['state', 'realm','username','password','url','force'] and
@@ -901,6 +922,9 @@ def main():
 =======
                      if x not in list(keycloak_argument_spec().keys()) + ['state', 'realm','username','password','url','force'] and
 >>>>>>> SX5-868 PR Added role management for keycloak_client module.
+=======
+                     if x not in list(keycloak_argument_spec().keys()) + ['state', 'realm', 'url','force'] and
+>>>>>>> SX5-868 Code clean after shippable comments.
                      module.params.get(x) is not None]
     keycloak_argument_spec().keys()
     # See whether the client already exists in Keycloak
