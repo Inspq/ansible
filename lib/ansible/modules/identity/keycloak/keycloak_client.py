@@ -511,9 +511,13 @@ options:
                         description:
                             - Name of the role. It can be a realm role name or a client role name.
 <<<<<<< HEAD
+<<<<<<< HEAD
         version_added: "2.9"
 =======
 >>>>>>> SX5-868 PR Added role management for keycloak_client module.
+=======
+        version_added: "2.9"
+>>>>>>> SX5-868 Code clean after shippable comments.
 extends_documentation_fragment:
     - keycloak
 
@@ -731,10 +735,14 @@ def main():
         protocolMapper=dict(type='str'),
         config=dict(type='dict'),
 <<<<<<< HEAD
+<<<<<<< HEAD
         state=dict(type='str', choices=['absent', 'present'], default='present'),
 =======
         state=dict(type='str', choices=['absent','present'], default='present'),
 >>>>>>> SX5-868 PR Added role management for keycloak_client module.
+=======
+        state=dict(type='str', choices=['absent', 'present'], default='present'),
+>>>>>>> SX5-868 Code clean after shippable comments.
     )
     clientrolecomposites_spec = dict(
         name=dict(type='str'),
@@ -746,10 +754,14 @@ def main():
         composite=dict(type='bool'),
         composites=dict(type='list', elements='dict', options=clientrolecomposites_spec),
 <<<<<<< HEAD
+<<<<<<< HEAD
         state=dict(type='str', choices=['absent', 'present'], default='present'),
 =======
         state=dict(type='str', choices=['absent','present'], default='present'),
 >>>>>>> SX5-868 PR Added role management for keycloak_client module.
+=======
+        state=dict(type='str', choices=['absent', 'present'], default='present'),
+>>>>>>> SX5-868 Code clean after shippable comments.
     )
     meta_args = dict(
         state=dict(default='present', choices=['present', 'absent']),
@@ -761,10 +773,14 @@ def main():
         description=dict(type='str'),
         root_url=dict(type='str', aliases=['rootUrl']),
 <<<<<<< HEAD
+<<<<<<< HEAD
         admin_url=dict(type='str', aliases=['adminUrl', 'url']),
 =======
         admin_url=dict(type='str', aliases=['adminUrl','url']),
 >>>>>>> SX5-868 PR Added role management for keycloak_client module.
+=======
+        admin_url=dict(type='str', aliases=['adminUrl', 'url']),
+>>>>>>> SX5-868 Code clean after shippable comments.
         base_url=dict(type='str', aliases=['baseUrl']),
         surrogate_auth_required=dict(type='bool', aliases=['surrogateAuthRequired']),
         enabled=dict(type='bool'),
@@ -796,10 +812,14 @@ def main():
         protocol_mappers=dict(type='list', elements='dict', options=protmapper_spec, aliases=['protocolMappers']),
         authorization_settings=dict(type='dict', aliases=['authorizationSettings']),
 <<<<<<< HEAD
+<<<<<<< HEAD
         client_roles=dict(type='list', elements='dict', options=clientroles_spec, aliases=['clientRoles', 'roles']),
 =======
         client_roles=dict(type='list', elements='dict', options=clientroles_spec, aliases=['clientRoles','roles']),
 >>>>>>> SX5-868 PR Added role management for keycloak_client module.
+=======
+        client_roles=dict(type='list', elements='dict', options=clientroles_spec, aliases=['clientRoles', 'roles']),
+>>>>>>> SX5-868 Code clean after shippable comments.
         force=dict(type='bool', default=False),
     )
     argument_spec.update(meta_args)
@@ -820,10 +840,14 @@ def main():
     # convert module parameters to client representation parameters (if they belong in there)
     client_params = [x for x in module.params
 <<<<<<< HEAD
+<<<<<<< HEAD
                      if x not in list(keycloak_argument_spec().keys()) + ['state', 'realm', 'url', 'force'] and
 =======
                      if x not in list(keycloak_argument_spec().keys()) + ['state', 'realm','username','password','url','force'] and
 >>>>>>> SX5-868 PR Added role management for keycloak_client module.
+=======
+                     if x not in list(keycloak_argument_spec().keys()) + ['state', 'realm', 'url','force'] and
+>>>>>>> SX5-868 Code clean after shippable comments.
                      module.params.get(x) is not None]
     keycloak_argument_spec().keys()
     # See whether the client already exists in Keycloak
