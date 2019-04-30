@@ -369,8 +369,13 @@ options:
                       protocol mapper configuration through check-mode in the I(existing) field.
             state:
                 description:
+<<<<<<< HEAD
                     - Desired state of the protocol mappers.
                       If present, the mapper will be added or updated.
+=======
+                    - Desired state of the protocol mappers. 
+                      If present, the mapper will be added or updated. 
+>>>>>>> SX5-868 PR Added role management for keycloak_client module.
                       If absent, the mapper will be removed
                 choices: [absent, present]
                 default: present
@@ -481,9 +486,15 @@ options:
                       client and signed by its key, base64-encoded.
     client_roles:
         description:
+<<<<<<< HEAD
             - List of roles and their composites for the client.
               Client roles can be added, updated or removed depending it's state.
         aliases:
+=======
+            - List of roles and their composites for the client. 
+              Client roles can be added, updated or removed depending it's state.
+        aliases: 
+>>>>>>> SX5-868 PR Added role management for keycloak_client module.
             - clientRoles
             - roles
         type: list
@@ -512,6 +523,7 @@ options:
                             - Name of the role. It can be a realm role name or a client role name.
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
         version_added: "2.9"
 <<<<<<< HEAD
 =======
@@ -527,6 +539,8 @@ options:
         default: False
         version_added: "2.9"
 >>>>>>> SX5-868 Remove aliases url, username and password for
+=======
+>>>>>>> SX5-868 PR Added role management for keycloak_client module.
 extends_documentation_fragment:
     - keycloak
 
@@ -627,7 +641,11 @@ EXAMPLES = '''
         name: role list
         protocol: saml
         protocolMapper: saml-role-list-mapper
+<<<<<<< HEAD
       - config:
+=======
+      - config: 
+>>>>>>> SX5-868 PR Added role management for keycloak_client module.
           multivalued: False
           userinfo.token.claim": True
           user.attribute: Test2
@@ -744,6 +762,7 @@ def main():
         config=dict(type='dict'),
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
         state=dict(type='str', choices=['absent', 'present'], default='present'),
 =======
         state=dict(type='str', choices=['absent','present'], default='present'),
@@ -751,6 +770,9 @@ def main():
 =======
         state=dict(type='str', choices=['absent', 'present'], default='present'),
 >>>>>>> SX5-868 Code clean after shippable comments.
+=======
+        state=dict(type='str', choices=['absent','present'], default='present'),
+>>>>>>> SX5-868 PR Added role management for keycloak_client module.
     )
     clientrolecomposites_spec = dict(
         name=dict(type='str'),
@@ -763,6 +785,7 @@ def main():
         composites=dict(type='list', elements='dict', options=clientrolecomposites_spec),
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
         state=dict(type='str', choices=['absent', 'present'], default='present'),
 =======
         state=dict(type='str', choices=['absent','present'], default='present'),
@@ -770,15 +793,23 @@ def main():
 =======
         state=dict(type='str', choices=['absent', 'present'], default='present'),
 >>>>>>> SX5-868 Code clean after shippable comments.
+=======
+        state=dict(type='str', choices=['absent','present'], default='present'),
+>>>>>>> SX5-868 PR Added role management for keycloak_client module.
     )
     meta_args = dict(
         state=dict(default='present', choices=['present', 'absent']),
         realm=dict(type='str', default='master'),
+<<<<<<< HEAD
+=======
+        
+>>>>>>> SX5-868 PR Added role management for keycloak_client module.
         id=dict(type='str'),
         client_id=dict(type='str', aliases=['clientId']),
         name=dict(type='str'),
         description=dict(type='str'),
         root_url=dict(type='str', aliases=['rootUrl']),
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
         admin_url=dict(type='str', aliases=['adminUrl', 'url']),
@@ -788,6 +819,9 @@ def main():
 =======
         admin_url=dict(type='str', aliases=['adminUrl', 'url']),
 >>>>>>> SX5-868 Code clean after shippable comments.
+=======
+        admin_url=dict(type='str', aliases=['adminUrl','url']),
+>>>>>>> SX5-868 PR Added role management for keycloak_client module.
         base_url=dict(type='str', aliases=['baseUrl']),
         surrogate_auth_required=dict(type='bool', aliases=['surrogateAuthRequired']),
         enabled=dict(type='bool'),
@@ -820,6 +854,7 @@ def main():
         authorization_settings=dict(type='dict', aliases=['authorizationSettings']),
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
         client_roles=dict(type='list', elements='dict', options=clientroles_spec, aliases=['clientRoles', 'roles']),
 =======
         client_roles=dict(type='list', elements='dict', options=clientroles_spec, aliases=['clientRoles','roles']),
@@ -827,6 +862,9 @@ def main():
 =======
         client_roles=dict(type='list', elements='dict', options=clientroles_spec, aliases=['clientRoles', 'roles']),
 >>>>>>> SX5-868 Code clean after shippable comments.
+=======
+        client_roles=dict(type='list', elements='dict', options=clientroles_spec, aliases=['clientRoles','roles']),
+>>>>>>> SX5-868 PR Added role management for keycloak_client module.
         force=dict(type='bool', default=False),
     )
     argument_spec.update(meta_args)
@@ -849,6 +887,7 @@ def main():
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
                      if x not in list(keycloak_argument_spec().keys()) + ['state', 'realm', 'url', 'force'] and
 =======
                      if x not in list(keycloak_argument_spec().keys()) + ['state', 'realm','username','password','url','force'] and
@@ -859,6 +898,9 @@ def main():
 =======
                      if x not in list(keycloak_argument_spec().keys()) + ['state', 'realm', 'url', 'force'] and
 >>>>>>> SX5-868 code cleanup for shippable
+=======
+                     if x not in list(keycloak_argument_spec().keys()) + ['state', 'realm','username','password','url','force'] and
+>>>>>>> SX5-868 PR Added role management for keycloak_client module.
                      module.params.get(x) is not None]
     keycloak_argument_spec().keys()
     # See whether the client already exists in Keycloak
@@ -930,6 +972,7 @@ def main():
             result['clientSecret'] = client_secret
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 
 =======
             
@@ -937,6 +980,9 @@ def main():
 =======
 
 >>>>>>> SX5-868 code cleanup for shippable
+=======
+            
+>>>>>>> SX5-868 PR Added role management for keycloak_client module.
         result['msg'] = 'Client %s has been created.' % updated_client['clientId']
         module.exit_json(**result)
     else:
