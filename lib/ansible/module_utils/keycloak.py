@@ -2425,7 +2425,7 @@ class KeycloakAPI(object):
                 if 'end_session_endpoint' in openIdConfig.keys():
                     idPConfiguration["logoutUrl"] = openIdConfig["end_session_endpoint"]
             return openIdConfig
-        except Exception, e:
+        except Exception as e:
             self.module.fail_json(msg='Could not get IdP configuration from endpoint %s: %s'
                                   % (url, str(e)))
 
@@ -2459,7 +2459,7 @@ class KeycloakAPI(object):
                          headers=self.restheaders)
                 changed = True
             return changed
-        except Exception, e:
+        except Exception as e:
             self.module.fail_json(msg='Could not delete mappers for IdP %s in realm %s: %s'
                                       % (alias, realm, str(e)))
 
@@ -2536,7 +2536,7 @@ class KeycloakAPI(object):
                              data=json.dumps(idPMapper))
                     changed = True
             return changed
-        except Exception, e:
+        except Exception as e:
             self.module.fail_json(msg='Could not create or update mappers for IdP %s in realm %s: %s'
                                       % (alias, realm, str(e)))
 
@@ -2559,7 +2559,7 @@ class KeycloakAPI(object):
                          method='GET',
                          headers=self.restheaders))
             return idPRepresentation
-        except Exception, e:
+        except Exception as e:
             self.module.fail_json(msg='Could not get IdP by alias %s in realm %s: %s'
                                       % (alias, realm, str(e)))
 
@@ -2587,7 +2587,7 @@ class KeycloakAPI(object):
                     idPRepresentation = idP
                     break
             return idPRepresentation
-        except Exception, e:
+        except Exception as e:
             self.module.fail_json(msg='Could not search IdP by alias %s in realm %s: %s'
                                       % (alias, realm, str(e)))
 
@@ -2614,7 +2614,7 @@ class KeycloakAPI(object):
                     idPRepresentation = idP
                     break
             return idPRepresentation
-        except Exception, e:
+        except Exception as e:
             self.module.fail_json(msg='Could not search IdP by client Id %s in realm %s: %s'
                                       % (client_id, realm, str(e)))
 
@@ -2634,7 +2634,7 @@ class KeycloakAPI(object):
                      headers=self.restheaders,
                      data=json.dumps(newIdPRepresentation))
             return self.get_idp_by_alias(newIdPRepresentation["alias"], realm)
-        except Exception, e:
+        except Exception as e:
             self.module.fail_json(msg='Could not create the IdP %s in realm %s: %s'
                                       % (newIdPRepresentation["alias"], realm, str(e)))
 
@@ -2656,7 +2656,7 @@ class KeycloakAPI(object):
                 headers=self.restheaders,
                 data=json.dumps(newIdPRepresentation))
             return self.get_idp_by_alias(newIdPRepresentation["alias"], realm)
-        except Exception, e:
+        except Exception as e:
             self.module.fail_json(msg='Could not update the IdP %s in realm %s: %s'
                                       % (newIdPRepresentation["alias"], realm, str(e)))
 
@@ -2676,7 +2676,7 @@ class KeycloakAPI(object):
                 idp_url,
                 method='DELETE',
                 headers=self.restheaders)
-        except Exception, e:
+        except Exception as e:
             self.module.fail_json(msg='Could not delete the IdP %s in realm %s: %s'
                                       % (alias, realm, str(e)))
 
@@ -2699,7 +2699,7 @@ class KeycloakAPI(object):
                     method='GET',
                     headers=self.restheaders))
             return idMappers
-        except Exception, e:
+        except Exception as e:
             self.module.fail_json(msg='Could not get IdP mappers for alias %s in realm %s: %s'
                                       % (alias, realm, str(e)))
 <<<<<<< HEAD
@@ -2728,7 +2728,7 @@ class KeycloakAPI(object):
                     realmRepresentation = theRealm
                     break
             return realmRepresentation
-        except Exception, e:
+        except Exception as e:
             self.module.fail_json(msg='Could not search for realm %s: %s'
                                       % (realm, str(e)))
 
@@ -2747,7 +2747,7 @@ class KeycloakAPI(object):
                          method='GET',
                          headers=self.restheaders))
             return realmRepresentation
-        except Exception, e:
+        except Exception as e:
             self.module.fail_json(msg='Could get realm %s: %s'
                                       % (realm, str(e)))
 
@@ -2766,7 +2766,7 @@ class KeycloakAPI(object):
                 data=json.dumps(newRealmRepresentation))
             realmRepresentation = self.get_realm(realm=newRealmRepresentation["realm"])
             return realmRepresentation
-        except Exception, e:
+        except Exception as e:
             self.module.fail_json(msg='Could not create realm %s: %s'
                                       % (newRealmRepresentation["realm"], str(e)))
 
@@ -2784,7 +2784,7 @@ class KeycloakAPI(object):
                 realm_url,
                 method='DELETE',
                 headers=self.restheaders)
-        except Exception, e:
+        except Exception as e:
             self.module.fail_json(msg='Could delete realm %s: %s'
                                       % (realm, str(e)))
 
@@ -2804,7 +2804,7 @@ class KeycloakAPI(object):
                 headers=self.restheaders,
                 data=json.dumps(newRealmRepresentation))
             return self.get_realm(newRealmRepresentation["realm"])
-        except Exception, e:
+        except Exception as e:
             self.module.fail_json(msg='Could update realm %s: %s'
                                       % (newRealmRepresentation["realm"], str(e)))
 
@@ -2825,7 +2825,7 @@ class KeycloakAPI(object):
                 headers=self.restheaders,
                 data=json.dumps(newEventsConfig))
             return self.get_realm_events_config(realm=realm)
-        except Exception, e:
+        except Exception as e:
             self.module.fail_json(msg='Could not update events config for realm %s: %s'
                                       % (realm, str(e)))
 
@@ -2844,7 +2844,7 @@ class KeycloakAPI(object):
                     realm_events_config_url,
                     method='GET',
                     headers=self.restheaders))
-        except Exception, e:
+        except Exception as e:
             self.module.fail_json(msg='Could not get events config for realm %s: %s'
                                       % (realm, str(e)))
 <<<<<<< HEAD
@@ -2869,7 +2869,7 @@ class KeycloakAPI(object):
                     rolerep = role
                     break
             return rolerep
-        except Exception, e:
+        except Exception as e:
             self.module.fail_json(msg='Could not search for role % in realm %s: %s'
                                       % (name, realm, str(e)))
 
@@ -2887,7 +2887,7 @@ class KeycloakAPI(object):
                                            method='GET',
                                            headers=self.restheaders))
             return listRoles
-        except Exception, e:
+        except Exception as e:
             self.module.fail_json(msg='Could not get roles in realm %s: %s'
                                       % (realm, str(e)))
 
@@ -2909,7 +2909,7 @@ class KeycloakAPI(object):
                     method='GET',
                     headers=self.restheaders))
             return role
-        except Exception, e:
+        except Exception as e:
             self.module.fail_json(msg='Could not get role %s in realm %s: %s'
                                       % (name, realm, str(e)))
 
@@ -2933,7 +2933,7 @@ class KeycloakAPI(object):
                 name=newRoleRepresentation['name'],
                 realm=realm)
             return roleRepresentation
-        except Exception, e:
+        except Exception as e:
             self.module.fail_json(msg='Could not create realm role %s in realm %s: %s'
                                       % (newRoleRepresentation["name"], realm, str(e)))
 
@@ -2953,7 +2953,7 @@ class KeycloakAPI(object):
                 realm_role_url,
                 method='DELETE',
                 headers=self.restheaders)
-        except Exception, e:
+        except Exception as e:
             self.module.fail_json(msg='Could not delete realm role %s in realm %s: %s'
                                       % (name, realm, str(e)))
 
@@ -2978,7 +2978,7 @@ class KeycloakAPI(object):
                 name=newRoleRepresentation['name'],
                 realm=realm)
             return roleRepresentation
-        except Exception, e:
+        except Exception as e:
             self.module.fail_json(msg='Could not update realm role %s in realm %s: %s'
                                       % (newRoleRepresentation["name"], realm, str(e)))
 
@@ -3017,7 +3017,7 @@ class KeycloakAPI(object):
                     method='GET',
                     headers=self.restheaders))
             return composites
-        except Exception, e:
+        except Exception as e:
             self.module.fail_json(msg='Could not get realm role %s composites in realm %s: %s'
                                       % (name, realm, str(e)))
 
@@ -3039,7 +3039,7 @@ class KeycloakAPI(object):
                 method='POST',
                 headers=self.restheaders,
                 data=json.dumps(newCompositesToCreate))
-        except Exception, e:
+        except Exception as e:
             self.module.fail_json(msg='Could not create realm role %s composites in realm %s: %s'
                                       % (name, realm, str(e)))
 
@@ -3109,7 +3109,7 @@ class KeycloakAPI(object):
                     name=newRoleRepresentation["name"],
                     realm=realm)
             return changed
-        except Exception, e:
+        except Exception as e:
             self.module.fail_json(msg='Could not create or update realm role %s composites in realm %s: %s'
                                       % (newRoleRepresentation["name"], realm, str(e)))
 <<<<<<< HEAD
@@ -3137,7 +3137,7 @@ class KeycloakAPI(object):
                     method='GET',
                     headers=self.restheaders))
             return userRepresentation
-        except Exception, e:
+        except Exception as e:
             self.module.fail_json(msg='Could not get user %s in realm %s: %s'
                                       % (user_id, realm, str(e)))
 
@@ -3162,7 +3162,7 @@ class KeycloakAPI(object):
                     userrep = user
                     break
             return userrep
-        except Exception, e:
+        except Exception as e:
             self.module.fail_json(msg='Could not search for user %s in realm %s: %s'
                                       % (username, realm, str(e)))
 
@@ -3185,7 +3185,7 @@ class KeycloakAPI(object):
                 username=newUserRepresentation['username'],
                 realm=realm)
             return userRepresentation
-        except Exception, e:
+        except Exception as e:
             self.module.fail_json(msg='Could not create user %s in realm %s: %s'
                                       % (newUserRepresentation['username'], realm, str(e)))
 
@@ -3210,7 +3210,7 @@ class KeycloakAPI(object):
                 user_id=newUserRepresentation['id'],
                 realm=realm)
             return userRepresentation
-        except Exception, e:
+        except Exception as e:
             self.module.fail_json(msg='Could not update user %s in realm %s: %s'
                                       % (newUserRepresentation['username'], realm, str(e)))
 
@@ -3230,7 +3230,7 @@ class KeycloakAPI(object):
                 user_url,
                 method='DELETE',
                 headers=self.restheaders)
-        except Exception, e:
+        except Exception as e:
             self.module.fail_json(msg='Could not delete user %s in realm %s: %s'
                                       % (user_id, realm, str(e)))
 
@@ -3255,7 +3255,7 @@ class KeycloakAPI(object):
             for roleMapping in role_mappings["realmMappings"]:
                 realmRoles.append(roleMapping["name"])
             return realmRoles
-        except Exception, e:
+        except Exception as e:
             self.module.fail_json(msg='Could not get role mappings for user %s in realm %s: %s'
                                       % (user_id, realm, str(e)))
 
@@ -3276,7 +3276,7 @@ class KeycloakAPI(object):
                 method='POST',
                 headers=self.restheaders,
                 data=json.dumps(realmRolesRepresentation))
-        except Exception, e:
+        except Exception as e:
             self.module.fail_json(msg='Could not update realm role mappings for user %s in realm %s: %s'
                                       % (user_id, realm, str(e)))
 
@@ -3307,7 +3307,7 @@ class KeycloakAPI(object):
                 clientRole["roles"] = roles
                 clientRoles.append(clientRole)
             return clientRoles
-        except Exception, e:
+        except Exception as e:
             self.module.fail_json(msg='Could not get role mappings for user %s in realm %s: %s'
                                       % (user_id, realm, str(e)))
 
@@ -3329,7 +3329,7 @@ class KeycloakAPI(object):
                 role_mappings_url,
                 method='DELETE',
                 headers=self.restheaders)
-        except Exception, e:
+        except Exception as e:
             self.module.fail_json(msg='Could not delete client role mappings for user %s in realm %s: %s'
                                       % (user_id, realm, str(e)))
 
@@ -3353,7 +3353,7 @@ class KeycloakAPI(object):
                 method='POST',
                 headers=self.restheaders,
                 data=json.dumps(rolesToAssing))
-        except Exception, e:
+        except Exception as e:
             self.module.fail_json(msg='Could not create client role mappings for user %s in realm %s: %s'
                                       % (user_id, realm, str(e)))
 
@@ -3378,7 +3378,7 @@ class KeycloakAPI(object):
             for userGroup in userGroups:
                 groups.append(userGroup["name"])
             return groups
-        except Exception, e:
+        except Exception as e:
             self.module.fail_json(msg='Could not get groups for user %s in realm %s: %s'
                                       % (user_id, realm, str(e)))
 
@@ -3400,7 +3400,7 @@ class KeycloakAPI(object):
                 user_group_url,
                 method='PUT',
                 headers=self.restheaders)
-        except Exception, e:
+        except Exception as e:
             self.module.fail_json(msg='Could not add user %s in group %s in realm %s: %s'
                                       % (user_id, group_id, realm, str(e)))
 
@@ -3422,7 +3422,7 @@ class KeycloakAPI(object):
                 user_group_url,
                 method='DETETE',
                 headers=self.restheaders)
-        except Exception, e:
+        except Exception as e:
             self.module.fail_json(msg='Could not remove user %s from group %s in realm %s: %s'
                                       % (user_id, group_id, realm, str(e)))
 
@@ -3504,7 +3504,7 @@ class KeycloakAPI(object):
                                 realm=realm)
                             changed = True
             return changed
-        except Exception, e:
+        except Exception as e:
             self.module.fail_json(msg='Could not assign roles to user %s in realm %s: %s'
                                       % (user_id, realm, str(e)))
 
@@ -3535,7 +3535,7 @@ class KeycloakAPI(object):
                                     realm=realm)
                                 changed = True
             return changed
-        except Exception, e:
+        except Exception as e:
             raise e
 <<<<<<< HEAD
 >>>>>>> SX5-868 Add keycloak_user module and non mock unit tests.
