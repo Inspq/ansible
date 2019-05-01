@@ -35,10 +35,14 @@ import urllib
 from ansible.module_utils.urls import open_url
 from ansible.module_utils.six.moves.urllib.parse import urlencode
 from ansible.module_utils.six.moves.urllib.error import HTTPError
+<<<<<<< HEAD
 from ansible.module_utils.keycloak_utils import isDictEquals 
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+=======
+from ansible.module_utils.keycloak_utils import isDictEquals
+>>>>>>> SX5-868 Codestyle fix
 from ansible.module_utils.keycloak_utils import keycloak2ansibleClientRoles
 =======
 >>>>>>> SX5-868 Manage client roles (add, delete update), remove protocolMappers
@@ -101,6 +105,7 @@ URL_REALM_EVENT_CONFIG = "{url}/admin/realms/{realm}/events/config"
 URL_REALM_ROLES = "{url}/admin/realms/{realm}/roles"
 URL_REALM_ROLE = "{url}/admin/realms/{realm}/roles/{name}"
 URL_REALM_ROLE_COMPOSITES = "{url}/admin/realms/{realm}/roles/{name}/composites"
+
 
 def keycloak_argument_spec():
     """
@@ -216,10 +221,10 @@ class KeycloakAPI(object):
         client_roles_url = URL_CLIENT_ROLES.format(url=self.baseurl, realm=realm, id=id)
         try:
             clientrep = json.load(open_url(client_url, method='GET', headers=self.restheaders,
-                                      validate_certs=self.validate_certs))
+                                           validate_certs=self.validate_certs))
             self.add_client_roles_to_representation(clients_url, client_roles_url, clientrep)
             return clientrep
-        
+
         except HTTPError as e:
             if e.code == 404:
                 return None
@@ -271,20 +276,19 @@ class KeycloakAPI(object):
         client_secret_url = URL_CLIENT_SECRET.format(url=self.baseurl, realm=realm, id=id)
         try:
             clientrep = json.load(open_url(client_url, method='GET', headers=self.restheaders,
-                                      validate_certs=self.validate_certs))
+                                           validate_certs=self.validate_certs))
             if clientrep[camel('public_client')]:
                 clientsecretrep = None
             else:
                 clientsecretrep = json.load(open_url(client_secret_url, method='GET', headers=self.restheaders,
-                                      validate_certs=self.validate_certs))
+                                                     validate_certs=self.validate_certs))
             return clientsecretrep
-        
         except HTTPError as e:
             if e.code == 404:
                 return None
             else:
                 self.module.fail_json(msg='Could not obtain client %s for realm %s: %s'
-                                          % (id, realm, str(e)))
+                                      % (id, realm, str(e)))
         except ValueError as e:
             self.module.fail_json(msg='API returned incorrect JSON when trying to obtain client %s for realm %s: %s'
                                       % (id, realm, str(e)))
@@ -294,7 +298,6 @@ class KeycloakAPI(object):
 
     def get_client_id(self, client_id, realm='master'):
         """ Obtain id of client by client_id
-
         :param client_id: client_id of client to be queried
         :param realm: client template from this realm
         :return: id of client (usually a UUID)
@@ -316,18 +319,17 @@ class KeycloakAPI(object):
         roles_url = URL_REALM_ROLES.format(url=self.baseurl, realm=realm)
         clients_url = URL_CLIENTS.format(url=self.baseurl, realm=realm)
         client_roles_url = URL_CLIENT_ROLES.format(url=self.baseurl, realm=realm, id=id)
-                
         try:
-            client_roles = None 
+            client_roles = None
             if camel('client_roles') in clientrep:
                 client_roles = clientrep[camel('client_roles')]
                 del(clientrep[camel('client_roles')])
-            client_protocol_mappers = None 
+            client_protocol_mappers = None
             if camel('protocol_mappers') in clientrep:
                 client_protocol_mappers = clientrep[camel('protocol_mappers')]
                 del(clientrep[camel('protocol_mappers')])
             putResponse = open_url(client_url, method='PUT', headers=self.restheaders,
-                            data=json.dumps(clientrep), validate_certs=self.validate_certs)
+                                   data=json.dumps(clientrep), validate_certs=self.validate_certs)
             if client_protocol_mappers is not None:
                 clientrep[camel('protocol_mappers')] = client_protocol_mappers
                 self.create_or_update_client_mappers(client_url, clientrep)
@@ -387,19 +389,20 @@ class KeycloakAPI(object):
         """
         roles_url = URL_REALM_ROLES.format(url=self.baseurl, realm=realm)
         clients_url = URL_CLIENTS.format(url=self.baseurl, realm=realm)
-        
         try:
-            client_roles = None 
+            client_roles = None
             if camel('client_roles') in clientrep:
                 client_roles = clientrep[camel('client_roles')]
                 del(clientrep[camel('client_roles')])
-            client_protocol_mappers = None 
+            client_protocol_mappers = None
             if camel('protocol_mappers') in clientrep:
                 client_protocol_mappers = clientrep[camel('protocol_mappers')]
                 del(clientrep[camel('protocol_mappers')])
             postResponse = open_url(clients_url, method='POST', headers=self.restheaders,
-                            data=json.dumps(clientrep), validate_certs=self.validate_certs)
-            client_url = URL_CLIENT.format(url=self.baseurl, realm=realm, id=self.get_client_id(clientrep[camel('client_id')], realm))
+                                    data=json.dumps(clientrep), validate_certs=self.validate_certs)
+            client_url = URL_CLIENT.format(url=self.baseurl,
+                                           realm=realm,
+                                           id=self.get_client_id(clientrep[camel('client_id')], realm))
             if client_protocol_mappers is not None:
                 clientrep[camel('protocol_mappers')] = client_protocol_mappers
                 self.create_or_update_client_mappers(client_url, clientrep)
@@ -438,6 +441,7 @@ class KeycloakAPI(object):
 =======
 =======
                 self.create_or_update_client_roles(client_roles, roles_url, clients_url, client_roles_url)
+<<<<<<< HEAD
 >>>>>>> Sx5-868 Update the keycloak_client module documentation for support of
 >>>>>>> Sx5-868 Update the keycloak_client module documentation for support of
 =======
@@ -447,8 +451,9 @@ class KeycloakAPI(object):
                 self.create_or_update_client_roles(client_roles, roles_url, clients_url, client_roles_url)
 >>>>>>> SX5-868 PR Added role management for keycloak_client module.
         
+=======
+>>>>>>> SX5-868 Codestyle fix
             return postResponse
-            
         except Exception as e:
             self.module.fail_json(msg='Could not create client %s in realm %s: %s'
                                       % (clientrep['clientId'], realm, str(e)))
@@ -591,7 +596,7 @@ class KeycloakAPI(object):
         groups_url = URL_GROUPS.format(url=self.baseurl, realm=realm)
         try:
             grouprep = json.load(open_url(groups_url, method="GET", headers=self.restheaders,
-                                      validate_certs=self.validate_certs))
+                                          validate_certs=self.validate_certs))
             return grouprep
         except Exception as e:
             self.module.fail_json(msg="Could not fetch list of groups in realm %s: %s"
@@ -609,7 +614,7 @@ class KeycloakAPI(object):
         groups_url = URL_GROUP.format(url=self.baseurl, realm=realm, groupid=gid)
         try:
             grouprep = json.load(open_url(groups_url, method="GET", headers=self.restheaders,
-                                      validate_certs=self.validate_certs))
+                                          validate_certs=self.validate_certs))
             if "clientRoles" in grouprep:
                 tmpClientRoles = grouprep["clientRoles"]
                 grouprep["clientRoles"] = keycloak2ansibleClientRoles(tmpClientRoles)
@@ -730,7 +735,7 @@ class KeycloakAPI(object):
 
         except Exception as e:
             self.module.fail_json(msg="Unable to delete group %s: %s" % (groupid, str(e)))
-            
+
     def get_client_roles(self, client_id, realm='master'):
         """ Get all client's roles
 
@@ -738,8 +743,12 @@ class KeycloakAPI(object):
         :return: Client's roles representation is added to the client representation as clientRoles key
         """
         try:
-            client_roles_url = URL_CLIENT_ROLES.format(url=self.baseurl,realm=realm,id=client_id)
-            clientRolesRepresentation = json.load(open_url(client_roles_url, method='GET', headers=self.restheaders))
+            client_roles_url = URL_CLIENT_ROLES.format(url=self.baseurl,
+                                                       realm=realm,
+                                                       id=client_id)
+            clientRolesRepresentation = json.load(open_url(client_roles_url,
+                                                           method='GET',
+                                                           headers=self.restheaders))
             return clientRolesRepresentation
         except Exception as e:
             self.module.fail_json(msg="Unable to get client's %s roles in realm %s: %s" % (client_id, realm, str(e)))
@@ -817,8 +826,11 @@ class KeycloakAPI(object):
             clientRolesRepresentation = json.load(open_url(clientRolesUrl, method='GET', headers=self.restheaders))
             for clientRole in clientRolesRepresentation:
                 if clientRole["composite"]:
-                    clientRole["composites"] = json.load(open_url(clientRolesUrl + '/' + clientRole['name'] +'/composites', method='GET', headers=self.restheaders))
-                    
+                    clientRole["composites"] = json.load(
+                        open_url(
+                            clientRolesUrl + '/' + clientRole['name'] + '/composites',
+                            method='GET',
+                            headers=self.restheaders))
                     for roleComposite in clientRole["composites"]:
                         if roleComposite['clientRole']:
                             roleCompositeClient = json.load(open_url(clientSvcBaseUrl + '/' + roleComposite['containerId'], method='GET', headers=self.restheaders))
@@ -826,6 +838,7 @@ class KeycloakAPI(object):
             clientRepresentation['clientRoles'] = clientRolesRepresentation
         except Exception as e:
             self.module.fail_json(msg="Unable to add client roles %s: %s" % (clientRepresentation["id"], str(e)))
+<<<<<<< HEAD
 <<<<<<< HEAD
 >>>>>>> SX5-868 Add keycloak_component module with non mock unit tests.
         
@@ -851,6 +864,9 @@ class KeycloakAPI(object):
 =======
         
 >>>>>>> SX5-868 PR Added role management for keycloak_client module.
+=======
+
+>>>>>>> SX5-868 Codestyle fix
     def create_or_update_client_roles(self, newClientRoles, roleSvcBaseUrl, clientSvcBaseUrl, clientRolesUrl):
         """ Create or update client roles. Client roles can be added, updated or removed depending of the state.
 
@@ -990,10 +1006,16 @@ class KeycloakAPI(object):
                         newComposites = newClientRole['composites']
                         for newComposite in newComposites:
                             if "id" in newComposite and newComposite["id"] is not None:
-                                keycloakClients=json.load(open_url(clientSvcBaseUrl, method='GET', headers=self.restheaders))
+                                keycloakClients = json.load(
+                                    open_url(clientSvcBaseUrl,
+                                             method='GET',
+                                             headers=self.restheaders))
                                 for keycloakClient in keycloakClients:
                                     if keycloakClient['clientId'] == newComposite["id"]:
-                                        roles=json.load(open_url(clientSvcBaseUrl + '/' + keycloakClient['id'] + '/roles', method='GET', headers=self.restheaders))
+                                        roles = json.load(
+                                            open_url(clientSvcBaseUrl + '/' + keycloakClient['id'] + '/roles',
+                                                     method='GET',
+                                                     headers=self.restheaders))
                                         for role in roles:
                                             if role["name"] == newComposite["name"]:
                                                 newComposite['id'] = role['id']
@@ -1004,15 +1026,20 @@ class KeycloakAPI(object):
 =======
 >>>>>>> SX5-868 PR Added role management for keycloak_client module.
                             else:
-                                realmRoles=json.load(open_url(roleSvcBaseUrl, method='GET', headers=self.restheaders))
+                                realmRoles = json.load(
+                                    open_url(roleSvcBaseUrl,
+                                             method='GET',
+                                             headers=self.restheaders))
                                 for realmRole in realmRoles:
                                     if realmRole["name"] == newComposite["name"]:
                                         newComposite['id'] = realmRole['id']
                                         newComposite['clientRole'] = False
-                                        break;
-                        
+                                        break
                     clientRoleFound = False
-                    clientRoles = json.load(open_url(clientRolesUrl, method='GET', headers=self.restheaders))
+                    clientRoles = json.load(
+                        open_url(clientRolesUrl,
+                                 method='GET',
+                                 headers=self.restheaders))
                     if len(clientRoles) > 0:
                         # Check if role to be created already exist for the client
                         for clientRole in clientRoles:
@@ -1035,7 +1062,7 @@ class KeycloakAPI(object):
                                             changeNeeded = True
                                             break
                                         for existingComposite in clientRole['composites']:
-                                            if isDictEquals(newComposite,existingComposite):
+                                            if isDictEquals(newComposite, existingComposite):
                                                 compositeFound = True
                                                 break
                                         if not compositeFound:
@@ -1053,7 +1080,7 @@ class KeycloakAPI(object):
                         newRoleRepresentation["description"] = newClientRole['description'].decode("utf-8")
                         newRoleRepresentation["composite"] = newClientRole['composite'] if "composite" in newClientRole else False
                         newRoleRepresentation["clientRole"] = newClientRole['clientRole'] if "clientRole" in newClientRole else True
-                        data=json.dumps(newRoleRepresentation)
+                        data = json.dumps(newRoleRepresentation)
                         if clientRoleFound:
                             open_url(clientRolesUrl + '/' + newClientRole['name'], method='PUT', headers=self.restheaders, data=data)
                         else:
@@ -1173,9 +1200,11 @@ class KeycloakAPI(object):
                                     tmprole = {}
                                     tmprole['id'] = roleTodelete['id']
                                     rolesToDelete.append(tmprole)
-                                data=json.dumps(rolesToDelete)
-                                open_url(clientRolesUrl + '/' + newClientRole['name'] + '/composites', method='DELETE', headers=self.restheaders, data=data)
-                            data=json.dumps(newClientRole["composites"])
+                                open_url(
+                                    clientRolesUrl + '/' + newClientRole['name'] + '/composites', method='DELETE',
+                                    headers=self.restheaders,
+                                    data=json.dumps(rolesToDelete))
+                            data = json.dumps(newClientRole["composites"])
                             open_url(clientRolesUrl + '/' + newClientRole['name'] + '/composites', method='POST', headers=self.restheaders, data=data)
                     elif changeNeeded and desiredState == "absent" and clientRoleFound:
                         open_url(clientRolesUrl + '/' + newClientRole['name'], method='DELETE', headers=self.restheaders)
@@ -1184,13 +1213,20 @@ class KeycloakAPI(object):
         except Exception as e:
             self.module.fail_json(msg="Unable to create or update client roles %s: %s" % (clientRolesUrl, str(e)))
 <<<<<<< HEAD
+<<<<<<< HEAD
 >>>>>>> SX5-868 Add keycloak_component module with non mock unit tests.
 =======
 >>>>>>> SX5-868 PR Added role management for keycloak_client module.
     
     def create_or_update_client_mappers(self, clientUrl, clientRepresentation):
         """ Create or update client protocol mappers. Mappers can be added, updated or removed depending of the state.
+=======
+>>>>>>> SX5-868 Codestyle fix
 
+    def create_or_update_client_mappers(self, clientUrl, clientRepresentation):
+        """
+        Create or update client protocol mappers. Mappers can be added,
+        updated or removed depending of the state.
         :param clientUrl: Keycloak API url of the client
         :param clientRepresentation: Desired representation of the client including protocolMappers list
         :return: True if the client roles have changed, False otherwise
@@ -1314,8 +1350,11 @@ class KeycloakAPI(object):
             if camel('protocol_mappers') in clientRepresentation and clientRepresentation[camel('protocol_mappers')] is not None:
                 newClientProtocolMappers = clientRepresentation[camel('protocol_mappers')]
                 # Get existing mappers from the client
-                clientMappers = json.load(open_url(clientUrl + '/protocol-mappers/models', method='GET', headers=self.restheaders))
-                
+                clientMappers = json.load(
+                    open_url(
+                        clientUrl + '/protocol-mappers/models',
+                        method='GET',
+                        headers=self.restheaders))
                 for newClientProtocolMapper in newClientProtocolMappers:
                     desiredState = "present"
                     # If state key is included in the mapper representation, save its value and remove the key from the representation.
@@ -1343,13 +1382,16 @@ class KeycloakAPI(object):
                                 # If changed has been introduced for the mapper
                                 changed = True
                                 newClientProtocolMapper["id"] = clientMapper["id"]
-                                data=json.dumps(newClientProtocolMapper)
                                 # Modify the mapper
-                                open_url(clientUrl + '/protocol-mappers/models/' + clientMapper['id'], method='PUT', headers=self.restheaders, data=data)
-                        
-                    else: # If mapper does not exist for the client
+                                open_url(
+                                    clientUrl + '/protocol-mappers/models/' + clientMapper['id'],
+                                    method='PUT',
+                                    headers=self.restheaders,
+                                    data=json.dumps(newClientProtocolMapper))
+                    else:  # If mapper does not exist for the client
                         if desiredState != "absent":
                             # Create the mapper
+<<<<<<< HEAD
                             data=json.dumps(newClientProtocolMapper)
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -1395,11 +1437,22 @@ class KeycloakAPI(object):
 >>>>>>> SX5-868 Add keycloak_component module with non mock unit tests.
 =======
 >>>>>>> SX5-868 PR Added role management for keycloak_client module.
+=======
+                            open_url(
+                                clientUrl + '/protocol-mappers/models',
+                                method='POST',
+                                headers=self.restheaders,
+                                data=json.dumps(newClientProtocolMapper))
+                            changed = True
+            return changed
+        except Exception as e:
+            self.module.fail_json(msg="Unable to create or update client mappers %s: %s"
+                                  % (clientRepresentation["id"], str(e)))
+>>>>>>> SX5-868 Codestyle fix
 
     def add_attributes_list_to_attributes_dict(self, AttributesList, AttributesDict):
         """
         Add items form an attribute list which is not a Keycloak standard to as an attribute dict.
-        
         :param AttributesList: List of attribute to add
         :param AttributesDict: Dict of attributes in which to add the list
         :return: nothing
@@ -1410,13 +1463,12 @@ class KeycloakAPI(object):
             for attr in AttributesList:
                 if "name" in attr and attr["name"] is not None and "value" in attr:
                     AttributesDict[attr["name"]] = attr["value"]
-                    
+
     def assing_roles_to_group(self, groupRepresentation, groupRealmRoles, groupClientRoles, realm='master'):
         """
-        Assing roles to group. Roles can be composites of other roles. 
+        Assing roles to group. Roles can be composites of other roles.
         Composites can be composed by realm and client roles.
         Every member of the group will inherit those roles.
-        
         :param groupRepresentation: Representation of the group to assign roles
         :param groupRealmRoles: Realm roles to assign to group
         :param groupClientRoles: Clients roles to assign to group.
@@ -1620,7 +1672,7 @@ class KeycloakAPI(object):
             if groupRealmRoles is not None:
                 for realmRole in groupRealmRoles:
                     # Look for existing role into group representation
-                    if not "realmRoles" in groupRepresentation or not realmRole in groupRepresentation["realmRoles"]:
+                    if "realmRoles" not in groupRepresentation or realmRole not in groupRepresentation["realmRoles"]:
                         roleid = None
                         # Get all realm roles
                         realmRoles = json.load(open_url(roleSvcBaseUrl, method='GET', headers=self.restheaders))
@@ -1634,25 +1686,41 @@ class KeycloakAPI(object):
                             realmRoleRepresentation["id"] = roleid
                             realmRoleRepresentation["name"] = realmRole
                             realmRolesRepresentation.append(realmRoleRepresentation)
-                if len(realmRolesRepresentation) > 0 :
-                    data=json.dumps(realmRolesRepresentation)
+                if len(realmRolesRepresentation) > 0:
                     # Assing Role
-                    open_url(URL_GROUP_REALM_ROLE_MAPPING.format(url=self.baseurl, realm=realm, groupid=gid), method='POST', headers=self.restheaders, data=data)
+                    open_url(
+                        URL_GROUP_REALM_ROLE_MAPPING.format(url=self.baseurl,
+                                                            realm=realm,
+                                                            groupid=gid),
+                        method='POST',
+                        headers=self.restheaders,
+                        data=json.dumps(realmRolesRepresentation))
                     changed = True
-    
             if groupClientRoles is not None:
                 # If there is change to do for client roles
-                if not "clientRoles" in groupRepresentation or not isDictEquals(groupClientRoles, groupRepresentation["clientRoles"]):
-                    # Assing clients roles            
-                    for clientRolesToAssing in groupClientRoles:    
+                if "clientRoles" not in groupRepresentation or not isDictEquals(groupClientRoles,
+                                                                                groupRepresentation["clientRoles"]):
+                    # Assing clients roles
+                    for clientRolesToAssing in groupClientRoles:
                         rolesToAssing = []
                         clientIdOfClientRole = clientRolesToAssing['clientid']
                         # Get the id of the client
-                        clients = json.load(open_url(clientSvcBaseUrl + '?clientId=' + clientIdOfClientRole, method='GET', headers=self.restheaders))
+                        clients = json.load(
+                            open_url(
+                                clientSvcBaseUrl + '?clientId=' + clientIdOfClientRole,
+                                method='GET',
+                                headers=self.restheaders))
                         if len(clients) > 0 and "id" in clients[0]:
                             clientId = clients[0]["id"]
                             # Get the client roles
-                            clientRoles = json.load(open_url(URL_CLIENT_ROLES.format(url=self.baseurl, realm=realm, id=clientId), method='GET', headers=self.restheaders))
+                            clientRoles = json.load(
+                                open_url(
+                                    URL_CLIENT_ROLES.format(
+                                        url=self.baseurl,
+                                        realm=realm,
+                                        id=clientId),
+                                    method='GET',
+                                    headers=self.restheaders))
                             for clientRoleToAssing in clientRolesToAssing["roles"]:
                                 # Find his Id
                                 for clientRole in clientRoles:
@@ -1664,25 +1732,40 @@ class KeycloakAPI(object):
                                         break
                         if len(rolesToAssing) > 0:
                             # Delete exiting client Roles
-                            open_url(URL_GROUP_CLIENT_ROLE_MAPPING.format(url=self.baseurl, realm=realm, groupid=gid, clientid=clientId), method='DELETE', headers=self.restheaders)
-                            data=json.dumps(rolesToAssing)
+                            open_url(
+                                URL_GROUP_CLIENT_ROLE_MAPPING.format(
+                                    url=self.baseurl,
+                                    realm=realm,
+                                    groupid=gid,
+                                    clientid=clientId),
+                                method='DELETE',
+                                headers=self.restheaders)
                             # Assing Role
-                            open_url(URL_GROUP_CLIENT_ROLE_MAPPING.format(url=self.baseurl, realm=realm, groupid=gid, clientid=clientId), method='POST', headers=self.restheaders, data=data)
+                            open_url(
+                                URL_GROUP_CLIENT_ROLE_MAPPING.format(
+                                    url=self.baseurl,
+                                    realm=realm,
+                                    groupid=gid,
+                                    clientid=clientId),
+                                method='POST',
+                                headers=self.restheaders, data=json.dumps(rolesToAssing))
                             changed = True
-                    
             return changed
         except Exception as e:
             self.module.fail_json(msg="Unable to assign roles to group %s: %s" % (groupRepresentation['name'], str(e)))
+<<<<<<< HEAD
 <<<<<<< HEAD
 >>>>>>> SX5-868 Add keycloak_component module with non mock unit tests.
 =======
 >>>>>>> SX5-868 PR Added role management for keycloak_client module.
     
+=======
+
+>>>>>>> SX5-868 Codestyle fix
     def sync_ldap_groups(self, direction, realm='master'):
         """
-        Synchronize groups between Keycloak and LDAP. Every group mappers of users storage providers will be synchronized. 
+        Synchronize groups between Keycloak and LDAP. Every group mappers of users storage providers will be synchronized.
         The direction parameter will specify how the synchronization will be done.
-        
         :param direction: fedToKeycloak or keycloakToFed
         :param realm: Realm
         :return: Nothing
@@ -1725,7 +1808,16 @@ class KeycloakAPI(object):
                 for subComponent in subComponents:
                     if subComponent["providerId"] == 'group-ldap-mapper':
                         # Sync groups
-                        open_url(userStorageBaseUrl + '/' + subComponent["parentId"] + "/mappers/" + subComponent["id"] + "/sync?direction=" + direction, method='POST', headers=self.restheaders) 
+                        open_url(
+                            userStorageBaseUrl
+                            + '/'
+                            + subComponent["parentId"]
+                            + "/mappers/"
+                            + subComponent["id"]
+                            + "/sync?direction="
+                            + direction,
+                            method='POST',
+                            headers=self.restheaders)
         except Exception as e:
             self.module.fail_json(msg="Unable to sync ldap groups %s: %s" % (direction, str(e)))
 <<<<<<< HEAD
@@ -1733,11 +1825,9 @@ class KeycloakAPI(object):
 =======
 >>>>>>> SX5-868 PR Added role management for keycloak_client module.
 
-
     def get_authentication_flow_by_alias(self, alias, realm='master'):
         """
         Get an authentication flow by it's alias
-        
         :param alias: Alias of the authentication flow to get.
         :param realm: Realm.
         :return: Authentication flow representation.
@@ -1769,24 +1859,32 @@ class KeycloakAPI(object):
         except Exception as e:
             self.module.fail_json(msg='Could not delete authentication flow %s in realm %s: %s'
                                       % (id, realm, str(e)))
-        
 
     def copy_auth_flow(self, config, realm='master'):
         """
         Create a new authentication flow from a copy of another.
-        
         :param config: Representation of the authentication flow to create.
         :param realm: Realm.
         :return: Representation of the new authentication flow.
-        """    
+        """
         try:
             newName = dict(
-                newName = config["alias"]
+                newName=config["alias"]
             )
-            
-            data = json.dumps(newName)
-            open_url(URL_AUTHENTICATION_FLOW_COPY.format(url=self.baseurl, realm=realm, copyfrom=urllib.quote(config["copyFrom"])), method='POST', headers=self.restheaders, data=data)
-            flowList = json.load(open_url(URL_AUTHENTICATION_FLOWS.format(url=self.baseurl, realm=realm), method='GET', headers=self.restheaders))
+            open_url(
+                URL_AUTHENTICATION_FLOW_COPY.format(
+                    url=self.baseurl,
+                    realm=realm,
+                    copyfrom=urllib.quote(config["copyFrom"])),
+                method='POST',
+                headers=self.restheaders,
+                data=json.dumps(newName))
+            flowList = json.load(
+                open_url(
+                    URL_AUTHENTICATION_FLOWS.format(url=self.baseurl,
+                                                    realm=realm),
+                    method='GET',
+                    headers=self.restheaders))
             for flow in flowList:
                 if flow["alias"] == config["alias"]:
                     return flow
@@ -1794,24 +1892,34 @@ class KeycloakAPI(object):
         except Exception as e:
             self.module.fail_json(msg='Could not copy authentication flow %s in realm %s: %s'
                                       % (config["alias"], realm, str(e)))
-    
+
     def create_empty_auth_flow(self, config, realm='master'):
         """
         Create a new empty authentication flow.
-        
         :param config: Representation of the authentication flow to create.
         :param realm: Realm.
         :return: Representation of the new authentication flow.
-        """    
+        """
         try:
             newFlow = dict(
-                alias = config["alias"],
-                providerId = config["providerId"],
-                topLevel = True
+                alias=config["alias"],
+                providerId=config["providerId"],
+                topLevel=True
             )
-            data = json.dumps(newFlow)
-            open_url(URL_AUTHENTICATION_FLOWS.format(url=self.baseurl, realm=realm), method='POST', headers=self.restheaders, data=data)
-            flowList = json.load(open_url(URL_AUTHENTICATION_FLOWS.format(url=self.baseurl, realm=realm), method='GET', headers=self.restheaders))
+            open_url(
+                URL_AUTHENTICATION_FLOWS.format(
+                    url=self.baseurl,
+                    realm=realm),
+                method='POST',
+                headers=self.restheaders,
+                data=json.dumps(newFlow))
+            flowList = json.load(
+                open_url(
+                    URL_AUTHENTICATION_FLOWS.format(
+                        url=self.baseurl,
+                        realm=realm),
+                    method='GET',
+                    headers=self.restheaders))
             for flow in flowList:
                 if flow["alias"] == config["alias"]:
                     return flow
@@ -1819,22 +1927,27 @@ class KeycloakAPI(object):
         except Exception as e:
             self.module.fail_json(msg='Could not create empty authentication flow %s in realm %s: %s'
                                       % (config["alias"], realm, str(e)))
-    
+
     def create_or_update_executions(self, config, realm='master'):
         """
         Create or update executions for an authentication flow.
-        
         :param config: Representation of the authentication flow including it's executions.
         :param realm: Realm
         :return: True if executions have been modified. False otherwise.
-        """ 
+        """
         try:
             changed = False
-        
             if "authenticationExecutions" in config:
                 for newExecution in config["authenticationExecutions"]:
                     # Get existing executions on the Keycloak server for this alias
-                    existingExecutions = json.load(open_url(URL_AUTHENTICATION_FLOW_EXECUTIONS.format(url=self.baseurl, realm=realm, flowalias=urllib.quote(config["alias"])), method='GET', headers=self.restheaders))
+                    existingExecutions = json.load(
+                        open_url(
+                            URL_AUTHENTICATION_FLOW_EXECUTIONS.format(
+                                url=self.baseurl,
+                                realm=realm,
+                                flowalias=urllib.quote(config["alias"])),
+                            method='GET',
+                            headers=self.restheaders))
                     executionFound = False
                     for existingExecution in existingExecutions:
                         if "providerId" in existingExecution and existingExecution["providerId"] == newExecution["providerId"]:
@@ -1844,9 +1957,15 @@ class KeycloakAPI(object):
                         # Replace config id of the execution config by it's complete representation
                         if "authenticationConfig" in existingExecution:
                             execConfigId = existingExecution["authenticationConfig"]
-                            execConfig = json.load(open_url(URL_AUTHENTICATION_CONFIG.format(url=self.baseurl, realm=realm, id=execConfigId), method='GET', headers=self.restheaders))
+                            execConfig = json.load(
+                                open_url(
+                                    URL_AUTHENTICATION_CONFIG.format(
+                                        url=self.baseurl,
+                                        realm=realm,
+                                        id=execConfigId),
+                                    method='GET',
+                                    headers=self.restheaders))
                             existingExecution["authenticationConfig"] = execConfig
-        
                         # Compare the executions to see if it need changes
                         if not isDictEquals(newExecution, existingExecution):
                             changed = True
@@ -1884,11 +2003,10 @@ class KeycloakAPI(object):
         except Exception as e:
             self.module.fail_json(msg='Could not create or update executions for authentication flow %s in realm %s: %s'
                                       % (config["alias"], realm, str(e)))
-    
+
     def get_executions_representation(self, config, realm='master'):
         """
         Get a representation of the executions for an authentication flow.
-        
         :param config: Representation of the authentication flow
         :param realm: Realm
         :return: Representation of the executions
@@ -1919,7 +2037,7 @@ class KeycloakAPI(object):
         except Exception as e:
             self.module.fail_json(msg='Could not get executions for authentication flow %s in realm %s: %s'
                                       % (config["alias"], realm, str(e)))
-                
+
     def get_component_by_id(self, component_id, realm='master'):
         """
         Get component representation by it's ID
@@ -1938,7 +2056,6 @@ class KeycloakAPI(object):
     def get_component_by_name_provider_and_parent(self, name, provider_type, provider_id, parent_id, realm='master'):
         """
         Get a component by it's name, provider type, provider id and parent
-        
         :param name: Name of the component
         :param provider_type: Provider type of the component
         :param provider_id: Provider ID of the component
@@ -1946,19 +2063,20 @@ class KeycloakAPI(object):
         :return: Component's representation if found. An empty dict otherwise.
         """
         componentFound = {}
-        components = self.get_components_by_name_provider_and_parent(name=name, provider_type=provider_type, parent_id=parent_id, realm=realm)
-        
+        components = self.get_components_by_name_provider_and_parent(
+            name=name,
+            provider_type=provider_type,
+            parent_id=parent_id,
+            realm=realm)
         for component in components:
             if "providerId" in component and component["providerId"] == provider_id:
                 componentFound = component
                 break
-            
         return componentFound
-    
+
     def get_components_by_name_provider_and_parent(self, name, provider_type, parent_id, realm='master'):
         """
         Get components by name, provider and parent
-        
         :param name: Name of the component
         :param provider_type: Provider type of the component
         :param provider_id: Provider ID of the component
@@ -1966,13 +2084,22 @@ class KeycloakAPI(object):
         :return: List of components found.
         """
         try:
-            component_url = URL_COMPONENT_BY_NAME_TYPE_PARENT.format(url=self.baseurl, realm=realm, name=name, type=provider_type, parent=parent_id)
-            components = json.load(open_url(component_url, method='GET', headers=self.restheaders))
+            component_url = URL_COMPONENT_BY_NAME_TYPE_PARENT.format(
+                url=self.baseurl,
+                realm=realm,
+                name=name,
+                type=provider_type,
+                parent=parent_id)
+            components = json.load(
+                open_url(
+                    component_url,
+                    method='GET',
+                    headers=self.restheaders))
             return components
         except Exception as e:
             self.module.fail_json(msg='Could not get component %s in realm %s: %s'
                                       % (name, realm, str(e)))
-    
+
     def create_component(self, newComponent, newSubComponents, syncLdapMappers, realm='master'):
         """
         Create a component and it's subComponents
@@ -1984,17 +2111,24 @@ class KeycloakAPI(object):
         """
         try:
             component_url = URL_COMPONENTS.format(url=self.baseurl, realm=realm)
-            open_url(component_url, method='POST', headers=self.restheaders, data=json.dumps(newComponent))
+            open_url(component_url,
+                     method='POST',
+                     headers=self.restheaders,
+                     data=json.dumps(newComponent))
             # Get the new created component
-            component = self.get_component_by_name_provider_and_parent(name=newComponent["name"], provider_type=newComponent["providerType"], provider_id=newComponent["providerId"], parent_id=newComponent["parentId"], realm=realm)
+            component = self.get_component_by_name_provider_and_parent(
+                name=newComponent["name"],
+                provider_type=newComponent["providerType"],
+                provider_id=newComponent["providerId"],
+                parent_id=newComponent["parentId"],
+                realm=realm)
             # Create Sub components
             self.create_new_sub_components(component, newSubComponents, syncLdapMappers, realm=realm)
-    
             return component
         except Exception as e:
             self.module.fail_json(msg='Could not create component %s in realm %s: %s'
                                       % (newComponent["name"], realm, str(e)))
-    
+
     def create_new_sub_components(self, component, newSubComponents, syncLdapMappers, realm='master'):
         """
         Create subcomponents for a component.
@@ -2013,19 +2147,33 @@ class KeycloakAPI(object):
                         newSubComponent["parentId"] = component["id"]
                         # Create sub component
                         component_url = URL_COMPONENTS.format(url=self.baseurl, realm=realm)
-                        open_url(component_url, method='POST', headers=self.restheaders, data=json.dumps(newSubComponent))
+                        open_url(component_url,
+                                 method='POST',
+                                 headers=self.restheaders,
+                                 data=json.dumps(newSubComponent))
                         # Check if users and groups synchronization is needed
                         if component["providerType"] == "org.keycloak.storage.UserStorageProvider" and syncLdapMappers is not "no":
                             # Get subcomponents
-                            subComponents = self.get_component_by_name_provider_and_parent(name=newSubComponent["name"], provider_type=newSubComponent["providerType"], parent_id=component["id"], realm=realm)
+                            subComponents = self.get_component_by_name_provider_and_parent(
+                                name=newSubComponent["name"],
+                                provider_type=newSubComponent["providerType"],
+                                parent_id=component["id"],
+                                realm=realm)
                             for subComponent in subComponents:
                                 # Sync sub component
-                                sync_url = URL_USER_STORAGE_MAPPER_SYNC.format(url=self.baseurl, realm=realm, parentid=subComponent["parentId"], id=subComponent["id"], direction=syncLdapMappers)
-                                open_url(sync_url, method='POST', headers=self.restheaders)
+                                sync_url = URL_USER_STORAGE_MAPPER_SYNC.format(
+                                    url=self.baseurl,
+                                    realm=realm,
+                                    parentid=subComponent["parentId"],
+                                    id=subComponent["id"],
+                                    direction=syncLdapMappers)
+                                open_url(sync_url,
+                                         method='POST',
+                                         headers=self.restheaders)
         except Exception as e:
             self.module.fail_json(msg='Could not create sub components for parent %s in realm %s: %s'
                                       % (component["name"], realm, str(e)))
-                            
+
     def update_component(self, newComponent, realm='master'):
         """
         Update a component.
@@ -2035,18 +2183,25 @@ class KeycloakAPI(object):
         """
         try:
             # Add existing component Id to new component
-            component_url = URL_COMPONENT.format(url=self.baseurl, realm=realm, id=newComponent["id"])
-            open_url(component_url, method='PUT', headers=self.restheaders, data=json.dumps(newComponent))
+            component_url = URL_COMPONENT.format(
+                url=self.baseurl,
+                realm=realm,
+                id=newComponent["id"])
+            open_url(component_url,
+                     method='PUT',
+                     headers=self.restheaders,
+                     data=json.dumps(newComponent))
             return self.get_component_by_id(newComponent['id'], realm=realm)
         except Exception as e:
             self.module.fail_json(msg='Could not update component %s in realm %s: %s'
                                       % (newComponent["name"], realm, str(e)))
-    
+
     def update_sub_components(self, component, newSubComponents, syncLdapMappers, realm='master'):
         try:
-            changed=False
+            changed = False
             # Get all existing sub components for the component to update.
-            subComponents = self.get_all_sub_components(parent_id=component["id"], realm=realm)
+            subComponents = self.get_all_sub_components(parent_id=component["id"],
+                                                        realm=realm)
             # For all new sub components to update
             for componentType in newSubComponents.keys():
                 for newSubComponent in newSubComponents[componentType]:
@@ -2062,31 +2217,58 @@ class KeycloakAPI(object):
                                 newSubComponent["parentId"] = subComponent["parentId"]
                                 newSubComponent["id"] = subComponent["id"]
                                 # Update the sub component
-                                component_url = URL_COMPONENT.format(url=self.baseurl, realm=realm, id=subComponent["id"])
-                                open_url(component_url, method='PUT', headers=self.restheaders, data=json.dumps(newSubComponent))
+                                component_url = URL_COMPONENT.format(url=self.baseurl,
+                                                                     realm=realm,
+                                                                     id=subComponent["id"])
+                                open_url(component_url,
+                                         method='PUT',
+                                         headers=self.restheaders,
+                                         data=json.dumps(newSubComponent))
                                 changed = True
                             newSubComponentFound = True
                             # If sync is needed for the subcomponent
                             if component["providerType"] == "org.keycloak.storage.UserStorageProvider" and syncLdapMappers is not "no":
                                 # Do the sync
-                                sync_url = URL_USER_STORAGE_MAPPER_SYNC.format(url=self.baseurl, realm=realm, parentid=subComponent["parentId"], id=subComponent["id"], direction=syncLdapMappers)
-                                open_url(sync_url, method='POST', headers=self.restheaders)
+                                sync_url = URL_USER_STORAGE_MAPPER_SYNC.format(
+                                    url=self.baseurl,
+                                    realm=realm,
+                                    parentid=subComponent["parentId"],
+                                    id=subComponent["id"],
+                                    direction=syncLdapMappers)
+                                open_url(sync_url,
+                                         method='POST',
+                                         headers=self.restheaders)
                             break
                     # If sub-component does not already exists
                     if not newSubComponentFound:
                         # Update the parent Id
                         newSubComponent["parentId"] = component["id"]
                         # Create the sub-component
-                        component_url = URL_COMPONENTS.format(url=self.baseurl, realm=realm)
-                        open_url(component_url, method='POST', headers=self.restheaders, data=json.dumps(newSubComponent))
+                        component_url = URL_COMPONENTS.format(url=self.baseurl,
+                                                              realm=realm)
+                        open_url(component_url,
+                                 method='POST',
+                                 headers=self.restheaders,
+                                 data=json.dumps(newSubComponent))
                         changed = True
                         # Sync LDAP for group mappers
                         if component["providerType"] == "org.keycloak.storage.UserStorageProvider" and syncLdapMappers is not "no":
                             # Get subcomponents
-                            subComponents = self.get_component_by_name_provider_and_parent(name=newSubComponent["name"], provider_type=newSubComponent["providerType"], parent_id=component["id"], realm=realm)
+                            subComponents = self.get_component_by_name_provider_and_parent(
+                                name=newSubComponent["name"],
+                                provider_type=newSubComponent["providerType"],
+                                parent_id=component["id"],
+                                realm=realm)
                             for subComponent in subComponents:
-                                sync_url = URL_USER_STORAGE_MAPPER_SYNC.format(url=self.baseurl, realm=realm, parentid=subComponent["parentId"], id=subComponent["id"], direction=syncLdapMappers)
-                                open_url(sync_url, method='POST', headers=self.restheaders)
+                                sync_url = URL_USER_STORAGE_MAPPER_SYNC.format(
+                                    url=self.baseurl,
+                                    realm=realm,
+                                    parentid=subComponent["parentId"],
+                                    id=subComponent["id"],
+                                    direction=syncLdapMappers)
+                                open_url(sync_url,
+                                         method='POST',
+                                         headers=self.restheaders)
             return changed
         except Exception as e:
             self.module.fail_json(msg='Could not update component %s in realm %s: %s'
@@ -2100,13 +2282,20 @@ class KeycloakAPI(object):
         :return: List of representation for the sub component.
         """
         try:
-            subcomponents_url = URL_SUB_COMPONENTS.format(url=self.baseurl, realm=realm, parent=parent_id)
-            subcomponents = json.load(open_url(subcomponents_url, method='GET', headers=self.restheaders))
+            subcomponents_url = URL_SUB_COMPONENTS.format(
+                url=self.baseurl,
+                realm=realm,
+                parent=parent_id)
+            subcomponents = json.load(
+                open_url(
+                    subcomponents_url,
+                    method='GET',
+                    headers=self.restheaders))
             return subcomponents
         except Exception as e:
             self.module.fail_json(msg='Could not get sub components for parent component %s in realm %s: %s'
                                       % (parent_id, realm, str(e)))
-        
+
     def delete_component(self, component_id, realm='master'):
         """
         Delete component from Keycloak server
@@ -2115,8 +2304,14 @@ class KeycloakAPI(object):
         :return: HTTP response
         """
         try:
-            component_url = URL_COMPONENT.format(url=self.baseurl, realm=realm, id=component_id)
-            return open_url(component_url, method='DELETE', headers=self.restheaders)
+            component_url = URL_COMPONENT.format(
+                url=self.baseurl,
+                realm=realm,
+                id=component_id)
+            return open_url(
+                component_url,
+                method='DELETE',
+                headers=self.restheaders)
         except Exception as e:
             self.module.fail_json(msg='Could not delete component %s in realm %s: %s'
                                       % (component_id, realm, str(e)))
@@ -2130,8 +2325,14 @@ class KeycloakAPI(object):
         :return: HTTP response
         """
         try:
-            sync_url=URL_USER_STORAGE_SYNC.format(url=self.baseurl, realm=realm, id=component_id, action=action)
-            return open_url(sync_url, method='POST', headers=self.restheaders)
+            sync_url = URL_USER_STORAGE_SYNC.format(
+                url=self.baseurl,
+                realm=realm,
+                id=component_id,
+                action=action)
+            return open_url(sync_url,
+                            method='POST',
+                            headers=self.restheaders)
         except Exception as e:
             self.module.fail_json(msg='Could not synchronize component %s action %s in realm %s: %s'
                                       % (component_id, action, realm, str(e)))
@@ -2148,7 +2349,8 @@ class KeycloakAPI(object):
 >>>>>>> SX5-868 code cleanup for shippable.
     def add_idp_endpoints(self, idPConfiguration, url):
         """
-        This function extract OpenID connect endpoints from the identity provider's openid-configuration URL.
+        This function extract OpenID connect endpoints from the identity provider's
+        openid-configuration URL.
         Endpoints are added to the idp configuration object received in parameter.
         :param idPConfiguration: Identity provider configuration dict to update.
         :param url: Identity provider's openid-configuration URL.
@@ -2169,7 +2371,7 @@ class KeycloakAPI(object):
                 if 'authorization_endpoint' in openIdConfig.keys():
                     idPConfiguration["authorizationUrl"] = openIdConfig["authorization_endpoint"]
                 if 'end_session_endpoint' in openIdConfig.keys():
-                    idPConfiguration["logoutUrl"] = openIdConfig["end_session_endpoint"]        
+                    idPConfiguration["logoutUrl"] = openIdConfig["end_session_endpoint"]
         except Exception, e:
             self.module.fail_json(msg='Could not get IdP configuration from endpoint %s: %s'
                                       % (url, str(e)))
@@ -2184,19 +2386,30 @@ class KeycloakAPI(object):
         changed = False
         try:
             # Get idp's mappers list
-            mappers_url = URL_IDP_MAPPERS.format(url=self.baseurl, realm=realm, alias=alias)
-            mappers = json.load(open_url(mappers_url, method='GET',headers=self.restheaders))
+            mappers_url = URL_IDP_MAPPERS.format(
+                url=self.baseurl,
+                realm=realm,
+                alias=alias)
+            mappers = json.load(
+                open_url(
+                    mappers_url,
+                    method='GET',
+                    headers=self.restheaders))
             for mapper in mappers:
-                mapper_url = URL_IDP_MAPPER.format(url=self.baseurl,realm=realm,alias=alias,id=mapper['id'])
-                open_url(mapper_url,method='DELETE',headers=self.restheaders)
-                changed=True
-                
+                mapper_url = URL_IDP_MAPPER.format(
+                    url=self.baseurl,
+                    realm=realm,
+                    alias=alias,
+                    id=mapper['id'])
+                open_url(mapper_url,
+                         method='DELETE',
+                         headers=self.restheaders)
+                changed = True
             return changed
         except Exception, e:
             self.module.fail_json(msg='Could not delete mappers for IdP %s in realm %s: %s'
                                       % (alias, realm, str(e)))
-         
-    
+
     def create_or_update_idp_mappers(self, alias, idPMappers, realm='master'):
         """
         Create, update or delete mappers for an identity provider.
@@ -2208,8 +2421,15 @@ class KeycloakAPI(object):
         changed = False
         try:
             # Get idp's mappers list
-            mappers_url = URL_IDP_MAPPERS.format(url=self.baseurl, realm=realm, alias=alias)
-            mappers = json.load(open_url(mappers_url, method='GET',headers=self.restheaders))
+            mappers_url = URL_IDP_MAPPERS.format(
+                url=self.baseurl,
+                realm=realm,
+                alias=alias)
+            mappers = json.load(
+                open_url(
+                    mappers_url,
+                    method='GET',
+                    headers=self.restheaders))
             for idPMapper in idPMappers:
                 desiredState = "present"
                 if "state" in idPMapper:
@@ -2221,35 +2441,51 @@ class KeycloakAPI(object):
                         mapperFound = True
                         break
                 # If mapper already exist and is different
-                if mapperFound and not isDictEquals(idPMapper,mapper):
+                if mapperFound and not isDictEquals(idPMapper, mapper):
                     # update the existing mapper
                     for key in idPMapper.keys():
                         mapper[key] = idPMapper[key]
-                        mapper_url = URL_IDP_MAPPER.format(url=self.baseurl, realm=realm, alias=alias, id=mapper['id'])
-                        open_url(mapper_url, method='PUT', headers=self.restheaders, data=json.dumps(mapper))                        
+                        mapper_url = URL_IDP_MAPPER.format(
+                            url=self.baseurl,
+                            realm=realm,
+                            alias=alias,
+                            id=mapper['id'])
+                        open_url(mapper_url,
+                                 method='PUT',
+                                 headers=self.restheaders,
+                                 data=json.dumps(mapper))
                     changed = True
                 elif mapperFound and desiredState == "absent":
                     # delete the mapper
-                    mapper_url = URL_IDP_MAPPER.format(url=self.baseurl,realm=realm,alias=alias,id=mapper['id'])
-                    open_url(mapper_url,method='DELETE',headers=self.restheaders)
+                    mapper_url = URL_IDP_MAPPER.format(
+                        url=self.baseurl,
+                        realm=realm,
+                        alias=alias,
+                        id=mapper['id'])
+                    open_url(mapper_url,
+                             method='DELETE',
+                             headers=self.restheaders)
                     changed = True
                 # If the mapper does not already exist
                 elif not mapperFound and desiredState != "absent":
                     # Complete the mapper settings with defaults
-                    if 'identityProviderMapper' not in idPMapper.keys(): # if mapper's type is provided
-                        idPMapper['identityProviderMapper'] = 'oidc-user-attribute-idp-mapper'                
+                    if 'identityProviderMapper' not in idPMapper.keys():  # if mapper's type is provided
+                        idPMapper['identityProviderMapper'] = 'oidc-user-attribute-idp-mapper'
                     idPMapper['identityProviderAlias'] = alias
-     
                     # Create it
-                    mappers_url=URL_IDP_MAPPERS.format(url=self.baseurl, realm=realm, alias=alias)
-                    open_url(mappers_url, method='POST', headers=self.restheaders, data=json.dumps(idPMapper))
+                    mappers_url = URL_IDP_MAPPERS.format(
+                        url=self.baseurl,
+                        realm=realm,
+                        alias=alias)
+                    open_url(mappers_url,
+                             method='POST',
+                             headers=self.restheaders,
+                             data=json.dumps(idPMapper))
                     changed = True
-
-            return changed        
-        except Exception ,e :
+            return changed
+        except Exception, e:
             self.module.fail_json(msg='Could not create or update mappers for IdP %s in realm %s: %s'
                                       % (alias, realm, str(e)))
-
 
     def get_idp_by_alias(self, alias, realm='master'):
         """
@@ -2260,12 +2496,17 @@ class KeycloakAPI(object):
         """
         try:
             idPRepresentation = {}
-            idp_url = URL_IDP.format(url=self.baseurl,realm=realm,alias=alias)
-            
+            idp_url = URL_IDP.format(
+                url=self.baseurl,
+                realm=realm,
+                alias=alias)
             # Get all IdP from Keycloak server
-            idPRepresentation = json.load(open_url(idp_url, method='GET', headers=self.restheaders))
+            idPRepresentation = json.load(
+                open_url(idp_url,
+                         method='GET',
+                         headers=self.restheaders))
             return idPRepresentation
-        except Exception ,e :
+        except Exception, e:
             self.module.fail_json(msg='Could not get IdP by alias %s in realm %s: %s'
                                       % (alias, realm, str(e)))
 
@@ -2278,18 +2519,22 @@ class KeycloakAPI(object):
         """
         try:
             idPRepresentation = {}
-            idps_url = URL_IDPS.format(url=self.baseurl,realm=realm)
-            
+            idps_url = URL_IDPS.format(
+                url=self.baseurl,
+                realm=realm)
             # Get all idps from Keycloak server
-            listIdPs = json.load(open_url(idps_url, method='GET', headers=self.restheaders))
-        
+            listIdPs = json.load(
+                open_url(
+                    idps_url,
+                    method='GET',
+                    headers=self.restheaders))
             for idP in listIdPs:
                 if idP['alias'] == alias:
                     # Get existing IdP
                     idPRepresentation = idP
                     break
             return idPRepresentation
-        except Exception ,e :
+        except Exception, e:
             self.module.fail_json(msg='Could not search IdP by alias %s in realm %s: %s'
                                       % (alias, realm, str(e)))
 
@@ -2302,18 +2547,21 @@ class KeycloakAPI(object):
         """
         try:
             idPRepresentation = {}
-            idps_url = URL_IDPS.format(url=self.baseurl,realm=realm)
-            
+            idps_url = URL_IDPS.format(
+                url=self.baseurl,
+                realm=realm)
             # Get all idps from Keycloak server
-            listIdPs = json.load(open_url(idps_url, method='GET', headers=self.restheaders))
-        
+            listIdPs = json.load(
+                open_url(idps_url,
+                         method='GET',
+                         headers=self.restheaders))
             for idP in listIdPs:
                 if 'config' in idP and idP['config'] is not None and 'clientId' in idP['config'] and idP['config']['clientId'] == client_id:
                     # Obtenir le IdP exitant
                     idPRepresentation = idP
                     break
             return idPRepresentation
-        except Exception ,e :
+        except Exception, e:
             self.module.fail_json(msg='Could not search IdP by client Id %s in realm %s: %s'
                                       % (client_id, realm, str(e)))
 
@@ -2325,10 +2573,15 @@ class KeycloakAPI(object):
         :return: Actual representation of the idp created.
         """
         try:
-            idps_url = URL_IDPS.format(url=self.baseurl, realm=realm)
-            open_url(idps_url, method='POST', headers=self.restheaders, data=json.dumps(newIdPRepresentation))
+            idps_url = URL_IDPS.format(
+                url=self.baseurl,
+                realm=realm)
+            open_url(idps_url,
+                     method='POST',
+                     headers=self.restheaders,
+                     data=json.dumps(newIdPRepresentation))
             return self.get_idp_by_alias(newIdPRepresentation["alias"], realm)
-        except Exception ,e :
+        except Exception, e:
             self.module.fail_json(msg='Could not create the IdP %s in realm %s: %s'
                                       % (newIdPRepresentation["alias"], realm, str(e)))
 
@@ -2340,10 +2593,17 @@ class KeycloakAPI(object):
         :return: Actual representation of the updated idp.
         """
         try:
-            idp_url = URL_IDP.format(url=self.baseurl, realm=realm, alias=newIdPRepresentation["alias"])
-            open_url(idp_url, method='PUT', headers=self.restheaders, data=json.dumps(newIdPRepresentation))
+            idp_url = URL_IDP.format(
+                url=self.baseurl,
+                realm=realm,
+                alias=newIdPRepresentation["alias"])
+            open_url(
+                idp_url,
+                method='PUT',
+                headers=self.restheaders,
+                data=json.dumps(newIdPRepresentation))
             return self.get_idp_by_alias(newIdPRepresentation["alias"], realm)
-        except Exception ,e :
+        except Exception, e:
             self.module.fail_json(msg='Could not update the IdP %s in realm %s: %s'
                                       % (newIdPRepresentation["alias"], realm, str(e)))
 
@@ -2355,9 +2615,15 @@ class KeycloakAPI(object):
         :return: HTTP response
         """
         try:
-            idp_url = URL_IDP.format(url=self.baseurl, realm=realm, alias=alias)
-            return open_url(idp_url, method='DELETE', headers=self.restheaders)
-        except Exception ,e :
+            idp_url = URL_IDP.format(
+                url=self.baseurl,
+                realm=realm,
+                alias=alias)
+            return open_url(
+                idp_url,
+                method='DELETE',
+                headers=self.restheaders)
+        except Exception, e:
             self.module.fail_json(msg='Could not delete the IdP %s in realm %s: %s'
                                       % (alias, realm, str(e)))
 
@@ -2369,12 +2635,18 @@ class KeycloakAPI(object):
         :return: List of mappers
         """
         try:
-            mapper_url = URL_IDP_MAPPERS.format(url=self.baseurl,realm=realm,alias=alias)
-            
+            mapper_url = URL_IDP_MAPPERS.format(
+                url=self.baseurl,
+                realm=realm,
+                alias=alias)
             # Get all mappers for the IdP from Keycloak server
-            idMappers = json.load(open_url(mapper_url, method='GET', headers=self.restheaders))
+            idMappers = json.load(
+                open_url(
+                    mapper_url,
+                    method='GET',
+                    headers=self.restheaders))
             return idMappers
-        except Exception ,e :
+        except Exception, e:
             self.module.fail_json(msg='Could not get IdP mappers for alias %s in realm %s: %s'
                                       % (alias, realm, str(e)))
 <<<<<<< HEAD
@@ -2393,15 +2665,17 @@ class KeycloakAPI(object):
         try:
             realmRepresentation = {}
             realms_url = URL_REALMS.format(url=self.baseurl)
-            
-            listRealms = json.load(open_url(realms_url, method='GET', headers=self.restheaders))
-        
+            listRealms = json.load(
+                open_url(
+                    realms_url,
+                    method='GET',
+                    headers=self.restheaders))
             for theRealm in listRealms:
                 if theRealm['realm'] == realm:
                     realmRepresentation = theRealm
                     break
             return realmRepresentation
-        except Exception ,e :
+        except Exception, e:
             self.module.fail_json(msg='Could not search for realm %s: %s'
                                       % (realm, str(e)))
 
@@ -2412,10 +2686,15 @@ class KeycloakAPI(object):
         :return: Representation of the realm.
         """
         try:
-            realm_url = URL_REALM.format(url=self.baseurl, realm=realm)
-            realmRepresentation = json.load(open_url(realm_url, method='GET', headers=self.restheaders))
+            realm_url = URL_REALM.format(
+                url=self.baseurl,
+                realm=realm)
+            realmRepresentation = json.load(
+                open_url(realm_url,
+                         method='GET',
+                         headers=self.restheaders))
             return realmRepresentation
-        except Exception ,e :
+        except Exception, e:
             self.module.fail_json(msg='Could get realm %s: %s'
                                       % (realm, str(e)))
 
@@ -2427,13 +2706,17 @@ class KeycloakAPI(object):
         """
         try:
             realms_url = URL_REALMS.format(url=self.baseurl)
-            open_url(realms_url, method='POST', headers=self.restheaders, data=json.dumps(newRealmRepresentation))
+            open_url(
+                realms_url,
+                method='POST',
+                headers=self.restheaders,
+                data=json.dumps(newRealmRepresentation))
             realmRepresentation = self.get_realm(realm=newRealmRepresentation["realm"])
             return realmRepresentation
-        except Exception ,e :
+        except Exception, e:
             self.module.fail_json(msg='Could not create realm %s: %s'
                                       % (newRealmRepresentation["realm"], str(e)))
-            
+
     def delete_realm(self, realm):
         """
         Delete a Realm.
@@ -2441,9 +2724,14 @@ class KeycloakAPI(object):
         :return: HTTP Response.
         """
         try:
-            realm_url = URL_REALM.format(url=self.baseurl, realm=realm)
-            return open_url(realm_url, method='DELETE', headers=self.restheaders)
-        except Exception ,e :
+            realm_url = URL_REALM.format(
+                url=self.baseurl,
+                realm=realm)
+            return open_url(
+                realm_url,
+                method='DELETE',
+                headers=self.restheaders)
+        except Exception, e:
             self.module.fail_json(msg='Could delete realm %s: %s'
                                       % (realm, str(e)))
 
@@ -2454,10 +2742,16 @@ class KeycloakAPI(object):
         :return: Realm representation
         """
         try:
-            realm_url = URL_REALM.format(url=self.baseurl, realm=newRealmRepresentation["realm"])
-            open_url(realm_url, method='PUT', headers=self.restheaders, data=json.dumps(newRealmRepresentation))
+            realm_url = URL_REALM.format(
+                url=self.baseurl,
+                realm=newRealmRepresentation["realm"])
+            open_url(
+                realm_url,
+                method='PUT',
+                headers=self.restheaders,
+                data=json.dumps(newRealmRepresentation))
             return self.get_realm(newRealmRepresentation["realm"])
-        except Exception ,e :
+        except Exception, e:
             self.module.fail_json(msg='Could update realm %s: %s'
                                       % (newRealmRepresentation["realm"], str(e)))
 
@@ -2469,13 +2763,19 @@ class KeycloakAPI(object):
         :return: Updated events configuration for the realm.
         """
         try:
-            realm_events_config_url = URL_REALM_EVENT_CONFIG.format(url=self.baseurl, realm=realm)
-            open_url(realm_events_config_url, method='PUT', headers=self.restheaders, data=json.dumps(newEventsConfig))
+            realm_events_config_url = URL_REALM_EVENT_CONFIG.format(
+                url=self.baseurl,
+                realm=realm)
+            open_url(
+                realm_events_config_url,
+                method='PUT',
+                headers=self.restheaders,
+                data=json.dumps(newEventsConfig))
             return self.get_realm_events_config(realm=realm)
-        except Exception ,e :
+        except Exception, e:
             self.module.fail_json(msg='Could not update events config for realm %s: %s'
                                       % (realm, str(e)))
-        
+
     def get_realm_events_config(self, realm):
         """
         Get events configuration for a REALM.
@@ -2483,9 +2783,15 @@ class KeycloakAPI(object):
         :return: Updated events configuration for the realm.
         """
         try:
-            realm_events_config_url = URL_REALM_EVENT_CONFIG.format(url=self.baseurl, realm=realm)
-            return json.load(open_url(realm_events_config_url, method='GET', headers=self.restheaders))
-        except Exception ,e :
+            realm_events_config_url = URL_REALM_EVENT_CONFIG.format(
+                url=self.baseurl,
+                realm=realm)
+            return json.load(
+                open_url(
+                    realm_events_config_url,
+                    method='GET',
+                    headers=self.restheaders))
+        except Exception, e:
             self.module.fail_json(msg='Could not get events config for realm %s: %s'
                                       % (realm, str(e)))
 <<<<<<< HEAD
@@ -2503,16 +2809,17 @@ class KeycloakAPI(object):
         :return: Realm role representation. An empty dict is returned when role have not been found
         """
         try:
-            rolerep = {}            
+            rolerep = {}
             listRoles = self.get_realm_roles(realm=realm)
             for role in listRoles:
                 if role['name'] == name:
                     rolerep = role
                     break
             return rolerep
-        except Exception ,e :
+        except Exception, e:
             self.module.fail_json(msg='Could not search for role % in realm %s: %s'
                                       % (name, realm, str(e)))
+
     def get_realm_roles(self, realm="master"):
         """
         Get all REALM roles.
@@ -2520,10 +2827,14 @@ class KeycloakAPI(object):
         :return: Realm roles representation.
         """
         try:
-            realm_roles_url = URL_REALM_ROLES.format(url=self.baseurl,realm=realm)            
-            listRoles = json.load(open_url(realm_roles_url, method='GET', headers=self.restheaders))
+            realm_roles_url = URL_REALM_ROLES.format(
+                url=self.baseurl,
+                realm=realm)
+            listRoles = json.load(open_url(realm_roles_url,
+                                           method='GET',
+                                           headers=self.restheaders))
             return listRoles
-        except Exception ,e :
+        except Exception, e:
             self.module.fail_json(msg='Could not get roles in realm %s: %s'
                                       % (realm, str(e)))
 
@@ -2535,10 +2846,17 @@ class KeycloakAPI(object):
         :return: Realm roles representation.
         """
         try:
-            realm_role_url = URL_REALM_ROLE.format(url=self.baseurl,realm=realm,name=name)            
-            role = json.load(open_url(realm_role_url, method='GET', headers=self.restheaders))
+            realm_role_url = URL_REALM_ROLE.format(
+                url=self.baseurl,
+                realm=realm,
+                name=name)
+            role = json.load(
+                open_url(
+                    realm_role_url,
+                    method='GET',
+                    headers=self.restheaders))
             return role
-        except Exception ,e :
+        except Exception, e:
             self.module.fail_json(msg='Could not get role %s in realm %s: %s'
                                       % (name, realm, str(e)))
 
@@ -2550,11 +2868,19 @@ class KeycloakAPI(object):
         :return: Representation of the realm role created.
         """
         try:
-            realm_roles_url = URL_REALM_ROLES.format(url=self.baseurl,realm=realm) 
-            open_url(realm_roles_url, method='POST', headers=self.restheaders, data=json.dumps(newRoleRepresentation))
-            roleRepresentation = self.get_realm_role(name=newRoleRepresentation['name'], realm=realm)
+            realm_roles_url = URL_REALM_ROLES.format(
+                url=self.baseurl,
+                realm=realm)
+            open_url(
+                realm_roles_url,
+                method='POST',
+                headers=self.restheaders,
+                data=json.dumps(newRoleRepresentation))
+            roleRepresentation = self.get_realm_role(
+                name=newRoleRepresentation['name'],
+                realm=realm)
             return roleRepresentation
-        except Exception ,e :
+        except Exception, e:
             self.module.fail_json(msg='Could not create realm role %s in realm %s: %s'
                                       % (newRoleRepresentation["name"], realm, str(e)))
 
@@ -2566,9 +2892,15 @@ class KeycloakAPI(object):
         :return: Representation of the realm role created.
         """
         try:
-            realm_role_url = URL_REALM_ROLE.format(url=self.baseurl,realm=realm,name=name) 
-            return open_url(realm_role_url, method='DELETE', headers=self.restheaders)
-        except Exception ,e :
+            realm_role_url = URL_REALM_ROLE.format(
+                url=self.baseurl,
+                realm=realm,
+                name=name)
+            return open_url(
+                realm_role_url,
+                method='DELETE',
+                headers=self.restheaders)
+        except Exception, e:
             self.module.fail_json(msg='Could not delete realm role %s in realm %s: %s'
                                       % (name, realm, str(e)))
 
@@ -2580,11 +2912,20 @@ class KeycloakAPI(object):
         :return: Representation of the updated realm role.
         """
         try:
-            realm_role_url = URL_REALM_ROLE.format(url=self.baseurl,realm=realm,name=newRoleRepresentation["name"]) 
-            open_url(realm_role_url, method='PUT', headers=self.restheaders,data=json.dumps(newRoleRepresentation))
-            roleRepresentation = self.get_realm_role(name=newRoleRepresentation['name'], realm=realm)
+            realm_role_url = URL_REALM_ROLE.format(
+                url=self.baseurl,
+                realm=realm,
+                name=newRoleRepresentation["name"])
+            open_url(
+                realm_role_url,
+                method='PUT',
+                headers=self.restheaders,
+                data=json.dumps(newRoleRepresentation))
+            roleRepresentation = self.get_realm_role(
+                name=newRoleRepresentation['name'],
+                realm=realm)
             return roleRepresentation
-        except Exception ,e :
+        except Exception, e:
             self.module.fail_json(msg='Could not update realm role %s in realm %s: %s'
                                       % (newRoleRepresentation["name"], realm, str(e)))
 
@@ -2595,10 +2936,14 @@ class KeycloakAPI(object):
         :param realm: Realm
         :return: Representation of the realm role's composites including the clientIds.
         """
-        composites = self.get_realm_role_composites(name=name, realm=realm)
+        composites = self.get_realm_role_composites(
+            name=name,
+            realm=realm)
         for composite in composites:
             if composite["clientRole"]:
-                composite["clientId"] = self.get_client_by_id(id=composite["containerId"], realm=realm)["clientId"]
+                composite["clientId"] = self.get_client_by_id(
+                    id=composite["containerId"],
+                    realm=realm)["clientId"]
         return composites
 
     def get_realm_role_composites(self, name, realm='master'):
@@ -2609,10 +2954,17 @@ class KeycloakAPI(object):
         :return: Representation of the realm role's composites.
         """
         try:
-            realm_role_composites_url = URL_REALM_ROLE_COMPOSITES.format(url=self.baseurl,realm=realm,name=name) 
-            composites = json.load(open_url(realm_role_composites_url, method='GET', headers=self.restheaders))
+            realm_role_composites_url = URL_REALM_ROLE_COMPOSITES.format(
+                url=self.baseurl,
+                realm=realm,
+                name=name)
+            composites = json.load(
+                open_url(
+                    realm_role_composites_url,
+                    method='GET',
+                    headers=self.restheaders))
             return composites
-        except Exception ,e :
+        except Exception, e:
             self.module.fail_json(msg='Could not get realm role %s composites in realm %s: %s'
                                       % (name, realm, str(e)))
 
@@ -2625,9 +2977,16 @@ class KeycloakAPI(object):
         :return: HTTP Response
         """
         try:
-            realm_role_composites_url = URL_REALM_ROLE_COMPOSITES.format(url=self.baseurl,realm=realm,name=name) 
-            return open_url(realm_role_composites_url, method='POST', headers=self.restheaders, data=json.dumps(newCompositesToCreate))
-        except Exception ,e :
+            realm_role_composites_url = URL_REALM_ROLE_COMPOSITES.format(
+                url=self.baseurl,
+                realm=realm,
+                name=name)
+            return open_url(
+                realm_role_composites_url,
+                method='POST',
+                headers=self.restheaders,
+                data=json.dumps(newCompositesToCreate))
+        except Exception, e:
             self.module.fail_json(msg='Could not create realm role %s composites in realm %s: %s'
                                       % (name, realm, str(e)))
 
@@ -2643,7 +3002,9 @@ class KeycloakAPI(object):
         newCompositesToCreate = []
         try:
             # Get the realm role's composites already present on the Keycloak server
-            existingComposites = self.get_realm_role_composites(name=newRoleRepresentation["name"], realm=realm)
+            existingComposites = self.get_realm_role_composites(
+                name=newRoleRepresentation["name"],
+                realm=realm)
             if existingComposites is None:
                 existingComposites = []
             for existingComposite in existingComposites:
@@ -2654,9 +3015,12 @@ class KeycloakAPI(object):
                     newCompositeFound = False
                     # Search composite to assing in composites of the role on the Keycloak Server
                     for composite in existingComposites:
-                        if composite["clientRole"] and "clientId" in newComposite: # If composite is a client role
+                        if composite["clientRole"] and "clientId" in newComposite:  # If composite is a client role
                             # Get the clientId
-                            clientId = self.get_client_by_id(id=composite["containerId"], realm=realm)["clientId"]
+                            client = self.get_client_by_id(
+                                id=composite["containerId"],
+                                realm=realm)
+                            clientId = client["clientId"]
                             if composite["name"] == newComposite["name"] and clientId == newComposite["clientId"]:
                                 newCompositeFound = True
                                 break
@@ -2669,24 +3033,30 @@ class KeycloakAPI(object):
                         # If composite is a client role
                         if "clientId" in newComposite:
                             # Get the client
-                            client = self.get_client_by_clientid(client_id=newComposite["clientId"], realm=realm)
+                            client = self.get_client_by_clientid(
+                                client_id=newComposite["clientId"],
+                                realm=realm)
                             if client != {}:
                                 # Get client's roles
-                                roles = self.get_client_roles(client_id=client["id"], realm=realm)
-                        else: # It is a REALM role
+                                roles = self.get_client_roles(
+                                    client_id=client["id"],
+                                    realm=realm)
+                        else:  # It is a REALM role
                             # Get all realm roles
                             roles = self.get_realm_roles()
                         # Search in all roles found which is the role to assigne
-                        for role in roles:                   
+                        for role in roles:
                             # Id role is found
                             if role["name"] == newComposite["name"]:
                                 newCompositesToCreate.append(role)
                                 changed = True
             if changed:
-                self.create_realm_role_composites(newCompositesToCreate=newCompositesToCreate, name=newRoleRepresentation["name"], realm=realm)
+                self.create_realm_role_composites(
+                    newCompositesToCreate=newCompositesToCreate,
+                    name=newRoleRepresentation["name"],
+                    realm=realm)
             return changed
-        
-        except Exception ,e :
+        except Exception, e:
             self.module.fail_json(msg='Could not create or update realm role %s composites in realm %s: %s'
                                       % (newRoleRepresentation["name"], realm, str(e)))
 <<<<<<< HEAD
@@ -2704,10 +3074,17 @@ class KeycloakAPI(object):
         :return: Representation of the user.
         """
         try:
-            user_url = URL_USER.format(url=self.baseurl,realm=realm,id=user_id) 
-            userRepresentation = json.load(open_url(user_url, method='GET', headers=self.restheaders))
+            user_url = URL_USER.format(
+                url=self.baseurl,
+                realm=realm,
+                id=user_id)
+            userRepresentation = json.load(
+                open_url(
+                    user_url,
+                    method='GET',
+                    headers=self.restheaders))
             return userRepresentation
-        except Exception ,e :
+        except Exception, e:
             self.module.fail_json(msg='Could not get user %s in realm %s: %s'
                                       % (user_id, realm, str(e)))
 
@@ -2719,17 +3096,23 @@ class KeycloakAPI(object):
         """
         try:
             userrep = {}
-            url_search_user_by_username = URL_USERS.format(url=self.baseurl, realm=realm) + '?username=' + username         
-            listUsers = json.load(open_url(url_search_user_by_username, method='GET',headers=self.restheaders))
+            url_search_user_by_username = URL_USERS.format(
+                url=self.baseurl,
+                realm=realm) + '?username=' + username
+            listUsers = json.load(
+                open_url(
+                    url_search_user_by_username,
+                    method='GET',
+                    headers=self.restheaders))
             for user in listUsers:
                 if user['username'] == username:
                     userrep = user
                     break
             return userrep
-        except Exception ,e :
+        except Exception, e:
             self.module.fail_json(msg='Could not search for user %s in realm %s: %s'
                                       % (username, realm, str(e)))
-            
+
     def create_user(self, newUserRepresentation, realm='master'):
         """
         Create a new User.
@@ -2738,11 +3121,18 @@ class KeycloakAPI(object):
         :return: Representation of the user created.
         """
         try:
-            users_url = URL_USERS.format(url=self.baseurl,realm=realm) 
-            open_url(users_url, method='POST', headers=self.restheaders, data=json.dumps(newUserRepresentation))
-            userRepresentation = self.search_user_by_username(username=newUserRepresentation['username'], realm=realm)
+            users_url = URL_USERS.format(
+                url=self.baseurl,
+                realm=realm)
+            open_url(users_url,
+                     method='POST',
+                     headers=self.restheaders,
+                     data=json.dumps(newUserRepresentation))
+            userRepresentation = self.search_user_by_username(
+                username=newUserRepresentation['username'],
+                realm=realm)
             return userRepresentation
-        except Exception ,e :
+        except Exception, e:
             self.module.fail_json(msg='Could not create user %s in realm %s: %s'
                                       % (newUserRepresentation['username'], realm, str(e)))
 
@@ -2754,11 +3144,20 @@ class KeycloakAPI(object):
         :return: Representation of the updated user.
         """
         try:
-            user_url = URL_USER.format(url=self.baseurl,realm=realm,id=newUserRepresentation["id"]) 
-            open_url(user_url, method='PUT', headers=self.restheaders, data=json.dumps(newUserRepresentation))
-            userRepresentation = self.get_user_by_id(user_id=newUserRepresentation['id'], realm=realm)
+            user_url = URL_USER.format(
+                url=self.baseurl,
+                realm=realm,
+                id=newUserRepresentation["id"])
+            open_url(
+                user_url,
+                method='PUT',
+                headers=self.restheaders,
+                data=json.dumps(newUserRepresentation))
+            userRepresentation = self.get_user_by_id(
+                user_id=newUserRepresentation['id'],
+                realm=realm)
             return userRepresentation
-        except Exception ,e :
+        except Exception, e:
             self.module.fail_json(msg='Could not update user %s in realm %s: %s'
                                       % (newUserRepresentation['username'], realm, str(e)))
 
@@ -2770,9 +3169,15 @@ class KeycloakAPI(object):
         :return: HTTP response.
         """
         try:
-            user_url = URL_USER.format(url=self.baseurl,realm=realm,id=user_id) 
-            return open_url(user_url, method='DELETE', headers=self.restheaders)
-        except Exception ,e :
+            user_url = URL_USER.format(
+                url=self.baseurl,
+                realm=realm,
+                id=user_id)
+            return open_url(
+                user_url,
+                method='DELETE',
+                headers=self.restheaders)
+        except Exception, e:
             self.module.fail_json(msg='Could not delete user %s in realm %s: %s'
                                       % (user_id, realm, str(e)))
 
@@ -2784,13 +3189,20 @@ class KeycloakAPI(object):
         :return: Representation of the realm roles.
         """
         try:
-            role_mappings_url = URL_USER_ROLE_MAPPINGS.format(url=self.baseurl,realm=realm,id=user_id) 
-            role_mappings = json.load(open_url(role_mappings_url, method='GET', headers=self.restheaders))
+            role_mappings_url = URL_USER_ROLE_MAPPINGS.format(
+                url=self.baseurl,
+                realm=realm,
+                id=user_id)
+            role_mappings = json.load(
+                open_url(
+                    role_mappings_url,
+                    method='GET',
+                    headers=self.restheaders))
             realmRoles = []
             for roleMapping in role_mappings["realmMappings"]:
                 realmRoles.append(roleMapping["name"])
             return realmRoles
-        except Exception ,e :
+        except Exception, e:
             self.module.fail_json(msg='Could not get role mappings for user %s in realm %s: %s'
                                       % (user_id, realm, str(e)))
 
@@ -2802,9 +3214,16 @@ class KeycloakAPI(object):
         :return: Representation of the realm roles.
         """
         try:
-            role_mappings_url = URL_USER_REALM_ROLE_MAPPINGS.format(url=self.baseurl,realm=realm,id=user_id) 
-            return open_url(role_mappings_url, method='POST', headers=self.restheaders, data=json.dumps(realmRolesRepresentation))
-        except Exception ,e :
+            role_mappings_url = URL_USER_REALM_ROLE_MAPPINGS.format(
+                url=self.baseurl,
+                realm=realm,
+                id=user_id)
+            return open_url(
+                role_mappings_url,
+                method='POST',
+                headers=self.restheaders,
+                data=json.dumps(realmRolesRepresentation))
+        except Exception, e:
             self.module.fail_json(msg='Could not update realm role mappings for user %s in realm %s: %s'
                                       % (user_id, realm, str(e)))
 
@@ -2817,8 +3236,15 @@ class KeycloakAPI(object):
         """
         try:
             clientRoles = []
-            role_mappings_url = URL_USER_ROLE_MAPPINGS.format(url=self.baseurl,realm=realm,id=user_id) 
-            userMappings = json.load(open_url(role_mappings_url, method='GET', headers=self.restheaders))
+            role_mappings_url = URL_USER_ROLE_MAPPINGS.format(
+                url=self.baseurl,
+                realm=realm,
+                id=user_id)
+            userMappings = json.load(
+                open_url(
+                    role_mappings_url,
+                    method='GET',
+                    headers=self.restheaders))
             for clientMapping in userMappings["clientMappings"].keys():
                 clientRole = {}
                 clientRole["clientId"] = userMappings["clientMappings"][clientMapping]["client"]
@@ -2828,7 +3254,7 @@ class KeycloakAPI(object):
                 clientRole["roles"] = roles
                 clientRoles.append(clientRole)
             return clientRoles
-        except Exception ,e :
+        except Exception, e:
             self.module.fail_json(msg='Could not get role mappings for user %s in realm %s: %s'
                                       % (user_id, realm, str(e)))
 
@@ -2841,9 +3267,16 @@ class KeycloakAPI(object):
         :return: HTTP Response.
         """
         try:
-            role_mappings_url = URL_USER_CLIENT_ROLE_MAPPINGS.format(url=self.baseurl,realm=realm,id=user_id,client_id=client_id) 
-            return open_url(role_mappings_url, method='DELETE', headers=self.restheaders)
-        except Exception ,e :
+            role_mappings_url = URL_USER_CLIENT_ROLE_MAPPINGS.format(
+                url=self.baseurl,
+                realm=realm,
+                id=user_id,
+                client_id=client_id)
+            return open_url(
+                role_mappings_url,
+                method='DELETE',
+                headers=self.restheaders)
+        except Exception, e:
             self.module.fail_json(msg='Could not delete client role mappings for user %s in realm %s: %s'
                                       % (user_id, realm, str(e)))
 
@@ -2857,12 +3290,20 @@ class KeycloakAPI(object):
         :return: HTTP Response.
         """
         try:
-            role_mappings_url = URL_USER_CLIENT_ROLE_MAPPINGS.format(url=self.baseurl,realm=realm,id=user_id,client_id=client_id) 
-            return open_url(role_mappings_url, method='POST', headers=self.restheaders,data=json.dumps(rolesToAssing))
-        except Exception ,e :
+            role_mappings_url = URL_USER_CLIENT_ROLE_MAPPINGS.format(
+                url=self.baseurl,
+                realm=realm,
+                id=user_id,
+                client_id=client_id)
+            return open_url(
+                role_mappings_url,
+                method='POST',
+                headers=self.restheaders,
+                data=json.dumps(rolesToAssing))
+        except Exception, e:
             self.module.fail_json(msg='Could not create client role mappings for user %s in realm %s: %s'
                                       % (user_id, realm, str(e)))
-            
+
     def get_user_groups(self, user_id, realm='master'):
         """
         Get groups for a user.
@@ -2872,12 +3313,19 @@ class KeycloakAPI(object):
         """
         try:
             groups = []
-            user_groups_url = URL_USER_GROUPS.format(url=self.baseurl,realm=realm,id=user_id) 
-            userGroups = json.load(open_url(user_groups_url, method='GET', headers=self.restheaders))
+            user_groups_url = URL_USER_GROUPS.format(
+                url=self.baseurl,
+                realm=realm,
+                id=user_id)
+            userGroups = json.load(
+                open_url(
+                    user_groups_url,
+                    method='GET',
+                    headers=self.restheaders))
             for userGroup in userGroups:
                 groups.append(userGroup["name"])
             return groups
-        except Exception ,e :
+        except Exception, e:
             self.module.fail_json(msg='Could not get groups for user %s in realm %s: %s'
                                       % (user_id, realm, str(e)))
 
@@ -2890,9 +3338,16 @@ class KeycloakAPI(object):
         :return: HTTP Response
         """
         try:
-            user_group_url = URL_USER_GROUP.format(url=self.baseurl,realm=realm,id=user_id,group_id=group_id) 
-            return open_url(user_group_url, method='PUT', headers=self.restheaders)
-        except Exception ,e :
+            user_group_url = URL_USER_GROUP.format(
+                url=self.baseurl,
+                realm=realm,
+                id=user_id,
+                group_id=group_id)
+            return open_url(
+                user_group_url,
+                method='PUT',
+                headers=self.restheaders)
+        except Exception, e:
             self.module.fail_json(msg='Could not add user %s in group %s in realm %s: %s'
                                       % (user_id, group_id, realm, str(e)))
 
@@ -2905,12 +3360,19 @@ class KeycloakAPI(object):
         :return: HTTP response
         """
         try:
-            user_group_url = URL_USER_GROUP.format(url=self.baseurl,realm=realm,id=user_id,group_id=group_id) 
-            return open_url(user_group_url, method='DETETE', headers=self.restheaders)
-        except Exception ,e :
+            user_group_url = URL_USER_GROUP.format(
+                url=self.baseurl,
+                realm=realm,
+                id=user_id,
+                group_id=group_id)
+            return open_url(
+                user_group_url,
+                method='DETETE',
+                headers=self.restheaders)
+        except Exception, e:
             self.module.fail_json(msg='Could not remove user %s from group %s in realm %s: %s'
                                       % (user_id, group_id, realm, str(e)))
-            
+
     def assing_roles_to_user(self, user_id, userRealmRoles, userClientRoles, realm='master'):
         """
         Assign roles to a user.
@@ -2922,10 +3384,13 @@ class KeycloakAPI(object):
         """
         try:
             # Get the new created user realm roles
-            newUserRealmRoles = self.get_user_realm_roles(user_id=user_id,realm=realm)
+            newUserRealmRoles = self.get_user_realm_roles(
+                user_id=user_id,
+                realm=realm)
             # Get the new created user client roles
-            newUserClientRoles =  self.get_user_client_roles(user_id=user_id, realm=realm)
-
+            newUserClientRoles = self.get_user_client_roles(
+                user_id=user_id,
+                realm=realm)
             changed = False
             # Assign Realm Roles
             realmRolesRepresentation = []
@@ -2933,7 +3398,7 @@ class KeycloakAPI(object):
             allRealmRoles = self.get_realm_roles(realm=realm)
             for realmRole in userRealmRoles:
                 # Look for existing role into user representation
-                if not realmRole in newUserRealmRoles:
+                if realmRole not in newUserRealmRoles:
                     roleid = None
                     # Find the role id
                     for role in allRealmRoles:
@@ -2945,18 +3410,24 @@ class KeycloakAPI(object):
                         realmRoleRepresentation["id"] = roleid
                         realmRoleRepresentation["name"] = realmRole
                         realmRolesRepresentation.append(realmRoleRepresentation)
-            if len(realmRolesRepresentation) > 0 :
+            if len(realmRolesRepresentation) > 0:
                 # Assign Role
-                self.update_user_realm_roles(user_id=user_id, realmRolesRepresentation=realmRolesRepresentation, realm=realm)
+                self.update_user_realm_roles(
+                    user_id=user_id,
+                    realmRolesRepresentation=realmRolesRepresentation,
+                    realm=realm)
                 changed = True
-            # Assign clients roles if they need changes           
+            # Assign clients roles if they need changes
             if not isDictEquals(userClientRoles, newUserClientRoles):
                 for clientToAssingRole in userClientRoles:
                     # Get the client roles
-                    client_id = self.get_client_by_clientid(client_id=clientToAssingRole["clientId"], realm=realm)['id']
-                    clientRoles = self.get_client_roles(client_id=client_id, realm=realm)
+                    client_id = self.get_client_by_clientid(
+                        client_id=clientToAssingRole["clientId"],
+                        realm=realm)['id']
+                    clientRoles = self.get_client_roles(
+                        client_id=client_id,
+                        realm=realm)
                     if clientRoles != {}:
-                    
                         rolesToAssing = []
                         for roleToAssing in clientToAssingRole["roles"]:
                             newRole = {}
@@ -2968,13 +3439,19 @@ class KeycloakAPI(object):
                                     rolesToAssing.append(newRole)
                         if len(rolesToAssing) > 0:
                             # Delete exiting client Roles
-                            self.delete_user_client_roles(user_id=user_id, client_id=client_id, realm=realm)
+                            self.delete_user_client_roles(
+                                user_id=user_id,
+                                client_id=client_id,
+                                realm=realm)
                             # Assign Role
-                            self.create_user_client_roles(user_id=user_id, client_id=client_id, rolesToAssing=rolesToAssing, realm=realm)
+                            self.create_user_client_roles(
+                                user_id=user_id,
+                                client_id=client_id,
+                                rolesToAssing=rolesToAssing,
+                                realm=realm)
                             changed = True
-                    
-            return changed             
-        except Exception ,e :
+            return changed
+        except Exception, e:
             self.module.fail_json(msg='Could not assign roles to user %s in realm %s: %s'
                                       % (user_id, realm, str(e)))
 
@@ -2987,20 +3464,25 @@ class KeycloakAPI(object):
         """
         changed = False
         try:
-            newUserGroups = self.get_user_groups(user_id=newUserRepresentation['id'], realm=realm)
+            newUserGroups = self.get_user_groups(
+                user_id=newUserRepresentation['id'],
+                realm=realm)
             # If group membership need to be changed
             if not isDictEquals(newUserRepresentation["groups"], newUserGroups):
-                #set user groups
+                # Set user groups
                 if "groups" in newUserRepresentation and newUserRepresentation['groups'] is not None:
                     for userGroups in newUserRepresentation["groups"]:
                         # Get groups Available
                         groups = self.get_groups(realm=realm)
                         for group in groups:
                             if "name" in group and group["name"] == userGroups:
-                                self.add_user_in_group(user_id=newUserRepresentation["id"], group_id=group["id"], realm=realm)
+                                self.add_user_in_group(
+                                    user_id=newUserRepresentation["id"],
+                                    group_id=group["id"],
+                                    realm=realm)
                                 changed = True
             return changed
-        except Exception ,e :
+        except Exception, e:
             raise e
 <<<<<<< HEAD
 >>>>>>> SX5-868 Add keycloak_user module and non mock unit tests.
