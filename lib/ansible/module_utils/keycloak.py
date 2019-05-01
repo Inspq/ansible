@@ -39,6 +39,7 @@ from ansible.module_utils.six.moves.urllib.error import HTTPError
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 from ansible.module_utils.keycloak_utils import isDictEquals 
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -64,6 +65,8 @@ from ansible.module_utils.keycloak_utils import keycloak2ansibleClientRoles
 from ansible.module_utils.keycloak_utils import isDictEquals 
 from ansible.module_utils.keycloak_utils import keycloak2ansibleClientRoles
 >>>>>>> SX5-868 PR Added role management for keycloak_client module.
+=======
+>>>>>>> SX5-868 Move the keycloak_utils functions to keycloak.py module_utils.
 
 URL_TOKEN = "{url}/realms/{realm}/protocol/openid-connect/token"
 URL_CLIENT = "{url}/admin/realms/{realm}/clients/{id}"
