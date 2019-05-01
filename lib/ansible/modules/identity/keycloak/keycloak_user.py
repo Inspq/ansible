@@ -305,6 +305,9 @@ def user(params):
     userClientRoles = None
     userRealmRoles = None
     userGroups = None
+    clientRolesExist = False
+    realmRolesExist = False
+    groupsExist = False
     # Create a representation of the user received in parameters
     newUserRepresentation = {}
     newUserClientRolesRepresentation = {}
@@ -343,11 +346,14 @@ def user(params):
         newUserRepresentation["access"] = params['access']
     if "clientRoles" in params and params['clientRoles'] is not None:
         newUserClientRolesRepresentation["clientRoles"] = params['clientRoles']
+        clientRolesExist = True
         #newUserRepresentation["clientRoles"] = params['clientRoles']
     if "realmRoles" in params and params['realmRoles'] is not None:
         newUserRepresentation["realmRoles"] = params['realmRoles']
+        realmRolesExist = True
     if "groups" in params and params['groups'] is not None:
         newUserRepresentation["groups"] = params['groups']
+        groupsExist = True
     
     userSvcBaseUrl = url + "/auth/admin/realms/" + realm + "/users/"
     clientSvcBaseUrl = url + "/auth/admin/realms/" + realm + "/clients/"
@@ -422,7 +428,7 @@ def user(params):
                 # Assing new Roles to user
                 assingRolestoUser(headers, userRepresentation, newUserRepresentation['realmRoles'], newUserClientRolesRepresentation['clientRoles'], userSvcBaseUrl, roleSvcBaseUrl, clientSvcBaseUrl)
                 #set user groups
-                if "groups" in newUserRepresentation and newUserRepresentation['groups'] is not None:
+                if groupsExist:
                     for userGroups in newUserRepresentation["groups"]:
                         try:
                             createOrUpdateGroups(userGroups,userRepresentation, userSvcBaseUrl, groupSvcBaseUrl, headers)
@@ -500,7 +506,7 @@ def user(params):
                     # Assing new roles to user
                     assingRolestoUser(headers, userRepresentation, newUserRepresentation['realmRoles'], newUserClientRolesRepresentation['clientRoles'], userSvcBaseUrl, roleSvcBaseUrl, clientSvcBaseUrl)
                     #set user groups
-                    if "groups" in newUserRepresentation and newUserRepresentation['groups'] is not None:
+                    if groupsExist:
                         for userGroups in newUserRepresentation["groups"]:
                             try:
                                 createOrUpdateGroups(userGroups,userRepresentation, userSvcBaseUrl, groupSvcBaseUrl, headers)
@@ -516,6 +522,28 @@ def user(params):
                     if (isDictEquals(newUserRepresentation, userRepresentation, excludes)): # If the new user does not introduce a change to the existing user
                         # Do not change anything
                         changed = False
+                        userRepresentation["clientRoles"] = getUserClientRoles(userSvcBaseUrl, headers, userRepresentation["id"])
+                        userRepresentation["realmRoles"] = getUserRealmRoles(userSvcBaseUrl, headers, userRepresentation["id"])
+                        userRepresentation["groups"] = getUserGroups(userSvcBaseUrl, headers, userRepresentation["id"])
+                        if (isDictEquals(newUserClientRolesRepresentation, userRepresentation["clientRoles"]) or not clientRolesExist):
+                            changed = False
+                        else:
+                            assingRolestoUser(headers, userRepresentation, newUserRepresentation['realmRoles'], newUserClientRolesRepresentation['clientRoles'], userSvcBaseUrl, roleSvcBaseUrl, clientSvcBaseUrl)
+                            changed = True
+                        if (isDictEquals(newUserRepresentation["groups"], userRepresentation["groups"]) or not groupsExist):
+                            changed = False
+                        else:
+                            assingRolestoUser(headers, userRepresentation, newUserRepresentation['realmRoles'], newUserClientRolesRepresentation['clientRoles'], userSvcBaseUrl, roleSvcBaseUrl, clientSvcBaseUrl)
+                            for userGroups in newUserRepresentation["groups"]:
+                                try:
+                                    createOrUpdateGroups(userGroups,userRepresentation, userSvcBaseUrl, groupSvcBaseUrl, headers)
+                                except Exception ,e :
+                                    result = dict(
+                                        stderr   = 'createOrUpdateGroups: ' + userGroups + ' error: ' + str(e),
+                                        rc       = 1,
+                                        changed  = changed
+                                        )
+                            changed = True
                     else: # Otherwise the user must be updated
                         # Store the user in a body for a post
                         data=json.dumps(newUserRepresentation)
@@ -530,7 +558,7 @@ def user(params):
                         userRepresentation["groups"] = getUserGroups(userSvcBaseUrl, headers, userRepresentation["id"])
                         # Assing new role to user
                         assingRolestoUser(headers, userRepresentation, newUserRepresentation['realmRoles'], newUserClientRolesRepresentation['clientRoles'], userSvcBaseUrl, roleSvcBaseUrl, clientSvcBaseUrl)
-                        if "groups" in newUserRepresentation and newUserRepresentation['groups'] is not None:
+                        if groupsExist:
                             for userGroups in newUserRepresentation["groups"]:
                                 try:
                                     createOrUpdateGroups(userGroups,userRepresentation, userSvcBaseUrl, groupSvcBaseUrl, headers)
