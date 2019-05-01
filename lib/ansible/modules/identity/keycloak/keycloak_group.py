@@ -84,7 +84,7 @@ options:
 <<<<<<< HEAD
 <<<<<<< HEAD
         suboptions:
-            name: 
+            name:
                 description:
                     - Name of the attribute
                 type: str
@@ -171,9 +171,10 @@ options:
     syncLdapMappers:
         type: bool
         description:
-            - If true, groups will be synchronized between Keycloak and LDAP. 
+            - If true, groups will be synchronized between Keycloak and LDAP.
             - All user storages defined as user federation will be synchronized.
             - A sync is done from LDAP to Keycloak before doing the job and from Keycloak to LDAP after.
+<<<<<<< HEAD
         default: False 
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -181,6 +182,9 @@ options:
 =======
 >>>>>>> SX5-868 Add role management to keycloak_group module. Add
 =======
+=======
+        default: False
+>>>>>>> SX5-868 Ajustement du codestyle des modules Keycloak en préparation des
         version_added: 2.9
 >>>>>>> SX5-868 Mise à jour de la documentation des modules Keycloak suite à la
     force:
@@ -197,7 +201,7 @@ options:
         version_added: 2.9
 >>>>>>> SX5-868 Mise à jour de la documentation des modules Keycloak suite à la
 notes:
-    - Presently, the I(access) attribute returned by the Keycloak API is read-only for groups. 
+    - Presently, the I(access) attribute returned by the Keycloak API is read-only for groups.
       This version of this module now support the I(realmRoles), I(clientRoles) as read-write attributes.
 
 extends_documentation_fragment:
@@ -391,13 +395,13 @@ def main():
     gid = module.params.get('id')
     name = module.params.get('name')
     attributes = module.params.get('attributes')
-    # Add attribute received as a list to the attributes dict    
+    # Add attribute received as a list to the attributes dict
     kc.add_attributes_list_to_attributes_dict(module.params.get('attributes_list'), attributes)
     syncLdapMappers = module.params.get('syncLdapMappers')
     groupRealmRoles = module.params.get('realmRoles')
     groupClientRoles = module.params.get('clientRoles')
     force = module.params.get('force')
-    
+
     before_group = None         # current state of the group, for merging.
 
     # Synchronize LDAP group to Keycloak if syncLdapMappers is true
@@ -417,9 +421,9 @@ def main():
     if attributes is not None:
         for key, val in module.params['attributes'].items():
             module.params['attributes'][key] = [val] if not isinstance(val, list) else val
-
+    excludes = ['state', 'realm', 'force', 'attributes_list', 'realmRoles', 'clientRoles', 'syncLdapMappers']
     group_params = [x for x in module.params
-                    if x not in list(keycloak_argument_spec().keys()) + ['state', 'realm', 'force', 'username', 'password', 'url', 'attributes_list', 'realmRoles', 'clientRoles', 'syncLdapMappers'] and
+                    if x not in list(keycloak_argument_spec().keys()) + excludes and
                     module.params.get(x) is not None]
     # build a changeset
     changeset = {}
