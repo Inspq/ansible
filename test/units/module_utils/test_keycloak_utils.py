@@ -1,5 +1,6 @@
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 import collections
 import os
 =======
@@ -8,6 +9,8 @@ import os
 import collections
 import os
 >>>>>>> SX5-868 Manage client roles (add, delete update), remove protocolMappers
+=======
+>>>>>>> SX5-868 Fix dangerous-default-value and Undefined variable 'unicode' in
 import unittest
 
 from ansible.module_utils.keycloak_utils import isDictEquals
@@ -83,6 +86,7 @@ class KeycloakIsDictEqualsTestCase(unittest.TestCase):
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
     def test_equals_with_dict5_contain_bool_and_dict6_contain_true_tring(self):
 =======
     def test_equals_with_dict5_contain_bool_and_dict6_contain_true_string(self):
@@ -90,6 +94,9 @@ class KeycloakIsDictEqualsTestCase(unittest.TestCase):
 =======
     def test_equals_with_dict5_contain_bool_and_dict6_contain_true_tring(self):
 >>>>>>> SX5-868 Manage client roles (add, delete update), remove protocolMappers
+=======
+    def test_equals_with_dict5_contain_bool_and_dict6_contain_true_string(self):
+>>>>>>> SX5-868 Fix dangerous-default-value and Undefined variable 'unicode' in
         self.assertTrue(isDictEquals(self.dict5,self.dict6))
         self.assertTrue(isDictEquals(self.dict6,self.dict5))
 
