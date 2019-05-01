@@ -1,5 +1,5 @@
 from ansible.modules.identity.keycloak import keycloak_user, keycloak_group, keycloak_role
-from ansible.module_utils.keycloak_utils import isDictEquals
+from ansible.module_utils.keycloak import isDictEquals
 from units.modules.utils import AnsibleExitJson, AnsibleFailJson, ModuleTestCase, set_module_args
 
 class KeycloakUserTestCase(ModuleTestCase):
