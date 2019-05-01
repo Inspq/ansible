@@ -3716,9 +3716,13 @@ class KeycloakAPI(object):
         :return: Nothing
         """
 <<<<<<< HEAD
+<<<<<<< HEAD
         openIdConfig = {}
 =======
 >>>>>>> SX5-868 PR Added role management for keycloak_client module.
+=======
+        openIdConfig = {}
+>>>>>>> SX5-868 fix class KeycloakAPI in add_idp_endpoints.
         try:
             if url is not None:
                 openIdConfig = json.load(open_url(url, method='GET'))
