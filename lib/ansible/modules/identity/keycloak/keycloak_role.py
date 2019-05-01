@@ -45,7 +45,7 @@ options:
             - Description of the role.
         required: false
     clientRole:
-        description: 
+        description:
             - This parameter indicate if the role is a client role.
             - For a ream role, this parameter must be false.
         default: false
@@ -91,7 +91,7 @@ extends_documentation_fragment:
     - keycloak
 notes:
     - module does not modify role name.
-author: 
+author:
     - Philippe Gauthier (philippe.gauthier@inspq.qc.ca)
 '''
 
@@ -159,21 +159,22 @@ from ansible.module_utils.keycloak_utils import isDictEquals
 from ansible.module_utils.keycloak import KeycloakAPI, keycloak_argument_spec
 from ansible.module_utils.basic import AnsibleModule
 
+
 def main():
     argument_spec = keycloak_argument_spec()
 
     composites_spec = dict(
         name=dict(type='str', required=True),
-        clientId= dict(type='str')
+        clientId=dict(type='str')
     )
-    meta_args =  dict(
+    meta_args = dict(
         realm=dict(type='str', default='master'),
         name=dict(type='str', required=True),
-        description = dict(type='str', default=None),
-        composite=dict(type='bool',default=False),
-        clientRole = dict(type='bool',default=False),
-        containerId = dict(type='str', required=False),
-        composites = dict(type='list', default=[], options=composites_spec),
+        description=dict(type='str', default=None),
+        composite=dict(type='bool', default=False),
+        clientRole=dict(type='bool', default=False),
+        containerId=dict(type='str', required=False),
+        composites=dict(type='list', default=[], options=composites_spec),
         state=dict(choices=["absent", "present"], default='present'),
         force=dict(type='bool', default=False),
     )
@@ -192,7 +193,7 @@ def main():
     state = module.params.get('state')
     force = module.params.get('force')
     newComposites = None
-    
+
     # Create representation for the new role
     newRoleRepresentation = {}
     newRoleRepresentation["name"] = module.params.get('name')
@@ -203,13 +204,13 @@ def main():
     newRoleRepresentation["containerId"] = module.params.get('containerId') if module.params.get('containerId') is not None else realm
     if module.params.get('composites') is not None:
         newComposites = module.params.get('composites')
-    
+
     changed = False
 
     # Search the role on Keycloak server.
     roleRepresentation = kc.search_realm_role_by_name(name=newRoleRepresentation["name"], realm=realm)
-    if roleRepresentation == {}: # If role does not exists
-        if (state == 'present'): # If desired state is present
+    if roleRepresentation == {}:  # If role does not exists
+        if (state == 'present'):  # If desired state is present
             # Create Role
             kc.create_realm_role(newRoleRepresentation=newRoleRepresentation, realm=realm)
             # Create composites
@@ -221,20 +222,20 @@ def main():
             changed = True
             result['role'] = roleRepresentation
             result['composites'] = composites
-        elif state == 'absent': # If desired state is absent
-            result["msg"] = "Realm role %s is absent in realm %s" % (newRoleRepresentation["name"],realm)
-                
+        elif state == 'absent':  # If desired state is absent
+            result["msg"] = "Realm role %s is absent in realm %s" % (newRoleRepresentation["name"], realm)
+
     else:  # If role already exists
-        if (state == 'present'): # If desired state is present
-            if force: # If force option is true
+        if (state == 'present'):  # If desired state is present
+            if force:  # If force option is true
                 # Delete the existing role
                 kc.delete_realm_role(name=roleRepresentation["name"], realm=realm)
                 # Create role again
                 kc.create_realm_role(newRoleRepresentation=newRoleRepresentation, realm=realm)
                 changed = True
-            else: # If force option is false
+            else:  # If force option is false
                 # Compare roles
-                if not (isDictEquals(newRoleRepresentation, roleRepresentation)): # If new role introduce changes
+                if not (isDictEquals(newRoleRepresentation, roleRepresentation)):  # If new role introduce changes
                     # Update the role
                     kc.update_realm_role(newRoleRepresentation=newRoleRepresentation, realm=realm)
                     changed = True
@@ -247,13 +248,14 @@ def main():
             composites = kc.get_realm_role_composites_with_client_id(name=newRoleRepresentation["name"], realm=realm)
             result["role"] = roleRepresentation
             result["composites"] = composites
-        elif state == 'absent': # If desired state is absent
+        elif state == 'absent':  # If desired state is absent
             # Delete role
             kc.delete_realm_role(name=newRoleRepresentation["name"], realm=realm)
             changed = True
-            result["msg"] = "Realm role %s is deleted in realm %s" % (newRoleRepresentation["name"],realm)
+            result["msg"] = "Realm role %s is deleted in realm %s" % (newRoleRepresentation["name"], realm)
     result['changed'] = changed
     module.exit_json(**result)
+
 
 if __name__ == '__main__':
     main()

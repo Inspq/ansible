@@ -56,7 +56,7 @@ options:
     - update Profile First Login Mode.
     required: false
   trustEmail:
-    description: 
+    description:
     - trust Email.
     required: false
   storeToken:
@@ -87,7 +87,7 @@ options:
     default: False
   config:
     description:
-    - Detailed configuration of the identity provider. 
+    - Detailed configuration of the identity provider.
     required: false
   mappers:
     description:
@@ -109,7 +109,7 @@ extends_documentation_fragment:
     - keycloak
 notes:
   - module does not modify identity provider alias.
-author: 
+author:
     - Philippe Gauthier (philippe.gauthier@inspq.qc.ca)
 '''
 
@@ -200,6 +200,7 @@ from ansible.module_utils.keycloak_utils import isDictEquals
 from ansible.module_utils.keycloak import KeycloakAPI, keycloak_argument_spec
 from ansible.module_utils.basic import AnsibleModule
 
+
 def main():
     argument_spec = keycloak_argument_spec()
 
@@ -208,21 +209,21 @@ def main():
         alias=dict(type='str', required=True),
         displayName=dict(type='str'),
         providerId=dict(type='str'),
-        enabled = dict(type='bool', default=True),
+        enabled=dict(type='bool', default=True),
         updateProfileFirstLoginMode=dict(type='str'),
         trustEmail=dict(type='bool'),
-        storeToken = dict(type='bool', default=True),
-        addReadTokenRoleOnCreate = dict(type='bool'),
-        authenticateByDefault = dict(type='bool'),
-        firstBrokerLoginFlowAlias = dict(type='str'),
-        postBrokerLoginFlowAlias = dict(type='str'),
-        linkOnly = dict(type='bool', default=False),
-        config = dict(type='dict'),
-        mappers = dict(type='list'),
+        storeToken=dict(type='bool', default=True),
+        addReadTokenRoleOnCreate=dict(type='bool'),
+        authenticateByDefault=dict(type='bool'),
+        firstBrokerLoginFlowAlias=dict(type='str'),
+        postBrokerLoginFlowAlias=dict(type='str'),
+        linkOnly=dict(type='bool', default=False),
+        config=dict(type='dict'),
+        mappers=dict(type='list'),
         state=dict(choices=["absent", "present"], default='present'),
         force=dict(type='bool', default=False),
     )
-    
+
     argument_spec.update(meta_args)
 
     module = AnsibleModule(argument_spec=argument_spec,
@@ -263,26 +264,25 @@ def main():
         newIdPConfig = module.params.get('config').copy()
         if 'openIdConfigurationUrl' in newIdPConfig:
             del(newIdPConfig['openIdConfigurationUrl'])
-  
+
     if 'providerId' in newIdPRepresentation and newIdPRepresentation["providerId"] == 'google' and 'userIp' in module.params.get("config"):
         newIdPConfig["userIp"] = module.params.get("config")["userIp"]
-    
+
     newIdPMappers = module.params.get('mappers')
-    
+
     if newIdPConfig is not None:
-            if module.params.get('config') is not None and 'openIdConfigurationUrl' in module.params.get('config') and module.params.get("config")['openIdConfigurationUrl'] is not None:
-                kc.add_idp_endpoints(newIdPConfig, module.params.get("config")['openIdConfigurationUrl'])
-            newIdPRepresentation["config"] = newIdPConfig
-    
+        if (module.params.get('config') is not None and
+                'openIdConfigurationUrl' in module.params.get('config') and
+                module.params.get("config")['openIdConfigurationUrl'] is not None):
+            kc.add_idp_endpoints(newIdPConfig, module.params.get("config")['openIdConfigurationUrl'])
+        newIdPRepresentation["config"] = newIdPConfig
+
     # Search the Idp on Keycloak server.
-    # By its alias        
+    # By its alias
     idPRepresentation = kc.search_idp_by_alias(alias=newIdPRepresentation["alias"], realm=realm)
-    # If no Idp have been found by alias, search by client id if there is one in the config.
-    #if idPRepresentation == {} and 'config' in newIdPRepresentation and newIdPRepresentation["config"] is not None and 'clientId' in newIdPRepresentation["config"] and newIdPRepresentation["config"]["clientId"] is not None:
-    #    idPRepresentation = kc.search_idp_by_client_id(client_id=newIdPRepresentation["config"]["clientId"], realm=realm)
-    
-    if idPRepresentation == {}: # IdP does not exist on Keycloak server
-        if (state == 'present'): # If desired state is present
+
+    if idPRepresentation == {}:  # IdP does not exist on Keycloak server
+        if (state == 'present'):  # If desired state is present
             # Create IdP
             changed = True
             idPRepresentation = kc.create_idp(newIdPRepresentation=newIdPRepresentation, realm=realm)
@@ -290,13 +290,13 @@ def main():
             if newIdPMappers is not None and len(newIdPMappers) > 0:
                 kc.create_or_update_idp_mappers(alias=newIdPRepresentation["alias"], idPMappers=newIdPMappers, realm=realm)
             mappersRepresentation = kc.get_idp_mappers(alias=newIdPRepresentation["alias"], realm=realm)
-            result["mappers"] = mappersRepresentation    
-        else: # Sinon, le status est absent
+            result["mappers"] = mappersRepresentation
+        else:  # Sinon, le status est absent
             result["msg"] = newIdPRepresentation["alias"] + ' absent'
     else:  # if IdP already exists
         alias = idPRepresentation['alias']
-        if (state == 'present'): # if desired state is present
-            if force: # If force option is true
+        if (state == 'present'):  # if desired state is present
+            if force:  # If force option is true
                 # Delete all idp's mappers
                 kc.delete_all_idp_mappers(alias=alias, realm=realm)
                 # Delete the existing IdP
@@ -304,9 +304,11 @@ def main():
                 # Re-create the IdP
                 idPRepresentation = kc.create_idp(newIdPRepresentation=newIdPRepresentation, realm=realm)
                 changed = True
-            else: # if force option is false
+            else:  # if force option is false
                 # Compare the new Idp with the existing IdP
-                if not isDictEquals(newIdPRepresentation, idPRepresentation, ["clientSecret", "openIdConfigurationUrl", "mappers"]) or ("config" in newIdPRepresentation and "clientSecret" in newIdPRepresentation["config"] and newIdPRepresentation["config"]["clientSecret"] is not None): 
+                if (not isDictEquals(newIdPRepresentation, idPRepresentation, ["clientSecret", "openIdConfigurationUrl", "mappers"]) or
+                    ("config" in newIdPRepresentation and "clientSecret" in newIdPRepresentation["config"] and
+                     newIdPRepresentation["config"]["clientSecret"] is not None)):
                     # If they are different
                     # Create an updated representation of the IdP
                     updatedIdP = copy.deepcopy(idPRepresentation)
@@ -320,20 +322,21 @@ def main():
                     changed = True
             if newIdPMappers is not None and len(newIdPMappers) > 0:
                 if kc.create_or_update_idp_mappers(alias=newIdPRepresentation["alias"], idPMappers=newIdPMappers, realm=realm):
-                    changed=True
+                    changed = True
             mappersRepresentation = kc.get_idp_mappers(alias=newIdPRepresentation["alias"], realm=realm)
             result["idp"] = idPRepresentation
             result["mappers"] = mappersRepresentation
-        else: # If desired state is absent
+        else:  # If desired state is absent
             # Delete all idp's mappers
             kc.delete_all_idp_mappers(alias=alias, realm=realm)
             # Delete the existing IdP
             kc.delete_idp(alias=alias, realm=realm)
-            changed=True
+            changed = True
             result["msg"] = 'IdP %s is deleted' % (alias)
 
     result["changed"] = changed
     module.exit_json(**result)
-        
+
+
 if __name__ == '__main__':
     main()
