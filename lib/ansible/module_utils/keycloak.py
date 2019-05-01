@@ -2408,6 +2408,7 @@ class KeycloakAPI(object):
         :param realm: Realm
         :return: Nothing
         """
+        openIdConfig = {}
         try:
             if url is not None:
                 openIdConfig = json.load(open_url(url, method='GET'))
