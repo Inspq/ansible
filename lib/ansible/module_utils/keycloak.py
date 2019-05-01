@@ -1159,8 +1159,16 @@ class KeycloakAPI(object):
 >>>>>>> SX5-868 Codestyle fix
                     for roleComposite in clientRole["composites"]:
                         if roleComposite['clientRole']:
+<<<<<<< HEAD
                             roleCompositeClient = json.load(open_url(clientSvcBaseUrl + '/' + roleComposite['containerId'], method='GET', headers=self.restheaders))
 >>>>>>> SX5-868 PR Added role management for keycloak_client module.
+=======
+                            roleCompositeClient = json.load(
+                                open_url(
+                                    clientSvcBaseUrl + '/' + roleComposite['containerId'],
+                                    method='GET',
+                                    headers=self.restheaders))
+>>>>>>> Sx5-868 shippable code style fix
                             roleComposite["clientId"] = roleCompositeClient["clientId"]
             clientRepresentation['clientRoles'] = clientRolesRepresentation
         except Exception as e:
@@ -2563,11 +2571,15 @@ class KeycloakAPI(object):
             userStorageBaseUrl = URL_USER_STORAGE.format(url=self.baseurl, realm=realm)
             # Get all components of type org.keycloak.storage.UserStorageProvider
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> Sx5-868 shippable code style fix
             components = json.load(
                 open_url(
                     componentSvcBaseUrl + '?type=' + LDAPUserStorageProviderType,
                     method='GET',
                     headers=self.restheaders))
+<<<<<<< HEAD
             for component in components:
                 # Get all sub components of type group-ldap-mapper
                 subComponents = json.load(
@@ -2581,6 +2593,15 @@ class KeycloakAPI(object):
                 # Get all sub components of type group-ldap-mapper
                 subComponents = json.load(open_url(componentSvcBaseUrl + "?parent=" + component["id"] + "&providerId=group-ldap-mapper", method='GET', headers=self.restheaders))
 >>>>>>> SX5-868 PR Added role management for keycloak_client module.
+=======
+            for component in components:
+                # Get all sub components of type group-ldap-mapper
+                subComponents = json.load(
+                    open_url(
+                        componentSvcBaseUrl + "?parent=" + component["id"] + "&providerId=group-ldap-mapper",
+                        method='GET',
+                        headers=self.restheaders))
+>>>>>>> Sx5-868 shippable code style fix
                 # For each group mappers
                 for subComponent in subComponents:
                     if subComponent["providerId"] == 'group-ldap-mapper':
@@ -3685,9 +3706,12 @@ class KeycloakAPI(object):
 =======
                                   % (url, str(e)))
 
+<<<<<<< HEAD
 >>>>>>> SX5-868 Another code style fix for shippable.
 
 >>>>>>> SX5-868 code cleanup for shippable.
+=======
+>>>>>>> Sx5-868 shippable code style fix
     def delete_all_idp_mappers(self, alias, realm='master'):
         """
         Delete all mappers for an identity provider
