@@ -3,12 +3,11 @@
 # An admin user must exist and his password need to be admin.
 # Use the following command to run a Keycloak server with Docker:
 # docker run -d --rm --name testkc -p 18081:8080 -e KEYCLOAK_USER=admin -e KEYCLOAK_PASSWORD=admin jboss/keycloak:latest
-import collections
-import os
-import unittest
+
 
 from ansible.modules.identity.keycloak import keycloak_client
 from units.modules.utils import AnsibleExitJson, AnsibleFailJson, ModuleTestCase, set_module_args
+
 
 class KeycloakClientTestCase(ModuleTestCase):
     testClientRoles = [
