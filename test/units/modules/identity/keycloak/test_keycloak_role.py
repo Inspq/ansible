@@ -1,4 +1,5 @@
-from ansible.module_utils.keycloak_utils import isDictEquals, loginAndSetHeaders
+from ansible.module_utils.keycloak import isDictEquals
+from ansible.module_utils.keycloak_utils import loginAndSetHeaders
 from ansible.modules.identity.keycloak import keycloak_role
 from units.modules.utils import AnsibleExitJson, AnsibleFailJson, ModuleTestCase, set_module_args
 import requests
@@ -199,7 +200,8 @@ class KeycloakRoleTestCase(ModuleTestCase):
     }
 
     roleExcudes = ["auth_keycloak_url","auth_username","auth_password","state","force","realm","composites","_ansible_keep_remote_files","_ansible_remote_tmp"]
-
+    kc = None
+    
     def setUp(self):
         super(KeycloakRoleTestCase, self).setUp()
         username = "admin"

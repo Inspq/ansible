@@ -15,7 +15,7 @@ import os
 import unittest
 import socket
 from ansible.modules.identity.keycloak import keycloak_group
-from ansible.module_utils.keycloak_utils import isDictEquals
+from ansible.module_utils.keycloak import isDictEquals
 from ansible.modules.identity.keycloak import keycloak_component
 from units.modules.utils import AnsibleExitJson, AnsibleFailJson, ModuleTestCase, set_module_args
 

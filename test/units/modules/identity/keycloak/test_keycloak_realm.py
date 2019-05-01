@@ -3,7 +3,7 @@ import os
 
 from ansible.modules.identity.keycloak import keycloak_realm
 from units.modules.utils import AnsibleExitJson, AnsibleFailJson, ModuleTestCase, set_module_args
-from ansible.module_utils.keycloak_utils import isDictEquals
+from ansible.module_utils.keycloak import isDictEquals
 
 class KeycloakRealmTestCase(ModuleTestCase):
     toCreateRealm = {
