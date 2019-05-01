@@ -91,6 +91,7 @@
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> SX5-868 Add role management to keycloak_group module. Add
 
@@ -198,14 +199,21 @@ import collections
 import os
 import unittest
 >>>>>>> SX5-868 Manage client roles (add, delete update), remove protocolMappers
+=======
+
+>>>>>>> SX5-868 Correction de problème de merge lors du rebase de la branche.
 
 from ansible.modules.identity.keycloak import keycloak_client
 from units.modules.utils import AnsibleExitJson, AnsibleFailJson, ModuleTestCase, set_module_args
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 
 =======
 >>>>>>> SX5-868 Manage client roles (add, delete update), remove protocolMappers
+=======
+
+>>>>>>> SX5-868 Correction de problème de merge lors du rebase de la branche.
 class KeycloakClientTestCase(ModuleTestCase):
     testClientRoles = [
         {
