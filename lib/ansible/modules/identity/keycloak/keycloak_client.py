@@ -857,6 +857,7 @@ def main():
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
         admin_url=dict(type='str', aliases=['adminUrl', 'url']),
 =======
         admin_url=dict(type='str', aliases=['adminUrl','url']),
@@ -870,6 +871,9 @@ def main():
 =======
         admin_url=dict(type='str', aliases=['adminUrl', 'url']),
 >>>>>>> SX5-868 Code clean after shippable comments.
+=======
+        admin_url=dict(type='str', aliases=['adminUrl']),
+>>>>>>> Sx5-868 remove alias url for argument admin_url in keycloak_client
         base_url=dict(type='str', aliases=['baseUrl']),
         surrogate_auth_required=dict(type='bool', aliases=['surrogateAuthRequired']),
         enabled=dict(type='bool'),
