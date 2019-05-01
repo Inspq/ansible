@@ -4,6 +4,8 @@
 # Copyright (c) 2017, Eike Frost <ei@kefro.st>
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
+from ansible.module_utils.keycloak import KeycloakAPI, camel, keycloak_argument_spec
+from ansible.module_utils.basic import AnsibleModule
 from __future__ import absolute_import, division, print_function
 __metaclass__ = type
 
@@ -370,12 +372,17 @@ options:
             state:
                 description:
 <<<<<<< HEAD
+<<<<<<< HEAD
                     - Desired state of the protocol mappers.
                       If present, the mapper will be added or updated.
 =======
                     - Desired state of the protocol mappers. 
                       If present, the mapper will be added or updated. 
 >>>>>>> SX5-868 PR Added role management for keycloak_client module.
+=======
+                    - Desired state of the protocol mappers.
+                      If present, the mapper will be added or updated.
+>>>>>>> SX5-868 Codestyle fix
                       If absent, the mapper will be removed
                 choices: [absent, present]
                 default: present
@@ -487,6 +494,7 @@ options:
     client_roles:
         description:
 <<<<<<< HEAD
+<<<<<<< HEAD
             - List of roles and their composites for the client.
               Client roles can be added, updated or removed depending it's state.
         aliases:
@@ -495,6 +503,11 @@ options:
               Client roles can be added, updated or removed depending it's state.
         aliases: 
 >>>>>>> SX5-868 PR Added role management for keycloak_client module.
+=======
+            - List of roles and their composites for the client.
+              Client roles can be added, updated or removed depending it's state.
+        aliases:
+>>>>>>> SX5-868 Codestyle fix
             - clientRoles
             - roles
         type: list
@@ -646,10 +659,14 @@ EXAMPLES = '''
         protocol: saml
         protocolMapper: saml-role-list-mapper
 <<<<<<< HEAD
+<<<<<<< HEAD
       - config:
 =======
       - config: 
 >>>>>>> SX5-868 PR Added role management for keycloak_client module.
+=======
+      - config:
+>>>>>>> SX5-868 Codestyle fix
           multivalued: False
           userinfo.token.claim": True
           user.attribute: Test2
@@ -729,8 +746,11 @@ end_state:
         }
     }
 '''
+<<<<<<< HEAD
 from ansible.module_utils.keycloak import KeycloakAPI, camel, keycloak_argument_spec
 from ansible.module_utils.basic import AnsibleModule
+=======
+>>>>>>> SX5-868 Codestyle fix
 
 
 def sanitize_cr(clientrep):
