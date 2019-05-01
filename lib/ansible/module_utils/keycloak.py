@@ -3742,6 +3742,7 @@ class KeycloakAPI(object):
                     idPConfiguration["logoutUrl"] = openIdConfig["end_session_endpoint"]
             return openIdConfig
         except Exception as e:
+<<<<<<< HEAD
             self.module.fail_json(msg='Could not get IdP configuration from endpoint %s: %s'
                                   % (url, str(e)))
 
@@ -3755,6 +3756,8 @@ class KeycloakAPI(object):
             return openIdConfig
 >>>>>>> SX5-868 Add return in method add_idp_endpoints and remove a unused
         except Exception, e:
+=======
+>>>>>>> Sx5-868 Change exception handling syntax in keycloak.py
             self.module.fail_json(msg='Could not get IdP configuration from endpoint %s: %s'
 <<<<<<< HEAD
                                       % (url, str(e)))
@@ -3826,7 +3829,7 @@ class KeycloakAPI(object):
                          headers=self.restheaders)
                 changed = True
             return changed
-        except Exception, e:
+        except Exception as e:
             self.module.fail_json(msg='Could not delete mappers for IdP %s in realm %s: %s'
                                       % (alias, realm, str(e)))
 <<<<<<< HEAD
@@ -3959,6 +3962,7 @@ class KeycloakAPI(object):
                     changed = True
             return changed
         except Exception as e:
+<<<<<<< HEAD
             self.module.fail_json(msg='Could not create or update mappers for IdP %s in realm %s: %s'
                                       % (alias, realm, str(e)))
 
@@ -3982,6 +3986,8 @@ class KeycloakAPI(object):
                     changed = True
             return changed
         except Exception, e:
+=======
+>>>>>>> Sx5-868 Change exception handling syntax in keycloak.py
             self.module.fail_json(msg='Could not create or update mappers for IdP %s in realm %s: %s'
                                       % (alias, realm, str(e)))
 
@@ -4027,11 +4033,15 @@ class KeycloakAPI(object):
                          headers=self.restheaders))
             return idPRepresentation
 <<<<<<< HEAD
+<<<<<<< HEAD
         except Exception ,e :
 >>>>>>> SX5-868 PR Added role management for keycloak_client module.
 =======
         except Exception, e:
 >>>>>>> SX5-868 Codestyle fix
+=======
+        except Exception as e:
+>>>>>>> Sx5-868 Change exception handling syntax in keycloak.py
             self.module.fail_json(msg='Could not get IdP by alias %s in realm %s: %s'
                                       % (alias, realm, str(e)))
 
@@ -4081,6 +4091,7 @@ class KeycloakAPI(object):
             return idPRepresentation
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
         except Exception as e:
 =======
         except Exception ,e :
@@ -4088,6 +4099,9 @@ class KeycloakAPI(object):
 =======
         except Exception, e:
 >>>>>>> SX5-868 Codestyle fix
+=======
+        except Exception as e:
+>>>>>>> Sx5-868 Change exception handling syntax in keycloak.py
             self.module.fail_json(msg='Could not search IdP by alias %s in realm %s: %s'
                                       % (alias, realm, str(e)))
 
@@ -4135,6 +4149,7 @@ class KeycloakAPI(object):
             return idPRepresentation
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
         except Exception as e:
 =======
         except Exception ,e :
@@ -4142,6 +4157,9 @@ class KeycloakAPI(object):
 =======
         except Exception, e:
 >>>>>>> SX5-868 Codestyle fix
+=======
+        except Exception as e:
+>>>>>>> Sx5-868 Change exception handling syntax in keycloak.py
             self.module.fail_json(msg='Could not search IdP by client Id %s in realm %s: %s'
                                       % (client_id, realm, str(e)))
 
@@ -4175,8 +4193,12 @@ class KeycloakAPI(object):
 >>>>>>> SX5-868 PR Added role management for keycloak_client module.
 =======
             return self.get_idp_by_alias(newIdPRepresentation["alias"], realm)
+<<<<<<< HEAD
         except Exception, e:
 >>>>>>> SX5-868 Codestyle fix
+=======
+        except Exception as e:
+>>>>>>> Sx5-868 Change exception handling syntax in keycloak.py
             self.module.fail_json(msg='Could not create the IdP %s in realm %s: %s'
                                       % (newIdPRepresentation["alias"], realm, str(e)))
 
@@ -4212,8 +4234,12 @@ class KeycloakAPI(object):
 >>>>>>> SX5-868 PR Added role management for keycloak_client module.
 =======
             return self.get_idp_by_alias(newIdPRepresentation["alias"], realm)
+<<<<<<< HEAD
         except Exception, e:
 >>>>>>> SX5-868 Codestyle fix
+=======
+        except Exception as e:
+>>>>>>> Sx5-868 Change exception handling syntax in keycloak.py
             self.module.fail_json(msg='Could not update the IdP %s in realm %s: %s'
                                       % (newIdPRepresentation["alias"], realm, str(e)))
 
@@ -4238,6 +4264,7 @@ class KeycloakAPI(object):
                 method='DELETE',
                 headers=self.restheaders)
 <<<<<<< HEAD
+<<<<<<< HEAD
         except Exception as e:
 =======
             idp_url = URL_IDP.format(url=self.baseurl, realm=realm, alias=alias)
@@ -4247,6 +4274,9 @@ class KeycloakAPI(object):
 =======
         except Exception, e:
 >>>>>>> SX5-868 Codestyle fix
+=======
+        except Exception as e:
+>>>>>>> Sx5-868 Change exception handling syntax in keycloak.py
             self.module.fail_json(msg='Could not delete the IdP %s in realm %s: %s'
                                       % (alias, realm, str(e)))
 
@@ -4295,7 +4325,7 @@ class KeycloakAPI(object):
                     method='GET',
                     headers=self.restheaders))
             return idMappers
-        except Exception, e:
+        except Exception as e:
             self.module.fail_json(msg='Could not get IdP mappers for alias %s in realm %s: %s'
                                       % (alias, realm, str(e)))
 >>>>>>> SX5-868 PR Added role management for keycloak_client module.
@@ -4333,6 +4363,7 @@ class KeycloakAPI(object):
             return realmRepresentation
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
         except Exception as e:
 =======
         except Exception ,e :
@@ -4340,6 +4371,9 @@ class KeycloakAPI(object):
 =======
         except Exception, e:
 >>>>>>> SX5-868 Codestyle fix
+=======
+        except Exception as e:
+>>>>>>> Sx5-868 Change exception handling syntax in keycloak.py
             self.module.fail_json(msg='Could not search for realm %s: %s'
                                       % (realm, str(e)))
 
@@ -4372,8 +4406,12 @@ class KeycloakAPI(object):
 >>>>>>> SX5-868 PR Added role management for keycloak_client module.
 =======
             return realmRepresentation
+<<<<<<< HEAD
         except Exception, e:
 >>>>>>> SX5-868 Codestyle fix
+=======
+        except Exception as e:
+>>>>>>> Sx5-868 Change exception handling syntax in keycloak.py
             self.module.fail_json(msg='Could get realm %s: %s'
                                       % (realm, str(e)))
 
@@ -4407,7 +4445,7 @@ class KeycloakAPI(object):
 >>>>>>> SX5-868 Codestyle fix
             realmRepresentation = self.get_realm(realm=newRealmRepresentation["realm"])
             return realmRepresentation
-        except Exception, e:
+        except Exception as e:
             self.module.fail_json(msg='Could not create realm %s: %s'
                                       % (newRealmRepresentation["realm"], str(e)))
 <<<<<<< HEAD
@@ -4435,6 +4473,7 @@ class KeycloakAPI(object):
                 method='DELETE',
                 headers=self.restheaders)
 <<<<<<< HEAD
+<<<<<<< HEAD
         except Exception as e:
 =======
             realm_url = URL_REALM.format(url=self.baseurl, realm=realm)
@@ -4444,6 +4483,9 @@ class KeycloakAPI(object):
 =======
         except Exception, e:
 >>>>>>> SX5-868 Codestyle fix
+=======
+        except Exception as e:
+>>>>>>> Sx5-868 Change exception handling syntax in keycloak.py
             self.module.fail_json(msg='Could delete realm %s: %s'
                                       % (realm, str(e)))
 
@@ -4477,8 +4519,12 @@ class KeycloakAPI(object):
 >>>>>>> SX5-868 PR Added role management for keycloak_client module.
 =======
             return self.get_realm(newRealmRepresentation["realm"])
+<<<<<<< HEAD
         except Exception, e:
 >>>>>>> SX5-868 Codestyle fix
+=======
+        except Exception as e:
+>>>>>>> Sx5-868 Change exception handling syntax in keycloak.py
             self.module.fail_json(msg='Could update realm %s: %s'
                                       % (newRealmRepresentation["realm"], str(e)))
 
@@ -4514,7 +4560,7 @@ class KeycloakAPI(object):
 =======
 >>>>>>> SX5-868 Codestyle fix
             return self.get_realm_events_config(realm=realm)
-        except Exception, e:
+        except Exception as e:
             self.module.fail_json(msg='Could not update events config for realm %s: %s'
                                       % (realm, str(e)))
 <<<<<<< HEAD
@@ -4543,6 +4589,7 @@ class KeycloakAPI(object):
                     method='GET',
                     headers=self.restheaders))
 <<<<<<< HEAD
+<<<<<<< HEAD
         except Exception as e:
             self.module.fail_json(msg='Could not get events config for realm %s: %s'
                                       % (realm, str(e)))
@@ -4559,6 +4606,9 @@ class KeycloakAPI(object):
 =======
         except Exception, e:
 >>>>>>> SX5-868 Codestyle fix
+=======
+        except Exception as e:
+>>>>>>> Sx5-868 Change exception handling syntax in keycloak.py
             self.module.fail_json(msg='Could not get events config for realm %s: %s'
                                       % (realm, str(e)))
 >>>>>>> SX5-868 PR Added role management for keycloak_client module.
@@ -4588,6 +4638,7 @@ class KeycloakAPI(object):
             return rolerep
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
         except Exception as e:
             self.module.fail_json(msg='Could not search for role % in realm %s: %s'
                                       % (name, realm, str(e)))
@@ -4599,6 +4650,9 @@ class KeycloakAPI(object):
 >>>>>>> SX5-868 PR Added role management for keycloak_client module.
 =======
         except Exception, e:
+=======
+        except Exception as e:
+>>>>>>> Sx5-868 Change exception handling syntax in keycloak.py
             self.module.fail_json(msg='Could not search for role % in realm %s: %s'
                                       % (name, realm, str(e)))
 
@@ -4631,8 +4685,12 @@ class KeycloakAPI(object):
 >>>>>>> SX5-868 PR Added role management for keycloak_client module.
 =======
             return listRoles
+<<<<<<< HEAD
         except Exception, e:
 >>>>>>> SX5-868 Codestyle fix
+=======
+        except Exception as e:
+>>>>>>> Sx5-868 Change exception handling syntax in keycloak.py
             self.module.fail_json(msg='Could not get roles in realm %s: %s'
                                       % (realm, str(e)))
 
@@ -4668,8 +4726,12 @@ class KeycloakAPI(object):
 >>>>>>> SX5-868 PR Added role management for keycloak_client module.
 =======
             return role
+<<<<<<< HEAD
         except Exception, e:
 >>>>>>> SX5-868 Codestyle fix
+=======
+        except Exception as e:
+>>>>>>> Sx5-868 Change exception handling syntax in keycloak.py
             self.module.fail_json(msg='Could not get role %s in realm %s: %s'
                                       % (name, realm, str(e)))
 
@@ -4708,8 +4770,12 @@ class KeycloakAPI(object):
 >>>>>>> SX5-868 PR Added role management for keycloak_client module.
 =======
             return roleRepresentation
+<<<<<<< HEAD
         except Exception, e:
 >>>>>>> SX5-868 Codestyle fix
+=======
+        except Exception as e:
+>>>>>>> Sx5-868 Change exception handling syntax in keycloak.py
             self.module.fail_json(msg='Could not create realm role %s in realm %s: %s'
                                       % (newRoleRepresentation["name"], realm, str(e)))
 
@@ -4734,6 +4800,7 @@ class KeycloakAPI(object):
                 method='DELETE',
                 headers=self.restheaders)
 <<<<<<< HEAD
+<<<<<<< HEAD
         except Exception as e:
 =======
             realm_role_url = URL_REALM_ROLE.format(url=self.baseurl,realm=realm,name=name) 
@@ -4743,6 +4810,9 @@ class KeycloakAPI(object):
 =======
         except Exception, e:
 >>>>>>> SX5-868 Codestyle fix
+=======
+        except Exception as e:
+>>>>>>> Sx5-868 Change exception handling syntax in keycloak.py
             self.module.fail_json(msg='Could not delete realm role %s in realm %s: %s'
                                       % (name, realm, str(e)))
 
@@ -4782,8 +4852,12 @@ class KeycloakAPI(object):
 >>>>>>> SX5-868 PR Added role management for keycloak_client module.
 =======
             return roleRepresentation
+<<<<<<< HEAD
         except Exception, e:
 >>>>>>> SX5-868 Codestyle fix
+=======
+        except Exception as e:
+>>>>>>> Sx5-868 Change exception handling syntax in keycloak.py
             self.module.fail_json(msg='Could not update realm role %s in realm %s: %s'
                                       % (newRoleRepresentation["name"], realm, str(e)))
 
@@ -4854,8 +4928,12 @@ class KeycloakAPI(object):
 >>>>>>> SX5-868 PR Added role management for keycloak_client module.
 =======
             return composites
+<<<<<<< HEAD
         except Exception, e:
 >>>>>>> SX5-868 Codestyle fix
+=======
+        except Exception as e:
+>>>>>>> Sx5-868 Change exception handling syntax in keycloak.py
             self.module.fail_json(msg='Could not get realm role %s composites in realm %s: %s'
                                       % (name, realm, str(e)))
 
@@ -4882,6 +4960,7 @@ class KeycloakAPI(object):
                 headers=self.restheaders,
                 data=json.dumps(newCompositesToCreate))
 <<<<<<< HEAD
+<<<<<<< HEAD
         except Exception as e:
 =======
             realm_role_composites_url = URL_REALM_ROLE_COMPOSITES.format(url=self.baseurl,realm=realm,name=name) 
@@ -4891,6 +4970,9 @@ class KeycloakAPI(object):
 =======
         except Exception, e:
 >>>>>>> SX5-868 Codestyle fix
+=======
+        except Exception as e:
+>>>>>>> Sx5-868 Change exception handling syntax in keycloak.py
             self.module.fail_json(msg='Could not create realm role %s composites in realm %s: %s'
                                       % (name, realm, str(e)))
 
@@ -5028,7 +5110,7 @@ class KeycloakAPI(object):
 =======
 >>>>>>> SX5-868 Codestyle fix
             return changed
-        except Exception, e:
+        except Exception as e:
             self.module.fail_json(msg='Could not create or update realm role %s composites in realm %s: %s'
                                       % (newRoleRepresentation["name"], realm, str(e)))
 >>>>>>> SX5-868 PR Added role management for keycloak_client module.
@@ -5065,8 +5147,12 @@ class KeycloakAPI(object):
 >>>>>>> SX5-868 PR Added role management for keycloak_client module.
 =======
             return userRepresentation
+<<<<<<< HEAD
         except Exception, e:
 >>>>>>> SX5-868 Codestyle fix
+=======
+        except Exception as e:
+>>>>>>> Sx5-868 Change exception handling syntax in keycloak.py
             self.module.fail_json(msg='Could not get user %s in realm %s: %s'
                                       % (user_id, realm, str(e)))
 
@@ -5104,6 +5190,7 @@ class KeycloakAPI(object):
             return userrep
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
         except Exception as e:
             self.module.fail_json(msg='Could not search for user %s in realm %s: %s'
                                       % (username, realm, str(e)))
@@ -5116,6 +5203,9 @@ class KeycloakAPI(object):
 >>>>>>> SX5-868 PR Added role management for keycloak_client module.
 =======
         except Exception, e:
+=======
+        except Exception as e:
+>>>>>>> Sx5-868 Change exception handling syntax in keycloak.py
             self.module.fail_json(msg='Could not search for user %s in realm %s: %s'
                                       % (username, realm, str(e)))
 
@@ -5154,8 +5244,12 @@ class KeycloakAPI(object):
 >>>>>>> SX5-868 PR Added role management for keycloak_client module.
 =======
             return userRepresentation
+<<<<<<< HEAD
         except Exception, e:
 >>>>>>> SX5-868 Codestyle fix
+=======
+        except Exception as e:
+>>>>>>> Sx5-868 Change exception handling syntax in keycloak.py
             self.module.fail_json(msg='Could not create user %s in realm %s: %s'
                                       % (newUserRepresentation['username'], realm, str(e)))
 
@@ -5195,8 +5289,12 @@ class KeycloakAPI(object):
 >>>>>>> SX5-868 PR Added role management for keycloak_client module.
 =======
             return userRepresentation
+<<<<<<< HEAD
         except Exception, e:
 >>>>>>> SX5-868 Codestyle fix
+=======
+        except Exception as e:
+>>>>>>> Sx5-868 Change exception handling syntax in keycloak.py
             self.module.fail_json(msg='Could not update user %s in realm %s: %s'
                                       % (newUserRepresentation['username'], realm, str(e)))
 
@@ -5221,6 +5319,7 @@ class KeycloakAPI(object):
                 method='DELETE',
                 headers=self.restheaders)
 <<<<<<< HEAD
+<<<<<<< HEAD
         except Exception as e:
 =======
             user_url = URL_USER.format(url=self.baseurl,realm=realm,id=user_id) 
@@ -5230,6 +5329,9 @@ class KeycloakAPI(object):
 =======
         except Exception, e:
 >>>>>>> SX5-868 Codestyle fix
+=======
+        except Exception as e:
+>>>>>>> Sx5-868 Change exception handling syntax in keycloak.py
             self.module.fail_json(msg='Could not delete user %s in realm %s: %s'
                                       % (user_id, realm, str(e)))
 
@@ -5267,6 +5369,7 @@ class KeycloakAPI(object):
             return realmRoles
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
         except Exception as e:
 =======
         except Exception ,e :
@@ -5274,6 +5377,9 @@ class KeycloakAPI(object):
 =======
         except Exception, e:
 >>>>>>> SX5-868 Codestyle fix
+=======
+        except Exception as e:
+>>>>>>> Sx5-868 Change exception handling syntax in keycloak.py
             self.module.fail_json(msg='Could not get role mappings for user %s in realm %s: %s'
                                       % (user_id, realm, str(e)))
 
@@ -5299,6 +5405,7 @@ class KeycloakAPI(object):
                 headers=self.restheaders,
                 data=json.dumps(realmRolesRepresentation))
 <<<<<<< HEAD
+<<<<<<< HEAD
         except Exception as e:
 =======
             role_mappings_url = URL_USER_REALM_ROLE_MAPPINGS.format(url=self.baseurl,realm=realm,id=user_id) 
@@ -5308,6 +5415,9 @@ class KeycloakAPI(object):
 =======
         except Exception, e:
 >>>>>>> SX5-868 Codestyle fix
+=======
+        except Exception as e:
+>>>>>>> Sx5-868 Change exception handling syntax in keycloak.py
             self.module.fail_json(msg='Could not update realm role mappings for user %s in realm %s: %s'
                                       % (user_id, realm, str(e)))
 
@@ -5351,6 +5461,7 @@ class KeycloakAPI(object):
             return clientRoles
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
         except Exception as e:
 =======
         except Exception ,e :
@@ -5358,6 +5469,9 @@ class KeycloakAPI(object):
 =======
         except Exception, e:
 >>>>>>> SX5-868 Codestyle fix
+=======
+        except Exception as e:
+>>>>>>> Sx5-868 Change exception handling syntax in keycloak.py
             self.module.fail_json(msg='Could not get role mappings for user %s in realm %s: %s'
                                       % (user_id, realm, str(e)))
 
@@ -5384,6 +5498,7 @@ class KeycloakAPI(object):
                 method='DELETE',
                 headers=self.restheaders)
 <<<<<<< HEAD
+<<<<<<< HEAD
         except Exception as e:
 =======
             role_mappings_url = URL_USER_CLIENT_ROLE_MAPPINGS.format(url=self.baseurl,realm=realm,id=user_id,client_id=client_id) 
@@ -5393,6 +5508,9 @@ class KeycloakAPI(object):
 =======
         except Exception, e:
 >>>>>>> SX5-868 Codestyle fix
+=======
+        except Exception as e:
+>>>>>>> Sx5-868 Change exception handling syntax in keycloak.py
             self.module.fail_json(msg='Could not delete client role mappings for user %s in realm %s: %s'
                                       % (user_id, realm, str(e)))
 
@@ -5421,6 +5539,7 @@ class KeycloakAPI(object):
                 headers=self.restheaders,
                 data=json.dumps(rolesToAssing))
 <<<<<<< HEAD
+<<<<<<< HEAD
         except Exception as e:
             self.module.fail_json(msg='Could not create client role mappings for user %s in realm %s: %s'
                                       % (user_id, realm, str(e)))
@@ -5435,6 +5554,9 @@ class KeycloakAPI(object):
 >>>>>>> SX5-868 PR Added role management for keycloak_client module.
 =======
         except Exception, e:
+=======
+        except Exception as e:
+>>>>>>> Sx5-868 Change exception handling syntax in keycloak.py
             self.module.fail_json(msg='Could not create client role mappings for user %s in realm %s: %s'
                                       % (user_id, realm, str(e)))
 
@@ -5478,8 +5600,12 @@ class KeycloakAPI(object):
             for userGroup in userGroups:
                 groups.append(userGroup["name"])
             return groups
+<<<<<<< HEAD
         except Exception, e:
 >>>>>>> SX5-868 Codestyle fix
+=======
+        except Exception as e:
+>>>>>>> Sx5-868 Change exception handling syntax in keycloak.py
             self.module.fail_json(msg='Could not get groups for user %s in realm %s: %s'
                                       % (user_id, realm, str(e)))
 
@@ -5506,6 +5632,7 @@ class KeycloakAPI(object):
                 method='PUT',
                 headers=self.restheaders)
 <<<<<<< HEAD
+<<<<<<< HEAD
         except Exception as e:
 =======
             user_group_url = URL_USER_GROUP.format(url=self.baseurl,realm=realm,id=user_id,group_id=group_id) 
@@ -5515,6 +5642,9 @@ class KeycloakAPI(object):
 =======
         except Exception, e:
 >>>>>>> SX5-868 Codestyle fix
+=======
+        except Exception as e:
+>>>>>>> Sx5-868 Change exception handling syntax in keycloak.py
             self.module.fail_json(msg='Could not add user %s in group %s in realm %s: %s'
                                       % (user_id, group_id, realm, str(e)))
 
@@ -5541,6 +5671,7 @@ class KeycloakAPI(object):
                 method='DETETE',
                 headers=self.restheaders)
 <<<<<<< HEAD
+<<<<<<< HEAD
         except Exception as e:
             self.module.fail_json(msg='Could not remove user %s from group %s in realm %s: %s'
                                       % (user_id, group_id, realm, str(e)))
@@ -5555,6 +5686,9 @@ class KeycloakAPI(object):
 >>>>>>> SX5-868 PR Added role management for keycloak_client module.
 =======
         except Exception, e:
+=======
+        except Exception as e:
+>>>>>>> Sx5-868 Change exception handling syntax in keycloak.py
             self.module.fail_json(msg='Could not remove user %s from group %s in realm %s: %s'
                                       % (user_id, group_id, realm, str(e)))
 
@@ -5715,8 +5849,12 @@ class KeycloakAPI(object):
 >>>>>>> SX5-868 PR Added role management for keycloak_client module.
 =======
             return changed
+<<<<<<< HEAD
         except Exception, e:
 >>>>>>> SX5-868 Codestyle fix
+=======
+        except Exception as e:
+>>>>>>> Sx5-868 Change exception handling syntax in keycloak.py
             self.module.fail_json(msg='Could not assign roles to user %s in realm %s: %s'
                                       % (user_id, realm, str(e)))
 
@@ -5880,6 +6018,6 @@ class KeycloakAPI(object):
 >>>>>>> SX5-868 Codestyle fix
                                 changed = True
             return changed
-        except Exception, e:
+        except Exception as e:
             raise e
 >>>>>>> SX5-868 PR Added role management for keycloak_client module.
