@@ -3745,7 +3745,11 @@ class KeycloakAPI(object):
                     idPConfiguration["logoutUrl"] = openIdConfig["end_session_endpoint"]        
 =======
                     idPConfiguration["logoutUrl"] = openIdConfig["end_session_endpoint"]
+<<<<<<< HEAD
 >>>>>>> SX5-868 Codestyle fix
+=======
+            return openIdConfig
+>>>>>>> SX5-868 Add return in method add_idp_endpoints and remove a unused
         except Exception, e:
             self.module.fail_json(msg='Could not get IdP configuration from endpoint %s: %s'
 <<<<<<< HEAD
