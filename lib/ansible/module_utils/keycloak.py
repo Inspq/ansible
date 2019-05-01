@@ -3676,11 +3676,16 @@ class KeycloakAPI(object):
 >>>>>>> SX5-868 Codestyle fix
         except Exception, e:
             self.module.fail_json(msg='Could not get IdP configuration from endpoint %s: %s'
+<<<<<<< HEAD
                                       % (url, str(e)))
 <<<<<<< HEAD
     
 >>>>>>> SX5-868 PR Added role management for keycloak_client module.
 =======
+=======
+                                  % (url, str(e)))
+
+>>>>>>> SX5-868 Another code style fix for shippable.
 
 >>>>>>> SX5-868 code cleanup for shippable.
     def delete_all_idp_mappers(self, alias, realm='master'):
