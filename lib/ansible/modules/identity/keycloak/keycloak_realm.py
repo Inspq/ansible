@@ -111,10 +111,14 @@ options:
     required: false
   accessCodeLifespanLogin:
 <<<<<<< HEAD
+<<<<<<< HEAD
     description:
 =======
     description: 
 >>>>>>> Sx5-868 Add keycloak_realm module with non mock unit tests.
+=======
+    description:
+>>>>>>> SX5-868 Ajustement du codestyle des modules Keycloak en préparation des
     - access code lifespan login.
     default: 1800
     required: false
@@ -357,12 +361,16 @@ notes:
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 author: 
     - Philippe Gauthier (philippe.gauthier@inspq.qc.ca)
 =======
 >>>>>>> Sx5-868 Add keycloak_realm module with non mock unit tests.
 =======
 author: 
+=======
+author:
+>>>>>>> SX5-868 Ajustement du codestyle des modules Keycloak en préparation des
 =======
 author:
 >>>>>>> SX5-868 Ajustement du codestyle des modules Keycloak en préparation des
@@ -389,6 +397,7 @@ EXAMPLES = '''
         realm: realm1
         name: "realm1"
         namehtml: "The first Realm"
+<<<<<<< HEAD
 =======
 =======
 >>>>>>> Sx5-868 Add keycloak_realm module with non mock unit tests.
@@ -424,6 +433,9 @@ EXAMPLES = '''
 >>>>>>> SX5-868 Mise à jour de la documentation des modules Keycloak suite à la
         smtpServer: 
 >>>>>>> Sx5-868 Add keycloak_realm module with non mock unit tests.
+=======
+        smtpServer:
+>>>>>>> SX5-868 Ajustement du codestyle des modules Keycloak en préparation des
           replyToDisplayName: root
           starttls: ""
           auth: ""
@@ -538,9 +550,13 @@ from ansible.module_utils.keycloak import KeycloakAPI, keycloak_argument_spec
 from ansible.module_utils.basic import AnsibleModule
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 
 =======
 >>>>>>> Sx5-868 Add keycloak_realm module with non mock unit tests.
+=======
+
+>>>>>>> SX5-868 Ajustement du codestyle des modules Keycloak en préparation des
 def main():
     argument_spec = keycloak_argument_spec()
 
@@ -558,6 +574,9 @@ def main():
         accessCodeLifespan=dict(type='int', default=60),
         accessCodeLifespanLogin=dict(type='int', default=1800),
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> SX5-868 Ajustement du codestyle des modules Keycloak en préparation des
         accessCodeLifespanUserAction=dict(type='int', default=300),
         notBefore=dict(type='int', default=0),
         revokeRefreshToken=dict(type='bool', default=False),
@@ -601,6 +620,7 @@ def main():
         directGrantFlow=dict(type='str', default="direct grant"),
         resetCredentialsFlow=dict(type='str', default="reset credentials"),
         clientAuthenticationFlow=dict(type='str', default="clients"),
+<<<<<<< HEAD
 =======
         accessCodeLifespanUserAction=dict(type='int',default=300),
         notBefore = dict(type='int',default=0),
@@ -646,16 +666,22 @@ def main():
         resetCredentialsFlow= dict(type='str', default="reset credentials"),
         clientAuthenticationFlow= dict(type='str', default="clients"),
 >>>>>>> Sx5-868 Add keycloak_realm module with non mock unit tests.
+=======
+>>>>>>> SX5-868 Ajustement du codestyle des modules Keycloak en préparation des
         state=dict(choices=["absent", "present"], default='present'),
         force=dict(type='bool', default=False),
         attributes=dict(type='dict', default=None),
         browserSecurityHeaders=dict(type='dict', default=None)
     )
 <<<<<<< HEAD
+<<<<<<< HEAD
 
 =======
     
 >>>>>>> Sx5-868 Add keycloak_realm module with non mock unit tests.
+=======
+
+>>>>>>> SX5-868 Ajustement du codestyle des modules Keycloak en préparation des
     argument_spec.update(meta_args)
 
     module = AnsibleModule(argument_spec=argument_spec,
@@ -668,6 +694,9 @@ def main():
     kc = KeycloakAPI(module)
     defaultAttributes = dict(
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> SX5-868 Ajustement du codestyle des modules Keycloak en préparation des
         _browser_header=dict(
             contentSecurityPolicy=dict(type='unicode', default="frame-src 'self'"),
             xContentTypeOptions=dict(type='unicode', default="nosniff"),
@@ -680,6 +709,7 @@ def main():
         displayName=dict(type='unicode', default=module.params.get('name')),
         displayNameHtml=dict(type='unicode', default=module.params.get('namehtml')),
     )
+<<<<<<< HEAD
     defaultBrowserSecurityHeaders = dict(
         contentSecurityPolicy=dict(type='unicode', default="frame-src 'self'"),
         xContentTypeOptions=dict(type='unicode', default="nosniff"),
@@ -708,6 +738,15 @@ def main():
         xXSSProtection = dict(type='unicode', default="1; mode=block")
         )
 >>>>>>> Sx5-868 Add keycloak_realm module with non mock unit tests.
+=======
+    defaultBrowserSecurityHeaders = dict(
+        contentSecurityPolicy=dict(type='unicode', default="frame-src 'self'"),
+        xContentTypeOptions=dict(type='unicode', default="nosniff"),
+        xFrameOptions=dict(type='unicode', default="SAMEORIGIN"),
+        xRobotsTag=dict(type='unicode', default="none"),
+        xXSSProtection=dict(type='unicode', default="1; mode=block")
+    )
+>>>>>>> SX5-868 Ajustement du codestyle des modules Keycloak en préparation des
 
     state = module.params.get('state')
     force = module.params.get('force')
@@ -720,10 +759,14 @@ def main():
     newRealmRepresentation["displayNameHtml"] = module.params.get('displayNameHtml')
     if module.params.get("loginTheme") is not None:
 <<<<<<< HEAD
+<<<<<<< HEAD
         newRealmRepresentation["loginTheme"] = module.params.get("loginTheme")
 =======
         newRealmRepresentation["loginTheme"] =  module.params.get("loginTheme")
 >>>>>>> Sx5-868 Add keycloak_realm module with non mock unit tests.
+=======
+        newRealmRepresentation["loginTheme"] = module.params.get("loginTheme")
+>>>>>>> SX5-868 Ajustement du codestyle des modules Keycloak en préparation des
     if module.params.get("adminTheme") is not None:
         newRealmRepresentation["adminTheme"] = module.params.get("adminTheme")
     if module.params.get("emailTheme") is not None:
@@ -790,6 +833,7 @@ def main():
     if module.params.get("browserSecurityHeaders") is not None:
         newRealmRepresentation["browserSecurityHeaders"] = module.params.get("browserSecurityHeaders")
 <<<<<<< HEAD
+<<<<<<< HEAD
 
     changed = False
     # Find realm on Keycloak server
@@ -804,12 +848,21 @@ def main():
     if realmRepresentation == {}: # Realm does not exist
         if (state == 'present'): # If desired state is present
 >>>>>>> Sx5-868 Add keycloak_realm module with non mock unit tests.
+=======
+
+    changed = False
+    # Find realm on Keycloak server
+    realmRepresentation = kc.search_realm(realm=newRealmRepresentation["realm"])
+    if realmRepresentation == {}:  # Realm does not exist
+        if (state == 'present'):  # If desired state is present
+>>>>>>> SX5-868 Ajustement du codestyle des modules Keycloak en préparation des
             # Create the realm
             result["realm"] = kc.create_realm(newRealmRepresentation=newRealmRepresentation)
             if newEventsConfig is not None:
                 eventsConfig = kc.update_realm_events_config(realm=newRealmRepresentation["realm"], newEventsConfig=newEventsConfig)
                 result["eventsConfig"] = eventsConfig
             changed = True
+<<<<<<< HEAD
 <<<<<<< HEAD
         else:  # if desired state is absent
             result['msg'] = 'Realm %s is absent' % (newRealmRepresentation["realm"])
@@ -825,11 +878,20 @@ def main():
         if (state == 'present'): # If desired state is present
             if force: # If force option is true
 >>>>>>> Sx5-868 Add keycloak_realm module with non mock unit tests.
+=======
+        else:  # if desired state is absent
+            result['msg'] = 'Realm %s is absent' % (newRealmRepresentation["realm"])
+
+    else:  # Realm already exists
+        if (state == 'present'):  # If desired state is present
+            if force:  # If force option is true
+>>>>>>> SX5-868 Ajustement du codestyle des modules Keycloak en préparation des
                 # Delete the existing realm
                 kc.delete_realm(newRealmRepresentation["realm"])
                 # Create realm
                 realmRepresentation = kc.create_realm(newRealmRepresentation=newRealmRepresentation)
                 changed = True
+<<<<<<< HEAD
 <<<<<<< HEAD
             else:  # If force option is false
                 # Compare realms
@@ -839,11 +901,17 @@ def main():
                 # Compare realms
                 if not isDictEquals(newRealmRepresentation, realmRepresentation): # If new realm introduces changes
 >>>>>>> Sx5-868 Add keycloak_realm module with non mock unit tests.
+=======
+            else:  # If force option is false
+                # Compare realms
+                if not isDictEquals(newRealmRepresentation, realmRepresentation):  # If new realm introduces changes
+>>>>>>> SX5-868 Ajustement du codestyle des modules Keycloak en préparation des
                     # Update REALM
                     realmRepresentation = kc.update_realm(newRealmRepresentation=newRealmRepresentation)
                     changed = True
                 else:
                     realmRepresentation = kc.get_realm(realm=newRealmRepresentation["realm"])
+<<<<<<< HEAD
 <<<<<<< HEAD
             if newEventsConfig is not None:  # If there is event configuration
                 # Get the existing events config
@@ -855,10 +923,17 @@ def main():
                 eventsConfig = kc.get_realm_events_config(realm=newRealmRepresentation["realm"])
                 if not isDictEquals(newEventsConfig, eventsConfig): # If realm needs changed
 >>>>>>> Sx5-868 Add keycloak_realm module with non mock unit tests.
+=======
+            if newEventsConfig is not None:  # If there is event configuration
+                # Get the existing events config
+                eventsConfig = kc.get_realm_events_config(realm=newRealmRepresentation["realm"])
+                if not isDictEquals(newEventsConfig, eventsConfig):  # If realm needs changed
+>>>>>>> SX5-868 Ajustement du codestyle des modules Keycloak en préparation des
                     # Update event config
                     eventsConfig = kc.update_realm_events_config(realm=newRealmRepresentation["realm"], newEventsConfig=newEventsConfig)
                 result["eventsConfig"] = eventsConfig
             result["realm"] = realmRepresentation
+<<<<<<< HEAD
 <<<<<<< HEAD
         else:  # If desired state is absent
             # Delete Realm
@@ -871,13 +946,20 @@ def main():
 
 =======
         else: # If desired state is absent
+=======
+        else:  # If desired state is absent
+>>>>>>> SX5-868 Ajustement du codestyle des modules Keycloak en préparation des
             # Delete Realm
             kc.delete_realm(newRealmRepresentation["realm"])
             changed = True
-            result["msg"] = 'Realm %s deleted' %(newRealmRepresentation["realm"])
+            result["msg"] = 'Realm %s deleted' % (newRealmRepresentation["realm"])
     result["changed"] = changed
     module.exit_json(**result)
 
+<<<<<<< HEAD
 >>>>>>> Sx5-868 Add keycloak_realm module with non mock unit tests.
+=======
+
+>>>>>>> SX5-868 Ajustement du codestyle des modules Keycloak en préparation des
 if __name__ == '__main__':
     main()

@@ -76,10 +76,14 @@ options:
         required: false
     clientRole:
 <<<<<<< HEAD
+<<<<<<< HEAD
         description:
 =======
         description: 
 >>>>>>> Sx5-868 Add a keycloak_role modules and non mock unit tests.
+=======
+        description:
+>>>>>>> SX5-868 Ajustement du codestyle des modules Keycloak en préparation des
             - This parameter indicate if the role is a client role.
             - For a ream role, this parameter must be false.
         default: false
@@ -146,12 +150,16 @@ notes:
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 author: 
     - Philippe Gauthier (philippe.gauthier@inspq.qc.ca)
 =======
 >>>>>>> Sx5-868 Add a keycloak_role modules and non mock unit tests.
 =======
 author: 
+=======
+author:
+>>>>>>> SX5-868 Ajustement du codestyle des modules Keycloak en préparation des
 =======
 author:
 >>>>>>> SX5-868 Ajustement du codestyle des modules Keycloak en préparation des
@@ -302,6 +310,9 @@ from ansible.module_utils.keycloak import KeycloakAPI, keycloak_argument_spec
 from ansible.module_utils.basic import AnsibleModule
 
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> SX5-868 Ajustement du codestyle des modules Keycloak en préparation des
 
 def main():
     argument_spec = keycloak_argument_spec()
@@ -329,8 +340,9 @@ def main():
 =======
     composites_spec = dict(
         name=dict(type='str', required=True),
-        clientId= dict(type='str')
+        clientId=dict(type='str')
     )
+<<<<<<< HEAD
 >>>>>>> Sx5-868 Add composites spec to keycloak_role module specs.
     meta_args =  dict(
         realm=dict(type='str', default='master'),
@@ -354,11 +366,17 @@ def main():
     meta_args = dict(
         realm=dict(type='str', default='master'),
         name=dict(type='str', required=True),
+=======
+    meta_args = dict(
+        realm=dict(type='str', default='master'),
+        name=dict(type='str', required=True),
+>>>>>>> SX5-868 Ajustement du codestyle des modules Keycloak en préparation des
         description=dict(type='str', default=None),
         composite=dict(type='bool', default=False),
         clientRole=dict(type='bool', default=False),
         containerId=dict(type='str', required=False),
         composites=dict(type='list', default=[], options=composites_spec),
+<<<<<<< HEAD
 >>>>>>> SX5-868 Ajustement du codestyle des modules Keycloak en préparation des
 =======
         composites = dict(type='list', default=[]),
@@ -366,6 +384,8 @@ def main():
 =======
         composites = dict(type='list', default=[], options=composites_spec),
 >>>>>>> Sx5-868 Add composites spec to keycloak_role module specs.
+=======
+>>>>>>> SX5-868 Ajustement du codestyle des modules Keycloak en préparation des
         state=dict(choices=["absent", "present"], default='present'),
         force=dict(type='bool', default=False),
     )
@@ -385,10 +405,14 @@ def main():
     force = module.params.get('force')
     newComposites = None
 <<<<<<< HEAD
+<<<<<<< HEAD
 
 =======
     
 >>>>>>> Sx5-868 Add a keycloak_role modules and non mock unit tests.
+=======
+
+>>>>>>> SX5-868 Ajustement du codestyle des modules Keycloak en préparation des
     # Create representation for the new role
     newRoleRepresentation = {}
     newRoleRepresentation["name"] = module.params.get('name')
@@ -400,14 +424,19 @@ def main():
     if module.params.get('composites') is not None:
         newComposites = module.params.get('composites')
 <<<<<<< HEAD
+<<<<<<< HEAD
 
 =======
     
 >>>>>>> Sx5-868 Add a keycloak_role modules and non mock unit tests.
+=======
+
+>>>>>>> SX5-868 Ajustement du codestyle des modules Keycloak en préparation des
     changed = False
 
     # Search the role on Keycloak server.
     roleRepresentation = kc.search_realm_role_by_name(name=newRoleRepresentation["name"], realm=realm)
+<<<<<<< HEAD
 <<<<<<< HEAD
     if roleRepresentation == {}:  # If role does not exists
         if (state == 'present'):  # If desired state is present
@@ -415,6 +444,10 @@ def main():
     if roleRepresentation == {}: # If role does not exists
         if (state == 'present'): # If desired state is present
 >>>>>>> Sx5-868 Add a keycloak_role modules and non mock unit tests.
+=======
+    if roleRepresentation == {}:  # If role does not exists
+        if (state == 'present'):  # If desired state is present
+>>>>>>> SX5-868 Ajustement du codestyle des modules Keycloak en préparation des
             # Create Role
             kc.create_realm_role(newRoleRepresentation=newRoleRepresentation, realm=realm)
             # Create composites
@@ -426,6 +459,7 @@ def main():
             changed = True
             result['role'] = roleRepresentation
             result['composites'] = composites
+<<<<<<< HEAD
 <<<<<<< HEAD
         elif state == 'absent':  # If desired state is absent
             result["msg"] = "Realm role %s is absent in realm %s" % (newRoleRepresentation["name"], realm)
@@ -441,11 +475,20 @@ def main():
         if (state == 'present'): # If desired state is present
             if force: # If force option is true
 >>>>>>> Sx5-868 Add a keycloak_role modules and non mock unit tests.
+=======
+        elif state == 'absent':  # If desired state is absent
+            result["msg"] = "Realm role %s is absent in realm %s" % (newRoleRepresentation["name"], realm)
+
+    else:  # If role already exists
+        if (state == 'present'):  # If desired state is present
+            if force:  # If force option is true
+>>>>>>> SX5-868 Ajustement du codestyle des modules Keycloak en préparation des
                 # Delete the existing role
                 kc.delete_realm_role(name=roleRepresentation["name"], realm=realm)
                 # Create role again
                 kc.create_realm_role(newRoleRepresentation=newRoleRepresentation, realm=realm)
                 changed = True
+<<<<<<< HEAD
 <<<<<<< HEAD
             else:  # If force option is false
                 # Compare roles
@@ -455,6 +498,11 @@ def main():
                 # Compare roles
                 if not (isDictEquals(newRoleRepresentation, roleRepresentation)): # If new role introduce changes
 >>>>>>> Sx5-868 Add a keycloak_role modules and non mock unit tests.
+=======
+            else:  # If force option is false
+                # Compare roles
+                if not (isDictEquals(newRoleRepresentation, roleRepresentation)):  # If new role introduce changes
+>>>>>>> SX5-868 Ajustement du codestyle des modules Keycloak en préparation des
                     # Update the role
                     kc.update_realm_role(newRoleRepresentation=newRoleRepresentation, realm=realm)
                     changed = True
@@ -468,6 +516,7 @@ def main():
             result["role"] = roleRepresentation
             result["composites"] = composites
 <<<<<<< HEAD
+<<<<<<< HEAD
         elif state == 'absent':  # If desired state is absent
             # Delete role
             kc.delete_realm_role(name=newRoleRepresentation["name"], realm=realm)
@@ -479,13 +528,20 @@ def main():
 
 =======
         elif state == 'absent': # If desired state is absent
+=======
+        elif state == 'absent':  # If desired state is absent
+>>>>>>> SX5-868 Ajustement du codestyle des modules Keycloak en préparation des
             # Delete role
             kc.delete_realm_role(name=newRoleRepresentation["name"], realm=realm)
             changed = True
-            result["msg"] = "Realm role %s is deleted in realm %s" % (newRoleRepresentation["name"],realm)
+            result["msg"] = "Realm role %s is deleted in realm %s" % (newRoleRepresentation["name"], realm)
     result['changed'] = changed
     module.exit_json(**result)
 
+<<<<<<< HEAD
 >>>>>>> Sx5-868 Add a keycloak_role modules and non mock unit tests.
+=======
+
+>>>>>>> SX5-868 Ajustement du codestyle des modules Keycloak en préparation des
 if __name__ == '__main__':
     main()
