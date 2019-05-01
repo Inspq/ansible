@@ -2925,6 +2925,9 @@ class KeycloakAPI(object):
                         newExec["provider"] = newExecution["providerId"]
                         newExec["requirement"] = newExecution["requirement"]
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> SX5-868 Line too long fix
                         open_url(
                             URL_AUTHENTICATION_FLOW_EXECUTIONS_EXECUTION.format(
                                 url=self.baseurl,
@@ -2933,6 +2936,7 @@ class KeycloakAPI(object):
                             method='POST',
                             headers=self.restheaders,
                             data=json.dumps(newExec))
+<<<<<<< HEAD
                         changed = True
                     if changed:
                         # Get existing executions on the Keycloak server for this alias
@@ -2952,6 +2956,19 @@ class KeycloakAPI(object):
                         # Get existing executions on the Keycloak server for this alias
                         existingExecutions = json.load(open_url(URL_AUTHENTICATION_FLOW_EXECUTIONS.format(url=self.baseurl, realm=realm, flowalias=urllib.quote(config["alias"])), method='GET', headers=self.restheaders))
 >>>>>>> SX5-868 PR Added role management for keycloak_client module.
+=======
+                        changed = True
+                    if changed:
+                        # Get existing executions on the Keycloak server for this alias
+                        existingExecutions = json.load(
+                            open_url(
+                                URL_AUTHENTICATION_FLOW_EXECUTIONS.format(
+                                    url=self.baseurl,
+                                    realm=realm,
+                                    flowalias=urllib.quote(config["alias"])),
+                                method='GET',
+                                headers=self.restheaders))
+>>>>>>> SX5-868 Line too long fix
                         executionFound = False
                         for existingExecution in existingExecutions:
                             if "providerId" in existingExecution and existingExecution["providerId"] == newExecution["providerId"]:
@@ -2966,6 +2983,9 @@ class KeycloakAPI(object):
                                 if key == "authenticationConfig":
                                     # Add the autenticatorConfig to the execution
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> SX5-868 Line too long fix
                                     open_url(
                                         URL_AUTHENTICATION_EXECUTIONS_CONFIG.format(
                                             url=self.baseurl,
@@ -2974,6 +2994,7 @@ class KeycloakAPI(object):
                                         method='POST',
                                         headers=self.restheaders,
                                         data=json.dumps(newExecution["authenticationConfig"]))
+<<<<<<< HEAD
                                 else:
                                     updatedExec[key] = newExecution[key]
                             open_url(
@@ -2992,6 +3013,18 @@ class KeycloakAPI(object):
                             data = json.dumps(updatedExec)
                             open_url(URL_AUTHENTICATION_FLOW_EXECUTIONS.format(url=self.baseurl, realm=realm, flowalias=urllib.quote(config["alias"])), method='PUT', headers=self.restheaders, data=data)
 >>>>>>> SX5-868 PR Added role management for keycloak_client module.
+=======
+                                else:
+                                    updatedExec[key] = newExecution[key]
+                            open_url(
+                                URL_AUTHENTICATION_FLOW_EXECUTIONS.format(
+                                    url=self.baseurl,
+                                    realm=realm,
+                                    flowalias=urllib.quote(config["alias"])),
+                                method='PUT',
+                                headers=self.restheaders,
+                                data=json.dumps(updatedExec))
+>>>>>>> SX5-868 Line too long fix
             return changed
         except Exception as e:
             self.module.fail_json(msg='Could not create or update executions for authentication flow %s in realm %s: %s'
@@ -3058,12 +3091,30 @@ class KeycloakAPI(object):
 =======
         try:
             # Get executions created
-            executions = json.load(open_url(URL_AUTHENTICATION_FLOW_EXECUTIONS.format(url=self.baseurl, realm=realm, flowalias=urllib.quote(config["alias"])), method='GET', headers=self.restheaders))
+            executions = json.load(
+                open_url(
+                    URL_AUTHENTICATION_FLOW_EXECUTIONS.format(
+                        url=self.baseurl,
+                        realm=realm,
+                        flowalias=urllib.quote(config["alias"])),
+                    method='GET',
+                    headers=self.restheaders))
             for execution in executions:
                 if "authenticationConfig" in execution:
                     execConfigId = execution["authenticationConfig"]
+<<<<<<< HEAD
                     execConfig = json.load(open_url(URL_AUTHENTICATION_CONFIG.format(url=self.baseurl, realm=realm, id=execConfigId), method='GET', headers=self.restheaders))
 >>>>>>> SX5-868 PR Added role management for keycloak_client module.
+=======
+                    execConfig = json.load(
+                        open_url(
+                            URL_AUTHENTICATION_CONFIG.format(
+                                url=self.baseurl,
+                                realm=realm,
+                                id=execConfigId),
+                            method='GET',
+                            headers=self.restheaders))
+>>>>>>> SX5-868 Line too long fix
                     execution["authenticationConfig"] = execConfig
             return executions
         except Exception as e:
