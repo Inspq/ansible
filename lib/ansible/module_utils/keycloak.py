@@ -1986,12 +1986,25 @@ class KeycloakAPI(object):
                         newExec = {}
                         newExec["provider"] = newExecution["providerId"]
                         newExec["requirement"] = newExecution["requirement"]
-                        data = json.dumps(newExec)
-                        open_url(URL_AUTHENTICATION_FLOW_EXECUTIONS_EXECUTION.format(url=self.baseurl, realm=realm, flowalias=urllib.quote(config["alias"])), method='POST', headers=self.restheaders, data=data)
+                        open_url(
+                            URL_AUTHENTICATION_FLOW_EXECUTIONS_EXECUTION.format(
+                                url=self.baseurl,
+                                realm=realm,
+                                flowalias=urllib.quote(config["alias"])),
+                            method='POST',
+                            headers=self.restheaders,
+                            data=json.dumps(newExec))
                         changed = True
                     if changed:
                         # Get existing executions on the Keycloak server for this alias
-                        existingExecutions = json.load(open_url(URL_AUTHENTICATION_FLOW_EXECUTIONS.format(url=self.baseurl, realm=realm, flowalias=urllib.quote(config["alias"])), method='GET', headers=self.restheaders))
+                        existingExecutions = json.load(
+                            open_url(
+                                URL_AUTHENTICATION_FLOW_EXECUTIONS.format(
+                                    url=self.baseurl,
+                                    realm=realm,
+                                    flowalias=urllib.quote(config["alias"])),
+                                method='GET',
+                                headers=self.restheaders))
                         executionFound = False
                         for existingExecution in existingExecutions:
                             if "providerId" in existingExecution and existingExecution["providerId"] == newExecution["providerId"]:
@@ -2005,12 +2018,24 @@ class KeycloakAPI(object):
                                 # create the execution configuration
                                 if key == "authenticationConfig":
                                     # Add the autenticatorConfig to the execution
-                                    data = json.dumps(newExecution["authenticationConfig"])
-                                    open_url(URL_AUTHENTICATION_EXECUTIONS_CONFIG.format(url=self.baseurl, realm=realm, id=existingExecution["id"]), method='POST', headers=self.restheaders, data=data)
+                                    open_url(
+                                        URL_AUTHENTICATION_EXECUTIONS_CONFIG.format(
+                                            url=self.baseurl,
+                                            realm=realm,
+                                            id=existingExecution["id"]),
+                                        method='POST',
+                                        headers=self.restheaders,
+                                        data=json.dumps(newExecution["authenticationConfig"]))
                                 else:
                                     updatedExec[key] = newExecution[key]
-                            data = json.dumps(updatedExec)
-                            open_url(URL_AUTHENTICATION_FLOW_EXECUTIONS.format(url=self.baseurl, realm=realm, flowalias=urllib.quote(config["alias"])), method='PUT', headers=self.restheaders, data=data)
+                            open_url(
+                                URL_AUTHENTICATION_FLOW_EXECUTIONS.format(
+                                    url=self.baseurl,
+                                    realm=realm,
+                                    flowalias=urllib.quote(config["alias"])),
+                                method='PUT',
+                                headers=self.restheaders,
+                                data=json.dumps(updatedExec))
             return changed
         except Exception as e:
             self.module.fail_json(msg='Could not create or update executions for authentication flow %s in realm %s: %s'
@@ -2039,11 +2064,25 @@ class KeycloakAPI(object):
 >>>>>>> SX5-868 PR Added role management for keycloak_client module.
         try:
             # Get executions created
-            executions = json.load(open_url(URL_AUTHENTICATION_FLOW_EXECUTIONS.format(url=self.baseurl, realm=realm, flowalias=urllib.quote(config["alias"])), method='GET', headers=self.restheaders))
+            executions = json.load(
+                open_url(
+                    URL_AUTHENTICATION_FLOW_EXECUTIONS.format(
+                        url=self.baseurl,
+                        realm=realm,
+                        flowalias=urllib.quote(config["alias"])),
+                    method='GET',
+                    headers=self.restheaders))
             for execution in executions:
                 if "authenticationConfig" in execution:
                     execConfigId = execution["authenticationConfig"]
-                    execConfig = json.load(open_url(URL_AUTHENTICATION_CONFIG.format(url=self.baseurl, realm=realm, id=execConfigId), method='GET', headers=self.restheaders))
+                    execConfig = json.load(
+                        open_url(
+                            URL_AUTHENTICATION_CONFIG.format(
+                                url=self.baseurl,
+                                realm=realm,
+                                id=execConfigId),
+                            method='GET',
+                            headers=self.restheaders))
                     execution["authenticationConfig"] = execConfig
             return executions
         except Exception as e:
