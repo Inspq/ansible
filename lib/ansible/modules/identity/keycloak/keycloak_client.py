@@ -513,11 +513,20 @@ options:
 <<<<<<< HEAD
 <<<<<<< HEAD
         version_added: "2.9"
+<<<<<<< HEAD
 =======
 >>>>>>> SX5-868 PR Added role management for keycloak_client module.
 =======
         version_added: "2.9"
 >>>>>>> SX5-868 Code clean after shippable comments.
+=======
+    force:
+        type: bool
+        description:
+            - If true, existing client will be deleted an re-created.
+        default: False
+        version_added: "2.9"
+>>>>>>> SX5-868 Remove aliases url, username and password for
 extends_documentation_fragment:
     - keycloak
 
