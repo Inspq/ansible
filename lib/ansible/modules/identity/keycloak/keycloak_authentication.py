@@ -1,21 +1,7 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-# (c) 2017, Philippe Gauthier INSPQ <philippe.gauthier@inspq.qc.ca>
-#
-# This file is not part of Ansible
-#
-# Ansible is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# Ansible is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with Ansible.  If not, see <http://www.gnu.org/licenses/>.
+# Copyright: (c) 2019, INSPQ <philippe.gauthier@inspq.qc.ca>
+# GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
 ANSIBLE_METADATA = {'metadata_version': '1.1',
                     'status': ['preview'],
@@ -43,7 +29,7 @@ options:
         description:
             - providerId for the new flow when not copied from an existing flow.
         required: false
-    copyForm:
+    copyFrom:
         description:
             - flowAlias of the authentication flow to use for the copy.
         required: false
@@ -58,17 +44,16 @@ options:
         default: present
         required: false
     force:
-        choices: [ "yes", "no" ]
-        default: "no"
+        type: bool
+        default: false
         description:
-            - If yes, allows to remove the authentication flow and recreate it.
+            - If true, allows to remove the authentication flow and recreate it.
         required: false
 extends_documentation_fragment:
     - keycloak
-notes:
-    - This module has very limited functions at the moment. Please contribute if you need more...
+
 author:
-    - Philippe Gauthier (philippe.gauthier@inspq.qc.ca)
+    - Philippe Gauthier (@elfelip)
 '''
 
 EXAMPLES = '''
@@ -159,8 +144,7 @@ def main():
     argument_spec.update(meta_args)
 
     module = AnsibleModule(argument_spec=argument_spec,
-                           supports_check_mode=True,
-                           required_one_of=([['alias']]))
+                           supports_check_mode=True)
 
     result = dict(changed=False, msg='', flow={})
     kc = KeycloakAPI(module)
