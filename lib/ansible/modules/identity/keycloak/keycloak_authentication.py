@@ -121,7 +121,7 @@ options:
         required: false
     force:
         type: bool
-        default: False
+        default: false
         description:
             - If true, allows to remove the authentication flow and recreate it.
         required: false
@@ -159,11 +159,15 @@ notes:
 =======
 =======
 
+<<<<<<< HEAD
 >>>>>>> SX5-868 Fix keycloak_authentication module documentation.
 author: 
 =======
 author:
 >>>>>>> SX5-868 Ajustement du codestyle des modules Keycloak en préparation des
+=======
+author:
+>>>>>>> SX5-868 fix code style in keycloak_authentication module.
     - Philippe Gauthier (philippe.gauthier@inspq.qc.ca)
 >>>>>>> SX5-868 Mise à jour de la documentation des modules Keycloak suite à la
 =======
@@ -221,6 +225,7 @@ EXAMPLES = '''
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
             authenticationConfig:
               alias: "test.execution1.property"
               config:
@@ -250,15 +255,22 @@ EXAMPLES = '''
 >>>>>>> SX5-868 Ajustement du codestyle des modules Keycloak en préparation des
 =======
             authenticationConfig: 
+=======
+            authenticationConfig:
+>>>>>>> SX5-868 fix code style in keycloak_authentication module.
               alias: "test.execution1.property"
-              config: 
+              config:
                 test1.property: "value"
           - providerId: "test-execution2"
             requirement: "REQUIRED"
-            authenticationConfig: 
+            authenticationConfig:
               alias: "test.execution2.property"
+<<<<<<< HEAD
               config: 
 >>>>>>> SX5-868 Add keycloak_authentication module.
+=======
+              config:
+>>>>>>> SX5-868 fix code style in keycloak_authentication module.
                 test2.property: "value"
         state: present
 
@@ -306,6 +318,7 @@ EXAMPLES = '''
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
             authenticationConfig:
               alias: "test.provisioning.property"
               config:
@@ -324,6 +337,11 @@ EXAMPLES = '''
               alias: "test.provisioning.property"
               config: 
 >>>>>>> SX5-868 Add keycloak_authentication module.
+=======
+            authenticationConfig:
+              alias: "test.provisioning.property"
+              config:
+>>>>>>> SX5-868 fix code style in keycloak_authentication module.
                 test.provisioning.property: "value"
         state: present
         force: yes
@@ -577,6 +595,7 @@ from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils.keycloak import KeycloakAPI, keycloak_argument_spec
 from ansible.module_utils.basic import AnsibleModule
 
+<<<<<<< HEAD
 >>>>>>> SX5-868 Add keycloak_authentication module.
 def main():
     """
@@ -592,10 +611,17 @@ def main():
 >>>>>>> SX5-868 Ajustement du codestyle des modules Keycloak en préparation des
 =======
 >>>>>>> SX5-868 Add keycloak_authentication module.
+=======
+
+def main():
+    """
+    Module execution
+>>>>>>> SX5-868 fix code style in keycloak_authentication module.
     :returm:
     """
     argument_spec = keycloak_argument_spec()
     meta_args = dict(
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -632,6 +658,8 @@ def main():
 =======
 =======
 >>>>>>> SX5-868 Ajustement du codestyle des modules Keycloak en préparation des
+=======
+>>>>>>> SX5-868 fix code style in keycloak_authentication module.
         realm=dict(type='str', required=True),
         alias=dict(type='str', required=True),
         providerId=dict(type='str'),
@@ -641,6 +669,7 @@ def main():
         force=dict(type='bool', default=False),
     )
 <<<<<<< HEAD
+<<<<<<< HEAD
 >>>>>>> SX5-868 Ajustement du codestyle des modules Keycloak en préparation des
 =======
 >>>>>>> SX5-868 Add keycloak_authentication module to manage Authentication
@@ -648,10 +677,13 @@ def main():
 >>>>>>> SX5-868 Ajustement du codestyle des modules Keycloak en préparation des
 =======
 >>>>>>> SX5-868 Add keycloak_authentication module.
+=======
+>>>>>>> SX5-868 fix code style in keycloak_authentication module.
     argument_spec.update(meta_args)
 
     module = AnsibleModule(argument_spec=argument_spec,
-                           supports_check_mode=True)
+                           supports_check_mode=True,
+                           required_one_of=([['alias']]))
 
     result = dict(changed=False, msg='', flow={})
     kc = KeycloakAPI(module)
@@ -659,6 +691,7 @@ def main():
     realm = module.params.get('realm')
     state = module.params.get('state')
     force = module.params.get('force')
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -716,12 +749,16 @@ def main():
 =======
 
 >>>>>>> SX5-868 Ajustement du codestyle des modules Keycloak en préparation des
+=======
+
+>>>>>>> SX5-868 fix code style in keycloak_authentication module.
     newAuthenticationRepresentation = {}
     newAuthenticationRepresentation["alias"] = module.params.get("alias")
     newAuthenticationRepresentation["copyFrom"] = module.params.get("copyFrom")
     newAuthenticationRepresentation["providerId"] = module.params.get("providerId")
     newAuthenticationRepresentation["authenticationExecutions"] = module.params.get("authenticationExecutions")
 
+<<<<<<< HEAD
     changed = False
 
     authenticationRepresentation = kc.get_authentication_flow_by_alias(alias=newAuthenticationRepresentation["alias"], realm=realm)
@@ -758,17 +795,23 @@ def main():
 >>>>>>> SX5-868 Ajustement du codestyle des modules Keycloak en préparation des
 =======
     
+=======
+>>>>>>> SX5-868 fix code style in keycloak_authentication module.
     changed = False
 
     authenticationRepresentation = kc.get_authentication_flow_by_alias(alias=newAuthenticationRepresentation["alias"], realm=realm)
-        
-    if authenticationRepresentation == {}: # Authentication flow does not exist        
-        if (state == 'present'): # If desired state is prenset
+
+    if authenticationRepresentation == {}:  # Authentication flow does not exist
+        if (state == 'present'):  # If desired state is prenset
             # If copyFrom is defined, create authentication flow from a copy
             if "copyFrom" in newAuthenticationRepresentation and newAuthenticationRepresentation["copyFrom"] is not None:
                 authenticationRepresentation = kc.copy_auth_flow(config=newAuthenticationRepresentation, realm=realm)
+<<<<<<< HEAD
             else: # Create an empty authentication flow
 >>>>>>> SX5-868 Add keycloak_authentication module.
+=======
+            else:  # Create an empty authentication flow
+>>>>>>> SX5-868 fix code style in keycloak_authentication module.
                 authenticationRepresentation = kc.create_empty_auth_flow(config=newAuthenticationRepresentation, realm=realm)
             # If the authentication still not exist on the server, raise an exception.
             if authenticationRepresentation is None:
@@ -865,16 +908,19 @@ def main():
             executionsRepresentation = kc.get_executions_representation(config=newAuthenticationRepresentation, realm=realm)
             if executionsRepresentation is not None:
                 authenticationRepresentation["authenticationExecutions"] = executionsRepresentation
-                
             result['changed'] = changed
             result['flow'] = authenticationRepresentation
-        elif state == 'absent': # If desired state is absent.
+        elif state == 'absent':  # If desired state is absent.
             result['msg'] = newAuthenticationRepresentation["alias"] + ' absent'
-                
     else:  # The authentication flow already exist
+<<<<<<< HEAD
         if (state == 'present'): # if desired state is present
             if force: # If force option is true
 >>>>>>> SX5-868 Add keycloak_authentication module.
+=======
+        if (state == 'present'):  # if desired state is present
+            if force:  # If force option is true
+>>>>>>> SX5-868 fix code style in keycloak_authentication module.
                 # Delete the actual authentication flow
                 kc.delete_authentication_flow_by_id(id=authenticationRepresentation["id"], realm=realm)
                 changed = True
@@ -918,8 +964,12 @@ def main():
 >>>>>>> SX5-868 Ajustement du codestyle des modules Keycloak en préparation des
 =======
                     authenticationRepresentation = kc.copy_auth_flow(config=newAuthenticationRepresentation, realm=realm)
+<<<<<<< HEAD
                 else: # Create an empty authentication flow
 >>>>>>> SX5-868 Add keycloak_authentication module.
+=======
+                else:  # Create an empty authentication flow
+>>>>>>> SX5-868 fix code style in keycloak_authentication module.
                     authenticationRepresentation = kc.create_empty_auth_flow(config=newAuthenticationRepresentation, realm=realm)
                 # If the authentication still not exist on the server, raise an exception.
                 if authenticationRepresentation is None:
@@ -970,6 +1020,7 @@ def main():
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
         elif state == 'absent':  # If desired state is absent
             # Delete the authentication flow alias.
 <<<<<<< HEAD
@@ -984,6 +1035,9 @@ def main():
 =======
         elif state == 'absent':  # If desired state is absent
 >>>>>>> SX5-868 Ajustement du codestyle des modules Keycloak en préparation des
+=======
+        elif state == 'absent':  # If desired state is absent
+>>>>>>> SX5-868 fix code style in keycloak_authentication module.
             # Delete the authentication flow alias.
 <<<<<<< HEAD
             #requests.delete(authenticationSvcBaseUrl + "flows/" + authenticationRepresentation["id"], headers=headers)
@@ -1001,6 +1055,7 @@ def main():
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 
     module.exit_json(**result)
 
@@ -1022,5 +1077,11 @@ def main():
 >>>>>>> SX5-868 Ajustement du codestyle des modules Keycloak en préparation des
 =======
 >>>>>>> SX5-868 Add keycloak_authentication module.
+=======
+
+    module.exit_json(**result)
+
+
+>>>>>>> SX5-868 fix code style in keycloak_authentication module.
 if __name__ == '__main__':
     main()
