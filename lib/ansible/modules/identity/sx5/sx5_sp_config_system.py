@@ -426,7 +426,7 @@ def system(params):
                             if "pilotRoles" in params and params['pilotRoles'] is not None:
                                 for pilotRole in newSystemDBRepresentation["pilotRoles"]:
                                    getResponseHabilitationclients = requests.get(clientSvcBaseUrl, headers=headers, params={'clientId': pilotRole["habilitationClientId"]})
-                                   if getResponseHabilitationclients.status_code == 200 and len(getResponseHabilitationclients.json()) < 0:
+                                   if getResponseHabilitationclients.status_code == 200 and len(getResponseHabilitationclients.json()) > 0:
                                        clientRepresentation = getResponseHabilitationclients.json()[0]
                                        # Create client roles
                                        createOrUpdateClientRoles(pilotRole["roles"], clientSvcBaseUrl, roleSvcBaseUrl, clientRepresentation, headers)
@@ -552,7 +552,7 @@ def system(params):
                             if "pilotRoles" in params and params['pilotRoles'] is not None:
                                 for pilotRole in newSystemDBRepresentation["pilotRoles"]:
                                    getResponseHabilitationclients = requests.get(clientSvcBaseUrl, headers=headers, params={'clientId': pilotRole["habilitationClientId"]})
-                                   if getResponseHabilitationclients.status_code == 200 and len(getResponseHabilitationclients.json()) < 0:
+                                   if getResponseHabilitationclients.status_code == 200 and len(getResponseHabilitationclients.json()) > 0:
                                        clientRepresentation = getResponseHabilitationclients.json()[0]
                                        # Create client roles
                                        createOrUpdateClientRoles(pilotRole["roles"], clientSvcBaseUrl, roleSvcBaseUrl, clientRepresentation, headers)
@@ -728,7 +728,7 @@ def system(params):
                             if "pilotRoles" in params and params['pilotRoles'] is not None:
                                 for pilotRole in newSystemDBRepresentation["pilotRoles"]:
                                    getResponseHabilitationclients = requests.get(clientSvcBaseUrl, headers=headers, params={'clientId': pilotRole["habilitationClientId"]})
-                                   if getResponseHabilitationclients.status_code == 200 and len(getResponseHabilitationclients.json()) < 0:
+                                   if getResponseHabilitationclients.status_code == 200 and len(getResponseHabilitationclients.json()) > 0:
                                        clientRepresentation = getResponseHabilitationclients.json()[0]
                                        # Create client roles
                                        createOrUpdateClientRoles(pilotRole["roles"], clientSvcBaseUrl, roleSvcBaseUrl, clientRepresentation, headers)
@@ -854,7 +854,7 @@ def system(params):
                             if "pilotRoles" in params and params['pilotRoles'] is not None:
                                 for pilotRole in newSystemDBRepresentation["pilotRoles"]:
                                    getResponseHabilitationclients = requests.get(clientSvcBaseUrl, headers=headers, params={'clientId': pilotRole["habilitationClientId"]})
-                                   if getResponseHabilitationclients.status_code == 200 and len(getResponseHabilitationclients.json()) < 0:
+                                   if getResponseHabilitationclients.status_code == 200 and len(getResponseHabilitationclients.json()) > 0:
                                        clientRepresentation = getResponseHabilitationclients.json()[0]
                                        # Create client roles
                                        createOrUpdateClientRoles(pilotRole["roles"], clientSvcBaseUrl, roleSvcBaseUrl, clientRepresentation, headers)
