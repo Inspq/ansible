@@ -105,7 +105,7 @@ options:
         description:
             - providerId for the new flow when not copied from an existing flow.
         required: false
-    copyForm:
+    copyFrom:
         description:
             - flowAlias of the authentication flow to use for the copy.
         required: false
@@ -120,10 +120,10 @@ options:
         default: present
         required: false
     force:
-        choices: [ "yes", "no" ]
-        default: "no"
+        type: bool
+        default: False
         description:
-            - If yes, allows to remove the authentication flow and recreate it.
+            - If true, allows to remove the authentication flow and recreate it.
         required: false
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -134,6 +134,7 @@ options:
 >>>>>>> SX5-868 Update documentation for keycloak_authentication module.
 extends_documentation_fragment:
     - keycloak
+<<<<<<< HEAD
 notes:
     - This module has very limited functions at the moment. Please contribute if you need more...
 <<<<<<< HEAD
@@ -156,6 +157,9 @@ notes:
     - This module has very limited functions at the moment. Please contribute if you need more...
 >>>>>>> SX5-868 Add keycloak_authentication module to manage Authentication
 =======
+=======
+
+>>>>>>> SX5-868 Fix keycloak_authentication module documentation.
 author: 
 =======
 author:
@@ -647,8 +651,7 @@ def main():
     argument_spec.update(meta_args)
 
     module = AnsibleModule(argument_spec=argument_spec,
-                           supports_check_mode=True,
-                           required_one_of=([['alias']]))
+                           supports_check_mode=True)
 
     result = dict(changed=False, msg='', flow={})
     kc = KeycloakAPI(module)
