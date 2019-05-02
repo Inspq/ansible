@@ -99,6 +99,27 @@ class Sx5SystemTestCase(unittest.TestCase):
                 "roles": [{"name":"test4","description": "test4","composite": "False"},
                              {"name":"toDelete","description": "toDelete","composite": True,"composites": [{"id": "master-realm","name": "view-users","clientRole": True,"composite": True}]}
                              ]
+                },
+            {
+                "clientId": "habilitationClient1",
+                "name": "habilitationClient1",
+                "roles": [{"name":"HRole1","description": "HRole1","composite": "False"},
+                             {"name":"HRole2","description": "HRole2","composite": True,"composites": [{"id": "master-realm","name": "view-users","clientRole": True,"composite": True}]}
+                             ]
+                },
+            {
+                "clientId": "habilitationClient2",
+                "name": "habilitationClient2",
+                "roles": [{"name":"HRole1","description": "HRole1","composite": "False"},
+                             {"name":"HRole2","description": "HRole2","composite": True,"composites": [{"id": "master-realm","name": "view-users","clientRole": True,"composite": True}]}
+                             ]
+                },
+            {
+                "clientId": "habilitationClient3",
+                "name": "habilitationClient3",
+                "roles": [{"name":"HRole1","description": "HRole1","composite": "False"},
+                             {"name":"HRole2","description": "HRole2","composite": True,"composites": [{"id": "master-realm","name": "view-users","clientRole": True,"composite": True}]}
+                             ]
                 }
             ]
         toCreateClient = {}
@@ -139,6 +160,7 @@ class Sx5SystemTestCase(unittest.TestCase):
         toCreate["sadu_secondary"] = [{"adresse": "http://sadu_secondary1"},{"adresse": "http://sadu_secondary2"}]
         toCreate["clientRoles_mapper"] = [{"spClientRole": "roleInSp11", "eq_sadu_role": "roleSadu11"},{"spClientRole": "roleInSp12", "eq_sadu_role": "roleSadu12"}]
         toCreate["clientRoles"] = [{"spClientRoleId": "test1", "spClientRoleName": "test1", "spClientRoleDescription": "test1"},{"spClientRoleId": "toCreate", "spClientRoleName": "toCreate", "spClientRoleDescription": "toCreate"}]
+        toCreate["pilotRoles"] = [{"habilitationClientId": "habilitationClient1", "roles": [{"name": "pilot-system1", "description": "Role1", "composite": true, "composites": [{ "id": "clientsystem11", "name": "test1"}], "state": "present"}]}]
         toCreate["state"] = "present"
         toCreate["force"] = False
     
@@ -163,6 +185,7 @@ class Sx5SystemTestCase(unittest.TestCase):
         toDoNotChange["sadu_secondary"] = [{"adresse": "http://sadu_secondary1"},{"adresse": "http://sadu_secondary2"}]
         toDoNotChange["clientRoles_mapper"] = [{"spClientRole": "roleInSp11", "eq_sadu_role": "roleSadu11"},{"spClientRole": "roleInSp12", "eq_sadu_role": "roleSadu12"}]
         toDoNotChange["clientRoles"] = [{"spClientRoleId": "test2", "spClientRoleName": "test2", "spClientRoleDescription": "test2"},{"spClientRoleId": "toDoNotChange", "spClientRoleName": "toDoNotChange", "spClientRoleDescription": "toDoNotChange"}]
+        toDoNotChange["pilotRoles"] = [{"habilitationClientId": "habilitationClient2", "roles": [{"name": "pilot-system1", "description": "Role1", "composite": true, "composites": [{ "id": "clientsystem21", "name": "test2"}], "state": "present"}]}]
         toDoNotChange["state"] = "present"
         toDoNotChange["force"] = False
 
@@ -188,6 +211,7 @@ class Sx5SystemTestCase(unittest.TestCase):
         toChange["sadu_secondary"] = [{"adresse": "http://sadu_secondary1"},{"adresse": "http://sadu_secondary2"}]
         toChange["clientRoles_mapper"] = [{"spClientRole": "roleInSp11", "eq_sadu_role": "roleSadu11"},{"spClientRole": "roleInSp12", "eq_sadu_role": "roleSadu12"}]
         toChange["clientRoles"] = [{"spClientRoleId": "test31", "spClientRoleName": "test31", "spClientRoleDescription": "test31"},{"spClientRoleId": "toChange", "spClientRoleName": "toChange", "spClientRoleDescription": "toChange"}]
+        toCreate["pilotRoles"] = [{"habilitationClientId": "habilitationClient1", "roles": [{"name": "pilot-system1", "description": "Role1", "composite": true, "composites": [{ "id": "clientsystem11", "name": "test1"}], "state": "present"}]}]
         toChange["state"] = "present"
         toChange["force"] = False
 
@@ -224,6 +248,7 @@ class Sx5SystemTestCase(unittest.TestCase):
         toChange["sadu_secondary"] = [{"adresse": "http://sadu_secondary1"},{"adresse": "http://sadu_secondary2"}]
         toChange["clientRoles_mapper"] = [{"spClientRole": "roleInSp11", "eq_sadu_role": "roleSadu11"},{"spClientRole": "roleInSp12", "eq_sadu_role": "roleSadu12"}]
         toChange["clientRoles"] = [{"spClientRoleId": "test32", "spClientRoleName": "test32", "spClientRoleDescription": "test32"},{"spClientRoleId": "toChange", "spClientRoleName": "toChange", "spClientRoleDescription": "toChange"}]
+        toCreate["pilotRoles"] = [{"habilitationClientId": "habilitationClient1", "roles": [{"name": "pilot-system1", "description": "Role1", "composite": true, "composites": [{ "id": "clientsystem11", "name": "test1"}], "state": "present"}]}]
         toChange["state"] = "present"
         toChange["force"] = False
 
@@ -405,6 +430,7 @@ class Sx5SystemTestCase(unittest.TestCase):
         toDelete["sadu_secondary"] = [{"adresse": "http://sadu_secondary1"},{"adresse": "http://sadu_secondary2"}]
         toDelete["clientRoles_mapper"] = [{"spClientRole": "roleInSp11", "eq_sadu_role": "roleSadu11"},{"spClientRole": "roleInSp12", "eq_sadu_role": "roleSadu12"}]
         toDelete["clientRoles"] = [{"spClientRoleId": "test4", "spClientRoleName": "test4", "spClientRoleDescription": "test4"},{"spClientRoleId": "toDelete", "spClientRoleName": "toDelete", "spClientRoleDescription": "toDelete"}]
+        toCreate["pilotRoles"] = [{"habilitationClientId": "habilitationClient1", "roles": [{"name": "pilot-system1", "description": "Role1", "composite": true, "composites": [{ "id": "clientsystem11", "name": "test1"}], "state": "absent"}]}]
         toDelete["state"] = "present"
         toDelete["force"] = False
 
