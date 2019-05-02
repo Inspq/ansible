@@ -167,6 +167,7 @@ author:
 >>>>>>> SX5-868 Ajustement du codestyle des modules Keycloak en préparation des
 =======
 author:
+<<<<<<< HEAD
 >>>>>>> SX5-868 fix code style in keycloak_authentication module.
     - Philippe Gauthier (philippe.gauthier@inspq.qc.ca)
 >>>>>>> SX5-868 Mise à jour de la documentation des modules Keycloak suite à la
@@ -178,6 +179,9 @@ notes:
 author: 
     - Philippe Gauthier (philippe.gauthier@inspq.qc.ca)
 >>>>>>> SX5-868 Add keycloak_authentication module.
+=======
+    - Philippe Gauthier (@elfelip)
+>>>>>>> SX5-868 changed syntax of author in documentation for
 '''
 
 EXAMPLES = '''
