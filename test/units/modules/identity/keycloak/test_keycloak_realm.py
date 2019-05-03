@@ -52,15 +52,12 @@ class KeycloakRealmTestCase(ModuleTestCase):
         'otpPolicyPeriod':  30,
         'smtpServer':  {
             "replyToDisplayName": "root",
-            "starttls": "",
-            "auth": "",
             "port": "25",
             "host": "localhost",
             "replyTo": "root@localhost",
             "fromDisplayName": "local",
             "envelopeFrom": "root@localhost",
-            "ssl": "",
-            "smtpServer.from": "root@localhost"
+            "from": "root@localhost"
         },
         'eventsConfig':  {
             "eventsEnabled": True,
@@ -125,15 +122,12 @@ class KeycloakRealmTestCase(ModuleTestCase):
         'otpPolicyPeriod':  30,
         'smtpServer':  {
             "replyToDisplayName": "root",
-            "starttls": "",
-            "auth": "",
             "port": "25",
             "host": "localhost",
             "replyTo": "root@localhost",
             "fromDisplayName": "local",
             "envelopeFrom": "root@localhost",
-            "ssl": "",
-            "smtpServer.from": "root@localhost"
+            "from": "root@localhost"
         },
         'internationalizationEnabled':  False,
         'supportedLocales':  [  ],
@@ -202,15 +196,12 @@ class KeycloakRealmTestCase(ModuleTestCase):
         'otpPolicyPeriod':  30,
         'smtpServer':  {
             "replyToDisplayName": "root",
-            "starttls": "",
-            "auth": "",
             "port": "25",
             "host": "localhost",
             "replyTo": "root@localhost",
             "fromDisplayName": "local",
             "envelopeFrom": "root@localhost",
-            "ssl": "",
-            "smtpServer.from": "root@localhost"
+            "from": "root@localhost"
         },
         'eventsConfig':  {
             "eventsEnabled": True,
