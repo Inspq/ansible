@@ -23,6 +23,7 @@
 >>>>>>> SX5-868 Add new keycloak_component_module
 
 from __future__ import absolute_import, division, print_function
+from __builtin__ import True
 __metaclass__ = type
 
 ANSIBLE_METADATA = {'metadata_version': '1.1',
@@ -72,7 +73,7 @@ options:
     realm:
         description:
             - The name of the realm in which is the component.
-        required: true
+        default: true
     id:
         description:
             - ID of the component when it have already been created and it is known.
@@ -959,6 +960,7 @@ def main():
     meta_args = dict(
         id=dict(type='str'),
         name=dict(type='str', required=True),
+<<<<<<< HEAD
         realm=dict(type='str', default='master'),
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -967,6 +969,9 @@ def main():
 >>>>>>> SX5-868 Ajustement du codestyle des modules Keycloak en préparation des
 =======
 >>>>>>> SX5-868 Add new keycloak_component_module
+=======
+        realm=dict(type='str', required=True),
+>>>>>>> SX5-868 Argument spec fix for keycloak_component module.
         providerId=dict(
             choices=[
                 "ldap",
