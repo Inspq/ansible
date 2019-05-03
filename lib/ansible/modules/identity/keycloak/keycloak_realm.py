@@ -101,7 +101,7 @@ options:
     ssoSessionIdleTimeout:
         description:
             - SSO session idle timeout.
-        default: 1800 
+        default: 1800
     enabled:
         description:
             - Enabled.
