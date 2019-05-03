@@ -27,7 +27,7 @@ pipeline {
         }
         stage ('Validation des modules ansibles') {
             steps {
-                sh "source hacking/env-setup; ansible-test sanity --test validate-modules"
+                sh "source hacking/env-setup; python3 bin/ansible-test sanity --test validate-modules"
            	}
         }
         stage ('Tests sécurités des modules ansible sx5') {
