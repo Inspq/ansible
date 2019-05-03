@@ -41,6 +41,7 @@ from ansible.module_utils.six.moves.urllib.error import HTTPError
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 from ansible.module_utils.keycloak_utils import isDictEquals 
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -71,6 +72,9 @@ from ansible.module_utils.keycloak_utils import keycloak2ansibleClientRoles
 =======
 from ansible.module_utils._text import to_text
 >>>>>>> SX5-868 Add new keycloak_component_module
+=======
+from ansible.module_utils._text import to_text
+>>>>>>> SX5-868 New keycloak_realm module PR.
 
 URL_TOKEN = "{url}/realms/{realm}/protocol/openid-connect/token"
 URL_CLIENT = "{url}/admin/realms/{realm}/clients/{id}"
@@ -122,6 +126,7 @@ URL_REALM = "{url}/admin/realms/{realm}"
 URL_REALM_EVENT_CONFIG = "{url}/admin/realms/{realm}/events/config"
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 
 URL_REALM_ROLES = "{url}/admin/realms/{realm}/roles"
 URL_REALM_ROLE = "{url}/admin/realms/{realm}/roles/{name}"
@@ -130,6 +135,8 @@ URL_REALM_ROLE_COMPOSITES = "{url}/admin/realms/{realm}/roles/{name}/composites"
 >>>>>>> SX5-868 PR Added role management for keycloak_client module.
 =======
 >>>>>>> SX5-868 Add new keycloak_component_module
+=======
+>>>>>>> SX5-868 New keycloak_realm module PR.
 
 URL_REALM_ROLES = "{url}/admin/realms/{realm}/roles"
 URL_REALM_ROLE = "{url}/admin/realms/{realm}/roles/{name}"
@@ -158,7 +165,10 @@ def camel(words):
 
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
+=======
+>>>>>>> SX5-868 New keycloak_realm module PR.
 def remove_arguments_with_value_none(argument):
     """
     This function remove all NoneType elements from dict object.
@@ -178,7 +188,10 @@ def remove_arguments_with_value_none(argument):
                 remove_arguments_with_value_none(argument[key])
 
 
+<<<<<<< HEAD
 >>>>>>> SX5-868 Add new keycloak_component_module
+=======
+>>>>>>> SX5-868 New keycloak_realm module PR.
 def isDictEquals(dict1, dict2, exclude=None):
     """
     This function compare if tthe first parameter structure, is included in the second.
@@ -244,14 +257,20 @@ def isDictEquals(dict1, dict2, exclude=None):
                         return False
             return True
 <<<<<<< HEAD
+<<<<<<< HEAD
         else:
             return dict1 == dict2
 =======
+=======
+>>>>>>> SX5-868 New keycloak_realm module PR.
         elif type(dict1) is bool and type(dict2) is bool:
             return dict1 == dict2
         else:
             return to_text(dict1, 'utf-8') == to_text(dict2, 'utf-8')
+<<<<<<< HEAD
 >>>>>>> SX5-868 Add new keycloak_component_module
+=======
+>>>>>>> SX5-868 New keycloak_realm module PR.
     except KeyError:
         return False
 
@@ -369,6 +388,7 @@ class KeycloakAPI(object):
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
                                            validate_certs=self.validate_certs))
             self.add_client_roles_to_representation(clients_url, client_roles_url, clientrep)
             return clientrep
@@ -384,6 +404,11 @@ class KeycloakAPI(object):
             self.add_client_roles_to_representation(clients_url, client_roles_url, clientrep)
             return clientrep
 >>>>>>> SX5-868 Add new keycloak_component_module
+=======
+                                           validate_certs=self.validate_certs))
+            self.add_client_roles_to_representation(clients_url, client_roles_url, clientrep)
+            return clientrep
+>>>>>>> SX5-868 New keycloak_realm module PR.
 
         except HTTPError as e:
             if e.code == 404:
@@ -517,6 +542,36 @@ class KeycloakAPI(object):
             self.module.fail_json(msg='Could not obtain client %s for realm %s: %s'
                                       % (id, realm, str(e)))
 
+    def get_client_secret_by_id(self, id, realm='master'):
+        """ Obtain client representation by id
+        :param id: id (not clientId) of client to be queried
+        :param realm: client from this realm
+        :return: dict of client representation or None if none matching exist
+        """
+        client_url = URL_CLIENT.format(url=self.baseurl, realm=realm, id=id)
+        client_secret_url = URL_CLIENT_SECRET.format(url=self.baseurl, realm=realm, id=id)
+        try:
+            clientrep = json.load(open_url(client_url, method='GET', headers=self.restheaders,
+                                           validate_certs=self.validate_certs))
+            if clientrep[camel('public_client')]:
+                clientsecretrep = None
+            else:
+                clientsecretrep = json.load(open_url(client_secret_url, method='GET', headers=self.restheaders,
+                                                     validate_certs=self.validate_certs))
+            return clientsecretrep
+        except HTTPError as e:
+            if e.code == 404:
+                return None
+            else:
+                self.module.fail_json(msg='Could not obtain client %s for realm %s: %s'
+                                      % (id, realm, str(e)))
+        except ValueError as e:
+            self.module.fail_json(msg='API returned incorrect JSON when trying to obtain client %s for realm %s: %s'
+                                      % (id, realm, str(e)))
+        except Exception as e:
+            self.module.fail_json(msg='Could not obtain client %s for realm %s: %s'
+                                      % (id, realm, str(e)))
+
     def get_client_id(self, client_id, realm='master'):
         """ Obtain id of client by client_id
         :param client_id: client_id of client to be queried
@@ -543,14 +598,18 @@ class KeycloakAPI(object):
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> SX5-868 Add new keycloak_component_module
+=======
+>>>>>>> SX5-868 New keycloak_realm module PR.
         try:
             client_roles = None
             if camel('client_roles') in clientrep:
                 client_roles = clientrep[camel('client_roles')]
                 del(clientrep[camel('client_roles')])
             client_protocol_mappers = None
+<<<<<<< HEAD
 <<<<<<< HEAD
 =======
                 
@@ -569,10 +628,13 @@ class KeycloakAPI(object):
 >>>>>>> SX5-868 Codestyle fix
 =======
 >>>>>>> SX5-868 Add new keycloak_component_module
+=======
+>>>>>>> SX5-868 New keycloak_realm module PR.
             if camel('protocol_mappers') in clientrep:
                 client_protocol_mappers = clientrep[camel('protocol_mappers')]
                 del(clientrep[camel('protocol_mappers')])
             putResponse = open_url(client_url, method='PUT', headers=self.restheaders,
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -586,6 +648,9 @@ class KeycloakAPI(object):
 =======
                                    data=json.dumps(clientrep), validate_certs=self.validate_certs)
 >>>>>>> SX5-868 Add new keycloak_component_module
+=======
+                                   data=json.dumps(clientrep), validate_certs=self.validate_certs)
+>>>>>>> SX5-868 New keycloak_realm module PR.
             if client_protocol_mappers is not None:
                 clientrep[camel('protocol_mappers')] = client_protocol_mappers
                 self.create_or_update_client_mappers(client_url, clientrep)
@@ -602,6 +667,7 @@ class KeycloakAPI(object):
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
                 self.create_or_update_client_roles(client_roles, roles_url, clients_url, client_roles_url)
 =======
                 self.create_or_update_client_roles(client_roles, roles_url, clients_url, client_roles_url, clientrep)
@@ -658,6 +724,9 @@ class KeycloakAPI(object):
 =======
                 self.create_or_update_client_roles(client_roles, roles_url, clients_url, client_roles_url)
 >>>>>>> SX5-868 Add new keycloak_component_module
+=======
+                self.create_or_update_client_roles(client_roles, roles_url, clients_url, client_roles_url)
+>>>>>>> SX5-868 New keycloak_realm module PR.
             return putResponse
 
         except Exception as e:
@@ -675,6 +744,7 @@ class KeycloakAPI(object):
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
         try:
             client_roles = None
             if camel('client_roles') in clientrep:
@@ -687,11 +757,14 @@ class KeycloakAPI(object):
 >>>>>>> SX5-868 Codestyle fix
 =======
 >>>>>>> SX5-868 Add new keycloak_component_module
+=======
+>>>>>>> SX5-868 New keycloak_realm module PR.
         try:
             client_roles = None
             if camel('client_roles') in clientrep:
                 client_roles = clientrep[camel('client_roles')]
                 del(clientrep[camel('client_roles')])
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
             client_protocol_mappers = None 
@@ -702,6 +775,9 @@ class KeycloakAPI(object):
 =======
             client_protocol_mappers = None
 >>>>>>> SX5-868 Add new keycloak_component_module
+=======
+            client_protocol_mappers = None
+>>>>>>> SX5-868 New keycloak_realm module PR.
             if camel('protocol_mappers') in clientrep:
                 client_protocol_mappers = clientrep[camel('protocol_mappers')]
                 del(clientrep[camel('protocol_mappers')])
@@ -709,14 +785,18 @@ class KeycloakAPI(object):
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> SX5-868 Codestyle fix
 =======
 >>>>>>> SX5-868 Add new keycloak_component_module
+=======
+>>>>>>> SX5-868 New keycloak_realm module PR.
                                     data=json.dumps(clientrep), validate_certs=self.validate_certs)
             client_url = URL_CLIENT.format(url=self.baseurl,
                                            realm=realm,
                                            id=self.get_client_id(clientrep[camel('client_id')], realm))
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -727,11 +807,14 @@ class KeycloakAPI(object):
 >>>>>>> SX5-868 Codestyle fix
 =======
 >>>>>>> SX5-868 Add new keycloak_component_module
+=======
+>>>>>>> SX5-868 New keycloak_realm module PR.
             if client_protocol_mappers is not None:
                 clientrep[camel('protocol_mappers')] = client_protocol_mappers
                 self.create_or_update_client_mappers(client_url, clientrep)
             if client_roles is not None:
                 client_roles_url = URL_CLIENT_ROLES.format(url=self.baseurl, realm=realm, id=self.get_client_id(clientrep[camel('client_id')], realm))
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -811,6 +894,10 @@ class KeycloakAPI(object):
                 self.create_or_update_client_roles(client_roles, roles_url, clients_url, client_roles_url)
             return postResponse
 >>>>>>> SX5-868 Add new keycloak_component_module
+=======
+                self.create_or_update_client_roles(client_roles, roles_url, clients_url, client_roles_url)
+            return postResponse
+>>>>>>> SX5-868 New keycloak_realm module PR.
         except Exception as e:
             self.module.fail_json(msg='Could not create client %s in realm %s: %s'
                                       % (clientrep['clientId'], realm, str(e)))
@@ -956,6 +1043,7 @@ class KeycloakAPI(object):
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
                                           validate_certs=self.validate_certs))
 =======
                                       validate_certs=self.validate_certs))
@@ -966,6 +1054,9 @@ class KeycloakAPI(object):
 =======
                                           validate_certs=self.validate_certs))
 >>>>>>> SX5-868 Add new keycloak_component_module
+=======
+                                          validate_certs=self.validate_certs))
+>>>>>>> SX5-868 New keycloak_realm module PR.
             return grouprep
         except Exception as e:
             self.module.fail_json(msg="Could not fetch list of groups in realm %s: %s"
@@ -986,6 +1077,7 @@ class KeycloakAPI(object):
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
                                           validate_certs=self.validate_certs))
 =======
                                       validate_certs=self.validate_certs))
@@ -996,6 +1088,9 @@ class KeycloakAPI(object):
 =======
                                           validate_certs=self.validate_certs))
 >>>>>>> SX5-868 Add new keycloak_component_module
+=======
+                                          validate_certs=self.validate_certs))
+>>>>>>> SX5-868 New keycloak_realm module PR.
             if "clientRoles" in grouprep:
                 tmpClientRoles = grouprep["clientRoles"]
                 grouprep["clientRoles"] = keycloak2ansibleClientRoles(tmpClientRoles)
@@ -1119,6 +1214,7 @@ class KeycloakAPI(object):
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 
 =======
             
@@ -1129,6 +1225,9 @@ class KeycloakAPI(object):
 =======
 
 >>>>>>> SX5-868 Add new keycloak_component_module
+=======
+
+>>>>>>> SX5-868 New keycloak_realm module PR.
     def get_client_roles(self, client_id, realm='master'):
         """ Get all client's roles
 
@@ -1139,16 +1238,20 @@ class KeycloakAPI(object):
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> SX5-868 Codestyle fix
 =======
 >>>>>>> SX5-868 Add new keycloak_component_module
+=======
+>>>>>>> SX5-868 New keycloak_realm module PR.
             client_roles_url = URL_CLIENT_ROLES.format(url=self.baseurl,
                                                        realm=realm,
                                                        id=client_id)
             clientRolesRepresentation = json.load(open_url(client_roles_url,
                                                            method='GET',
                                                            headers=self.restheaders))
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -1159,11 +1262,14 @@ class KeycloakAPI(object):
 >>>>>>> SX5-868 Codestyle fix
 =======
 >>>>>>> SX5-868 Add new keycloak_component_module
+=======
+>>>>>>> SX5-868 New keycloak_realm module PR.
             return clientRolesRepresentation
         except Exception as e:
             self.module.fail_json(msg="Unable to get client's %s roles in realm %s: %s" % (client_id, realm, str(e)))
 
     def add_client_roles_to_representation(self, clientSvcBaseUrl, clientRolesUrl, clientRepresentation):
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -1204,6 +1310,8 @@ class KeycloakAPI(object):
 >>>>>>> SX5-868 PR Added role management for keycloak_client module.
 =======
 >>>>>>> SX5-868 Add new keycloak_component_module
+=======
+>>>>>>> SX5-868 New keycloak_realm module PR.
         """ Add client roles and their composites to the client representation in order to return this information to the user
 
         :param clientSvcBaseUrl: url of the client
@@ -1211,6 +1319,7 @@ class KeycloakAPI(object):
         :param clientRepresentation: actual representation of the client
         :return: nothing, the roles representation is added to the client representation as clientRoles key
         """
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -1262,6 +1371,8 @@ class KeycloakAPI(object):
 >>>>>>> SX5-868 PR Added role management for keycloak_client module.
 =======
 >>>>>>> SX5-868 Add new keycloak_component_module
+=======
+>>>>>>> SX5-868 New keycloak_realm module PR.
         try:
             clientRolesRepresentation = json.load(open_url(clientRolesUrl, method='GET', headers=self.restheaders))
             for clientRole in clientRolesRepresentation:
@@ -1269,15 +1380,19 @@ class KeycloakAPI(object):
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> SX5-868 Codestyle fix
 =======
 >>>>>>> SX5-868 Add new keycloak_component_module
+=======
+>>>>>>> SX5-868 New keycloak_realm module PR.
                     clientRole["composites"] = json.load(
                         open_url(
                             clientRolesUrl + '/' + clientRole['name'] + '/composites',
                             method='GET',
                             headers=self.restheaders))
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
                     for roleComposite in clientRole["composites"]:
@@ -1302,19 +1417,27 @@ class KeycloakAPI(object):
                     for roleComposite in clientRole["composites"]:
                         if roleComposite['clientRole']:
 >>>>>>> SX5-868 Add new keycloak_component_module
+=======
+                    for roleComposite in clientRole["composites"]:
+                        if roleComposite['clientRole']:
+>>>>>>> SX5-868 New keycloak_realm module PR.
                             roleCompositeClient = json.load(
                                 open_url(
                                     clientSvcBaseUrl + '/' + roleComposite['containerId'],
                                     method='GET',
                                     headers=self.restheaders))
 <<<<<<< HEAD
+<<<<<<< HEAD
 >>>>>>> Sx5-868 shippable code style fix
 =======
 >>>>>>> SX5-868 Add new keycloak_component_module
+=======
+>>>>>>> SX5-868 New keycloak_realm module PR.
                             roleComposite["clientId"] = roleCompositeClient["clientId"]
             clientRepresentation['clientRoles'] = clientRolesRepresentation
         except Exception as e:
             self.module.fail_json(msg="Unable to add client roles %s: %s" % (clientRepresentation["id"], str(e)))
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -1386,6 +1509,9 @@ class KeycloakAPI(object):
 =======
 
 >>>>>>> SX5-868 Add new keycloak_component_module
+=======
+
+>>>>>>> SX5-868 New keycloak_realm module PR.
     def create_or_update_client_roles(self, newClientRoles, roleSvcBaseUrl, clientSvcBaseUrl, clientRolesUrl):
         """ Create or update client roles. Client roles can be added, updated or removed depending of the state.
 
@@ -1395,6 +1521,7 @@ class KeycloakAPI(object):
         :param clientRolesUrl: Url of the actual client roles
         :return: True if the client roles have changed, False otherwise
         """
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -1522,6 +1649,8 @@ class KeycloakAPI(object):
 >>>>>>> SX5-868 PR Added role management for keycloak_client module.
 =======
 >>>>>>> SX5-868 Add new keycloak_component_module
+=======
+>>>>>>> SX5-868 New keycloak_realm module PR.
         try:
             changed = False
             # Manage the roles
@@ -1540,14 +1669,18 @@ class KeycloakAPI(object):
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> SX5-868 Codestyle fix
 =======
 >>>>>>> SX5-868 Add new keycloak_component_module
+=======
+>>>>>>> SX5-868 New keycloak_realm module PR.
                                 keycloakClients = json.load(
                                     open_url(clientSvcBaseUrl,
                                              method='GET',
                                              headers=self.restheaders))
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -1566,20 +1699,26 @@ class KeycloakAPI(object):
                                         roles=json.load(open_url(clientSvcBaseUrl + '/' + keycloakClient['id'] + '/roles', method='GET', headers=self.restheaders))
 >>>>>>> SX5-868 PR Added role management for keycloak_client module.
 =======
+=======
+>>>>>>> SX5-868 New keycloak_realm module PR.
                                 for keycloakClient in keycloakClients:
                                     if keycloakClient['clientId'] == newComposite["id"]:
                                         roles = json.load(
                                             open_url(clientSvcBaseUrl + '/' + keycloakClient['id'] + '/roles',
                                                      method='GET',
                                                      headers=self.restheaders))
+<<<<<<< HEAD
 >>>>>>> SX5-868 Codestyle fix
 =======
 >>>>>>> SX5-868 Add new keycloak_component_module
+=======
+>>>>>>> SX5-868 New keycloak_realm module PR.
                                         for role in roles:
                                             if role["name"] == newComposite["name"]:
                                                 newComposite['id'] = role['id']
                                                 newComposite['clientRole'] = True
                                                 break
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -1657,11 +1796,14 @@ class KeycloakAPI(object):
 >>>>>>> Sx5-868 Update the keycloak_client module documentation for support of
 =======
 >>>>>>> SX5-868 Add role management to keycloak_group module. Add
+=======
+>>>>>>> SX5-868 New keycloak_realm module PR.
                             else:
                                 realmRoles = json.load(
                                     open_url(roleSvcBaseUrl,
                                              method='GET',
                                              headers=self.restheaders))
+<<<<<<< HEAD
 =======
                             else:
 <<<<<<< HEAD
@@ -1679,10 +1821,13 @@ class KeycloakAPI(object):
 >>>>>>> SX5-868 Codestyle fix
 =======
 >>>>>>> SX5-868 Add new keycloak_component_module
+=======
+>>>>>>> SX5-868 New keycloak_realm module PR.
                                 for realmRole in realmRoles:
                                     if realmRole["name"] == newComposite["name"]:
                                         newComposite['id'] = realmRole['id']
                                         newComposite['clientRole'] = False
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -1701,6 +1846,8 @@ class KeycloakAPI(object):
 =======
 =======
 >>>>>>> SX5-868 Add new keycloak_component_module
+=======
+>>>>>>> SX5-868 New keycloak_realm module PR.
                                         break
                     clientRoleFound = False
                     clientRoles = json.load(
@@ -1708,9 +1855,12 @@ class KeycloakAPI(object):
                                  method='GET',
                                  headers=self.restheaders))
 <<<<<<< HEAD
+<<<<<<< HEAD
 >>>>>>> SX5-868 Codestyle fix
 =======
 >>>>>>> SX5-868 Add new keycloak_component_module
+=======
+>>>>>>> SX5-868 New keycloak_realm module PR.
                     if len(clientRoles) > 0:
                         # Check if role to be created already exist for the client
                         for clientRole in clientRoles:
@@ -1736,6 +1886,7 @@ class KeycloakAPI(object):
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
                                             if isDictEquals(newComposite, existingComposite):
 =======
                                             if isDictEquals(newComposite,existingComposite):
@@ -1746,6 +1897,9 @@ class KeycloakAPI(object):
 =======
                                             if isDictEquals(newComposite, existingComposite):
 >>>>>>> SX5-868 Add new keycloak_component_module
+=======
+                                            if isDictEquals(newComposite, existingComposite):
+>>>>>>> SX5-868 New keycloak_realm module PR.
                                                 compositeFound = True
                                                 break
                                         if not compositeFound:
@@ -1763,6 +1917,7 @@ class KeycloakAPI(object):
                         newRoleRepresentation["description"] = newClientRole['description'].decode("utf-8")
                         newRoleRepresentation["composite"] = newClientRole['composite'] if "composite" in newClientRole else False
                         newRoleRepresentation["clientRole"] = newClientRole['clientRole'] if "clientRole" in newClientRole else True
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -1896,6 +2051,12 @@ class KeycloakAPI(object):
                             open_url(clientRolesUrl + '/' + newClientRole['name'], method='PUT', headers=self.restheaders, data=data)
                         else:
 >>>>>>> SX5-868 Add new keycloak_component_module
+=======
+                        data = json.dumps(newRoleRepresentation)
+                        if clientRoleFound:
+                            open_url(clientRolesUrl + '/' + newClientRole['name'], method='PUT', headers=self.restheaders, data=data)
+                        else:
+>>>>>>> SX5-868 New keycloak_realm module PR.
                             open_url(clientRolesUrl, method='POST', headers=self.restheaders, data=data)
                         changed = True
                         # Composites role
@@ -1910,15 +2071,19 @@ class KeycloakAPI(object):
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> SX5-868 Codestyle fix
 =======
 >>>>>>> SX5-868 Add new keycloak_component_module
+=======
+>>>>>>> SX5-868 New keycloak_realm module PR.
                                 open_url(
                                     clientRolesUrl + '/' + newClientRole['name'] + '/composites', method='DELETE',
                                     headers=self.restheaders,
                                     data=json.dumps(rolesToDelete))
                             data = json.dumps(newClientRole["composites"])
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -1930,6 +2095,8 @@ class KeycloakAPI(object):
 >>>>>>> SX5-868 Codestyle fix
 =======
 >>>>>>> SX5-868 Add new keycloak_component_module
+=======
+>>>>>>> SX5-868 New keycloak_realm module PR.
                             open_url(clientRolesUrl + '/' + newClientRole['name'] + '/composites', method='POST', headers=self.restheaders, data=data)
                     elif changeNeeded and desiredState == "absent" and clientRoleFound:
                         open_url(clientRolesUrl + '/' + newClientRole['name'], method='DELETE', headers=self.restheaders)
@@ -1937,6 +2104,7 @@ class KeycloakAPI(object):
             return changed
         except Exception as e:
             self.module.fail_json(msg="Unable to create or update client roles %s: %s" % (clientRolesUrl, str(e)))
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -2012,18 +2180,24 @@ class KeycloakAPI(object):
 
 >>>>>>> SX5-868 PR Added role management for keycloak_client module.
 =======
+=======
+>>>>>>> SX5-868 New keycloak_realm module PR.
 
     def create_or_update_client_mappers(self, clientUrl, clientRepresentation):
         """
         Create or update client protocol mappers. Mappers can be added,
         updated or removed depending of the state.
+<<<<<<< HEAD
 >>>>>>> SX5-868 Codestyle fix
 =======
 >>>>>>> SX5-868 Add new keycloak_component_module
+=======
+>>>>>>> SX5-868 New keycloak_realm module PR.
         :param clientUrl: Keycloak API url of the client
         :param clientRepresentation: Desired representation of the client including protocolMappers list
         :return: True if the client roles have changed, False otherwise
         """
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -2147,6 +2321,8 @@ class KeycloakAPI(object):
 >>>>>>> SX5-868 PR Added role management for keycloak_client module.
 =======
 >>>>>>> SX5-868 Add new keycloak_component_module
+=======
+>>>>>>> SX5-868 New keycloak_realm module PR.
         try:
             changed = False
             if camel('protocol_mappers') in clientRepresentation and clientRepresentation[camel('protocol_mappers')] is not None:
@@ -2155,15 +2331,19 @@ class KeycloakAPI(object):
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> SX5-868 Codestyle fix
 =======
 >>>>>>> SX5-868 Add new keycloak_component_module
+=======
+>>>>>>> SX5-868 New keycloak_realm module PR.
                 clientMappers = json.load(
                     open_url(
                         clientUrl + '/protocol-mappers/models',
                         method='GET',
                         headers=self.restheaders))
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -2174,6 +2354,8 @@ class KeycloakAPI(object):
 >>>>>>> SX5-868 Codestyle fix
 =======
 >>>>>>> SX5-868 Add new keycloak_component_module
+=======
+>>>>>>> SX5-868 New keycloak_realm module PR.
                 for newClientProtocolMapper in newClientProtocolMappers:
                     desiredState = "present"
                     # If state key is included in the mapper representation, save its value and remove the key from the representation.
@@ -2194,6 +2376,7 @@ class KeycloakAPI(object):
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 >>>>>>> SX5-868 Add keycloak_component module with non mock unit tests.
 =======
 >>>>>>> SX5-868 PR Added role management for keycloak_client module.
@@ -2201,12 +2384,15 @@ class KeycloakAPI(object):
 >>>>>>> SX5-868 PR Added role management for keycloak_client module.
 =======
 >>>>>>> SX5-868 Add new keycloak_component_module
+=======
+>>>>>>> SX5-868 New keycloak_realm module PR.
                             changed = True
                         else:
                             if not isDictEquals(newClientProtocolMapper, clientMapper):
                                 # If changed has been introduced for the mapper
                                 changed = True
                                 newClientProtocolMapper["id"] = clientMapper["id"]
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -2263,6 +2449,8 @@ class KeycloakAPI(object):
                                 data=json.dumps(newClientProtocolMapper)
 =======
 >>>>>>> SX5-868 Codestyle fix
+=======
+>>>>>>> SX5-868 New keycloak_realm module PR.
                                 # Modify the mapper
                                 open_url(
                                     clientUrl + '/protocol-mappers/models/' + clientMapper['id'],
@@ -2272,6 +2460,7 @@ class KeycloakAPI(object):
                     else:  # If mapper does not exist for the client
                         if desiredState != "absent":
                             # Create the mapper
+<<<<<<< HEAD
 <<<<<<< HEAD
                             data=json.dumps(newClientProtocolMapper)
 >>>>>>> SX5-868 PR Added role management for keycloak_client module.
@@ -2286,6 +2475,8 @@ class KeycloakAPI(object):
 =======
 >>>>>>> SX5-868 PR Added role management for keycloak_client module.
 =======
+=======
+>>>>>>> SX5-868 New keycloak_realm module PR.
                             open_url(
                                 clientUrl + '/protocol-mappers/models',
                                 method='POST',
@@ -2296,6 +2487,7 @@ class KeycloakAPI(object):
         except Exception as e:
             self.module.fail_json(msg="Unable to create or update client mappers %s: %s"
                                   % (clientRepresentation["id"], str(e)))
+<<<<<<< HEAD
 >>>>>>> SX5-868 Codestyle fix
 =======
 >>>>>>> SX5-868 PR Added role management for keycloak_client module.
@@ -2316,10 +2508,13 @@ class KeycloakAPI(object):
 >>>>>>> SX5-868 Codestyle fix
 =======
 >>>>>>> SX5-868 Add new keycloak_component_module
+=======
+>>>>>>> SX5-868 New keycloak_realm module PR.
 
     def add_attributes_list_to_attributes_dict(self, AttributesList, AttributesDict):
         """
         Add items form an attribute list which is not a Keycloak standard to as an attribute dict.
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -2330,6 +2525,8 @@ class KeycloakAPI(object):
 >>>>>>> SX5-868 Codestyle fix
 =======
 >>>>>>> SX5-868 Add new keycloak_component_module
+=======
+>>>>>>> SX5-868 New keycloak_realm module PR.
         :param AttributesList: List of attribute to add
         :param AttributesDict: Dict of attributes in which to add the list
         :return: nothing
@@ -2340,6 +2537,7 @@ class KeycloakAPI(object):
             for attr in AttributesList:
                 if "name" in attr and attr["name"] is not None and "value" in attr:
                     AttributesDict[attr["name"]] = attr["value"]
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -2357,11 +2555,15 @@ class KeycloakAPI(object):
 =======
 
 >>>>>>> SX5-868 Codestyle fix
+=======
+
+>>>>>>> SX5-868 New keycloak_realm module PR.
     def assing_roles_to_group(self, groupRepresentation, groupRealmRoles, groupClientRoles, realm='master'):
         """
         Assing roles to group. Roles can be composites of other roles.
         Composites can be composed by realm and client roles.
         Every member of the group will inherit those roles.
+<<<<<<< HEAD
 <<<<<<< HEAD
         
 >>>>>>> SX5-868 PR Added role management for keycloak_client module.
@@ -2369,12 +2571,15 @@ class KeycloakAPI(object):
 >>>>>>> SX5-868 Codestyle fix
 =======
 >>>>>>> SX5-868 Add new keycloak_component_module
+=======
+>>>>>>> SX5-868 New keycloak_realm module PR.
         :param groupRepresentation: Representation of the group to assign roles
         :param groupRealmRoles: Realm roles to assign to group
         :param groupClientRoles: Clients roles to assign to group.
         :param realm: Realm
         :return: True if roles have been assigned or revoked to the group. False otherwise.
         """
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -2564,6 +2769,8 @@ class KeycloakAPI(object):
 >>>>>>> SX5-868 PR Added role management for keycloak_client module.
 =======
 >>>>>>> SX5-868 Add new keycloak_component_module
+=======
+>>>>>>> SX5-868 New keycloak_realm module PR.
         try:
             roleSvcBaseUrl = URL_REALM_ROLES.format(url=self.baseurl, realm=realm)
             clientSvcBaseUrl = URL_CLIENTS.format(url=self.baseurl, realm=realm)
@@ -2581,6 +2788,7 @@ class KeycloakAPI(object):
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
                     if "realmRoles" not in groupRepresentation or realmRole not in groupRepresentation["realmRoles"]:
 =======
                     if not "realmRoles" in groupRepresentation or not realmRole in groupRepresentation["realmRoles"]:
@@ -2591,6 +2799,9 @@ class KeycloakAPI(object):
 =======
                     if "realmRoles" not in groupRepresentation or realmRole not in groupRepresentation["realmRoles"]:
 >>>>>>> SX5-868 Add new keycloak_component_module
+=======
+                    if "realmRoles" not in groupRepresentation or realmRole not in groupRepresentation["realmRoles"]:
+>>>>>>> SX5-868 New keycloak_realm module PR.
                         roleid = None
                         # Get all realm roles
                         realmRoles = json.load(open_url(roleSvcBaseUrl, method='GET', headers=self.restheaders))
@@ -2604,6 +2815,7 @@ class KeycloakAPI(object):
                             realmRoleRepresentation["id"] = roleid
                             realmRoleRepresentation["name"] = realmRole
                             realmRolesRepresentation.append(realmRoleRepresentation)
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -2651,6 +2863,9 @@ class KeycloakAPI(object):
 =======
                 if len(realmRolesRepresentation) > 0:
 >>>>>>> SX5-868 Add new keycloak_component_module
+=======
+                if len(realmRolesRepresentation) > 0:
+>>>>>>> SX5-868 New keycloak_realm module PR.
                     # Assing Role
                     open_url(
                         URL_GROUP_REALM_ROLE_MAPPING.format(url=self.baseurl,
@@ -2679,11 +2894,14 @@ class KeycloakAPI(object):
                             # Get the client roles
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
                             clientRoles = json.load(open_url(URL_CLIENT_ROLES.format(url=self.baseurl, realm=realm, id=clientId), method='GET', headers=self.restheaders))
 >>>>>>> SX5-868 PR Added role management for keycloak_client module.
 =======
 =======
 >>>>>>> SX5-868 Add new keycloak_component_module
+=======
+>>>>>>> SX5-868 New keycloak_realm module PR.
                             clientRoles = json.load(
                                 open_url(
                                     URL_CLIENT_ROLES.format(
@@ -2693,9 +2911,12 @@ class KeycloakAPI(object):
                                     method='GET',
                                     headers=self.restheaders))
 <<<<<<< HEAD
+<<<<<<< HEAD
 >>>>>>> SX5-868 Codestyle fix
 =======
 >>>>>>> SX5-868 Add new keycloak_component_module
+=======
+>>>>>>> SX5-868 New keycloak_realm module PR.
                             for clientRoleToAssing in clientRolesToAssing["roles"]:
                                 # Find his Id
                                 for clientRole in clientRoles:
@@ -2710,10 +2931,13 @@ class KeycloakAPI(object):
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> SX5-868 Codestyle fix
 =======
 >>>>>>> SX5-868 Add new keycloak_component_module
+=======
+>>>>>>> SX5-868 New keycloak_realm module PR.
                             open_url(
                                 URL_GROUP_CLIENT_ROLE_MAPPING.format(
                                     url=self.baseurl,
@@ -2722,6 +2946,7 @@ class KeycloakAPI(object):
                                     clientid=clientId),
                                 method='DELETE',
                                 headers=self.restheaders)
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
                             # Assing Role
@@ -2757,6 +2982,8 @@ class KeycloakAPI(object):
 >>>>>>> SX5-868 Codestyle fix
 =======
 >>>>>>> SX5-868 Add new keycloak_component_module
+=======
+>>>>>>> SX5-868 New keycloak_realm module PR.
                             # Assing Role
                             open_url(
                                 URL_GROUP_CLIENT_ROLE_MAPPING.format(
@@ -2777,16 +3004,20 @@ class KeycloakAPI(object):
         The direction parameter will specify how the synchronization will be done.
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
         
 >>>>>>> SX5-868 PR Added role management for keycloak_client module.
 =======
 >>>>>>> SX5-868 Codestyle fix
 =======
 >>>>>>> SX5-868 Add new keycloak_component_module
+=======
+>>>>>>> SX5-868 New keycloak_realm module PR.
         :param direction: fedToKeycloak or keycloakToFed
         :param realm: Realm
         :return: Nothing
         """
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -2818,6 +3049,8 @@ class KeycloakAPI(object):
 >>>>>>> SX5-868 PR Added role management for keycloak_client module.
 =======
 >>>>>>> SX5-868 Add new keycloak_component_module
+=======
+>>>>>>> SX5-868 New keycloak_realm module PR.
         try:
             LDAPUserStorageProviderType = "org.keycloak.storage.UserStorageProvider"
             componentSvcBaseUrl = URL_COMPONENTS.format(url=self.baseurl, realm=realm)
@@ -2826,15 +3059,19 @@ class KeycloakAPI(object):
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> Sx5-868 shippable code style fix
 =======
 >>>>>>> SX5-868 Add new keycloak_component_module
+=======
+>>>>>>> SX5-868 New keycloak_realm module PR.
             components = json.load(
                 open_url(
                     componentSvcBaseUrl + '?type=' + LDAPUserStorageProviderType,
                     method='GET',
                     headers=self.restheaders))
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -2854,6 +3091,8 @@ class KeycloakAPI(object):
                 subComponents = json.load(open_url(componentSvcBaseUrl + "?parent=" + component["id"] + "&providerId=group-ldap-mapper", method='GET', headers=self.restheaders))
 >>>>>>> SX5-868 PR Added role management for keycloak_client module.
 =======
+=======
+>>>>>>> SX5-868 New keycloak_realm module PR.
             for component in components:
                 # Get all sub components of type group-ldap-mapper
                 subComponents = json.load(
@@ -2861,9 +3100,12 @@ class KeycloakAPI(object):
                         componentSvcBaseUrl + "?parent=" + component["id"] + "&providerId=group-ldap-mapper",
                         method='GET',
                         headers=self.restheaders))
+<<<<<<< HEAD
 >>>>>>> Sx5-868 shippable code style fix
 =======
 >>>>>>> SX5-868 Add new keycloak_component_module
+=======
+>>>>>>> SX5-868 New keycloak_realm module PR.
                 # For each group mappers
                 for subComponent in subComponents:
                     if subComponent["providerId"] == 'group-ldap-mapper':
@@ -2871,10 +3113,13 @@ class KeycloakAPI(object):
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> SX5-868 Codestyle fix
 =======
 >>>>>>> SX5-868 Add new keycloak_component_module
+=======
+>>>>>>> SX5-868 New keycloak_realm module PR.
                         open_url(
                             userStorageBaseUrl
                             + '/'
@@ -2885,6 +3130,7 @@ class KeycloakAPI(object):
                             + direction,
                             method='POST',
                             headers=self.restheaders)
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
         except Exception as e:
@@ -2910,6 +3156,8 @@ class KeycloakAPI(object):
 =======
 =======
 >>>>>>> SX5-868 Add new keycloak_component_module
+=======
+>>>>>>> SX5-868 New keycloak_realm module PR.
         except Exception as e:
             self.module.fail_json(msg="Unable to sync ldap groups %s: %s" % (direction, str(e)))
 
@@ -2917,9 +3165,12 @@ class KeycloakAPI(object):
         """
         Get an authentication flow by it's alias
 <<<<<<< HEAD
+<<<<<<< HEAD
 >>>>>>> SX5-868 Codestyle fix
 =======
 >>>>>>> SX5-868 Add new keycloak_component_module
+=======
+>>>>>>> SX5-868 New keycloak_realm module PR.
         :param alias: Alias of the authentication flow to get.
         :param realm: Realm.
         :return: Authentication flow representation.
@@ -2954,6 +3205,7 @@ class KeycloakAPI(object):
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
         
 >>>>>>> SX5-868 PR Added role management for keycloak_client module.
@@ -2961,6 +3213,8 @@ class KeycloakAPI(object):
 >>>>>>> SX5-868 Codestyle fix
 =======
 >>>>>>> SX5-868 Add new keycloak_component_module
+=======
+>>>>>>> SX5-868 New keycloak_realm module PR.
 
     def copy_auth_flow(self, config, realm='master'):
         """
@@ -2968,6 +3222,7 @@ class KeycloakAPI(object):
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> SX5-868 Add new keycloak_component_module
         :param config: Representation of the authentication flow to create.
@@ -2997,6 +3252,8 @@ class KeycloakAPI(object):
         
 =======
 >>>>>>> SX5-868 Codestyle fix
+=======
+>>>>>>> SX5-868 New keycloak_realm module PR.
         :param config: Representation of the authentication flow to create.
         :param realm: Realm.
         :return: Representation of the new authentication flow.
@@ -3006,12 +3263,15 @@ class KeycloakAPI(object):
                 newName=config["alias"]
             )
 <<<<<<< HEAD
+<<<<<<< HEAD
             
             data = json.dumps(newName)
             open_url(URL_AUTHENTICATION_FLOW_COPY.format(url=self.baseurl, realm=realm, copyfrom=urllib.quote(config["copyFrom"])), method='POST', headers=self.restheaders, data=data)
             flowList = json.load(open_url(URL_AUTHENTICATION_FLOWS.format(url=self.baseurl, realm=realm), method='GET', headers=self.restheaders))
 >>>>>>> SX5-868 PR Added role management for keycloak_client module.
 =======
+=======
+>>>>>>> SX5-868 New keycloak_realm module PR.
             open_url(
                 URL_AUTHENTICATION_FLOW_COPY.format(
                     url=self.baseurl,
@@ -3026,9 +3286,12 @@ class KeycloakAPI(object):
                                                     realm=realm),
                     method='GET',
                     headers=self.restheaders))
+<<<<<<< HEAD
 >>>>>>> SX5-868 Codestyle fix
 =======
 >>>>>>> SX5-868 Add new keycloak_component_module
+=======
+>>>>>>> SX5-868 New keycloak_realm module PR.
             for flow in flowList:
                 if flow["alias"] == config["alias"]:
                     return flow
@@ -3039,6 +3302,7 @@ class KeycloakAPI(object):
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 
     def create_empty_auth_flow(self, config, realm='master'):
         """
@@ -3075,6 +3339,9 @@ class KeycloakAPI(object):
 =======
 
 >>>>>>> SX5-868 Add new keycloak_component_module
+=======
+
+>>>>>>> SX5-868 New keycloak_realm module PR.
     def create_empty_auth_flow(self, config, realm='master'):
         """
         Create a new empty authentication flow.
@@ -3090,6 +3357,7 @@ class KeycloakAPI(object):
             )
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
             data = json.dumps(newFlow)
             open_url(URL_AUTHENTICATION_FLOWS.format(url=self.baseurl, realm=realm), method='POST', headers=self.restheaders, data=data)
             flowList = json.load(open_url(URL_AUTHENTICATION_FLOWS.format(url=self.baseurl, realm=realm), method='GET', headers=self.restheaders))
@@ -3097,6 +3365,8 @@ class KeycloakAPI(object):
 =======
 =======
 >>>>>>> SX5-868 Add new keycloak_component_module
+=======
+>>>>>>> SX5-868 New keycloak_realm module PR.
             open_url(
                 URL_AUTHENTICATION_FLOWS.format(
                     url=self.baseurl,
@@ -3112,9 +3382,12 @@ class KeycloakAPI(object):
                     method='GET',
                     headers=self.restheaders))
 <<<<<<< HEAD
+<<<<<<< HEAD
 >>>>>>> SX5-868 Codestyle fix
 =======
 >>>>>>> SX5-868 Add new keycloak_component_module
+=======
+>>>>>>> SX5-868 New keycloak_realm module PR.
             for flow in flowList:
                 if flow["alias"] == config["alias"]:
                     return flow
@@ -3125,6 +3398,7 @@ class KeycloakAPI(object):
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 
     def create_or_update_executions(self, config, realm='master'):
         """
@@ -3154,6 +3428,9 @@ class KeycloakAPI(object):
 =======
 
 >>>>>>> SX5-868 Add new keycloak_component_module
+=======
+
+>>>>>>> SX5-868 New keycloak_realm module PR.
     def create_or_update_executions(self, config, realm='master'):
         """
         Create or update executions for an authentication flow.
@@ -3168,11 +3445,14 @@ class KeycloakAPI(object):
                     # Get existing executions on the Keycloak server for this alias
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
                     existingExecutions = json.load(open_url(URL_AUTHENTICATION_FLOW_EXECUTIONS.format(url=self.baseurl, realm=realm, flowalias=urllib.quote(config["alias"])), method='GET', headers=self.restheaders))
 >>>>>>> SX5-868 PR Added role management for keycloak_client module.
 =======
 =======
 >>>>>>> SX5-868 Add new keycloak_component_module
+=======
+>>>>>>> SX5-868 New keycloak_realm module PR.
                     existingExecutions = json.load(
                         open_url(
                             URL_AUTHENTICATION_FLOW_EXECUTIONS.format(
@@ -3182,9 +3462,12 @@ class KeycloakAPI(object):
                             method='GET',
                             headers=self.restheaders))
 <<<<<<< HEAD
+<<<<<<< HEAD
 >>>>>>> SX5-868 Codestyle fix
 =======
 >>>>>>> SX5-868 Add new keycloak_component_module
+=======
+>>>>>>> SX5-868 New keycloak_realm module PR.
                     executionFound = False
                     for existingExecution in existingExecutions:
                         if "providerId" in existingExecution and existingExecution["providerId"] == newExecution["providerId"]:
@@ -3197,10 +3480,13 @@ class KeycloakAPI(object):
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> SX5-868 Codestyle fix
 =======
 >>>>>>> SX5-868 Add new keycloak_component_module
+=======
+>>>>>>> SX5-868 New keycloak_realm module PR.
                             execConfig = json.load(
                                 open_url(
                                     URL_AUTHENTICATION_CONFIG.format(
@@ -3209,6 +3495,7 @@ class KeycloakAPI(object):
                                         id=execConfigId),
                                     method='GET',
                                     headers=self.restheaders))
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
                             existingExecution["authenticationConfig"] = execConfig
@@ -3223,6 +3510,9 @@ class KeycloakAPI(object):
 =======
                             existingExecution["authenticationConfig"] = execConfig
 >>>>>>> SX5-868 Add new keycloak_component_module
+=======
+                            existingExecution["authenticationConfig"] = execConfig
+>>>>>>> SX5-868 New keycloak_realm module PR.
                         # Compare the executions to see if it need changes
                         if not isDictEquals(newExecution, existingExecution):
                             changed = True
@@ -3234,10 +3524,13 @@ class KeycloakAPI(object):
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> SX5-868 Line too long fix
 =======
 >>>>>>> SX5-868 Add new keycloak_component_module
+=======
+>>>>>>> SX5-868 New keycloak_realm module PR.
                         open_url(
                             URL_AUTHENTICATION_FLOW_EXECUTIONS_EXECUTION.format(
                                 url=self.baseurl,
@@ -3246,6 +3539,7 @@ class KeycloakAPI(object):
                             method='POST',
                             headers=self.restheaders,
                             data=json.dumps(newExec))
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -3271,6 +3565,8 @@ class KeycloakAPI(object):
                         existingExecutions = json.load(open_url(URL_AUTHENTICATION_FLOW_EXECUTIONS.format(url=self.baseurl, realm=realm, flowalias=urllib.quote(config["alias"])), method='GET', headers=self.restheaders))
 >>>>>>> SX5-868 PR Added role management for keycloak_client module.
 =======
+=======
+>>>>>>> SX5-868 New keycloak_realm module PR.
                         changed = True
                     if changed:
                         # Get existing executions on the Keycloak server for this alias
@@ -3282,9 +3578,12 @@ class KeycloakAPI(object):
                                     flowalias=urllib.quote(config["alias"])),
                                 method='GET',
                                 headers=self.restheaders))
+<<<<<<< HEAD
 >>>>>>> SX5-868 Line too long fix
 =======
 >>>>>>> SX5-868 Add new keycloak_component_module
+=======
+>>>>>>> SX5-868 New keycloak_realm module PR.
                         executionFound = False
                         for existingExecution in existingExecutions:
                             if "providerId" in existingExecution and existingExecution["providerId"] == newExecution["providerId"]:
@@ -3301,14 +3600,18 @@ class KeycloakAPI(object):
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> SX5-868 Line too long fix
 =======
 >>>>>>> SX5-868 Add new keycloak_component_module
+=======
+>>>>>>> SX5-868 New keycloak_realm module PR.
                                     open_url(
                                         URL_AUTHENTICATION_EXECUTIONS_CONFIG.format(
                                             url=self.baseurl,
                                             realm=realm,
+<<<<<<< HEAD
                                             id=existingExecution["id"]),
                                         method='POST',
                                         headers=self.restheaders,
@@ -3336,6 +3639,12 @@ class KeycloakAPI(object):
 =======
 =======
 >>>>>>> SX5-868 Add new keycloak_component_module
+=======
+                                            id=existingExecution["id"]),
+                                        method='POST',
+                                        headers=self.restheaders,
+                                        data=json.dumps(newExecution["authenticationConfig"]))
+>>>>>>> SX5-868 New keycloak_realm module PR.
                                 else:
                                     updatedExec[key] = newExecution[key]
                             open_url(
@@ -3347,13 +3656,17 @@ class KeycloakAPI(object):
                                 headers=self.restheaders,
                                 data=json.dumps(updatedExec))
 <<<<<<< HEAD
+<<<<<<< HEAD
 >>>>>>> SX5-868 Line too long fix
 =======
 >>>>>>> SX5-868 Add new keycloak_component_module
+=======
+>>>>>>> SX5-868 New keycloak_realm module PR.
             return changed
         except Exception as e:
             self.module.fail_json(msg='Could not create or update executions for authentication flow %s in realm %s: %s'
                                       % (config["alias"], realm, str(e)))
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -3372,17 +3685,23 @@ class KeycloakAPI(object):
         
 >>>>>>> SX5-868 PR Added role management for keycloak_client module.
 =======
+=======
+>>>>>>> SX5-868 New keycloak_realm module PR.
 
     def get_executions_representation(self, config, realm='master'):
         """
         Get a representation of the executions for an authentication flow.
+<<<<<<< HEAD
 >>>>>>> SX5-868 Codestyle fix
 =======
 >>>>>>> SX5-868 Add new keycloak_component_module
+=======
+>>>>>>> SX5-868 New keycloak_realm module PR.
         :param config: Representation of the authentication flow
         :param realm: Realm
         :return: Representation of the executions
         """
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -3423,6 +3742,8 @@ class KeycloakAPI(object):
 =======
 =======
 >>>>>>> SX5-868 Add new keycloak_component_module
+=======
+>>>>>>> SX5-868 New keycloak_realm module PR.
         try:
             # Get executions created
             executions = json.load(
@@ -3438,11 +3759,14 @@ class KeycloakAPI(object):
                     execConfigId = execution["authenticationConfig"]
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
                     execConfig = json.load(open_url(URL_AUTHENTICATION_CONFIG.format(url=self.baseurl, realm=realm, id=execConfigId), method='GET', headers=self.restheaders))
 >>>>>>> SX5-868 PR Added role management for keycloak_client module.
 =======
 =======
 >>>>>>> SX5-868 Add new keycloak_component_module
+=======
+>>>>>>> SX5-868 New keycloak_realm module PR.
                     execConfig = json.load(
                         open_url(
                             URL_AUTHENTICATION_CONFIG.format(
@@ -3452,14 +3776,18 @@ class KeycloakAPI(object):
                             method='GET',
                             headers=self.restheaders))
 <<<<<<< HEAD
+<<<<<<< HEAD
 >>>>>>> SX5-868 Line too long fix
 =======
 >>>>>>> SX5-868 Add new keycloak_component_module
+=======
+>>>>>>> SX5-868 New keycloak_realm module PR.
                     execution["authenticationConfig"] = execConfig
             return executions
         except Exception as e:
             self.module.fail_json(msg='Could not get executions for authentication flow %s in realm %s: %s'
                                       % (config["alias"], realm, str(e)))
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -3473,6 +3801,9 @@ class KeycloakAPI(object):
 =======
 
 >>>>>>> SX5-868 Add new keycloak_component_module
+=======
+
+>>>>>>> SX5-868 New keycloak_realm module PR.
     def get_component_by_id(self, component_id, realm='master'):
         """
         Get component representation by it's ID
@@ -3494,6 +3825,7 @@ class KeycloakAPI(object):
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
         
 >>>>>>> SX5-868 PR Added role management for keycloak_client module.
@@ -3501,6 +3833,8 @@ class KeycloakAPI(object):
 >>>>>>> SX5-868 Codestyle fix
 =======
 >>>>>>> SX5-868 Add new keycloak_component_module
+=======
+>>>>>>> SX5-868 New keycloak_realm module PR.
         :param name: Name of the component
         :param provider_type: Provider type of the component
         :param provider_id: Provider ID of the component
@@ -3511,15 +3845,19 @@ class KeycloakAPI(object):
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> SX5-868 Codestyle fix
 =======
 >>>>>>> SX5-868 Add new keycloak_component_module
+=======
+>>>>>>> SX5-868 New keycloak_realm module PR.
         components = self.get_components_by_name_provider_and_parent(
             name=name,
             provider_type=provider_type,
             parent_id=parent_id,
             realm=realm)
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -3530,10 +3868,13 @@ class KeycloakAPI(object):
 >>>>>>> SX5-868 Codestyle fix
 =======
 >>>>>>> SX5-868 Add new keycloak_component_module
+=======
+>>>>>>> SX5-868 New keycloak_realm module PR.
         for component in components:
             if "providerId" in component and component["providerId"] == provider_id:
                 componentFound = component
                 break
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -3548,11 +3889,14 @@ class KeycloakAPI(object):
 >>>>>>> SX5-868 Codestyle fix
 =======
 >>>>>>> SX5-868 Add new keycloak_component_module
+=======
+>>>>>>> SX5-868 New keycloak_realm module PR.
         return componentFound
 
     def get_components_by_name_provider_and_parent(self, name, provider_type, parent_id, realm='master'):
         """
         Get components by name, provider and parent
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
         
@@ -3561,6 +3905,8 @@ class KeycloakAPI(object):
 >>>>>>> SX5-868 Codestyle fix
 =======
 >>>>>>> SX5-868 Add new keycloak_component_module
+=======
+>>>>>>> SX5-868 New keycloak_realm module PR.
         :param name: Name of the component
         :param provider_type: Provider type of the component
         :param provider_id: Provider ID of the component
@@ -3571,10 +3917,13 @@ class KeycloakAPI(object):
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> SX5-868 Codestyle fix
 =======
 >>>>>>> SX5-868 Add new keycloak_component_module
+=======
+>>>>>>> SX5-868 New keycloak_realm module PR.
             component_url = URL_COMPONENT_BY_NAME_TYPE_PARENT.format(
                 url=self.baseurl,
                 realm=realm,
@@ -3588,6 +3937,7 @@ class KeycloakAPI(object):
                     headers=self.restheaders))
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
             component_url = URL_COMPONENT_BY_NAME_TYPE_PARENT.format(url=self.baseurl, realm=realm, name=name, type=provider_type, parent=parent_id)
             components = json.load(open_url(component_url, method='GET', headers=self.restheaders))
@@ -3596,10 +3946,13 @@ class KeycloakAPI(object):
 >>>>>>> SX5-868 Codestyle fix
 =======
 >>>>>>> SX5-868 Add new keycloak_component_module
+=======
+>>>>>>> SX5-868 New keycloak_realm module PR.
             return components
         except Exception as e:
             self.module.fail_json(msg='Could not get component %s in realm %s: %s'
                                       % (name, realm, str(e)))
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -3613,6 +3966,9 @@ class KeycloakAPI(object):
 =======
 
 >>>>>>> SX5-868 Add new keycloak_component_module
+=======
+
+>>>>>>> SX5-868 New keycloak_realm module PR.
     def create_component(self, newComponent, newSubComponents, syncLdapMappers, realm='master'):
         """
         Create a component and it's subComponents
@@ -3627,14 +3983,18 @@ class KeycloakAPI(object):
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> SX5-868 Codestyle fix
 =======
 >>>>>>> SX5-868 Add new keycloak_component_module
+=======
+>>>>>>> SX5-868 New keycloak_realm module PR.
             open_url(component_url,
                      method='POST',
                      headers=self.restheaders,
                      data=json.dumps(newComponent))
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -3653,6 +4013,8 @@ class KeycloakAPI(object):
             open_url(component_url, method='POST', headers=self.restheaders, data=json.dumps(newComponent))
 =======
 >>>>>>> SX5-868 Codestyle fix
+=======
+>>>>>>> SX5-868 New keycloak_realm module PR.
             # Get the new created component
             component = self.get_component_by_name_provider_and_parent(
                 name=newComponent["name"],
@@ -3663,12 +4025,15 @@ class KeycloakAPI(object):
             # Create Sub components
             self.create_new_sub_components(component, newSubComponents, syncLdapMappers, realm=realm)
 <<<<<<< HEAD
+<<<<<<< HEAD
     
 >>>>>>> SX5-868 PR Added role management for keycloak_client module.
 =======
 >>>>>>> SX5-868 Codestyle fix
 =======
 >>>>>>> SX5-868 Add new keycloak_component_module
+=======
+>>>>>>> SX5-868 New keycloak_realm module PR.
             return component
         except Exception as e:
             self.module.fail_json(msg='Could not create component %s in realm %s: %s'
@@ -3676,6 +4041,7 @@ class KeycloakAPI(object):
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 
 =======
     
@@ -3686,6 +4052,9 @@ class KeycloakAPI(object):
 =======
 
 >>>>>>> SX5-868 Add new keycloak_component_module
+=======
+
+>>>>>>> SX5-868 New keycloak_realm module PR.
     def create_new_sub_components(self, component, newSubComponents, syncLdapMappers, realm='master'):
         """
         Create subcomponents for a component.
@@ -3707,14 +4076,18 @@ class KeycloakAPI(object):
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> SX5-868 Codestyle fix
 =======
 >>>>>>> SX5-868 Add new keycloak_component_module
+=======
+>>>>>>> SX5-868 New keycloak_realm module PR.
                         open_url(component_url,
                                  method='POST',
                                  headers=self.restheaders,
                                  data=json.dumps(newSubComponent))
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
                         # Check if users and groups synchronization is needed
@@ -3746,6 +4119,8 @@ class KeycloakAPI(object):
 >>>>>>> SX5-868 Codestyle fix
 =======
 >>>>>>> SX5-868 Add new keycloak_component_module
+=======
+>>>>>>> SX5-868 New keycloak_realm module PR.
                         # Check if users and groups synchronization is needed
                         if component["providerType"] == "org.keycloak.storage.UserStorageProvider" and syncLdapMappers != "no":
                             # Get subcomponents
@@ -3770,6 +4145,7 @@ class KeycloakAPI(object):
                                       % (component["name"], realm, str(e)))
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
                             
 >>>>>>> SX5-868 PR Added role management for keycloak_client module.
 =======
@@ -3778,6 +4154,9 @@ class KeycloakAPI(object):
 =======
 
 >>>>>>> SX5-868 Add new keycloak_component_module
+=======
+
+>>>>>>> SX5-868 New keycloak_realm module PR.
     def update_component(self, newComponent, realm='master'):
         """
         Update a component.
@@ -3790,10 +4169,13 @@ class KeycloakAPI(object):
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> SX5-868 Codestyle fix
 =======
 >>>>>>> SX5-868 Add new keycloak_component_module
+=======
+>>>>>>> SX5-868 New keycloak_realm module PR.
             component_url = URL_COMPONENT.format(
                 url=self.baseurl,
                 realm=realm,
@@ -3804,6 +4186,7 @@ class KeycloakAPI(object):
                      data=json.dumps(newComponent))
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
             component_url = URL_COMPONENT.format(url=self.baseurl, realm=realm, id=newComponent["id"])
             open_url(component_url, method='PUT', headers=self.restheaders, data=json.dumps(newComponent))
@@ -3812,10 +4195,13 @@ class KeycloakAPI(object):
 >>>>>>> SX5-868 Codestyle fix
 =======
 >>>>>>> SX5-868 Add new keycloak_component_module
+=======
+>>>>>>> SX5-868 New keycloak_realm module PR.
             return self.get_component_by_id(newComponent['id'], realm=realm)
         except Exception as e:
             self.module.fail_json(msg='Could not update component %s in realm %s: %s'
                                       % (newComponent["name"], realm, str(e)))
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -3834,10 +4220,14 @@ class KeycloakAPI(object):
 =======
 
 >>>>>>> SX5-868 Codestyle fix
+=======
+
+>>>>>>> SX5-868 New keycloak_realm module PR.
     def update_sub_components(self, component, newSubComponents, syncLdapMappers, realm='master'):
         try:
             changed = False
             # Get all existing sub components for the component to update.
+<<<<<<< HEAD
 <<<<<<< HEAD
             subComponents = self.get_all_sub_components(parent_id=component["id"], realm=realm)
 >>>>>>> SX5-868 PR Added role management for keycloak_client module.
@@ -3847,6 +4237,10 @@ class KeycloakAPI(object):
 >>>>>>> SX5-868 Codestyle fix
 =======
 >>>>>>> SX5-868 Add new keycloak_component_module
+=======
+            subComponents = self.get_all_sub_components(parent_id=component["id"],
+                                                        realm=realm)
+>>>>>>> SX5-868 New keycloak_realm module PR.
             # For all new sub components to update
             for componentType in newSubComponents.keys():
                 for newSubComponent in newSubComponents[componentType]:
@@ -3865,10 +4259,13 @@ class KeycloakAPI(object):
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> SX5-868 Codestyle fix
 =======
 >>>>>>> SX5-868 Add new keycloak_component_module
+=======
+>>>>>>> SX5-868 New keycloak_realm module PR.
                                 component_url = URL_COMPONENT.format(url=self.baseurl,
                                                                      realm=realm,
                                                                      id=subComponent["id"])
@@ -3876,6 +4273,7 @@ class KeycloakAPI(object):
                                          method='PUT',
                                          headers=self.restheaders,
                                          data=json.dumps(newSubComponent))
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -3886,6 +4284,8 @@ class KeycloakAPI(object):
 >>>>>>> SX5-868 Codestyle fix
 =======
 >>>>>>> SX5-868 Add new keycloak_component_module
+=======
+>>>>>>> SX5-868 New keycloak_realm module PR.
                                 changed = True
                             newSubComponentFound = True
                             # If sync is needed for the subcomponent
@@ -3894,10 +4294,13 @@ class KeycloakAPI(object):
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> SX5-868 Codestyle fix
 =======
 >>>>>>> SX5-868 Add new keycloak_component_module
+=======
+>>>>>>> SX5-868 New keycloak_realm module PR.
                                 sync_url = URL_USER_STORAGE_MAPPER_SYNC.format(
                                     url=self.baseurl,
                                     realm=realm,
@@ -3909,6 +4312,7 @@ class KeycloakAPI(object):
                                          headers=self.restheaders)
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
                                 sync_url = URL_USER_STORAGE_MAPPER_SYNC.format(url=self.baseurl, realm=realm, parentid=subComponent["parentId"], id=subComponent["id"], direction=syncLdapMappers)
                                 open_url(sync_url, method='POST', headers=self.restheaders)
@@ -3917,6 +4321,8 @@ class KeycloakAPI(object):
 >>>>>>> SX5-868 Codestyle fix
 =======
 >>>>>>> SX5-868 Add new keycloak_component_module
+=======
+>>>>>>> SX5-868 New keycloak_realm module PR.
                             break
                     # If sub-component does not already exists
                     if not newSubComponentFound:
@@ -3926,16 +4332,20 @@ class KeycloakAPI(object):
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> SX5-868 Codestyle fix
 =======
 >>>>>>> SX5-868 Add new keycloak_component_module
+=======
+>>>>>>> SX5-868 New keycloak_realm module PR.
                         component_url = URL_COMPONENTS.format(url=self.baseurl,
                                                               realm=realm)
                         open_url(component_url,
                                  method='POST',
                                  headers=self.restheaders,
                                  data=json.dumps(newSubComponent))
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -3946,6 +4356,8 @@ class KeycloakAPI(object):
 >>>>>>> SX5-868 Codestyle fix
 =======
 >>>>>>> SX5-868 Add new keycloak_component_module
+=======
+>>>>>>> SX5-868 New keycloak_realm module PR.
                         changed = True
                         # Sync LDAP for group mappers
                         if component["providerType"] == "org.keycloak.storage.UserStorageProvider" and syncLdapMappers != "no":
@@ -3953,15 +4365,19 @@ class KeycloakAPI(object):
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> SX5-868 Codestyle fix
 =======
 >>>>>>> SX5-868 Add new keycloak_component_module
+=======
+>>>>>>> SX5-868 New keycloak_realm module PR.
                             subComponents = self.get_component_by_name_provider_and_parent(
                                 name=newSubComponent["name"],
                                 provider_type=newSubComponent["providerType"],
                                 parent_id=component["id"],
                                 realm=realm)
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
                             for subComponent in subComponents:
@@ -3983,6 +4399,8 @@ class KeycloakAPI(object):
 =======
 =======
 >>>>>>> SX5-868 Add new keycloak_component_module
+=======
+>>>>>>> SX5-868 New keycloak_realm module PR.
                             for subComponent in subComponents:
                                 sync_url = URL_USER_STORAGE_MAPPER_SYNC.format(
                                     url=self.baseurl,
@@ -3994,9 +4412,12 @@ class KeycloakAPI(object):
                                          method='POST',
                                          headers=self.restheaders)
 <<<<<<< HEAD
+<<<<<<< HEAD
 >>>>>>> SX5-868 Codestyle fix
 =======
 >>>>>>> SX5-868 Add new keycloak_component_module
+=======
+>>>>>>> SX5-868 New keycloak_realm module PR.
             return changed
         except Exception as e:
             self.module.fail_json(msg='Could not update component %s in realm %s: %s'
@@ -4013,10 +4434,13 @@ class KeycloakAPI(object):
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> SX5-868 Codestyle fix
 =======
 >>>>>>> SX5-868 Add new keycloak_component_module
+=======
+>>>>>>> SX5-868 New keycloak_realm module PR.
             subcomponents_url = URL_SUB_COMPONENTS.format(
                 url=self.baseurl,
                 realm=realm,
@@ -4028,6 +4452,7 @@ class KeycloakAPI(object):
                     headers=self.restheaders))
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
             subcomponents_url = URL_SUB_COMPONENTS.format(url=self.baseurl, realm=realm, parent=parent_id)
             subcomponents = json.load(open_url(subcomponents_url, method='GET', headers=self.restheaders))
@@ -4036,10 +4461,13 @@ class KeycloakAPI(object):
 >>>>>>> SX5-868 Codestyle fix
 =======
 >>>>>>> SX5-868 Add new keycloak_component_module
+=======
+>>>>>>> SX5-868 New keycloak_realm module PR.
             return subcomponents
         except Exception as e:
             self.module.fail_json(msg='Could not get sub components for parent component %s in realm %s: %s'
                                       % (parent_id, realm, str(e)))
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -4053,6 +4481,9 @@ class KeycloakAPI(object):
 =======
 
 >>>>>>> SX5-868 Add new keycloak_component_module
+=======
+
+>>>>>>> SX5-868 New keycloak_realm module PR.
     def delete_component(self, component_id, realm='master'):
         """
         Delete component from Keycloak server
@@ -4064,10 +4495,13 @@ class KeycloakAPI(object):
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> SX5-868 Codestyle fix
 =======
 >>>>>>> SX5-868 Add new keycloak_component_module
+=======
+>>>>>>> SX5-868 New keycloak_realm module PR.
             component_url = URL_COMPONENT.format(
                 url=self.baseurl,
                 realm=realm,
@@ -4078,10 +4512,14 @@ class KeycloakAPI(object):
                 headers=self.restheaders)
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> SX5-868 New keycloak_realm module PR.
         except Exception as e:
             self.module.fail_json(msg='Could not delete component %s in realm %s: %s'
                                       % (component_id, realm, str(e)))
 
+<<<<<<< HEAD
 =======
             component_url = URL_COMPONENT.format(url=self.baseurl, realm=realm, id=component_id)
             return open_url(component_url, method='DELETE', headers=self.restheaders)
@@ -4102,6 +4540,8 @@ class KeycloakAPI(object):
                                       % (component_id, realm, str(e)))
 
 >>>>>>> SX5-868 Add new keycloak_component_module
+=======
+>>>>>>> SX5-868 New keycloak_realm module PR.
     def sync_user_storage(self, component_id, action, realm='master'):
         """
         Synchronize LDAP user storage component with Keycloak.
@@ -4114,10 +4554,13 @@ class KeycloakAPI(object):
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> SX5-868 Codestyle fix
 =======
 >>>>>>> SX5-868 Add new keycloak_component_module
+=======
+>>>>>>> SX5-868 New keycloak_realm module PR.
             sync_url = URL_USER_STORAGE_SYNC.format(
                 url=self.baseurl,
                 realm=realm,
@@ -4126,6 +4569,7 @@ class KeycloakAPI(object):
             return open_url(sync_url,
                             method='POST',
                             headers=self.restheaders)
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
         except Exception as e:
@@ -4153,12 +4597,15 @@ class KeycloakAPI(object):
 >>>>>>> SX5-868 Codestyle fix
 =======
 >>>>>>> SX5-868 Add new keycloak_component_module
+=======
+>>>>>>> SX5-868 New keycloak_realm module PR.
         except Exception as e:
             self.module.fail_json(msg='Could not synchronize component %s action %s in realm %s: %s'
                                       % (component_id, action, realm, str(e)))
 
     def add_idp_endpoints(self, idPConfiguration, url):
         """
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
         This function extract OpenID connect endpoints from the identity provider's openid-configuration URL.
@@ -4171,12 +4618,17 @@ class KeycloakAPI(object):
         This function extract OpenID connect endpoints from the identity provider's
         openid-configuration URL.
 >>>>>>> SX5-868 Add new keycloak_component_module
+=======
+        This function extract OpenID connect endpoints from the identity provider's
+        openid-configuration URL.
+>>>>>>> SX5-868 New keycloak_realm module PR.
         Endpoints are added to the idp configuration object received in parameter.
         :param idPConfiguration: Identity provider configuration dict to update.
         :param url: Identity provider's openid-configuration URL.
         :param realm: Realm
         :return: Nothing
         """
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -4189,6 +4641,9 @@ class KeycloakAPI(object):
 =======
         openIdConfig = {}
 >>>>>>> SX5-868 Add new keycloak_component_module
+=======
+        openIdConfig = {}
+>>>>>>> SX5-868 New keycloak_realm module PR.
         try:
             if url is not None:
                 openIdConfig = json.load(open_url(url, method='GET'))
@@ -4203,6 +4658,7 @@ class KeycloakAPI(object):
                 if 'authorization_endpoint' in openIdConfig.keys():
                     idPConfiguration["authorizationUrl"] = openIdConfig["authorization_endpoint"]
                 if 'end_session_endpoint' in openIdConfig.keys():
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -4242,13 +4698,18 @@ class KeycloakAPI(object):
 =======
 >>>>>>> Sx5-868 shippable code style fix
 =======
+=======
+>>>>>>> SX5-868 New keycloak_realm module PR.
                     idPConfiguration["logoutUrl"] = openIdConfig["end_session_endpoint"]
             return openIdConfig
         except Exception as e:
             self.module.fail_json(msg='Could not get IdP configuration from endpoint %s: %s'
                                   % (url, str(e)))
 
+<<<<<<< HEAD
 >>>>>>> SX5-868 Add new keycloak_component_module
+=======
+>>>>>>> SX5-868 New keycloak_realm module PR.
     def delete_all_idp_mappers(self, alias, realm='master'):
         """
         Delete all mappers for an identity provider
@@ -4262,10 +4723,13 @@ class KeycloakAPI(object):
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> SX5-868 Codestyle fix
 =======
 >>>>>>> SX5-868 Add new keycloak_component_module
+=======
+>>>>>>> SX5-868 New keycloak_realm module PR.
             mappers_url = URL_IDP_MAPPERS.format(
                 url=self.baseurl,
                 realm=realm,
@@ -4275,6 +4739,7 @@ class KeycloakAPI(object):
                     mappers_url,
                     method='GET',
                     headers=self.restheaders))
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
             for mapper in mappers:
@@ -4299,6 +4764,8 @@ class KeycloakAPI(object):
 >>>>>>> SX5-868 Codestyle fix
 =======
 >>>>>>> SX5-868 Add new keycloak_component_module
+=======
+>>>>>>> SX5-868 New keycloak_realm module PR.
             for mapper in mappers:
                 mapper_url = URL_IDP_MAPPER.format(
                     url=self.baseurl,
@@ -4315,6 +4782,7 @@ class KeycloakAPI(object):
                                       % (alias, realm, str(e)))
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
          
     
 >>>>>>> SX5-868 PR Added role management for keycloak_client module.
@@ -4324,6 +4792,9 @@ class KeycloakAPI(object):
 =======
 
 >>>>>>> SX5-868 Add new keycloak_component_module
+=======
+
+>>>>>>> SX5-868 New keycloak_realm module PR.
     def create_or_update_idp_mappers(self, alias, idPMappers, realm='master'):
         """
         Create, update or delete mappers for an identity provider.
@@ -4338,10 +4809,13 @@ class KeycloakAPI(object):
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> SX5-868 Codestyle fix
 =======
 >>>>>>> SX5-868 Add new keycloak_component_module
+=======
+>>>>>>> SX5-868 New keycloak_realm module PR.
             mappers_url = URL_IDP_MAPPERS.format(
                 url=self.baseurl,
                 realm=realm,
@@ -4353,6 +4827,7 @@ class KeycloakAPI(object):
                     headers=self.restheaders))
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
             mappers_url = URL_IDP_MAPPERS.format(url=self.baseurl, realm=realm, alias=alias)
             mappers = json.load(open_url(mappers_url, method='GET',headers=self.restheaders))
@@ -4361,6 +4836,8 @@ class KeycloakAPI(object):
 >>>>>>> SX5-868 Codestyle fix
 =======
 >>>>>>> SX5-868 Add new keycloak_component_module
+=======
+>>>>>>> SX5-868 New keycloak_realm module PR.
             for idPMapper in idPMappers:
                 desiredState = "present"
                 if "state" in idPMapper:
@@ -4371,6 +4848,7 @@ class KeycloakAPI(object):
                     if mapper['name'] == idPMapper['name']:
                         mapperFound = True
                         break
+<<<<<<< HEAD
 <<<<<<< HEAD
                 # If mapper already exist and is different
 <<<<<<< HEAD
@@ -4408,6 +4886,10 @@ class KeycloakAPI(object):
                 # If mapper already exist and is different
                 if mapperFound and not isDictEquals(idPMapper, mapper):
 >>>>>>> SX5-868 Add new keycloak_component_module
+=======
+                # If mapper already exist and is different
+                if mapperFound and not isDictEquals(idPMapper, mapper):
+>>>>>>> SX5-868 New keycloak_realm module PR.
                     # update the existing mapper
                     for key in idPMapper.keys():
                         mapper[key] = idPMapper[key]
@@ -4425,12 +4907,15 @@ class KeycloakAPI(object):
                     # delete the mapper
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
                     mapper_url = URL_IDP_MAPPER.format(url=self.baseurl,realm=realm,alias=alias,id=mapper['id'])
                     open_url(mapper_url,method='DELETE',headers=self.restheaders)
 >>>>>>> SX5-868 PR Added role management for keycloak_client module.
 =======
 =======
 >>>>>>> SX5-868 Add new keycloak_component_module
+=======
+>>>>>>> SX5-868 New keycloak_realm module PR.
                     mapper_url = URL_IDP_MAPPER.format(
                         url=self.baseurl,
                         realm=realm,
@@ -4440,9 +4925,12 @@ class KeycloakAPI(object):
                              method='DELETE',
                              headers=self.restheaders)
 <<<<<<< HEAD
+<<<<<<< HEAD
 >>>>>>> SX5-868 Codestyle fix
 =======
 >>>>>>> SX5-868 Add new keycloak_component_module
+=======
+>>>>>>> SX5-868 New keycloak_realm module PR.
                     changed = True
                 # If the mapper does not already exist
                 elif not mapperFound and desiredState != "absent":
@@ -4450,8 +4938,11 @@ class KeycloakAPI(object):
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> SX5-868 Add new keycloak_component_module
+=======
+>>>>>>> SX5-868 New keycloak_realm module PR.
                     if 'identityProviderMapper' not in idPMapper.keys():  # if mapper's type is provided
                         idPMapper['identityProviderMapper'] = 'oidc-user-attribute-idp-mapper'
                     idPMapper['identityProviderAlias'] = alias
@@ -4467,6 +4958,7 @@ class KeycloakAPI(object):
                     changed = True
             return changed
         except Exception as e:
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
             self.module.fail_json(msg='Could not create or update mappers for IdP %s in realm %s: %s'
@@ -4507,6 +4999,11 @@ class KeycloakAPI(object):
                                       % (alias, realm, str(e)))
 
 >>>>>>> SX5-868 Add new keycloak_component_module
+=======
+            self.module.fail_json(msg='Could not create or update mappers for IdP %s in realm %s: %s'
+                                      % (alias, realm, str(e)))
+
+>>>>>>> SX5-868 New keycloak_realm module PR.
     def get_idp_by_alias(self, alias, realm='master'):
         """
         Get an identity provider by alias. Representation of the idp is returned.
@@ -4519,16 +5016,22 @@ class KeycloakAPI(object):
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> SX5-868 Codestyle fix
 =======
 >>>>>>> SX5-868 Add new keycloak_component_module
+=======
+>>>>>>> SX5-868 New keycloak_realm module PR.
             idp_url = URL_IDP.format(
                 url=self.baseurl,
                 realm=realm,
                 alias=alias)
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> SX5-868 New keycloak_realm module PR.
             # Get all IdP from Keycloak server
             idPRepresentation = json.load(
                 open_url(idp_url,
@@ -4536,6 +5039,7 @@ class KeycloakAPI(object):
                          headers=self.restheaders))
             return idPRepresentation
         except Exception as e:
+<<<<<<< HEAD
 =======
             idp_url = URL_IDP.format(url=self.baseurl,realm=realm,alias=alias)
             
@@ -4563,6 +5067,8 @@ class KeycloakAPI(object):
 =======
         except Exception as e:
 >>>>>>> SX5-868 Add new keycloak_component_module
+=======
+>>>>>>> SX5-868 New keycloak_realm module PR.
             self.module.fail_json(msg='Could not get IdP by alias %s in realm %s: %s'
                                       % (alias, realm, str(e)))
 
@@ -4578,6 +5084,7 @@ class KeycloakAPI(object):
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
             idps_url = URL_IDPS.format(
                 url=self.baseurl,
                 realm=realm)
@@ -4597,6 +5104,8 @@ class KeycloakAPI(object):
 =======
 =======
 >>>>>>> SX5-868 Add new keycloak_component_module
+=======
+>>>>>>> SX5-868 New keycloak_realm module PR.
             idps_url = URL_IDPS.format(
                 url=self.baseurl,
                 realm=realm)
@@ -4607,15 +5116,19 @@ class KeycloakAPI(object):
                     method='GET',
                     headers=self.restheaders))
 <<<<<<< HEAD
+<<<<<<< HEAD
 >>>>>>> SX5-868 Codestyle fix
 =======
 >>>>>>> SX5-868 Add new keycloak_component_module
+=======
+>>>>>>> SX5-868 New keycloak_realm module PR.
             for idP in listIdPs:
                 if idP['alias'] == alias:
                     # Get existing IdP
                     idPRepresentation = idP
                     break
             return idPRepresentation
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -4633,6 +5146,9 @@ class KeycloakAPI(object):
 =======
         except Exception as e:
 >>>>>>> SX5-868 Add new keycloak_component_module
+=======
+        except Exception as e:
+>>>>>>> SX5-868 New keycloak_realm module PR.
             self.module.fail_json(msg='Could not search IdP by alias %s in realm %s: %s'
                                       % (alias, realm, str(e)))
 
@@ -4648,6 +5164,7 @@ class KeycloakAPI(object):
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
             idps_url = URL_IDPS.format(
                 url=self.baseurl,
                 realm=realm)
@@ -4666,6 +5183,8 @@ class KeycloakAPI(object):
 =======
 =======
 >>>>>>> SX5-868 Add new keycloak_component_module
+=======
+>>>>>>> SX5-868 New keycloak_realm module PR.
             idps_url = URL_IDPS.format(
                 url=self.baseurl,
                 realm=realm)
@@ -4675,15 +5194,19 @@ class KeycloakAPI(object):
                          method='GET',
                          headers=self.restheaders))
 <<<<<<< HEAD
+<<<<<<< HEAD
 >>>>>>> SX5-868 Codestyle fix
 =======
 >>>>>>> SX5-868 Add new keycloak_component_module
+=======
+>>>>>>> SX5-868 New keycloak_realm module PR.
             for idP in listIdPs:
                 if 'config' in idP and idP['config'] is not None and 'clientId' in idP['config'] and idP['config']['clientId'] == client_id:
                     # Obtenir le IdP exitant
                     idPRepresentation = idP
                     break
             return idPRepresentation
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -4701,6 +5224,9 @@ class KeycloakAPI(object):
 =======
         except Exception as e:
 >>>>>>> SX5-868 Add new keycloak_component_module
+=======
+        except Exception as e:
+>>>>>>> SX5-868 New keycloak_realm module PR.
             self.module.fail_json(msg='Could not search IdP by client Id %s in realm %s: %s'
                                       % (client_id, realm, str(e)))
 
@@ -4715,10 +5241,13 @@ class KeycloakAPI(object):
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> SX5-868 Codestyle fix
 =======
 >>>>>>> SX5-868 Add new keycloak_component_module
+=======
+>>>>>>> SX5-868 New keycloak_realm module PR.
             idps_url = URL_IDPS.format(
                 url=self.baseurl,
                 realm=realm)
@@ -4726,6 +5255,7 @@ class KeycloakAPI(object):
                      method='POST',
                      headers=self.restheaders,
                      data=json.dumps(newIdPRepresentation))
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
             return self.get_idp_by_alias(newIdPRepresentation["alias"], realm)
@@ -4748,6 +5278,10 @@ class KeycloakAPI(object):
             return self.get_idp_by_alias(newIdPRepresentation["alias"], realm)
         except Exception as e:
 >>>>>>> SX5-868 Add new keycloak_component_module
+=======
+            return self.get_idp_by_alias(newIdPRepresentation["alias"], realm)
+        except Exception as e:
+>>>>>>> SX5-868 New keycloak_realm module PR.
             self.module.fail_json(msg='Could not create the IdP %s in realm %s: %s'
                                       % (newIdPRepresentation["alias"], realm, str(e)))
 
@@ -4762,10 +5296,13 @@ class KeycloakAPI(object):
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> SX5-868 Codestyle fix
 =======
 >>>>>>> SX5-868 Add new keycloak_component_module
+=======
+>>>>>>> SX5-868 New keycloak_realm module PR.
             idp_url = URL_IDP.format(
                 url=self.baseurl,
                 realm=realm,
@@ -4775,6 +5312,7 @@ class KeycloakAPI(object):
                 method='PUT',
                 headers=self.restheaders,
                 data=json.dumps(newIdPRepresentation))
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
             return self.get_idp_by_alias(newIdPRepresentation["alias"], realm)
@@ -4797,6 +5335,10 @@ class KeycloakAPI(object):
             return self.get_idp_by_alias(newIdPRepresentation["alias"], realm)
         except Exception as e:
 >>>>>>> SX5-868 Add new keycloak_component_module
+=======
+            return self.get_idp_by_alias(newIdPRepresentation["alias"], realm)
+        except Exception as e:
+>>>>>>> SX5-868 New keycloak_realm module PR.
             self.module.fail_json(msg='Could not update the IdP %s in realm %s: %s'
                                       % (newIdPRepresentation["alias"], realm, str(e)))
 
@@ -4811,10 +5353,13 @@ class KeycloakAPI(object):
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> SX5-868 Codestyle fix
 =======
 >>>>>>> SX5-868 Add new keycloak_component_module
+=======
+>>>>>>> SX5-868 New keycloak_realm module PR.
             idp_url = URL_IDP.format(
                 url=self.baseurl,
                 realm=realm,
@@ -4823,6 +5368,7 @@ class KeycloakAPI(object):
                 idp_url,
                 method='DELETE',
                 headers=self.restheaders)
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -4841,6 +5387,9 @@ class KeycloakAPI(object):
 =======
         except Exception as e:
 >>>>>>> SX5-868 Add new keycloak_component_module
+=======
+        except Exception as e:
+>>>>>>> SX5-868 New keycloak_realm module PR.
             self.module.fail_json(msg='Could not delete the IdP %s in realm %s: %s'
                                       % (alias, realm, str(e)))
 
@@ -4855,14 +5404,18 @@ class KeycloakAPI(object):
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> SX5-868 Codestyle fix
 =======
 >>>>>>> SX5-868 Add new keycloak_component_module
+=======
+>>>>>>> SX5-868 New keycloak_realm module PR.
             mapper_url = URL_IDP_MAPPERS.format(
                 url=self.baseurl,
                 realm=realm,
                 alias=alias)
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
             # Get all mappers for the IdP from Keycloak server
@@ -4888,6 +5441,8 @@ class KeycloakAPI(object):
 >>>>>>> SX5-868 Codestyle fix
 =======
 >>>>>>> SX5-868 Add new keycloak_component_module
+=======
+>>>>>>> SX5-868 New keycloak_realm module PR.
             # Get all mappers for the IdP from Keycloak server
             idMappers = json.load(
                 open_url(
@@ -4899,9 +5454,12 @@ class KeycloakAPI(object):
             self.module.fail_json(msg='Could not get IdP mappers for alias %s in realm %s: %s'
                                       % (alias, realm, str(e)))
 <<<<<<< HEAD
+<<<<<<< HEAD
 >>>>>>> SX5-868 PR Added role management for keycloak_client module.
 =======
 >>>>>>> SX5-868 Add new keycloak_component_module
+=======
+>>>>>>> SX5-868 New keycloak_realm module PR.
 
     def search_realm(self, realm):
         """
@@ -4915,15 +5473,19 @@ class KeycloakAPI(object):
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> SX5-868 Codestyle fix
 =======
 >>>>>>> SX5-868 Add new keycloak_component_module
+=======
+>>>>>>> SX5-868 New keycloak_realm module PR.
             listRealms = json.load(
                 open_url(
                     realms_url,
                     method='GET',
                     headers=self.restheaders))
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -4935,11 +5497,14 @@ class KeycloakAPI(object):
 >>>>>>> SX5-868 Codestyle fix
 =======
 >>>>>>> SX5-868 Add new keycloak_component_module
+=======
+>>>>>>> SX5-868 New keycloak_realm module PR.
             for theRealm in listRealms:
                 if theRealm['realm'] == realm:
                     realmRepresentation = theRealm
                     break
             return realmRepresentation
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -4957,6 +5522,9 @@ class KeycloakAPI(object):
 =======
         except Exception as e:
 >>>>>>> SX5-868 Add new keycloak_component_module
+=======
+        except Exception as e:
+>>>>>>> SX5-868 New keycloak_realm module PR.
             self.module.fail_json(msg='Could not search for realm %s: %s'
                                       % (realm, str(e)))
 
@@ -4967,6 +5535,7 @@ class KeycloakAPI(object):
         :return: Representation of the realm.
         """
         try:
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -5003,6 +5572,17 @@ class KeycloakAPI(object):
             return realmRepresentation
         except Exception as e:
 >>>>>>> SX5-868 Add new keycloak_component_module
+=======
+            realm_url = URL_REALM.format(
+                url=self.baseurl,
+                realm=realm)
+            realmRepresentation = json.load(
+                open_url(realm_url,
+                         method='GET',
+                         headers=self.restheaders))
+            return realmRepresentation
+        except Exception as e:
+>>>>>>> SX5-868 New keycloak_realm module PR.
             self.module.fail_json(msg='Could get realm %s: %s'
                                       % (realm, str(e)))
 
@@ -5017,15 +5597,19 @@ class KeycloakAPI(object):
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> SX5-868 Codestyle fix
 =======
 >>>>>>> SX5-868 Add new keycloak_component_module
+=======
+>>>>>>> SX5-868 New keycloak_realm module PR.
             open_url(
                 realms_url,
                 method='POST',
                 headers=self.restheaders,
                 data=json.dumps(newRealmRepresentation))
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
             realmRepresentation = self.get_realm(realm=newRealmRepresentation["realm"])
@@ -5040,11 +5624,14 @@ class KeycloakAPI(object):
 >>>>>>> SX5-868 Codestyle fix
 =======
 >>>>>>> SX5-868 Add new keycloak_component_module
+=======
+>>>>>>> SX5-868 New keycloak_realm module PR.
             realmRepresentation = self.get_realm(realm=newRealmRepresentation["realm"])
             return realmRepresentation
         except Exception as e:
             self.module.fail_json(msg='Could not create realm %s: %s'
                                       % (newRealmRepresentation["realm"], str(e)))
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
             
@@ -5055,6 +5642,9 @@ class KeycloakAPI(object):
 =======
 
 >>>>>>> SX5-868 Add new keycloak_component_module
+=======
+
+>>>>>>> SX5-868 New keycloak_realm module PR.
     def delete_realm(self, realm):
         """
         Delete a Realm.
@@ -5065,10 +5655,13 @@ class KeycloakAPI(object):
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> SX5-868 Codestyle fix
 =======
 >>>>>>> SX5-868 Add new keycloak_component_module
+=======
+>>>>>>> SX5-868 New keycloak_realm module PR.
             realm_url = URL_REALM.format(
                 url=self.baseurl,
                 realm=realm)
@@ -5076,6 +5669,7 @@ class KeycloakAPI(object):
                 realm_url,
                 method='DELETE',
                 headers=self.restheaders)
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -5094,6 +5688,9 @@ class KeycloakAPI(object):
 =======
         except Exception as e:
 >>>>>>> SX5-868 Add new keycloak_component_module
+=======
+        except Exception as e:
+>>>>>>> SX5-868 New keycloak_realm module PR.
             self.module.fail_json(msg='Could delete realm %s: %s'
                                       % (realm, str(e)))
 
@@ -5107,10 +5704,13 @@ class KeycloakAPI(object):
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> SX5-868 Codestyle fix
 =======
 >>>>>>> SX5-868 Add new keycloak_component_module
+=======
+>>>>>>> SX5-868 New keycloak_realm module PR.
             realm_url = URL_REALM.format(
                 url=self.baseurl,
                 realm=newRealmRepresentation["realm"])
@@ -5119,6 +5719,7 @@ class KeycloakAPI(object):
                 method='PUT',
                 headers=self.restheaders,
                 data=json.dumps(newRealmRepresentation))
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
             return self.get_realm(newRealmRepresentation["realm"])
@@ -5141,6 +5742,10 @@ class KeycloakAPI(object):
             return self.get_realm(newRealmRepresentation["realm"])
         except Exception as e:
 >>>>>>> SX5-868 Add new keycloak_component_module
+=======
+            return self.get_realm(newRealmRepresentation["realm"])
+        except Exception as e:
+>>>>>>> SX5-868 New keycloak_realm module PR.
             self.module.fail_json(msg='Could update realm %s: %s'
                                       % (newRealmRepresentation["realm"], str(e)))
 
@@ -5155,10 +5760,13 @@ class KeycloakAPI(object):
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> SX5-868 Codestyle fix
 =======
 >>>>>>> SX5-868 Add new keycloak_component_module
+=======
+>>>>>>> SX5-868 New keycloak_realm module PR.
             realm_events_config_url = URL_REALM_EVENT_CONFIG.format(
                 url=self.baseurl,
                 realm=realm)
@@ -5167,6 +5775,7 @@ class KeycloakAPI(object):
                 method='PUT',
                 headers=self.restheaders,
                 data=json.dumps(newEventsConfig))
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
             return self.get_realm_events_config(realm=realm)
@@ -5181,10 +5790,13 @@ class KeycloakAPI(object):
 >>>>>>> SX5-868 Codestyle fix
 =======
 >>>>>>> SX5-868 Add new keycloak_component_module
+=======
+>>>>>>> SX5-868 New keycloak_realm module PR.
             return self.get_realm_events_config(realm=realm)
         except Exception as e:
             self.module.fail_json(msg='Could not update events config for realm %s: %s'
                                       % (realm, str(e)))
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
         
@@ -5195,6 +5807,9 @@ class KeycloakAPI(object):
 =======
 
 >>>>>>> SX5-868 Add new keycloak_component_module
+=======
+
+>>>>>>> SX5-868 New keycloak_realm module PR.
     def get_realm_events_config(self, realm):
         """
         Get events configuration for a REALM.
@@ -5205,10 +5820,13 @@ class KeycloakAPI(object):
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> SX5-868 Codestyle fix
 =======
 >>>>>>> SX5-868 Add new keycloak_component_module
+=======
+>>>>>>> SX5-868 New keycloak_realm module PR.
             realm_events_config_url = URL_REALM_EVENT_CONFIG.format(
                 url=self.baseurl,
                 realm=realm)
@@ -5217,6 +5835,7 @@ class KeycloakAPI(object):
                     realm_events_config_url,
                     method='GET',
                     headers=self.restheaders))
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -5247,6 +5866,11 @@ class KeycloakAPI(object):
             self.module.fail_json(msg='Could not get events config for realm %s: %s'
                                       % (realm, str(e)))
 >>>>>>> SX5-868 Add new keycloak_component_module
+=======
+        except Exception as e:
+            self.module.fail_json(msg='Could not get events config for realm %s: %s'
+                                      % (realm, str(e)))
+>>>>>>> SX5-868 New keycloak_realm module PR.
 
     def search_realm_role_by_name(self, name, realm="master"):
         """
@@ -5256,6 +5880,7 @@ class KeycloakAPI(object):
         :return: Realm role representation. An empty dict is returned when role have not been found
         """
         try:
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -5269,6 +5894,9 @@ class KeycloakAPI(object):
 =======
             rolerep = {}
 >>>>>>> SX5-868 Add new keycloak_component_module
+=======
+            rolerep = {}
+>>>>>>> SX5-868 New keycloak_realm module PR.
             listRoles = self.get_realm_roles(realm=realm)
             for role in listRoles:
                 if role['name'] == name:
@@ -5279,10 +5907,14 @@ class KeycloakAPI(object):
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> SX5-868 New keycloak_realm module PR.
         except Exception as e:
             self.module.fail_json(msg='Could not search for role % in realm %s: %s'
                                       % (name, realm, str(e)))
 
+<<<<<<< HEAD
 =======
         except Exception ,e :
             self.module.fail_json(msg='Could not search for role % in realm %s: %s'
@@ -5303,6 +5935,8 @@ class KeycloakAPI(object):
                                       % (name, realm, str(e)))
 
 >>>>>>> SX5-868 Add new keycloak_component_module
+=======
+>>>>>>> SX5-868 New keycloak_realm module PR.
     def get_realm_roles(self, realm="master"):
         """
         Get all REALM roles.
@@ -5313,16 +5947,20 @@ class KeycloakAPI(object):
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> SX5-868 Codestyle fix
 =======
 >>>>>>> SX5-868 Add new keycloak_component_module
+=======
+>>>>>>> SX5-868 New keycloak_realm module PR.
             realm_roles_url = URL_REALM_ROLES.format(
                 url=self.baseurl,
                 realm=realm)
             listRoles = json.load(open_url(realm_roles_url,
                                            method='GET',
                                            headers=self.restheaders))
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
             return listRoles
@@ -5345,6 +5983,10 @@ class KeycloakAPI(object):
             return listRoles
         except Exception as e:
 >>>>>>> SX5-868 Add new keycloak_component_module
+=======
+            return listRoles
+        except Exception as e:
+>>>>>>> SX5-868 New keycloak_realm module PR.
             self.module.fail_json(msg='Could not get roles in realm %s: %s'
                                       % (realm, str(e)))
 
@@ -5359,10 +6001,13 @@ class KeycloakAPI(object):
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> SX5-868 Codestyle fix
 =======
 >>>>>>> SX5-868 Add new keycloak_component_module
+=======
+>>>>>>> SX5-868 New keycloak_realm module PR.
             realm_role_url = URL_REALM_ROLE.format(
                 url=self.baseurl,
                 realm=realm,
@@ -5372,6 +6017,7 @@ class KeycloakAPI(object):
                     realm_role_url,
                     method='GET',
                     headers=self.restheaders))
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
             return role
@@ -5394,6 +6040,10 @@ class KeycloakAPI(object):
             return role
         except Exception as e:
 >>>>>>> SX5-868 Add new keycloak_component_module
+=======
+            return role
+        except Exception as e:
+>>>>>>> SX5-868 New keycloak_realm module PR.
             self.module.fail_json(msg='Could not get role %s in realm %s: %s'
                                       % (name, realm, str(e)))
 
@@ -5408,10 +6058,13 @@ class KeycloakAPI(object):
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> SX5-868 Codestyle fix
 =======
 >>>>>>> SX5-868 Add new keycloak_component_module
+=======
+>>>>>>> SX5-868 New keycloak_realm module PR.
             realm_roles_url = URL_REALM_ROLES.format(
                 url=self.baseurl,
                 realm=realm)
@@ -5423,6 +6076,7 @@ class KeycloakAPI(object):
             roleRepresentation = self.get_realm_role(
                 name=newRoleRepresentation['name'],
                 realm=realm)
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
             return roleRepresentation
@@ -5446,6 +6100,10 @@ class KeycloakAPI(object):
             return roleRepresentation
         except Exception as e:
 >>>>>>> SX5-868 Add new keycloak_component_module
+=======
+            return roleRepresentation
+        except Exception as e:
+>>>>>>> SX5-868 New keycloak_realm module PR.
             self.module.fail_json(msg='Could not create realm role %s in realm %s: %s'
                                       % (newRoleRepresentation["name"], realm, str(e)))
 
@@ -5460,10 +6118,13 @@ class KeycloakAPI(object):
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> SX5-868 Codestyle fix
 =======
 >>>>>>> SX5-868 Add new keycloak_component_module
+=======
+>>>>>>> SX5-868 New keycloak_realm module PR.
             realm_role_url = URL_REALM_ROLE.format(
                 url=self.baseurl,
                 realm=realm,
@@ -5472,6 +6133,7 @@ class KeycloakAPI(object):
                 realm_role_url,
                 method='DELETE',
                 headers=self.restheaders)
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -5490,6 +6152,9 @@ class KeycloakAPI(object):
 =======
         except Exception as e:
 >>>>>>> SX5-868 Add new keycloak_component_module
+=======
+        except Exception as e:
+>>>>>>> SX5-868 New keycloak_realm module PR.
             self.module.fail_json(msg='Could not delete realm role %s in realm %s: %s'
                                       % (name, realm, str(e)))
 
@@ -5504,10 +6169,13 @@ class KeycloakAPI(object):
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> SX5-868 Codestyle fix
 =======
 >>>>>>> SX5-868 Add new keycloak_component_module
+=======
+>>>>>>> SX5-868 New keycloak_realm module PR.
             realm_role_url = URL_REALM_ROLE.format(
                 url=self.baseurl,
                 realm=realm,
@@ -5520,6 +6188,7 @@ class KeycloakAPI(object):
             roleRepresentation = self.get_realm_role(
                 name=newRoleRepresentation['name'],
                 realm=realm)
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
             return roleRepresentation
@@ -5543,6 +6212,10 @@ class KeycloakAPI(object):
             return roleRepresentation
         except Exception as e:
 >>>>>>> SX5-868 Add new keycloak_component_module
+=======
+            return roleRepresentation
+        except Exception as e:
+>>>>>>> SX5-868 New keycloak_realm module PR.
             self.module.fail_json(msg='Could not update realm role %s in realm %s: %s'
                                       % (newRoleRepresentation["name"], realm, str(e)))
 
@@ -5556,6 +6229,9 @@ class KeycloakAPI(object):
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> SX5-868 New keycloak_realm module PR.
         composites = self.get_realm_role_composites(
             name=name,
             realm=realm)
@@ -5564,6 +6240,7 @@ class KeycloakAPI(object):
                 composite["clientId"] = self.get_client_by_id(
                     id=composite["containerId"],
                     realm=realm)["clientId"]
+<<<<<<< HEAD
 =======
         composites = self.get_realm_role_composites(name=name, realm=realm)
         for composite in composites:
@@ -5585,6 +6262,8 @@ class KeycloakAPI(object):
 >>>>>>> SX5-868 Codestyle fix
 =======
 >>>>>>> SX5-868 Add new keycloak_component_module
+=======
+>>>>>>> SX5-868 New keycloak_realm module PR.
         return composites
 
     def get_realm_role_composites(self, name, realm='master'):
@@ -5598,10 +6277,13 @@ class KeycloakAPI(object):
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> SX5-868 Codestyle fix
 =======
 >>>>>>> SX5-868 Add new keycloak_component_module
+=======
+>>>>>>> SX5-868 New keycloak_realm module PR.
             realm_role_composites_url = URL_REALM_ROLE_COMPOSITES.format(
                 url=self.baseurl,
                 realm=realm,
@@ -5611,6 +6293,7 @@ class KeycloakAPI(object):
                     realm_role_composites_url,
                     method='GET',
                     headers=self.restheaders))
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
             return composites
@@ -5633,6 +6316,10 @@ class KeycloakAPI(object):
             return composites
         except Exception as e:
 >>>>>>> SX5-868 Add new keycloak_component_module
+=======
+            return composites
+        except Exception as e:
+>>>>>>> SX5-868 New keycloak_realm module PR.
             self.module.fail_json(msg='Could not get realm role %s composites in realm %s: %s'
                                       % (name, realm, str(e)))
 
@@ -5648,10 +6335,13 @@ class KeycloakAPI(object):
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> SX5-868 Codestyle fix
 =======
 >>>>>>> SX5-868 Add new keycloak_component_module
+=======
+>>>>>>> SX5-868 New keycloak_realm module PR.
             realm_role_composites_url = URL_REALM_ROLE_COMPOSITES.format(
                 url=self.baseurl,
                 realm=realm,
@@ -5661,6 +6351,7 @@ class KeycloakAPI(object):
                 method='POST',
                 headers=self.restheaders,
                 data=json.dumps(newCompositesToCreate))
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -5679,6 +6370,9 @@ class KeycloakAPI(object):
 =======
         except Exception as e:
 >>>>>>> SX5-868 Add new keycloak_component_module
+=======
+        except Exception as e:
+>>>>>>> SX5-868 New keycloak_realm module PR.
             self.module.fail_json(msg='Could not create realm role %s composites in realm %s: %s'
                                       % (name, realm, str(e)))
 
@@ -5694,6 +6388,7 @@ class KeycloakAPI(object):
         newCompositesToCreate = []
         try:
             # Get the realm role's composites already present on the Keycloak server
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -5713,6 +6408,11 @@ class KeycloakAPI(object):
                 name=newRoleRepresentation["name"],
                 realm=realm)
 >>>>>>> SX5-868 Add new keycloak_component_module
+=======
+            existingComposites = self.get_realm_role_composites(
+                name=newRoleRepresentation["name"],
+                realm=realm)
+>>>>>>> SX5-868 New keycloak_realm module PR.
             if existingComposites is None:
                 existingComposites = []
             for existingComposite in existingComposites:
@@ -5723,6 +6423,7 @@ class KeycloakAPI(object):
                     newCompositeFound = False
                     # Search composite to assing in composites of the role on the Keycloak Server
                     for composite in existingComposites:
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -5740,6 +6441,8 @@ class KeycloakAPI(object):
 =======
 =======
 >>>>>>> SX5-868 Add new keycloak_component_module
+=======
+>>>>>>> SX5-868 New keycloak_realm module PR.
                         if composite["clientRole"] and "clientId" in newComposite:  # If composite is a client role
                             # Get the clientId
                             client = self.get_client_by_id(
@@ -5747,9 +6450,12 @@ class KeycloakAPI(object):
                                 realm=realm)
                             clientId = client["clientId"]
 <<<<<<< HEAD
+<<<<<<< HEAD
 >>>>>>> SX5-868 Codestyle fix
 =======
 >>>>>>> SX5-868 Add new keycloak_component_module
+=======
+>>>>>>> SX5-868 New keycloak_realm module PR.
                             if composite["name"] == newComposite["name"] and clientId == newComposite["clientId"]:
                                 newCompositeFound = True
                                 break
@@ -5762,6 +6468,7 @@ class KeycloakAPI(object):
                         # If composite is a client role
                         if "clientId" in newComposite:
                             # Get the client
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -5790,6 +6497,11 @@ class KeycloakAPI(object):
                                 client_id=newComposite["clientId"],
                                 realm=realm)
 >>>>>>> SX5-868 Add new keycloak_component_module
+=======
+                            client = self.get_client_by_clientid(
+                                client_id=newComposite["clientId"],
+                                realm=realm)
+>>>>>>> SX5-868 New keycloak_realm module PR.
                             if client != {}:
                                 # Get client's roles
                                 roles = self.get_client_roles(
@@ -5801,6 +6513,7 @@ class KeycloakAPI(object):
                         # Search in all roles found which is the role to assigne
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
                         for role in roles:                   
 >>>>>>> SX5-868 PR Added role management for keycloak_client module.
 =======
@@ -5809,6 +6522,9 @@ class KeycloakAPI(object):
 =======
                         for role in roles:
 >>>>>>> SX5-868 Add new keycloak_component_module
+=======
+                        for role in roles:
+>>>>>>> SX5-868 New keycloak_realm module PR.
                             # Id role is found
                             if role["name"] == newComposite["name"]:
                                 newCompositesToCreate.append(role)
@@ -5817,14 +6533,18 @@ class KeycloakAPI(object):
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> SX5-868 Codestyle fix
 =======
 >>>>>>> SX5-868 Add new keycloak_component_module
+=======
+>>>>>>> SX5-868 New keycloak_realm module PR.
                 self.create_realm_role_composites(
                     newCompositesToCreate=newCompositesToCreate,
                     name=newRoleRepresentation["name"],
                     realm=realm)
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
             return changed
@@ -5843,14 +6563,19 @@ class KeycloakAPI(object):
 >>>>>>> SX5-868 Codestyle fix
 =======
 >>>>>>> SX5-868 Add new keycloak_component_module
+=======
+>>>>>>> SX5-868 New keycloak_realm module PR.
             return changed
         except Exception as e:
             self.module.fail_json(msg='Could not create or update realm role %s composites in realm %s: %s'
                                       % (newRoleRepresentation["name"], realm, str(e)))
 <<<<<<< HEAD
+<<<<<<< HEAD
 >>>>>>> SX5-868 PR Added role management for keycloak_client module.
 =======
 >>>>>>> SX5-868 Add new keycloak_component_module
+=======
+>>>>>>> SX5-868 New keycloak_realm module PR.
 
     def get_user_by_id(self, user_id, realm='master'):
         """
@@ -5863,10 +6588,13 @@ class KeycloakAPI(object):
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> SX5-868 Codestyle fix
 =======
 >>>>>>> SX5-868 Add new keycloak_component_module
+=======
+>>>>>>> SX5-868 New keycloak_realm module PR.
             user_url = URL_USER.format(
                 url=self.baseurl,
                 realm=realm,
@@ -5876,6 +6604,7 @@ class KeycloakAPI(object):
                     user_url,
                     method='GET',
                     headers=self.restheaders))
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
             return userRepresentation
@@ -5898,6 +6627,10 @@ class KeycloakAPI(object):
             return userRepresentation
         except Exception as e:
 >>>>>>> SX5-868 Add new keycloak_component_module
+=======
+            return userRepresentation
+        except Exception as e:
+>>>>>>> SX5-868 New keycloak_realm module PR.
             self.module.fail_json(msg='Could not get user %s in realm %s: %s'
                                       % (user_id, realm, str(e)))
 
@@ -5912,10 +6645,13 @@ class KeycloakAPI(object):
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> SX5-868 Codestyle fix
 =======
 >>>>>>> SX5-868 Add new keycloak_component_module
+=======
+>>>>>>> SX5-868 New keycloak_realm module PR.
             url_search_user_by_username = URL_USERS.format(
                 url=self.baseurl,
                 realm=realm) + '?username=' + username
@@ -5926,6 +6662,7 @@ class KeycloakAPI(object):
                     headers=self.restheaders))
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
             url_search_user_by_username = URL_USERS.format(url=self.baseurl, realm=realm) + '?username=' + username         
             listUsers = json.load(open_url(url_search_user_by_username, method='GET',headers=self.restheaders))
@@ -5934,11 +6671,14 @@ class KeycloakAPI(object):
 >>>>>>> SX5-868 Codestyle fix
 =======
 >>>>>>> SX5-868 Add new keycloak_component_module
+=======
+>>>>>>> SX5-868 New keycloak_realm module PR.
             for user in listUsers:
                 if user['username'] == username:
                     userrep = user
                     break
             return userrep
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -5963,11 +6703,16 @@ class KeycloakAPI(object):
 
 >>>>>>> SX5-868 Codestyle fix
 =======
+=======
+>>>>>>> SX5-868 New keycloak_realm module PR.
         except Exception as e:
             self.module.fail_json(msg='Could not search for user %s in realm %s: %s'
                                       % (username, realm, str(e)))
 
+<<<<<<< HEAD
 >>>>>>> SX5-868 Add new keycloak_component_module
+=======
+>>>>>>> SX5-868 New keycloak_realm module PR.
     def create_user(self, newUserRepresentation, realm='master'):
         """
         Create a new User.
@@ -5979,10 +6724,13 @@ class KeycloakAPI(object):
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> SX5-868 Codestyle fix
 =======
 >>>>>>> SX5-868 Add new keycloak_component_module
+=======
+>>>>>>> SX5-868 New keycloak_realm module PR.
             users_url = URL_USERS.format(
                 url=self.baseurl,
                 realm=realm)
@@ -5993,6 +6741,7 @@ class KeycloakAPI(object):
             userRepresentation = self.search_user_by_username(
                 username=newUserRepresentation['username'],
                 realm=realm)
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
             return userRepresentation
@@ -6016,6 +6765,10 @@ class KeycloakAPI(object):
             return userRepresentation
         except Exception as e:
 >>>>>>> SX5-868 Add new keycloak_component_module
+=======
+            return userRepresentation
+        except Exception as e:
+>>>>>>> SX5-868 New keycloak_realm module PR.
             self.module.fail_json(msg='Could not create user %s in realm %s: %s'
                                       % (newUserRepresentation['username'], realm, str(e)))
 
@@ -6030,10 +6783,13 @@ class KeycloakAPI(object):
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> SX5-868 Codestyle fix
 =======
 >>>>>>> SX5-868 Add new keycloak_component_module
+=======
+>>>>>>> SX5-868 New keycloak_realm module PR.
             user_url = URL_USER.format(
                 url=self.baseurl,
                 realm=realm,
@@ -6046,6 +6802,7 @@ class KeycloakAPI(object):
             userRepresentation = self.get_user_by_id(
                 user_id=newUserRepresentation['id'],
                 realm=realm)
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
             return userRepresentation
@@ -6069,6 +6826,10 @@ class KeycloakAPI(object):
             return userRepresentation
         except Exception as e:
 >>>>>>> SX5-868 Add new keycloak_component_module
+=======
+            return userRepresentation
+        except Exception as e:
+>>>>>>> SX5-868 New keycloak_realm module PR.
             self.module.fail_json(msg='Could not update user %s in realm %s: %s'
                                       % (newUserRepresentation['username'], realm, str(e)))
 
@@ -6083,10 +6844,13 @@ class KeycloakAPI(object):
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> SX5-868 Codestyle fix
 =======
 >>>>>>> SX5-868 Add new keycloak_component_module
+=======
+>>>>>>> SX5-868 New keycloak_realm module PR.
             user_url = URL_USER.format(
                 url=self.baseurl,
                 realm=realm,
@@ -6095,6 +6859,7 @@ class KeycloakAPI(object):
                 user_url,
                 method='DELETE',
                 headers=self.restheaders)
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -6113,6 +6878,9 @@ class KeycloakAPI(object):
 =======
         except Exception as e:
 >>>>>>> SX5-868 Add new keycloak_component_module
+=======
+        except Exception as e:
+>>>>>>> SX5-868 New keycloak_realm module PR.
             self.module.fail_json(msg='Could not delete user %s in realm %s: %s'
                                       % (user_id, realm, str(e)))
 
@@ -6127,10 +6895,13 @@ class KeycloakAPI(object):
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> SX5-868 Codestyle fix
 =======
 >>>>>>> SX5-868 Add new keycloak_component_module
+=======
+>>>>>>> SX5-868 New keycloak_realm module PR.
             role_mappings_url = URL_USER_ROLE_MAPPINGS.format(
                 url=self.baseurl,
                 realm=realm,
@@ -6142,6 +6913,7 @@ class KeycloakAPI(object):
                     headers=self.restheaders))
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
             role_mappings_url = URL_USER_ROLE_MAPPINGS.format(url=self.baseurl,realm=realm,id=user_id) 
             role_mappings = json.load(open_url(role_mappings_url, method='GET', headers=self.restheaders))
@@ -6150,10 +6922,13 @@ class KeycloakAPI(object):
 >>>>>>> SX5-868 Codestyle fix
 =======
 >>>>>>> SX5-868 Add new keycloak_component_module
+=======
+>>>>>>> SX5-868 New keycloak_realm module PR.
             realmRoles = []
             for roleMapping in role_mappings["realmMappings"]:
                 realmRoles.append(roleMapping["name"])
             return realmRoles
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -6171,6 +6946,9 @@ class KeycloakAPI(object):
 =======
         except Exception as e:
 >>>>>>> SX5-868 Add new keycloak_component_module
+=======
+        except Exception as e:
+>>>>>>> SX5-868 New keycloak_realm module PR.
             self.module.fail_json(msg='Could not get role mappings for user %s in realm %s: %s'
                                       % (user_id, realm, str(e)))
 
@@ -6185,10 +6963,13 @@ class KeycloakAPI(object):
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> SX5-868 Codestyle fix
 =======
 >>>>>>> SX5-868 Add new keycloak_component_module
+=======
+>>>>>>> SX5-868 New keycloak_realm module PR.
             role_mappings_url = URL_USER_REALM_ROLE_MAPPINGS.format(
                 url=self.baseurl,
                 realm=realm,
@@ -6198,6 +6979,7 @@ class KeycloakAPI(object):
                 method='POST',
                 headers=self.restheaders,
                 data=json.dumps(realmRolesRepresentation))
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -6216,6 +6998,9 @@ class KeycloakAPI(object):
 =======
         except Exception as e:
 >>>>>>> SX5-868 Add new keycloak_component_module
+=======
+        except Exception as e:
+>>>>>>> SX5-868 New keycloak_realm module PR.
             self.module.fail_json(msg='Could not update realm role mappings for user %s in realm %s: %s'
                                       % (user_id, realm, str(e)))
 
@@ -6231,10 +7016,13 @@ class KeycloakAPI(object):
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> SX5-868 Codestyle fix
 =======
 >>>>>>> SX5-868 Add new keycloak_component_module
+=======
+>>>>>>> SX5-868 New keycloak_realm module PR.
             role_mappings_url = URL_USER_ROLE_MAPPINGS.format(
                 url=self.baseurl,
                 realm=realm,
@@ -6246,6 +7034,7 @@ class KeycloakAPI(object):
                     headers=self.restheaders))
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
             role_mappings_url = URL_USER_ROLE_MAPPINGS.format(url=self.baseurl,realm=realm,id=user_id) 
             userMappings = json.load(open_url(role_mappings_url, method='GET', headers=self.restheaders))
@@ -6254,6 +7043,8 @@ class KeycloakAPI(object):
 >>>>>>> SX5-868 Codestyle fix
 =======
 >>>>>>> SX5-868 Add new keycloak_component_module
+=======
+>>>>>>> SX5-868 New keycloak_realm module PR.
             for clientMapping in userMappings["clientMappings"].keys():
                 clientRole = {}
                 clientRole["clientId"] = userMappings["clientMappings"][clientMapping]["client"]
@@ -6263,6 +7054,7 @@ class KeycloakAPI(object):
                 clientRole["roles"] = roles
                 clientRoles.append(clientRole)
             return clientRoles
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -6280,6 +7072,9 @@ class KeycloakAPI(object):
 =======
         except Exception as e:
 >>>>>>> SX5-868 Add new keycloak_component_module
+=======
+        except Exception as e:
+>>>>>>> SX5-868 New keycloak_realm module PR.
             self.module.fail_json(msg='Could not get role mappings for user %s in realm %s: %s'
                                       % (user_id, realm, str(e)))
 
@@ -6295,10 +7090,13 @@ class KeycloakAPI(object):
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> SX5-868 Codestyle fix
 =======
 >>>>>>> SX5-868 Add new keycloak_component_module
+=======
+>>>>>>> SX5-868 New keycloak_realm module PR.
             role_mappings_url = URL_USER_CLIENT_ROLE_MAPPINGS.format(
                 url=self.baseurl,
                 realm=realm,
@@ -6308,6 +7106,7 @@ class KeycloakAPI(object):
                 role_mappings_url,
                 method='DELETE',
                 headers=self.restheaders)
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -6326,6 +7125,9 @@ class KeycloakAPI(object):
 =======
         except Exception as e:
 >>>>>>> SX5-868 Add new keycloak_component_module
+=======
+        except Exception as e:
+>>>>>>> SX5-868 New keycloak_realm module PR.
             self.module.fail_json(msg='Could not delete client role mappings for user %s in realm %s: %s'
                                       % (user_id, realm, str(e)))
 
@@ -6342,10 +7144,13 @@ class KeycloakAPI(object):
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> SX5-868 Codestyle fix
 =======
 >>>>>>> SX5-868 Add new keycloak_component_module
+=======
+>>>>>>> SX5-868 New keycloak_realm module PR.
             role_mappings_url = URL_USER_CLIENT_ROLE_MAPPINGS.format(
                 url=self.baseurl,
                 realm=realm,
@@ -6356,6 +7161,7 @@ class KeycloakAPI(object):
                 method='POST',
                 headers=self.restheaders,
                 data=json.dumps(rolesToAssing))
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -6381,11 +7187,16 @@ class KeycloakAPI(object):
 
 >>>>>>> SX5-868 Codestyle fix
 =======
+=======
+>>>>>>> SX5-868 New keycloak_realm module PR.
         except Exception as e:
             self.module.fail_json(msg='Could not create client role mappings for user %s in realm %s: %s'
                                       % (user_id, realm, str(e)))
 
+<<<<<<< HEAD
 >>>>>>> SX5-868 Add new keycloak_component_module
+=======
+>>>>>>> SX5-868 New keycloak_realm module PR.
     def get_user_groups(self, user_id, realm='master'):
         """
         Get groups for a user.
@@ -6398,10 +7209,13 @@ class KeycloakAPI(object):
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> SX5-868 Codestyle fix
 =======
 >>>>>>> SX5-868 Add new keycloak_component_module
+=======
+>>>>>>> SX5-868 New keycloak_realm module PR.
             user_groups_url = URL_USER_GROUPS.format(
                 url=self.baseurl,
                 realm=realm,
@@ -6413,10 +7227,14 @@ class KeycloakAPI(object):
                     headers=self.restheaders))
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> SX5-868 New keycloak_realm module PR.
             for userGroup in userGroups:
                 groups.append(userGroup["name"])
             return groups
         except Exception as e:
+<<<<<<< HEAD
 =======
             user_groups_url = URL_USER_GROUPS.format(url=self.baseurl,realm=realm,id=user_id) 
             userGroups = json.load(open_url(user_groups_url, method='GET', headers=self.restheaders))
@@ -6441,6 +7259,8 @@ class KeycloakAPI(object):
             return groups
         except Exception as e:
 >>>>>>> SX5-868 Add new keycloak_component_module
+=======
+>>>>>>> SX5-868 New keycloak_realm module PR.
             self.module.fail_json(msg='Could not get groups for user %s in realm %s: %s'
                                       % (user_id, realm, str(e)))
 
@@ -6456,10 +7276,13 @@ class KeycloakAPI(object):
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> SX5-868 Codestyle fix
 =======
 >>>>>>> SX5-868 Add new keycloak_component_module
+=======
+>>>>>>> SX5-868 New keycloak_realm module PR.
             user_group_url = URL_USER_GROUP.format(
                 url=self.baseurl,
                 realm=realm,
@@ -6469,6 +7292,7 @@ class KeycloakAPI(object):
                 user_group_url,
                 method='PUT',
                 headers=self.restheaders)
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -6487,6 +7311,9 @@ class KeycloakAPI(object):
 =======
         except Exception as e:
 >>>>>>> SX5-868 Add new keycloak_component_module
+=======
+        except Exception as e:
+>>>>>>> SX5-868 New keycloak_realm module PR.
             self.module.fail_json(msg='Could not add user %s in group %s in realm %s: %s'
                                       % (user_id, group_id, realm, str(e)))
 
@@ -6502,10 +7329,13 @@ class KeycloakAPI(object):
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> SX5-868 Codestyle fix
 =======
 >>>>>>> SX5-868 Add new keycloak_component_module
+=======
+>>>>>>> SX5-868 New keycloak_realm module PR.
             user_group_url = URL_USER_GROUP.format(
                 url=self.baseurl,
                 realm=realm,
@@ -6515,6 +7345,7 @@ class KeycloakAPI(object):
                 user_group_url,
                 method='DETETE',
                 headers=self.restheaders)
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -6540,11 +7371,16 @@ class KeycloakAPI(object):
 
 >>>>>>> SX5-868 Codestyle fix
 =======
+=======
+>>>>>>> SX5-868 New keycloak_realm module PR.
         except Exception as e:
             self.module.fail_json(msg='Could not remove user %s from group %s in realm %s: %s'
                                       % (user_id, group_id, realm, str(e)))
 
+<<<<<<< HEAD
 >>>>>>> SX5-868 Add new keycloak_component_module
+=======
+>>>>>>> SX5-868 New keycloak_realm module PR.
     def assing_roles_to_user(self, user_id, userRealmRoles, userClientRoles, realm='master'):
         """
         Assign roles to a user.
@@ -6556,6 +7392,7 @@ class KeycloakAPI(object):
         """
         try:
             # Get the new created user realm roles
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -6575,6 +7412,8 @@ class KeycloakAPI(object):
 =======
 =======
 >>>>>>> SX5-868 Add new keycloak_component_module
+=======
+>>>>>>> SX5-868 New keycloak_realm module PR.
             newUserRealmRoles = self.get_user_realm_roles(
                 user_id=user_id,
                 realm=realm)
@@ -6583,9 +7422,12 @@ class KeycloakAPI(object):
                 user_id=user_id,
                 realm=realm)
 <<<<<<< HEAD
+<<<<<<< HEAD
 >>>>>>> SX5-868 Codestyle fix
 =======
 >>>>>>> SX5-868 Add new keycloak_component_module
+=======
+>>>>>>> SX5-868 New keycloak_realm module PR.
             changed = False
             # Assign Realm Roles
             realmRolesRepresentation = []
@@ -6593,6 +7435,7 @@ class KeycloakAPI(object):
             allRealmRoles = self.get_realm_roles(realm=realm)
             for realmRole in userRealmRoles:
                 # Look for existing role into user representation
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -6606,6 +7449,9 @@ class KeycloakAPI(object):
 =======
                 if realmRole not in newUserRealmRoles:
 >>>>>>> SX5-868 Add new keycloak_component_module
+=======
+                if realmRole not in newUserRealmRoles:
+>>>>>>> SX5-868 New keycloak_realm module PR.
                     roleid = None
                     # Find the role id
                     for role in allRealmRoles:
@@ -6617,6 +7463,7 @@ class KeycloakAPI(object):
                         realmRoleRepresentation["id"] = roleid
                         realmRoleRepresentation["name"] = realmRole
                         realmRolesRepresentation.append(realmRoleRepresentation)
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -6646,6 +7493,9 @@ class KeycloakAPI(object):
 =======
             if len(realmRolesRepresentation) > 0:
 >>>>>>> SX5-868 Add new keycloak_component_module
+=======
+            if len(realmRolesRepresentation) > 0:
+>>>>>>> SX5-868 New keycloak_realm module PR.
                 # Assign Role
                 self.update_user_realm_roles(
                     user_id=user_id,
@@ -6665,12 +7515,15 @@ class KeycloakAPI(object):
                     if clientRoles != {}:
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
                     
 >>>>>>> SX5-868 PR Added role management for keycloak_client module.
 =======
 >>>>>>> SX5-868 Codestyle fix
 =======
 >>>>>>> SX5-868 Add new keycloak_component_module
+=======
+>>>>>>> SX5-868 New keycloak_realm module PR.
                         rolesToAssing = []
                         for roleToAssing in clientToAssingRole["roles"]:
                             newRole = {}
@@ -6685,14 +7538,18 @@ class KeycloakAPI(object):
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> SX5-868 Codestyle fix
 =======
 >>>>>>> SX5-868 Add new keycloak_component_module
+=======
+>>>>>>> SX5-868 New keycloak_realm module PR.
                             self.delete_user_client_roles(
                                 user_id=user_id,
                                 client_id=client_id,
                                 realm=realm)
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
                             # Assign Role
@@ -6710,6 +7567,8 @@ class KeycloakAPI(object):
 >>>>>>> SX5-868 Codestyle fix
 =======
 >>>>>>> SX5-868 Add new keycloak_component_module
+=======
+>>>>>>> SX5-868 New keycloak_realm module PR.
                             # Assign Role
                             self.create_user_client_roles(
                                 user_id=user_id,
@@ -6717,6 +7576,7 @@ class KeycloakAPI(object):
                                 rolesToAssing=rolesToAssing,
                                 realm=realm)
                             changed = True
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
                     
@@ -6735,6 +7595,10 @@ class KeycloakAPI(object):
             return changed
         except Exception as e:
 >>>>>>> SX5-868 Add new keycloak_component_module
+=======
+            return changed
+        except Exception as e:
+>>>>>>> SX5-868 New keycloak_realm module PR.
             self.module.fail_json(msg='Could not assign roles to user %s in realm %s: %s'
                                       % (user_id, realm, str(e)))
 
@@ -6750,14 +7614,18 @@ class KeycloakAPI(object):
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> SX5-868 Add new keycloak_component_module
+=======
+>>>>>>> SX5-868 New keycloak_realm module PR.
             newUserGroups = self.get_user_groups(
                 user_id=newUserRepresentation['id'],
                 realm=realm)
             # If group membership need to be changed
             if not isDictEquals(newUserRepresentation["groups"], newUserGroups):
                 # Set user groups
+<<<<<<< HEAD
 <<<<<<< HEAD
 =======
             newUserGroups = self.get_user_groups(user_id=newUserRepresentation['id'], realm=realm)
@@ -6775,6 +7643,8 @@ class KeycloakAPI(object):
 >>>>>>> SX5-868 Codestyle fix
 =======
 >>>>>>> SX5-868 Add new keycloak_component_module
+=======
+>>>>>>> SX5-868 New keycloak_realm module PR.
                 if "groups" in newUserRepresentation and newUserRepresentation['groups'] is not None:
                     for userGroups in newUserRepresentation["groups"]:
                         # Get groups Available
@@ -6784,14 +7654,18 @@ class KeycloakAPI(object):
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> SX5-868 Codestyle fix
 =======
 >>>>>>> SX5-868 Add new keycloak_component_module
+=======
+>>>>>>> SX5-868 New keycloak_realm module PR.
                                 self.add_user_in_group(
                                     user_id=newUserRepresentation["id"],
                                     group_id=group["id"],
                                     realm=realm)
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
                                 changed = True
@@ -6908,11 +7782,16 @@ class KeycloakAPI(object):
 >>>>>>> SX5-868 Codestyle fix
 =======
 >>>>>>> SX5-868 Add new keycloak_component_module
+=======
+>>>>>>> SX5-868 New keycloak_realm module PR.
                                 changed = True
             return changed
         except Exception as e:
             raise e
 <<<<<<< HEAD
+<<<<<<< HEAD
 >>>>>>> SX5-868 PR Added role management for keycloak_client module.
 =======
 >>>>>>> SX5-868 Add new keycloak_component_module
+=======
+>>>>>>> SX5-868 New keycloak_realm module PR.
