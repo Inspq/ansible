@@ -1,6 +1,7 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 <<<<<<< HEAD
+<<<<<<< HEAD
 # (c) 2017, Philippe Gauthier INSPQ <philippe.gauthier@inspq.qc.ca>
 #
 # This file is not part of Ansible
@@ -18,12 +19,14 @@
 # You should have received a copy of the GNU General Public License
 # along with Ansible.  If not, see <http://www.gnu.org/licenses/>.
 =======
+=======
+
+>>>>>>> SX5-868 Fix keycloak_component module documentation.
 # Copyright: (c) 2019, INSPQ <philippe.gauthier@inspq.qc.ca>
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 >>>>>>> SX5-868 Add new keycloak_component_module
 
 from __future__ import absolute_import, division, print_function
-from __builtin__ import True
 __metaclass__ = type
 
 ANSIBLE_METADATA = {'metadata_version': '1.1',
@@ -46,7 +49,11 @@ author: "Philippe Gauthier (philippe.gauthier@inspq.qc.ca"
 =======
 >>>>>>> SX5-868 Add new keycloak_component_module
 module: keycloak_component
-short_description: Configure a component in Keycloak
+
+short_description: Configure LDAP user storage component in Keycloak.
+
+version_added: "2.9"
+
 description:
     - This module creates, removes or update Keycloak component.
 <<<<<<< HEAD
@@ -67,13 +74,16 @@ description:
 version_added: "2.3"
 =======
     - It can be use to create a LDAP and AD user federation to a realm in the Keycloak server
+<<<<<<< HEAD
 version_added: "2.9"
 >>>>>>> SX5-868 Add new keycloak_component_module
+=======
+>>>>>>> SX5-868 Fix keycloak_component module documentation.
 options:
     realm:
         description:
             - The name of the realm in which is the component.
-        default: true
+        required: true
     id:
         description:
             - ID of the component when it have already been created and it is known.
@@ -297,6 +307,7 @@ options:
             - List of sub components to create inside the component.
             - It can be use to configure group-ldap-mapper for a User Federation.
 <<<<<<< HEAD
+<<<<<<< HEAD
     syncUserStorage:
         description:
             - Type of user storage synchronization must be triggerd for
@@ -310,6 +321,9 @@ options:
             - org.keycloak.storage.UserStorageProvider component.
 >>>>>>> SX5-868 Ajustement du codestyle des modules Keycloak en préparation des
 =======
+=======
+        type: dict
+>>>>>>> SX5-868 Fix keycloak_component module documentation.
         suboptions:
             org.keycloak.storage.ldap.mappers.LDAPStorageMapper:
                 description:
