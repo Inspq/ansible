@@ -1,21 +1,12 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-# (c) 2017, Philippe Gauthier INSPQ <philippe.gauthier@inspq.qc.ca>
-#
-# This file is not part of Ansible
-#
-# Ansible is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# Ansible is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with Ansible.  If not, see <http://www.gnu.org/licenses/>.
+
+# Copyright: (c) 2019, INSPQ <philippe.gauthier@inspq.qc.ca>
+# GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
+
+from __future__ import absolute_import, division, print_function
+__metaclass__ = type
+
 
 ANSIBLE_METADATA = {'metadata_version': '1.1',
                     'status': ['preview'],
@@ -63,7 +54,7 @@ options:
   realm:
     description:
     - The name of the realm in which is the identity provider.
-    required: true
+    default: master
   alias:
     description:
     - The alias of the identity provider.
@@ -121,7 +112,6 @@ options:
   linkOnly:
     description:
     - Link only option for identity provider
-    required: False
     default: False
   config:
     description:
@@ -135,22 +125,96 @@ options:
     - Detailed configuration of the identity provider.
 >>>>>>> SX5-868 Ajustement du codestyle des modules Keycloak en préparation des
     required: false
+    type: dict
+    suboptions:
+        openIdConfigurationUrl:
+            description:
+                - Open ID configuration URL of the IdP to configure. Will be used to configure IdP endpoints.
+            type: str
+        clientId:
+            description:
+                - Client ID used to authenticate Keycloak on this IdP
+            type: str
+        clientSecret:
+            description:
+                - Client secret to authenticate client on the IdP.
+            type: str
+        disableUserInfo:
+            description:
+                - Do we need to disable user info endpoint query. Default value is False.
+                - Must be set to true when IdP is Microsoft ADFS.
+            type: str
+            choices:
+                - true
+                - false
+            default: false
+        defaultScope:
+            description:
+                - Default scope supported with this IdP
+            type: str
+        guiOrder:
+            description:
+                - Order to display the IdP button on login screen. Lower's first.
+            type: int
+        backchannelSupported:
+            description:
+                - Is back channel logout is supported by the IdP.
+            type: str
+            choices:
+                - true
+                - false
+            default: true
   mappers:
     description:
     - List of mappers for the Identity provider.
     required: false
+    type: list
+    suboptions:
+        name:
+            description:
+                - Name of the mapper
+            type: str
+        identityProviderMapper:
+            description:
+                - Type of identity provider mapper.
+            type: str
+            choices:
+                - oidc-user-attribute-idp-mapper
+                - oidc-role-idp-mapper
+        config:
+            description:
+                - Configuration for this mapper.
+            type: dict
+            suboptions:
+                claim:
+                    description:
+                        - Name of the claim to map.
+                    type: str
+                user.attribute:
+                    description:
+                        - This option is for oidc-user-attribute-idp-mapper
+                        - User attribute to copy the claim value to.
+                    type: str
+                claim.value:
+                    description:
+                        - This option is for oidc-role-idp-mapper
+                        - Role will be granted to the user only if the claim match this value.
+                    type: str
+                role:
+                    description:
+                        - This option is for oidc-role-idp-mapper
+                        - Role to be granted to the user if the claim match claim.value.
+                    type: str
   state:
     description:
     - Control if the realm exists.
     choices: [ "present", "absent" ]
     default: present
-    required: false
   force:
-    choices: [ "yes", "no" ]
-    default: "no"
     description:
-    - If yes, allows to remove realm and recreate it.
-    required: false
+    - If true, allows to remove realm and recreate it.
+    type: bool
+    default: false
 extends_documentation_fragment:
     - keycloak
 notes:
@@ -172,6 +236,7 @@ author:
 >>>>>>> SX5-868 Ajustement du codestyle des modules Keycloak en préparation des
 =======
 author:
+<<<<<<< HEAD
 >>>>>>> SX5-868 Ajustement du codestyle des modules Keycloak en préparation des
     - Philippe Gauthier (philippe.gauthier@inspq.qc.ca)
 >>>>>>> SX5-868 Mise à jour de la documentation des modules Keycloak suite à la
@@ -181,6 +246,9 @@ author:
 author: 
     - Philippe Gauthier (philippe.gauthier@inspq.qc.ca)
 >>>>>>> SX5-868 Mise à jour de la documentation des modules Keycloak suite à la
+=======
+    - Philippe Gauthier (@elfelip)
+>>>>>>> SX5-868 Mise à jour de la documentation et de argument_spec du module
 '''
 
 EXAMPLES = '''
@@ -363,6 +431,7 @@ changed:
   type: bool
 '''
 import copy
+<<<<<<< HEAD
 from ansible.module_utils.keycloak_utils import isDictEquals
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -477,6 +546,9 @@ def createOrUpdateMappers(url, headers, alias, idPMappers):
 =======
 >>>>>>> Sx5-868 Add keycloak_realm module with non mock unit tests.
 from ansible.module_utils.keycloak import KeycloakAPI, keycloak_argument_spec
+=======
+from ansible.module_utils.keycloak import KeycloakAPI, keycloak_argument_spec, isDictEquals, remove_arguments_with_value_none
+>>>>>>> SX5-868 Mise à jour de la documentation et de argument_spec du module
 from ansible.module_utils.basic import AnsibleModule
 
 
@@ -490,7 +562,63 @@ from ansible.module_utils.basic import AnsibleModule
 >>>>>>> SX5-868 Ajustement du codestyle des modules Keycloak en préparation des
 def main():
     argument_spec = keycloak_argument_spec()
-
+    idpconfig_spec = {
+        "openIdConfigurationUrl": {
+            "type": "str"
+        },
+        "clientId": {
+            "type": "str"
+        },
+        "clientSecret": {
+            "type": "str"
+        },
+        "disableUserInfo": {
+            "type": "str",
+            "default": "false",
+            "choices": ["true", "false"]
+        },
+        "defaultScope": {
+            "type": "str"
+        },
+        "guiOrder": {
+            "type": "int"
+        },
+        "backchannelSupported": {
+            "type": "str",
+            "default": "true",
+            "choices": ["true", "false"]
+        }
+    }
+    mapperconfig_args = {
+        "claim": {
+            "type": "str"
+        },
+        "user.attribute": {
+            "type": "str"
+        },
+        "claim.value": {
+            "type": "str"
+        },
+        "role": {
+            "type": "str"
+        }
+    }
+    mapper_spec = {
+        "name": {
+            "type": "str"
+        },
+        "identityProviderMapper": {
+            "type": "str",
+            "choices": [
+                "oidc-user-attribute-idp-mapper",
+                "oidc-role-idp-mapper"
+            ]
+        },
+        "config": {
+            "type": "dict",
+            "options": mapperconfig_args
+        }
+    }
     meta_args = dict(
         realm=dict(type='str', default='master'),
         alias=dict(type='str', required=True),
@@ -526,8 +654,8 @@ def main():
         firstBrokerLoginFlowAlias=dict(type='str'),
         postBrokerLoginFlowAlias=dict(type='str'),
         linkOnly=dict(type='bool', default=False),
-        config=dict(type='dict'),
-        mappers=dict(type='list'),
+        config=dict(type='dict', options=idpconfig_spec),
+        mappers=dict(type='list', options=mapper_spec),
         state=dict(choices=["absent", "present"], default='present'),
         force=dict(type='bool', default=False),
     )
@@ -540,8 +668,7 @@ def main():
     argument_spec.update(meta_args)
 
     module = AnsibleModule(argument_spec=argument_spec,
-                           supports_check_mode=True,
-                           required_one_of=([['alias']]))
+                           supports_check_mode=True)
 
     result = dict(changed=False, msg='', idp={}, mappers=[])
 
@@ -575,6 +702,7 @@ def main():
     newIdPConfig = None
     if module.params.get('config') is not None:
         newIdPConfig = module.params.get('config').copy()
+        remove_arguments_with_value_none(newIdPConfig)
         if 'openIdConfigurationUrl' in newIdPConfig:
             del(newIdPConfig['openIdConfigurationUrl'])
 <<<<<<< HEAD
@@ -607,6 +735,7 @@ def main():
         newIdPConfig["userIp"] = module.params.get("config")["userIp"]
 
     newIdPMappers = module.params.get('mappers')
+    remove_arguments_with_value_none(newIdPMappers)
 
     if newIdPConfig is not None:
         if (module.params.get('config') is not None and
