@@ -1,21 +1,12 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-# (c) 2017, Philippe Gauthier INSPQ <philippe.gauthier@inspq.qc.ca>
-#
-# This file is not part of Ansible
-#
-# Ansible is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# Ansible is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with Ansible.  If not, see <http://www.gnu.org/licenses/>.
+
+# Copyright: (c) 2019, INSPQ <philippe.gauthier@inspq.qc.ca>
+# GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
+
+from __future__ import absolute_import, division, print_function
+__metaclass__ = type
+
 
 ANSIBLE_METADATA = {'metadata_version': '1.1',
                     'status': ['preview'],
@@ -91,7 +82,7 @@ options:
     containerId:
         description:
             - Id for the container of the role. For a realm role, it must be the realm name
-        default: "{{ realm }}"
+            - Value will be defaulted to {{ realm }} if not defined.
         required: false
     composite:
         description:
@@ -136,11 +127,10 @@ options:
         default: present
         required: false
     force:
-        choices: [ "yes", "no" ]
-        default: "no"
+        type: bool
+        default: false
         description:
-            - If yes, allows to remove role and recreate it.
-        required: false
+            - If true, allows to remove role and recreate it.
 extends_documentation_fragment:
     - keycloak
 notes:
@@ -159,6 +149,7 @@ author:
 author: 
 =======
 author:
+<<<<<<< HEAD
 >>>>>>> SX5-868 Ajustement du codestyle des modules Keycloak en préparation des
 =======
 author:
@@ -171,6 +162,9 @@ author:
 author: 
     - Philippe Gauthier (philippe.gauthier@inspq.qc.ca)
 >>>>>>> SX5-868 Mise à jour de la documentation des modules Keycloak suite à la
+=======
+    - Philippe Gauthier (@elfelip)
+>>>>>>> SX5-868 mise à jour de la documentation et de argument_spec du module
 '''
 
 EXAMPLES = '''
@@ -305,8 +299,7 @@ changed:
   returned: always
   type: bool
 '''
-from ansible.module_utils.keycloak_utils import isDictEquals
-from ansible.module_utils.keycloak import KeycloakAPI, keycloak_argument_spec
+from ansible.module_utils.keycloak import KeycloakAPI, keycloak_argument_spec, isDictEquals
 from ansible.module_utils.basic import AnsibleModule
 
 <<<<<<< HEAD
@@ -392,8 +385,7 @@ def main():
     argument_spec.update(meta_args)
 
     module = AnsibleModule(argument_spec=argument_spec,
-                           supports_check_mode=True,
-                           required_one_of=([['name']]))
+                           supports_check_mode=True)
 
     result = dict(changed=False, msg='', role={}, composites=None)
 
