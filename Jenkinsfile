@@ -118,7 +118,14 @@ pipeline {
         }
       stage ('Tests unitaires des modules ansible de sx5-sp-config') {
             steps {
-                sh "ansible-playbook -i keycloak.hosts -e docker_image=nexus3.inspq.qc.ca:5000/inspq/keycloak -e docker_image_version=latest deploy-keycloak.yml"
+                sh "docker run -d --rm --name testkc -p 18081:8080 --link testldap:testldap -e KEYCLOAK_USER=admin -e KEYCLOAK_PASSWORD=admin -e KEYCLOAK_CONFIG=standalone-test.xml ${KEYCLOAK_IMAGE}:${KEYCLOAK_VERSION}"
+                sh '''
+                until $(curl --output /dev/null --silent --head --fail http://localhost:18081/auth)
+                do 
+                	printf '.'
+                	sleep 5
+                done
+                '''
                 sh "ansible-playbook -i sx5-sp-config.hosts -e sx5spconfig_image_version=latest deploy-sx5-sp-config.yml"
                 script {
                     try {
@@ -129,7 +136,7 @@ pipeline {
                     }
                 }
                 sh "ansible-playbook -i sx5-sp-config.hosts cleanup-sx5-sp-config.yml"
-                sh "ansible-playbook -i keycloak.hosts cleanup-keycloak.yml"
+                sh "docker stop testkc"
             }
             post {
                 success {
