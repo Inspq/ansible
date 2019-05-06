@@ -118,7 +118,7 @@ pipeline {
         }
       stage ('Tests unitaires des modules ansible de sx5-sp-config') {
             steps {
-                sh "docker run -d --rm --name testkc -p 18081:8080 --link testldap:testldap -e KEYCLOAK_USER=admin -e KEYCLOAK_PASSWORD=admin -e KEYCLOAK_CONFIG=standalone-test.xml ${KEYCLOAK_IMAGE}:${KEYCLOAK_VERSION}"
+                sh "docker run -d --rm --name testkc -p 18081:8080 -e KEYCLOAK_USER=admin -e KEYCLOAK_PASSWORD=admin -e KEYCLOAK_CONFIG=standalone-test.xml ${KEYCLOAK_IMAGE}:${KEYCLOAK_VERSION}"
                 sh '''
                 until $(curl --output /dev/null --silent --head --fail http://localhost:18081/auth)
                 do 
