@@ -425,7 +425,7 @@ def system(params):
                             # Add or update pilotRole
                             messagepilotRole = None
                             if "pilotRoles" in params and params['pilotRoles'] is not None:
-                                messagepilotRole = addpilotRoles(newSystemDBRepresentation,spConfigUrl,clientSvcBaseUrl,headers,dataResponse["cleUnique"],params)
+                                messagepilotRole = addpilotRoles(newSystemDBRepresentation,spConfigUrl,clientSvcBaseUrl,headers,dataResponseSystem["cleUnique"],params)
                             getResponsetableCorrespondance = requests.get(spConfigUrl+"/systemes/"+dataResponseSystem["cleUnique"]+"/tableCorrespondance", headers=headers)
                             dataResponsetableCorrespondance = getResponsetableCorrespondance.json()
                             getResponseadressesApprovisionnement = requests.get(spConfigUrl+"/systemes/"+dataResponseSystem["cleUnique"]+"/adressesApprovisionnement", headers=headers)
@@ -542,7 +542,7 @@ def system(params):
                             # Add or update pilotRole
                             messagepilotRole = None
                             if "pilotRoles" in params and params['pilotRoles'] is not None:
-                                messagepilotRole = addpilotRoles(newSystemDBRepresentation,spConfigUrl,clientSvcBaseUrl,headers,dataResponse["cleUnique"],params)
+                                messagepilotRole = addpilotRoles(newSystemDBRepresentation,spConfigUrl,clientSvcBaseUrl,headers,dataResponseSystem["cleUnique"],params)
                             getResponsetableCorrespondance = requests.get(spConfigUrl+"/systemes/"+dataResponseSystem["cleUnique"]+"/tableCorrespondance", headers=headers)
                             dataResponsetableCorrespondance = getResponsetableCorrespondance.json()
                             getResponseadressesApprovisionnement = requests.get(spConfigUrl+"/systemes/"+dataResponseSystem["cleUnique"]+"/adressesApprovisionnement", headers=headers)
@@ -709,7 +709,7 @@ def system(params):
                             # Add or update pilotRole
                             messagepilotRole = None
                             if "pilotRoles" in params and params['pilotRoles'] is not None:
-                                messagepilotRole = addpilotRoles(newSystemDBRepresentation,spConfigUrl,clientSvcBaseUrl,headers,dataResponse["cleUnique"],params)
+                                messagepilotRole = addpilotRoles(newSystemDBRepresentation,spConfigUrl,clientSvcBaseUrl,headers,dataResponseSystem["cleUnique"],params)
                             getResponsetableCorrespondance = requests.get(spConfigUrl+"/systemes/"+dataResponsesystem["cleUnique"]+"/tableCorrespondance", headers=headers)
                             dataResponsetableCorrespondance = getResponsetableCorrespondance.json()
                             getResponseadressesApprovisionnement = requests.get(spConfigUrl+"/systemes/"+dataResponsesystem["cleUnique"]+"/adressesApprovisionnement", headers=headers)
@@ -826,7 +826,7 @@ def system(params):
                             # Add or update pilotRole
                             messagepilotRole = None
                             if "pilotRoles" in params and params['pilotRoles'] is not None:
-                                messagepilotRole = addpilotRoles(newSystemDBRepresentation,spConfigUrl,clientSvcBaseUrl,headers,dataResponse["cleUnique"],params)
+                                messagepilotRole = addpilotRoles(newSystemDBRepresentation,spConfigUrl,clientSvcBaseUrl,headers,dataResponseSystem["cleUnique"],params)
                             getResponsetableCorrespondance = requests.get(spConfigUrl+"/systemes/"+dataResponseSystem["cleUnique"]+"/tableCorrespondance", headers=headers)
                             dataResponsetableCorrespondance = getResponsetableCorrespondance.json()
                             getResponseadressesApprovisionnement = requests.get(spConfigUrl+"/systemes/"+dataResponseSystem["cleUnique"]+"/adressesApprovisionnement", headers=headers)
