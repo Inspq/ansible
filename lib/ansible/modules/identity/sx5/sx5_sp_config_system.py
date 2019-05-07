@@ -1023,7 +1023,7 @@ def createOrUpdateClientRoles(pilotClientRoles, clientSvcBaseUrl, roleSvcBaseUrl
     return changed        
 def addpilotRoles(newSystemDBRepresentation,spConfigUrl,clientSvcBaseUrl,headers,systemcleUnique,params):
     messagepilotRole = []
-    getResponseSystemSP = requests.get(spConfigUrl+"/systemes/"+systemcleUnique, headers=headers)
+    getResponseSystemSP = requests.get(spConfigUrl+"/systemes/", headers=headers)
     dataResponseSystemSP = getResponseSystemSP.json()
     composantHabilitation = None
     for systemh in dataResponseSystemSP:
