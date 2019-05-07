@@ -425,7 +425,7 @@ def system(params):
                             # Add or update pilotRole
                             messagepilotRole = None
                             if "pilotRoles" in params and params['pilotRoles'] is not None:
-                                messagepilotRole = addpilotRoles(newSystemDBRepresentation,spConfigUrl,clientSvcBaseUrl,roleSvcBaseUrl,headers,dataResponseSystem["cleUnique"],params)
+                                messagepilotRole = addpilotRoles(newSystemDBRepresentation,spConfigUrl,clientSvcBaseUrl,roleSvcBaseUrl,headers,params)
                             getResponsetableCorrespondance = requests.get(spConfigUrl+"/systemes/"+dataResponseSystem["cleUnique"]+"/tableCorrespondance", headers=headers)
                             dataResponsetableCorrespondance = getResponsetableCorrespondance.json()
                             getResponseadressesApprovisionnement = requests.get(spConfigUrl+"/systemes/"+dataResponseSystem["cleUnique"]+"/adressesApprovisionnement", headers=headers)
@@ -542,7 +542,7 @@ def system(params):
                             # Add or update pilotRole
                             messagepilotRole = None
                             if "pilotRoles" in params and params['pilotRoles'] is not None:
-                                messagepilotRole = addpilotRoles(newSystemDBRepresentation,spConfigUrl,clientSvcBaseUrl,roleSvcBaseUrl,headers,dataResponseSystem["cleUnique"],params)
+                                messagepilotRole = addpilotRoles(newSystemDBRepresentation,spConfigUrl,clientSvcBaseUrl,roleSvcBaseUrl,headers,params)
                             getResponsetableCorrespondance = requests.get(spConfigUrl+"/systemes/"+dataResponseSystem["cleUnique"]+"/tableCorrespondance", headers=headers)
                             dataResponsetableCorrespondance = getResponsetableCorrespondance.json()
                             getResponseadressesApprovisionnement = requests.get(spConfigUrl+"/systemes/"+dataResponseSystem["cleUnique"]+"/adressesApprovisionnement", headers=headers)
@@ -595,11 +595,12 @@ def system(params):
                     rc       = 1,
                     changed  = changed
                     )
-        # Si force est de no modifier le systeme s'il change
+        # Si force est a no modifier le systeme s'il change
         else:
             try:
                 getResponse = requests.get(spConfigUrl+"/systemes/"+newSystemDBRepresentation["systemShortName"], headers=headers)
-                if getResponse.status_code == 200:#systeme exist
+                dataResponsetmp = getResponse.json()
+                if getResponse.status_code == 200 and "composants" in dataResponsetmp["composants"]:#systeme exist
                     dataResponse = getResponse.json()
                     adresse = []
                     rolemapper = []
@@ -632,7 +633,7 @@ def system(params):
                     for newKeycloakClient in newSystemDBRepresentation["clients"]:
                             keycloakClientFound = False
                             for existingKeycloakClient in keycloakClients:
-                                if newKeycloakClient['clientId'] == existingKeycloakClient['clientId']:
+                                if "clientId" in existingKeycloakClient and newKeycloakClient['clientId'] == existingKeycloakClient['clientId']:
                                     keycloakClientFound = True
                             if not keycloakClientFound:
                                 keycloakClients.append(newKeycloakClient)
@@ -709,7 +710,7 @@ def system(params):
                             # Add or update pilotRole
                             messagepilotRole = None
                             if "pilotRoles" in params and params['pilotRoles'] is not None:
-                                messagepilotRole = addpilotRoles(newSystemDBRepresentation,spConfigUrl,clientSvcBaseUrl,roleSvcBaseUrl,headers,dataResponseSystem["cleUnique"],params)
+                                messagepilotRole = addpilotRoles(newSystemDBRepresentation,spConfigUrl,clientSvcBaseUrl,roleSvcBaseUrl,headers,params)
                             getResponsetableCorrespondance = requests.get(spConfigUrl+"/systemes/"+dataResponsesystem["cleUnique"]+"/tableCorrespondance", headers=headers)
                             dataResponsetableCorrespondance = getResponsetableCorrespondance.json()
                             getResponseadressesApprovisionnement = requests.get(spConfigUrl+"/systemes/"+dataResponsesystem["cleUnique"]+"/adressesApprovisionnement", headers=headers)
@@ -826,7 +827,7 @@ def system(params):
                             # Add or update pilotRole
                             messagepilotRole = None
                             if "pilotRoles" in params and params['pilotRoles'] is not None:
-                                messagepilotRole = addpilotRoles(newSystemDBRepresentation,spConfigUrl,clientSvcBaseUrl,roleSvcBaseUrl,headers,dataResponseSystem["cleUnique"],params)
+                                messagepilotRole = addpilotRoles(newSystemDBRepresentation,spConfigUrl,clientSvcBaseUrl,roleSvcBaseUrl,headers,params)
                             getResponsetableCorrespondance = requests.get(spConfigUrl+"/systemes/"+dataResponseSystem["cleUnique"]+"/tableCorrespondance", headers=headers)
                             dataResponsetableCorrespondance = getResponsetableCorrespondance.json()
                             getResponseadressesApprovisionnement = requests.get(spConfigUrl+"/systemes/"+dataResponseSystem["cleUnique"]+"/adressesApprovisionnement", headers=headers)
@@ -1021,7 +1022,7 @@ def createOrUpdateClientRoles(pilotClientRoles, clientSvcBaseUrl, roleSvcBaseUrl
                 requests.delete(clientSvcBaseUrl + clientRepresentation['id'] + '/roles/' + newClientRole['name'], headers=headers)
                 changed = True
     return changed        
-def addpilotRoles(newSystemDBRepresentation,spConfigUrl,clientSvcBaseUrl,roleSvcBaseUrl,headers,systemcleUnique,params):
+def addpilotRoles(newSystemDBRepresentation,spConfigUrl,clientSvcBaseUrl,roleSvcBaseUrl,headers,params):
     messagepilotRole = []
     for pilotRole in newSystemDBRepresentation["pilotRoles"]:
         getResponseSystemSP = requests.get(spConfigUrl+"/systemes/", headers=headers)
