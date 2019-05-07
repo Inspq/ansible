@@ -230,7 +230,6 @@ EXAMPLES = '''
         systemShortName: S1
         sadu_principal: http://localhost:8088/sadu1
         state: adsent
-
 '''
 RETURN = '''
 ansible_facts:
@@ -422,10 +421,19 @@ def system(params):
                             dataResponseSystem = getResponseSystem.json()
                             requests.put(spConfigUrl+"/systemes/"+dataResponseSystem["cleUnique"]+"/adressesApprovisionnement",headers=headers,json=bodyAdressesApprovisionnement)
                             requests.put(spConfigUrl+"/systemes/"+dataResponseSystem["cleUnique"]+"/tableCorrespondance",headers=headers,json=bodyTableCorrespondance)
-                            # Add or update pilotRole
-                            messagepilotRole = None
+                            messagepilotRole = []
                             if "pilotRoles" in params and params['pilotRoles'] is not None:
-                                messagepilotRole = addpilotRoles(newSystemDBRepresentation,spConfigUrl,clientSvcBaseUrl,roleSvcBaseUrl,headers,params)
+                                for pilotRole in newSystemDBRepresentation["pilotRoles"]:
+                                   getResponseHabilitationclients = requests.get(clientSvcBaseUrl, headers=headers, params={'clientId': pilotRole["habilitationClientId"]})
+                                   if getResponseHabilitationclients.status_code == 200 and len(getResponseHabilitationclients.json()) > 0:
+                                       clientRepresentation = getResponseHabilitationclients.json()[0]
+                                       # Create client roles
+                                       createOrUpdateClientRoles(pilotRole["roles"], clientSvcBaseUrl, roleSvcBaseUrl, clientRepresentation, headers)
+                                       messageaddpilotRole = "add Systeme pilot roles to " + pilotRole["habilitationClientId"] + " success"
+                                   else:
+                                       messageaddpilotRole = "Client " + pilotRole["habilitationClientId"] + " not found in " + realm
+                                   msspilotRole = {"info": messageaddpilotRole} 
+                                   messagepilotRole.append(msspilotRole)
                             getResponsetableCorrespondance = requests.get(spConfigUrl+"/systemes/"+dataResponseSystem["cleUnique"]+"/tableCorrespondance", headers=headers)
                             dataResponsetableCorrespondance = getResponsetableCorrespondance.json()
                             getResponseadressesApprovisionnement = requests.get(spConfigUrl+"/systemes/"+dataResponseSystem["cleUnique"]+"/adressesApprovisionnement", headers=headers)
@@ -539,10 +547,19 @@ def system(params):
                             dataResponseSystem = getResponseSystem.json()
                             requests.put(spConfigUrl+"/systemes/"+dataResponseSystem["cleUnique"]+"/adressesApprovisionnement",headers=headers,json=bodyAdressesApprovisionnement)
                             requests.put(spConfigUrl+"/systemes/"+dataResponseSystem["cleUnique"]+"/tableCorrespondance",headers=headers,json=bodyTableCorrespondance)
-                            # Add or update pilotRole
-                            messagepilotRole = None
+                            messagepilotRole = []
                             if "pilotRoles" in params and params['pilotRoles'] is not None:
-                                messagepilotRole = addpilotRoles(newSystemDBRepresentation,spConfigUrl,clientSvcBaseUrl,roleSvcBaseUrl,headers,params)
+                                for pilotRole in newSystemDBRepresentation["pilotRoles"]:
+                                   getResponseHabilitationclients = requests.get(clientSvcBaseUrl, headers=headers, params={'clientId': pilotRole["habilitationClientId"]})
+                                   if getResponseHabilitationclients.status_code == 200 and len(getResponseHabilitationclients.json()) > 0:
+                                       clientRepresentation = getResponseHabilitationclients.json()[0]
+                                       # Create client roles
+                                       createOrUpdateClientRoles(pilotRole["roles"], clientSvcBaseUrl, roleSvcBaseUrl, clientRepresentation, headers)
+                                       messageaddpilotRole = "add Systeme pilot roles to " + pilotRole["habilitationClientId"] + " success"
+                                   else:
+                                       messageaddpilotRole = "Client " + pilotRole["habilitationClientId"] + " not found in " + realm
+                                   msspilotRole = {"info": messageaddpilotRole} 
+                                   messagepilotRole.append(msspilotRole)
                             getResponsetableCorrespondance = requests.get(spConfigUrl+"/systemes/"+dataResponseSystem["cleUnique"]+"/tableCorrespondance", headers=headers)
                             dataResponsetableCorrespondance = getResponsetableCorrespondance.json()
                             getResponseadressesApprovisionnement = requests.get(spConfigUrl+"/systemes/"+dataResponseSystem["cleUnique"]+"/adressesApprovisionnement", headers=headers)
@@ -595,12 +612,11 @@ def system(params):
                     rc       = 1,
                     changed  = changed
                     )
-        # Si force est a no modifier le systeme s'il change
+        # Si force est de no modifier le systeme s'il change
         else:
             try:
                 getResponse = requests.get(spConfigUrl+"/systemes/"+newSystemDBRepresentation["systemShortName"], headers=headers)
-                dataResponsetmp = getResponse.json()
-                if getResponse.status_code == 200 and "composants" in dataResponsetmp["composants"]:#systeme exist
+                if getResponse.status_code == 200:#systeme exist
                     dataResponse = getResponse.json()
                     adresse = []
                     rolemapper = []
@@ -633,7 +649,7 @@ def system(params):
                     for newKeycloakClient in newSystemDBRepresentation["clients"]:
                             keycloakClientFound = False
                             for existingKeycloakClient in keycloakClients:
-                                if "clientId" in existingKeycloakClient and newKeycloakClient['clientId'] == existingKeycloakClient['clientId']:
+                                if newKeycloakClient['clientId'] == existingKeycloakClient['clientId']:
                                     keycloakClientFound = True
                             if not keycloakClientFound:
                                 keycloakClients.append(newKeycloakClient)
@@ -707,10 +723,19 @@ def system(params):
                             dataResponsesystem = getResponsesystem.json()
                             requests.put(spConfigUrl+"/systemes/"+dataResponsesystem["cleUnique"]+"/adressesApprovisionnement",headers=headers,json=bodyAdressesApprovisionnement)
                             requests.put(spConfigUrl+"/systemes/"+dataResponsesystem["cleUnique"]+"/tableCorrespondance",headers=headers,json=bodyTableCorrespondance)
-                            # Add or update pilotRole
-                            messagepilotRole = None
+                            messagepilotRole = []
                             if "pilotRoles" in params and params['pilotRoles'] is not None:
-                                messagepilotRole = addpilotRoles(newSystemDBRepresentation,spConfigUrl,clientSvcBaseUrl,roleSvcBaseUrl,headers,params)
+                                for pilotRole in newSystemDBRepresentation["pilotRoles"]:
+                                   getResponseHabilitationclients = requests.get(clientSvcBaseUrl, headers=headers, params={'clientId': pilotRole["habilitationClientId"]})
+                                   if getResponseHabilitationclients.status_code == 200 and len(getResponseHabilitationclients.json()) > 0:
+                                       clientRepresentation = getResponseHabilitationclients.json()[0]
+                                       # Create client roles
+                                       createOrUpdateClientRoles(pilotRole["roles"], clientSvcBaseUrl, roleSvcBaseUrl, clientRepresentation, headers)
+                                       messageaddpilotRole = "add Systeme pilot roles to " + pilotRole["habilitationClientId"] + " success"
+                                   else:
+                                       messageaddpilotRole = "Client " + pilotRole["habilitationClientId"] + " not found in " + realm
+                                   msspilotRole = {"info": messageaddpilotRole} 
+                                   messagepilotRole.append(msspilotRole)
                             getResponsetableCorrespondance = requests.get(spConfigUrl+"/systemes/"+dataResponsesystem["cleUnique"]+"/tableCorrespondance", headers=headers)
                             dataResponsetableCorrespondance = getResponsetableCorrespondance.json()
                             getResponseadressesApprovisionnement = requests.get(spConfigUrl+"/systemes/"+dataResponsesystem["cleUnique"]+"/adressesApprovisionnement", headers=headers)
@@ -824,10 +849,19 @@ def system(params):
                             dataResponseSystem = getResponseSystem.json()
                             requests.put(spConfigUrl+"/systemes/"+dataResponseSystem["cleUnique"]+"/adressesApprovisionnement",headers=headers,json=bodyAdressesApprovisionnement)
                             requests.put(spConfigUrl+"/systemes/"+dataResponseSystem["cleUnique"]+"/tableCorrespondance",headers=headers,json=bodyTableCorrespondance)
-                            # Add or update pilotRole
-                            messagepilotRole = None
+                            messagepilotRole = []
                             if "pilotRoles" in params and params['pilotRoles'] is not None:
-                                messagepilotRole = addpilotRoles(newSystemDBRepresentation,spConfigUrl,clientSvcBaseUrl,roleSvcBaseUrl,headers,params)
+                                for pilotRole in newSystemDBRepresentation["pilotRoles"]:
+                                   getResponseHabilitationclients = requests.get(clientSvcBaseUrl, headers=headers, params={'clientId': pilotRole["habilitationClientId"]})
+                                   if getResponseHabilitationclients.status_code == 200 and len(getResponseHabilitationclients.json()) > 0:
+                                       clientRepresentation = getResponseHabilitationclients.json()[0]
+                                       # Create client roles
+                                       createOrUpdateClientRoles(pilotRole["roles"], clientSvcBaseUrl, roleSvcBaseUrl, clientRepresentation, headers)
+                                       messageaddpilotRole = "add Systeme pilot roles to " + pilotRole["habilitationClientId"] + " success"
+                                   else:
+                                       messageaddpilotRole = "Client " + pilotRole["habilitationClientId"] + " not found in " + realm
+                                   msspilotRole = {"info": messageaddpilotRole} 
+                                   messagepilotRole.append(msspilotRole)
                             getResponsetableCorrespondance = requests.get(spConfigUrl+"/systemes/"+dataResponseSystem["cleUnique"]+"/tableCorrespondance", headers=headers)
                             dataResponsetableCorrespondance = getResponsetableCorrespondance.json()
                             getResponseadressesApprovisionnement = requests.get(spConfigUrl+"/systemes/"+dataResponseSystem["cleUnique"]+"/adressesApprovisionnement", headers=headers)
@@ -1022,63 +1056,6 @@ def createOrUpdateClientRoles(pilotClientRoles, clientSvcBaseUrl, roleSvcBaseUrl
                 requests.delete(clientSvcBaseUrl + clientRepresentation['id'] + '/roles/' + newClientRole['name'], headers=headers)
                 changed = True
     return changed        
-def addpilotRoles(newSystemDBRepresentation,spConfigUrl,clientSvcBaseUrl,roleSvcBaseUrl,headers,params):
-    messagepilotRole = []
-    for pilotRole in newSystemDBRepresentation["pilotRoles"]:
-        getResponseSystemSP = requests.get(spConfigUrl+"/systemes/", headers=headers)
-        dataResponseSystemSP = getResponseSystemSP.json()
-        composantHabilitation = None
-        for systemh in dataResponseSystemSP:
-            for composant in systemh["composants"]:
-                newcomposantrolesH = []
-                if composant["clientId"] == pilotRole["habilitationClientId"]:
-                    composantHabilitation = composant
-                    for prole in pilotRole["roles"]:
-                        proleEsiste=False
-                        for roleh in composantHabilitation["roles"]:
-                            if prole["name"]==roleh["nom"]:
-                                proleEsiste=True
-                        if not proleEsiste :
-                            newcomposantrolesH.append({"spClientRoleId": prole["name"],"spClientRoleName": prole["name"],"spClientRoleDescription": prole["description"]})
-                    systemHabilitation = systemh
-                    obj_sp = {}
-                    obj_sp["spUrl"] = params['spUrl']
-                    obj_sp["spUsername"] = params["spUsername"]
-                    obj_sp["spPassword"] = params["spPassword"]
-                    obj_sp["spRealm"] = params["spRealm"]
-                    obj_sp["spConfigClient_id"] = params["spConfigClient_id"] 
-                    obj_sp["spConfigClient_secret"] = params["spConfigClient_secret"]
-                    obj_sp["spConfigUrl"] = params["spConfigUrl"]
-                    obj_sp["systemName"] = systemHabilitation["nom"]
-                    obj_sp["systemShortName"] = systemHabilitation["cleUnique"]
-                    obj_sp["state"] = "present"
-                    obj_sp["force"] = False
-                    clientsH = []
-                    for composantH in systemHabilitation["composants"]:
-                        clientsH.append(composantH["clientId"])
-                    obj_sp["clients"] = clientsH
-                    rolesH = {}
-                    clientRolesH = []
-                    for rolecomposantH in composantHabilitation["roles"]:
-                        rolesH={"spClientRoleId": rolecomposantH["nom"],"spClientRoleName": rolecomposantH["nom"],"spClientRoleDescription": rolecomposantH["description"]}
-                        clientRolesH.append(rolesH)
-                    for newcomposantroleH in newcomposantrolesH:
-                        clientRolesH.append(newcomposantroleH)
-                    obj_sp["clientRoles"] = clientRolesH
-                    if not (obj_sp["systemShortName"] == params["systemShortName"]):#test if is habilitation system
-                        results = system(obj_sp)
-#    for pilotRole in newSystemDBRepresentation["pilotRoles"]:
-        getResponseHabilitationclients = requests.get(clientSvcBaseUrl, headers=headers, params={'clientId': pilotRole["habilitationClientId"]})
-        if getResponseHabilitationclients.status_code == 200 and len(getResponseHabilitationclients.json()) > 0:
-            clientRepresentation = getResponseHabilitationclients.json()[0]
-            # Create client roles
-            createOrUpdateClientRoles(pilotRole["roles"], clientSvcBaseUrl, roleSvcBaseUrl, clientRepresentation, headers)
-            messageaddpilotRole = "add Systeme pilot roles to " + pilotRole["habilitationClientId"] + " success"
-        else:
-            messageaddpilotRole = "Client " + pilotRole["habilitationClientId"] + " not found in " + realm
-        msspilotRole = {"info": messageaddpilotRole} 
-        messagepilotRole.append(msspilotRole)
-    return messagepilotRole
 # import module snippets
 from ansible.module_utils.basic import *
 
