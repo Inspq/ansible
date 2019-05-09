@@ -419,6 +419,14 @@ class Sx5SystemTestCase(unittest.TestCase):
         dataResponse = getResponse.json()
         print str(dataResponse["composants"][0]["roles"])
         self.assertEquals(len(dataResponse["composants"][0]["roles"]),NnClient,str(len(dataResponse["composants"][0]["roles"])) + " : " + str(NnClient))
+        results = system(toCreate1)
+        print str(results)
+        headers = loginAndSetHeaders(toCreate1["spUrl"], toCreate1["spRealm"], toCreate1["spUsername"], toCreate1["spPassword"], toCreate1["spConfigClient_id"], toCreate1["spConfigClient_secret"])
+        getResponse = requests.get(toCreate1["spConfigUrl"]+"/systemes/"+toCreate1["systemShortName"], headers=headers)
+        dataResponse = getResponse.json()
+        print str(dataResponse["composants"][0]["roles"])
+        self.assertEquals(len(dataResponse["composants"][0]["roles"]),NnClient,str(len(dataResponse["composants"][0]["roles"])) + " : " + str(NnClient))
+
 
     def test_create_system_no_sadu(self):
         toCreate = {}

@@ -636,7 +636,17 @@ def system(params):
                                     keycloakClientFound = True
                             if not keycloakClientFound:
                                 keycloakClients.append(newKeycloakClient)
+                    
+                    for existRoles in keycloakClient["roles"]:
+                        roleFound = False
+                        for newRoles in newSystemDBRepresentation["clientRoles"]:
+                            if existRoles['nom'] == newRoles['spClientRoleId']:
+                                roleFound = True
+                        if not roleFound:
+                            roleS={"spClientRoleId": existRoles['nom'],"spClientRoleName": existRoles['nom'],"spClientRoleDescription": existRoles['description']}
+                            newSystemDBRepresentation["clientRoles"].append(roleS)
 
+                    
                     for clientKeycloak in keycloakClients:
                         getResponseKeycloak = requests.get(clientSvcBaseUrl, headers=headers, params={'clientId': clientKeycloak["clientId"]})
                         clientS={}
