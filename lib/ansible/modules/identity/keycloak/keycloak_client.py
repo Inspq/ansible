@@ -691,7 +691,7 @@ clientSecret:
     returned: always
     type: dict
     sample: {
-        type: "secret"
+        type: "secret",
         value: "691ccfeb-13f0-4bbf-91bb-a57b42f47e31"
     }
 end_state:
