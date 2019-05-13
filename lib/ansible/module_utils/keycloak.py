@@ -7475,7 +7475,7 @@ class KeycloakAPI(object):
                     realm=realm)
                 changed = True
             # Assign clients roles if they need changes
-            if not isDictEquals(userClientRoles, newUserClientRoles):
+            if len(userClientRoles) > 0 and not isDictEquals(userClientRoles, newUserClientRoles):
                 for clientToAssingRole in userClientRoles:
                     # Get the client roles
                     client_id = self.get_client_by_clientid(

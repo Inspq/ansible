@@ -617,10 +617,6 @@ options:
                 description:
                     - Password of the user to authenticate on SMTP server.
                 type: str
-    eventsExpiration:
-        description:
-            - backup time of logs in keycloak.
-        required: false
     eventsConfig:
         description:
             - Event configuration for the realm.
@@ -699,6 +695,10 @@ options:
                 description:
                     - If true, detail of administration event will be added to the logs.
                 type: bool
+            eventsExpiration:
+                description:
+                    - backup time of logs in keycloak.
+                required: false
     browserFlow:
         description:
             - Browser Flow.
@@ -1048,6 +1048,9 @@ def main():
         "adminEventsDetailsEnabled": {
             "type": "bool"
         },
+        "eventsExpiration": {
+            "type": "int"
+        },
         "enabledEventTypes": {
             "type": "list",
             "choices": [
@@ -1162,7 +1165,6 @@ def main():
         otpPolicyLookAheadWindow=dict(type='int', default=1),
         otpPolicyPeriod=dict(type='int', default=30),
         smtpServer=dict(type='dict', default={}, options=smtp_spec),
-        eventsExpiration=dict(type='int'),
         eventsConfig=dict(type='dict', options=eventconfig_spec),
         browserFlow=dict(type='str', default="browser"),
         registrationFlow=dict(type='str', default="registration"),

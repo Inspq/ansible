@@ -739,6 +739,14 @@ existing:
             "request.object.signature.alg": "RS256",
         }
     }
+clientSecret:
+    description: client Secret
+    returned: always
+    type: dict
+    sample: {
+        type: "secret"
+        value: "691ccfeb-13f0-4bbf-91bb-a57b42f47e31"
+    }
 end_state:
     description: client representation of client after module execution (sample is truncated)
     returned: always
@@ -933,7 +941,7 @@ def main():
                            supports_check_mode=True,
                            required_one_of=([['client_id', 'id']]))
 
-    result = dict(changed=False, msg='', diff={}, proposed={}, existing={}, end_state={})
+    result = dict(changed=False, msg='', diff={}, proposed={}, existing={}, end_state={}, clientSecret='')
 
     # Obtain access token, initialize API
     kc = KeycloakAPI(module)
