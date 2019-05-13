@@ -1,3 +1,15 @@
+# -*- coding: utf-8 -*-
+# This unit test class need a Keycloak server running on localhost using port 18081.
+# An admin user must exist and his password need to be admin.
+# It also need a 389-ds server running on port 10389 with the following OU:
+# Users: ou=People,dc=example,dc=com
+# Groups: ou=Groups,dc=example,dc=com
+# The admin bind DN must be cn=Directory Manager
+# The password must be Admin123
+# Use the following command to create a compliant Docker container:
+# docker run -d --rm --name testldap -p 10389:389 minkwe/389ds:latest
+# Use the following command to run a Keycloak server with Docker:
+# docker run -d --rm --name testkc -p 18081:8080 --link testldap:testldap -e KEYCLOAK_USER=admin -e KEYCLOAK_PASSWORD=admin jboss/keycloak:latest
 import collections
 import os
 <<<<<<< HEAD
@@ -9,6 +21,111 @@ from ansible.modules.identity.keycloak import keycloak_component
 from units.modules.utils import AnsibleExitJson, AnsibleFailJson, ModuleTestCase, set_module_args
 
 class KeycloakComponentTestCase(ModuleTestCase):
+    createComponentLdapUserStorageProvider = {
+        "auth_keycloak_url": "http://localhost:18081/auth",
+        "auth_username": "admin",
+        "auth_password": "admin",
+        "realm": "master",
+        "state": "absent",
+        "name": "test_create_component_ldap_user_storage_provider",
+        "parentId": "master",
+        "providerId": "ldap",
+        "providerType": "org.keycloak.storage.UserStorageProvider",
+        "config": {
+            "vendor": ["ad"],
+            "usernameLDAPAttribute": ["sAMAccountName"],
+            "rdnLDAPAttribute": ["cn"],
+            "uuidLDAPAttribute": ["objectGUID"],
+            "userObjectClasses":["person, organizationalPerson, user"],
+            "connectionUrl":["ldap://ldap.server.com:389"],
+            "usersDn":["OU=users,DC=ldap,DC=server,DC=com"],
+            "authType":["simple"],
+            "bindDn":["CN=toto,OU=users,DC=ldap,DC=server,DC=com"],
+            "bindCredential":["LeTresLongMotDePasse"]
+        },
+        "subComponents": {
+            "org.keycloak.storage.ldap.mappers.LDAPStorageMapper": [{
+                    "name": "groupMapper",
+                    "providerId": "group-ldap-mapper",
+                    "config": {
+                        "mode": ["READ_ONLY"],
+                        "membership.attribute.type": ["DN"],
+                        "user.roles.retrieve.strategy": ["LOAD_GROUPS_BY_MEMBER_ATTRIBUTE"],
+                        "group.name.ldap.attribute": ["cn"],
+                        "membership.ldap.attribute": ["member"],
+                        "preserve.group.inheritance": ["true"],
+                        "membership.user.ldap.attribute": ["uid"],
+                        "group.object.classes": ["groupOfNames"],
+                        "groups.dn": ["cn=newgroups,OU=SEC,DC=SANTEPUBLIQUE,DC=RTSS,DC=QC,DC=CA"],
+                        "drop.non.existing.groups.during.sync": ["false"]
+                    }
+                },
+                {
+                    "name": "groupMapper2",
+                    "providerId": "group-ldap-mapper",
+                    "config": {
+                        "mode": ["READ_ONLY"],
+                        "membership.attribute.type": ["DN"],
+                        "user.roles.retrieve.strategy": ["LOAD_GROUPS_BY_MEMBER_ATTRIBUTE"],
+                        "group.name.ldap.attribute": ["cn"],
+                        "membership.ldap.attribute": ["member"],
+                        "preserve.group.inheritance": ["true"],
+                        "membership.user.ldap.attribute": ["uid"],
+                        "group.object.classes": ["groupOfNames"],
+                        "groups.dn": ["cn=groups,OU=SEC,DC=SANTEPUBLIQUE,DC=RTSS,DC=QC,DC=CA"],
+                        "drop.non.existing.groups.during.sync": ["false"]
+                    }
+                }
+            ]
+        },
+        "force": False
+    }
+    userStorageComponentForSync = {
+        "auth_keycloak_url": "http://localhost:18081/auth",
+        "auth_username": "admin",
+        "auth_password": "admin",
+        "realm": "master",
+        "state": "present",
+        "name": "forSyncUnitTests",
+        "parentId": "master",
+        "providerId": "ldap",
+        "providerType": "org.keycloak.storage.UserStorageProvider",
+        "config": {
+            "vendor": ["rhds"],
+            "usernameLDAPAttribute": ["uid"],
+            "rdnLDAPAttribute": ["uid"],
+            "uuidLDAPAttribute": ["nsuniqueid"],
+            "userObjectClasses": [
+                "inetOrgPerson",
+                "organizationalPerson"
+                ],
+            "connectionUrl": ["ldap://testldap:389"],
+            "usersDn": ["ou=People,dc=example,dc=com"],
+            "authType": ["simple"],
+            "bindDn": ["cn=Directory Manager"],
+            "bindCredential": ["Admin123"]
+        },
+        "subComponents": {
+            "org.keycloak.storage.ldap.mappers.LDAPStorageMapper": [{
+                "name": "groupMapper",
+                "providerId": "group-ldap-mapper",
+                "config": {
+                    "mode": ["LDAP_ONLY"],
+                    "membership.attribute.type": ["DN"],
+                    "user.roles.retrieve.strategy": ["LOAD_GROUPS_BY_MEMBER_ATTRIBUTE"],
+                    "group.name.ldap.attribute": ["cn"],
+                    "membership.ldap.attribute": ["member"],
+                    "preserve.group.inheritance": ["true"],
+                    "membership.user.ldap.attribute": ["cn"],
+                    "group.object.classes": ["groupOfNames"],
+                    "groups.dn": ["ou=Groups,dc=example,dc=com"],
+                    "drop.non.existing.groups.during.sync": ["false"]
+                }
+            }],
+        },
+        "force": False,
+        "state": "absent"
+    }
 
     modifyComponentLdapUserStorageProvider = {
         "auth_keycloak_url": "http://localhost:18081/auth",
@@ -583,6 +700,12 @@ class KeycloakComponentTestCase(ModuleTestCase):
     def setUp(self):
         super(KeycloakComponentTestCase, self).setUp()
         self.module = keycloak_component
+        set_module_args(self.createComponentLdapUserStorageProvider)
+        with self.assertRaises(AnsibleExitJson) as results:
+            self.module.main()
+        set_module_args(self.userStorageComponentForSync)
+        with self.assertRaises(AnsibleExitJson) as results:
+            self.module.main()
         set_module_args(self.modifyComponentLdapUserStorageProvider)
         with self.assertRaises(AnsibleExitJson) as results:
             self.module.main()
@@ -597,15 +720,16 @@ class KeycloakComponentTestCase(ModuleTestCase):
             self.module.main()
  
     def tearDown(self):
+        self.module = keycloak_component
+        set_module_args(self.userStorageComponentForSync)
+        with self.assertRaises(AnsibleExitJson) as results:
+            self.module.main()
         super(KeycloakComponentTestCase, self).tearDown()
  
     def test_create_component_ldap_user_storage_provider(self):
-        toCreate = {}
-        toCreate["auth_keycloak_url"] = "http://localhost:18081/auth"
-        toCreate["auth_username"] = "admin"
-        toCreate["auth_password"] = "admin"
-        toCreate["realm"] = "master"
+        toCreate = self.createComponentLdapUserStorageProvider.copy()
         toCreate["state"] = "present"
+<<<<<<< HEAD
         toCreate["name"] = "test_create_component_ldap_user_storage_provider"
         toCreate["parentId"] = "master"
         toCreate["providerId"] = "ldap"
@@ -786,6 +910,8 @@ class KeycloakComponentTestCase(ModuleTestCase):
 >>>>>>> SX5-868 Add keycloak_component module with non mock unit tests.
         toCreate["force"] = False
 
+=======
+>>>>>>> SX5-984 La synchronisation de LDAP ne fonctionne pas à la création.
         set_module_args(toCreate)
         with self.assertRaises(AnsibleExitJson) as results:
             self.module.main()
@@ -1137,8 +1263,21 @@ class KeycloakComponentTestCase(ModuleTestCase):
         self.assertTrue(results.exception.args[0]['changed'])
         self.assertRegexpMatches(results.exception.args[0]['msg'], 'deleted', 'component not deleted')
 <<<<<<< HEAD
+<<<<<<< HEAD
 >>>>>>> SX5-868 Add keycloak_component module with non mock unit tests.
 =======
 >>>>>>> SX5-868 Add role management to keycloak_group module. Add
 =======
 >>>>>>> SX5-868 Add keycloak_component module with non mock unit tests.
+=======
+
+    def test_sync_ldap_user_storage_provider(self):
+        toModify = self.userStorageComponentForSync.copy()
+        toModify["syncLdapMappers"] = "fedToKeycloak"
+        toModify["syncUserStorage"] = "triggerFullSync"
+        toModify["state"] = "present"
+        set_module_args(toModify)
+        with self.assertRaises(AnsibleExitJson) as results:
+            self.module.main()
+        self.assertTrue(results.exception.args[0]['changed'])
+>>>>>>> SX5-984 La synchronisation de LDAP ne fonctionne pas à la création.
