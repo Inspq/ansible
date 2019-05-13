@@ -1,13 +1,13 @@
-import collections
-import os
-import unittest
-from ansible.modules.identity.sx5.sx5_sp_config_system import *
-from ansible.modules.identity.keycloak.keycloak_client import *
-from ansible.module_utils.sx5_sp_config_system_utils import *
+import requests
 
-class Sx5SystemTestCase(unittest.TestCase):
+from ansible.modules.identity.sx5.sx5_sp_config_system import system
+from ansible.modules.identity.keycloak import keycloak_client
+from ansible.module_utils.sx5_sp_config_system_utils import loginAndSetHeaders
+from units.modules.utils import AnsibleExitJson, AnsibleFailJson, ModuleTestCase, set_module_args
+
+class Sx5SystemTestCase(ModuleTestCase):
     def setUp(self):
-        unittest.TestCase.setUp(self)
+        super(Sx5SystemTestCase, self).setUp()
         clientsToCreate = [
             {
                 "clientId": "clientsystem11",
@@ -153,11 +153,15 @@ class Sx5SystemTestCase(unittest.TestCase):
         toCreateClient["bearerOnly"] = False
         toCreateClient["publicClient"] = False
         toCreateClient["force"] = False
+        self.module = keycloak_client
+
         for theClient in clientsToCreate:
             toCreateClient["clientId"] = theClient["clientId"]
             toCreateClient["name"] = theClient["name"]
             toCreateClient["roles"] = theClient["roles"]
-            client(toCreateClient)
+            set_module_args(toCreateClient)
+            with self.assertRaises(AnsibleExitJson) as results:
+                self.module.main()
     
     def test_create_system(self):
         toCreate = {}
@@ -370,7 +374,11 @@ class Sx5SystemTestCase(unittest.TestCase):
         toCreateClient["name"] = createHabiliatationClient["name"]
         toCreateClient["roles"] = createHabiliatationClient["roles"]
         
-        client(toCreateClient)
+        self.module = keycloak_client
+        set_module_args(toCreateClient)
+        with self.assertRaises(AnsibleExitJson) as results:
+            self.module.main()
+
 
         toCreate1 = {}
         toCreate1["spUrl"] = "http://localhost:18081"
