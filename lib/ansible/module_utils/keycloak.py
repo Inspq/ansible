@@ -3839,6 +3839,7 @@ class KeycloakAPI(object):
         :param provider_type: Provider type of the component
         :param provider_id: Provider ID of the component
         :param parent_id: Parent ID of the component. Realm is used as parent for base component.
+        :param realm: Realm
         :return: Component's representation if found. An empty dict otherwise.
         """
         componentFound = {}
@@ -4096,6 +4097,7 @@ class KeycloakAPI(object):
                             subComponents = self.get_component_by_name_provider_and_parent(
                                 name=newSubComponent["name"],
                                 provider_type=newSubComponent["providerType"],
+                                provider_id=newSubComponent["providerId"],
                                 parent_id=component["id"],
                                 realm=realm)
                             for subComponent in subComponents:
