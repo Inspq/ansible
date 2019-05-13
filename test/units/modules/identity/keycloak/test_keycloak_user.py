@@ -141,7 +141,39 @@ class KeycloakUserTestCase(ModuleTestCase):
             "groups": ["testUserGroup1","testUserGroup2"],
             "state":"present",
             "force": False
-        }
+        },
+        {
+            "auth_keycloak_url": "http://localhost:18081/auth",
+            "auth_username": "admin",
+            "auth_password": "admin",
+            "realm": "master",
+            "username": "userwoclrole",
+            "firstName": "User-Without",
+            "lastName": "Client-Role",
+            "email": "user6@user.ca",
+            "enabled": True,
+            "emailVerified": False,
+            "credentials": [{"temporary": 'false',"type": "password","value": "password"}], 
+            "realmRoles": ["testUserRole1","testUserRole2"],
+            "state":"absent",
+            "force":"no"
+        },        
+        {
+            "auth_keycloak_url": "http://localhost:18081/auth",
+            "auth_username": "admin",
+            "auth_password": "admin",
+            "realm": "master",
+            "username": "userworealmrole",
+            "firstName": "User-Without",
+            "lastName": "Realm-Role",
+            "email": "user7@user.ca",
+            "enabled": True,
+            "emailVerified": False,
+            "credentials": [{"temporary": 'false',"type": "password","value": "password"}], 
+            "clientRoles": [{"clientId": "master-realm","roles": ["manage-clients"]}],
+            "state":"absent",
+            "force":"no"
+        }        
     ]
     
     def setUp(self):
@@ -224,3 +256,20 @@ class KeycloakUserTestCase(ModuleTestCase):
         self.assertTrue(results.exception.args[0]['changed'])
         self.assertRegexpMatches(results.exception.args[0]['msg'], 'deleted', 'User not deleted')
 
+    def test_create_user_without_client_role(self):
+        toCreate = self.testUsers[5].copy()
+        toCreate["state"] = "present"
+        set_module_args(toCreate)
+        with self.assertRaises(AnsibleExitJson) as results:
+            self.module.main()
+        self.assertTrue(results.exception.args[0]['changed'])
+        self.assertTrue(isDictEquals(toCreate, results.exception.args[0]["user"], self.compareExcludes), "user: " + str(toCreate) + " : " + str(results.exception.args[0]["user"]))
+
+    def test_create_user_without_realm_role(self):
+        toCreate = self.testUsers[6].copy()
+        toCreate["state"] = "present"
+        set_module_args(toCreate)
+        with self.assertRaises(AnsibleExitJson) as results:
+            self.module.main()
+        self.assertTrue(results.exception.args[0]['changed'])
+        self.assertTrue(isDictEquals(toCreate, results.exception.args[0]["user"], self.compareExcludes), "user: " + str(toCreate) + " : " + str(results.exception.args[0]["user"]))
