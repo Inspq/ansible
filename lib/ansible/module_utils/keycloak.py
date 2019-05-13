@@ -1462,14 +1462,14 @@ class KeycloakAPI(object):
                                  data=json.dumps(newSubComponent))
                         # Check if users and groups synchronization is needed
                         if component["providerType"] == "org.keycloak.storage.UserStorageProvider" and syncLdapMappers != "no":
-                            # Get subcomponents
-                            subComponents = self.get_component_by_name_provider_and_parent(
+                            # Get subcomponent
+                            subComponent = self.get_component_by_name_provider_and_parent(
                                 name=newSubComponent["name"],
                                 provider_type=newSubComponent["providerType"],
                                 provider_id=newSubComponent["providerId"],
                                 parent_id=component["id"],
                                 realm=realm)
-                            for subComponent in subComponents:
+                            if subComponent != {}:
                                 # Sync sub component
                                 sync_url = URL_USER_STORAGE_MAPPER_SYNC.format(
                                     url=self.baseurl,
