@@ -559,11 +559,11 @@ options:
             realm:
                 description:
                     - list of realm_access roles
-                type: list
                 suboptions:
                     name:
                         description:
                             - Name of realm role.
+                    type: list
                     state:
                         description:
                             - Desired state of realm_access roles mappings.
@@ -574,7 +574,6 @@ options:
             clients:
                 description:
                     - list of resource_access roles
-                type: list
                 suboptions:
                     clientID:
                         description:
@@ -590,6 +589,7 @@ options:
                                 - Desired state of realm_access roles mappings.
                                   If present, the role will be added or updated.
                                   If absent, the role will be removed
+                            type: list
                             choices: [absent, present]
                             default: present
         version_added: "2.9"
