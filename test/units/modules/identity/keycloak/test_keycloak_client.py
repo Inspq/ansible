@@ -638,8 +638,6 @@ class KeycloakClientTestCase(ModuleTestCase):
         with self.assertRaises(AnsibleExitJson) as results:
             self.module.main()
                 
-
- 
     def test_create_client(self):
         toCreate = {}
 <<<<<<< HEAD
@@ -894,3 +892,49 @@ class KeycloakClientTestCase(ModuleTestCase):
         with self.assertRaises(AnsibleExitJson) as results:
             self.module.main()
         self.assertTrue(results.exception.args[0]['changed'])
+
+    def test_add_client_scope_mappings_roles(self):
+        newClientScopeMappings = {
+            "realm": [
+                {
+                    "name": "uma_authorization",
+                    "state": "present"
+                },
+                {
+                    "name": "offline_access",
+                    "state": "present"
+                }
+            ],
+            "clients": [
+                {
+                    "clientID": "clientId1",
+                    "roles": [
+                        {
+                            "name": "clientRole11"
+                        },
+                        {
+                            "name": "clientRole12"
+                        }
+                    ]
+                },
+                {
+                    "clientID": "clientId2",
+                    "roles": [
+                        {
+                            "name": "clientRole21",
+                            "state": "present"
+                        },
+                        {
+                            "name": "clientRole22"
+                        }
+                    ]
+                }
+            ]
+        }
+
+        self.toAddnewClientScopeMappings["scope_mappings"] = newClientScopeMappings
+        set_module_args(self.toAddnewClientScopeMappings)
+        with self.assertRaises(AnsibleExitJson) as results:
+            self.module.main()
+        self.assertTrue(results.exception.args[0]['end_state']['enabled'])
+        self.assertTrue(results.exception.args[0]['changed'])    
