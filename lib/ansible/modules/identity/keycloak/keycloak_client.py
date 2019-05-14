@@ -567,8 +567,8 @@ options:
                     state:
                         description:
                             - Desired state of realm_access roles mappings.
-                            If present, the role will be added or updated.
-                            If absent, the role will be removed
+                              If present, the role will be added or updated.
+                              If absent, the role will be removed
                         choices: [absent, present]
                         default: present
             clients:
@@ -588,8 +588,8 @@ options:
                         state:
                             description:
                                 - Desired state of realm_access roles mappings.
-                                If present, the role will be added or updated.
-                                If absent, the role will be removed
+                                  If present, the role will be added or updated.
+                                  If absent, the role will be removed
                             choices: [absent, present]
                             default: present
         version_added: "2.9"
