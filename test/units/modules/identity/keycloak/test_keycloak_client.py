@@ -227,6 +227,7 @@ class KeycloakClientTestCase(ModuleTestCase):
             "composite": False
         }
     ]
+<<<<<<< HEAD
     testClient = {
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -340,6 +341,74 @@ class KeycloakClientTestCase(ModuleTestCase):
                     "access.token.claim": 'true',
                     "claim.name": "test1",
                     "jsonType.label": "String"
+=======
+    testClients = [
+        {
+            "auth_keycloak_url": "http://localhost:18081/auth",
+            "auth_username": "admin",
+            "auth_password": "admin",
+            "realm": "master",
+            "state": "present",
+            "clientId": "basetest",
+            "rootUrl": "http://test.com:8080",
+            "name": "basetestname",
+            "description": "Base testing",
+            "publicClient": False,
+            "force": False
+        },
+        {
+            "auth_keycloak_url": "http://localhost:18081/auth",
+            "auth_username": "admin",
+            "auth_password": "admin",
+            "realm": "master",
+            "state": "present",
+            "clientId": "test_modify_client",
+            "rootUrl": "http://test3.com:8080",
+            "name": "Modify client test",
+            "description": "This client will be modified",
+            "adminUrl": "http://test3.com:8080/admin",
+            "baseUrl": "http://test3.com:8080",
+            "enabled": True,
+            "clientAuthenticatorType": "client-secret",
+            "redirectUris": ["http://test3.com:8080/secure"],
+            "webOrigins": ["http://test3.com:8080/secure"],
+            "consentRequired": False,   
+            "standardFlowEnabled": True,
+            "implicitFlowEnabled": True,
+            "directAccessGrantsEnabled": True,
+            "serviceAccountsEnabled": True,
+            "fullScopeAllowed": True,
+            "protocol": "openid-connect",
+            "bearerOnly": False,
+            "publicClient": False,
+            "roles": [
+                {
+                    "name":"test1",
+                    "description": "test1",
+                    "composite": False
+                },
+                {
+                    "name":"test2",
+                    "description": "test2",
+                    "composite": True,
+                    "composites": []
+                }
+            ],
+            "protocolMappers": [
+                {
+                    "name": "test1Mapper",
+                    "protocol": "openid-connect",
+                    "protocolMapper": "oidc-usermodel-attribute-mapper",
+                    "consentRequired": False,
+                    "config": { 
+                        "multivalued": 'false',
+                        "userinfo.token.claim": False,
+                        "user.attribute": "test1",
+                        "id.token.claim": 'true',
+                        "access.token.claim": 'true',
+                        "claim.name": "test1",
+                        "jsonType.label": "String"
+>>>>>>> SX5-984 Mauvais message d'erreur lors de la création de role client
                     }
                 },
                 {
@@ -358,6 +427,7 @@ class KeycloakClientTestCase(ModuleTestCase):
                     }
                 }
             ]
+<<<<<<< HEAD
         }
     
     toAddCompositesForClientRole = {
@@ -414,43 +484,78 @@ class KeycloakClientTestCase(ModuleTestCase):
                 "name":"test1",
                 "description": "test1",
                 "composite": False
-                },
-            {
-                "name":"test2",
-                "description": "test2",
-                "composite": True,
-                "composites": []
-            }
-        ],
-        "protocolMappers": [
-            {
-                "name": "test1Mapper",
-                "protocol": "openid-connect",
-                "protocolMapper": "oidc-usermodel-attribute-mapper",
-                "consentRequired": False,
-                "config": { 
-                    "multivalued": 'false',
-                    "userinfo.token.claim": False,
-                    "user.attribute": "test1",
-                    "id.token.claim": 'true',
-                    "access.token.claim": 'true',
-                    "claim.name": "test1",
-                    "jsonType.label": "String"}
-            },
-            {
-                "name": "test2Mapper",
-                "protocol": "openid-connect",
-                "protocolMapper": "oidc-usermodel-attribute-mapper",
-                "consentRequired": False,
-                "config": { 
-                    "multivalued": 'false',
-                    "userinfo.token.claim": 'true',
-                    "user.attribute": "test2",
-                    "id.token.claim": 'true',
-                    "access.token.claim": 'true',
-                    "claim.name": "test2",
-                    "jsonType.label": "String"
+=======
+        },
+        {
+            "auth_keycloak_url": "http://localhost:18081/auth",
+            "auth_username": "admin",
+            "auth_password": "admin",
+            "realm": "master",
+            "state": "present",
+            "clientId": "test_add_client_composite_roles",
+            "rootUrl": "http://test5.com:8080",
+            "name": "Add composites role to this client",
+            "description": "Composites role should be added to this client",
+            "adminUrl": "http://test5.com:8080/admin",
+            "baseUrl": "http://test5.com:8080",
+            "enabled": True,
+            "clientAuthenticatorType": "client-secret",
+            "redirectUris": ["http://test5.com:8080/secure"],
+            "webOrigins": ["http://test5.com:8080/secure"],
+            "consentRequired": False,   
+            "standardFlowEnabled": True,
+            "implicitFlowEnabled": True,
+            "directAccessGrantsEnabled": True,
+            "fullScopeAllowed": True,
+            "serviceAccountsEnabled": True,
+            "protocol": "openid-connect",
+            "bearerOnly": False,
+            "publicClient": False,
+            "roles":  [
+                {
+                    "name":"test1",
+                    "description": "test1",
+                    "composite": False
+                    },
+                {
+                    "name":"test2",
+                    "description": "test2",
+                    "composite": True,
+                    "composites": []
                 }
+            ],
+            "protocolMappers": [
+                {
+                    "name": "test1Mapper",
+                    "protocol": "openid-connect",
+                    "protocolMapper": "oidc-usermodel-attribute-mapper",
+                    "consentRequired": False,
+                    "config": { 
+                        "multivalued": 'false',
+                        "userinfo.token.claim": False,
+                        "user.attribute": "test1",
+                        "id.token.claim": 'true',
+                        "access.token.claim": 'true',
+                        "claim.name": "test1",
+                        "jsonType.label": "String"}
+>>>>>>> SX5-984 Mauvais message d'erreur lors de la création de role client
+                },
+                {
+                    "name": "test2Mapper",
+                    "protocol": "openid-connect",
+                    "protocolMapper": "oidc-usermodel-attribute-mapper",
+                    "consentRequired": False,
+                    "config": { 
+                        "multivalued": 'false',
+                        "userinfo.token.claim": 'true',
+                        "user.attribute": "test2",
+                        "id.token.claim": 'true',
+                        "access.token.claim": 'true',
+                        "claim.name": "test2",
+                        "jsonType.label": "String"
+                    }
+                }
+<<<<<<< HEAD
             }
         ]
     }
@@ -612,10 +717,258 @@ class KeycloakClientTestCase(ModuleTestCase):
         "publicClient": False,
         "force": False
     }
+=======
+            ]
+        },
+        {
+            "auth_keycloak_url": "http://localhost:18081/auth",
+            "auth_username": "admin",
+            "auth_password": "admin",
+            "realm": "master",
+            "state": "present",
+            "clientId": "test_remove_mapper_from_client",
+            "rootUrl": "http://test.com:8080",
+            "name": "Test remove mapper",
+            "description": "Client from which we remove a mapper",
+            "publicClient": False,
+            "protocolMappers": [
+                {
+                    "name": "thismapperstays",
+                    "protocol": "openid-connect",
+                    "protocolMapper": "oidc-usermodel-attribute-mapper",
+                    "consentRequired": False,
+                    "config": { 
+                        "multivalued": 'false',
+                        "userinfo.token.claim": False,
+                        "user.attribute": "test1",
+                        "id.token.claim": 'true',
+                        "access.token.claim": 'true',
+                        "claim.name": "test1",
+                        "jsonType.label": "String"}
+                },
+                {
+                    "name": "thismappermustbedeleted",
+                    "protocol": "openid-connect",
+                    "protocolMapper": "oidc-usermodel-attribute-mapper",
+                    "consentRequired": False,
+                    "config": { 
+                        "multivalued": 'false',
+                        "userinfo.token.claim": 'true',
+                        "user.attribute": "test2",
+                        "id.token.claim": 'true',
+                        "access.token.claim": 'true',
+                        "claim.name": "test2",
+                        "jsonType.label": "String"
+                    }
+                }
+            ],
+            "force": False
+        },
+        {
+            "auth_keycloak_url": "http://localhost:18081/auth",
+            "auth_username": "admin",
+            "auth_password": "admin",
+            "realm": "master",
+            "state": "present",
+            "clientId": "test_remove_role_from_client",
+            "rootUrl": "http://test.com:8080",
+            "name": "Test remove role",
+            "description": "Client from which we remove a role",
+            "publicClient": False,
+            "roles": [
+                {
+                    "name":"thisrolestays",
+                    "description": "This role must stay after the test",
+                    "composite": False,
+                    "state": "present"
+                    },
+                {
+                    "name":"thisrolemustbedeleted",
+                    "description": "This role mus be deleted by the module",
+                    "composite": False,
+                    "state": "present"
+                }
+            ],
+            "force": False
+        },
+        {
+            "auth_keycloak_url": "http://localhost:18081/auth",
+            "auth_username": "admin",
+            "auth_password": "admin",
+            "realm": "master",
+            "state": "present",
+            "clientId": "test_delete_client",
+            "name": "Client to delete",
+            "description": "this client should have been deleted",
+            "rootUrl": "http://test.com:8080",
+            "name": "basetestname",
+            "description": "Base testing",
+            "publicClient": False,
+            "force": False
+        },
+        {
+            "auth_keycloak_url": "http://localhost:18081/auth",
+            "auth_username": "admin",
+            "auth_password": "admin",
+            "realm": "master",
+            "state": "absent",
+            "clientId": "test_create_client",
+            "rootUrl": "http://test.com:8080",
+            "name": "Create client test",
+            "description": "This client should be created",
+            "adminUrl": "http://test.com:8080/admin",
+            "baseUrl": "http://test.com:8080",
+            "enabled": True,
+            "clientAuthenticatorType": "client-secret",
+            "redirectUris": ["http://test.com:8080/secure","http://test1.com:8080/secure"],
+            "webOrigins": ["*"],
+            "consentRequired": False,   
+            "standardFlowEnabled": True,
+            "implicitFlowEnabled": True,
+            "directAccessGrantsEnabled": True,
+            "serviceAccountsEnabled": True,
+            "protocol": "openid-connect",
+            "fullScopeAllowed": True,
+            "bearerOnly": False,
+            "roles": [
+                {
+                    "name":"test1",
+                    "description": "test1",
+                    "composite": False
+                },
+                {
+                    "name":"toCreate",
+                    "description": "toCreate",
+                    "composite": True,
+                    "composites": [
+                        {
+                            "name": "admin"
+                        }
+                    ]
+                }
+            ],
+            "protocolMappers": [
+                {
+                    "name": "test1Mapper",
+                    "protocol": "openid-connect",
+                    "protocolMapper": "oidc-usermodel-attribute-mapper",
+                    "consentRequired": False,
+                    "config": { 
+                        "multivalued": 'false',
+                        "userinfo.token.claim": 'true',
+                        "user.attribute": "test1",
+                        "id.token.claim": 'true',
+                        "access.token.claim": 'true',
+                        "claim.name": "test1",
+                        "jsonType.label": "String"
+                    }
+                },
+                {
+                    "name": "test2Mapper",
+                    "protocol": "openid-connect",
+                    "protocolMapper": "oidc-usermodel-attribute-mapper",
+                    "consentRequired": False,
+                    "config": { 
+                        "multivalued": 'false',
+                        "userinfo.token.claim": 'true',
+                        "user.attribute": "test2",
+                        "id.token.claim": 'true',
+                        "access.token.claim": 'true',
+                        "claim.name": "test2",
+                        "jsonType.label": "String"
+                    }
+                }
+            ],
+            "publicClient": False,
+            "force": False
+        },
+        {
+            "auth_keycloak_url": "http://localhost:18081/auth",
+            "auth_username": "admin",
+            "auth_password": "admin",
+            "realm": "master",
+            "state": "absent",
+            "clientId": "test_create_client_inexisting_client_role",
+            "rootUrl": "http://test.com:8080",
+            "name": "Create client test",
+            "description": "This client should generate an error",
+            "adminUrl": "http://test.com:8080/admin",
+            "baseUrl": "http://test.com:8080",
+            "enabled": True,
+            "clientAuthenticatorType": "client-secret",
+            "redirectUris": ["http://test.com:8080/secure","http://test1.com:8080/secure"],
+            "webOrigins": ["*"],
+            "consentRequired": False,   
+            "standardFlowEnabled": True,
+            "implicitFlowEnabled": True,
+            "directAccessGrantsEnabled": True,
+            "serviceAccountsEnabled": True,
+            "protocol": "openid-connect",
+            "fullScopeAllowed": True,
+            "bearerOnly": False,
+            "roles": [
+                {
+                    "name":"test1",
+                    "description": "test1",
+                    "composite": False
+                },
+                {
+                    "name":"toCreate",
+                    "description": "toCreate",
+                    "composite": True,
+                    "composites": [
+                        {
+                            "name": "admin"
+                        },
+                        {
+                            "id": "non_existing_client",
+                            "name": "non_existing_role"
+                        }
+                    ]
+                }
+            ],
+            "protocolMappers": [
+                {
+                    "name": "test1Mapper",
+                    "protocol": "openid-connect",
+                    "protocolMapper": "oidc-usermodel-attribute-mapper",
+                    "consentRequired": False,
+                    "config": { 
+                        "multivalued": 'false',
+                        "userinfo.token.claim": 'true',
+                        "user.attribute": "test1",
+                        "id.token.claim": 'true',
+                        "access.token.claim": 'true',
+                        "claim.name": "test1",
+                        "jsonType.label": "String"
+                    }
+                },
+                {
+                    "name": "test2Mapper",
+                    "protocol": "openid-connect",
+                    "protocolMapper": "oidc-usermodel-attribute-mapper",
+                    "consentRequired": False,
+                    "config": { 
+                        "multivalued": 'false',
+                        "userinfo.token.claim": 'true',
+                        "user.attribute": "test2",
+                        "id.token.claim": 'true',
+                        "access.token.claim": 'true',
+                        "claim.name": "test2",
+                        "jsonType.label": "String"
+                    }
+                }
+            ],
+            "publicClient": False,
+            "force": False
+        }
+    ]
+>>>>>>> SX5-984 Mauvais message d'erreur lors de la création de role client
 
     def setUp(self):
         super(KeycloakClientTestCase, self).setUp()
         self.module = keycloak_client
+<<<<<<< HEAD
         self.testClient["roles"] = self.testClientRoles
         set_module_args(self.testClient)
         with self.assertRaises(AnsibleExitJson) as results:
@@ -668,73 +1021,29 @@ class KeycloakClientTestCase(ModuleTestCase):
         toCreate["auth_password"] = "admin"
 >>>>>>> SX5-868 Add keycloak_user module and non mock unit tests.
         toCreate["realm"] = "master"
+=======
+        for client in self.testClients:
+            if client["clientId"] == "basetest":
+                client["roles"] = self.testClientRoles
+            elif client["clientId"] in ["test_modify_client", "test_add_client_composite_roles", "test_create_client"]:
+                client['roles'][1]['composites'].append({'id': self.testClients[0]['clientId'],"name": self.testClientRoles[0]['name']})
+            set_module_args(client)
+            with self.assertRaises(AnsibleExitJson) as results:
+                self.module.main()
+
+    def tearDown(self):
+        for client in self.testClients:
+            toDelete = client.copy()
+            toDelete["state"] = "absent"
+            set_module_args(toDelete)
+            with self.assertRaises(AnsibleExitJson) as results:
+                self.module.main()
+        super(KeycloakClientTestCase, self).tearDown()
+ 
+    def test_create_client(self):
+        toCreate = self.testClients[6].copy()
+>>>>>>> SX5-984 Mauvais message d'erreur lors de la création de role client
         toCreate["state"] = "present"
-        toCreate["clientId"] = "test_create_client"
-        toCreate["rootUrl"] = "http://test.com:8080"
-        toCreate["name"] = "Create client test"
-        toCreate["description"] = "This client should be created"
-        toCreate["adminUrl"] = "http://test.com:8080/admin"
-        toCreate["baseUrl"] = "http://test.com:8080"
-        toCreate["enabled"] = True
-        toCreate["clientAuthenticatorType"] = "client-secret"
-        toCreate["redirectUris"] = ["http://test.com:8080/secure","http://test1.com:8080/secure"]
-        toCreate["webOrigins"] = ["*"]
-        toCreate["consentRequired"] = False   
-        toCreate["standardFlowEnabled"] = True
-        toCreate["implicitFlowEnabled"] = True
-        toCreate["directAccessGrantsEnabled"] = True
-        toCreate["serviceAccountsEnabled"] = True
-        #toCreate["authorizationServicesEnabled"] = False
-        toCreate["protocol"] = "openid-connect"
-        toCreate["fullScopeAllowed"] = True
-        toCreate["bearerOnly"] = False
-        toCreate["roles"] = [
-            {
-                "name":"test1",
-                "description": "test1",
-                "composite": False
-            },
-            {
-                "name":"toCreate",
-                "description": "toCreate",
-                "composite": True,
-                "composites": [
-                    {
-                        "id": self.testClient['clientId'],
-                        "name": self.testClientRoles[0]['name']
-                    },
-                    {
-                        "name": "admin"
-                    }
-                ]
-            }
-        ]
-        toCreate["protocolMappers"] = [{"name": "test1Mapper",
-                                        "protocol": "openid-connect",
-                                        "protocolMapper": "oidc-usermodel-attribute-mapper",
-                                        "consentRequired": False,
-                                        "config": { 
-                                            "multivalued": 'false',
-                                            "userinfo.token.claim": 'true',
-                                            "user.attribute": "test1",
-                                            "id.token.claim": 'true',
-                                            "access.token.claim": 'true',
-                                            "claim.name": "test1",
-                                            "jsonType.label": "String"}},
-                                       {"name": "test2Mapper",
-                                        "protocol": "openid-connect",
-                                        "protocolMapper": "oidc-usermodel-attribute-mapper",
-                                        "consentRequired": False,
-                                        "config": { 
-                                            "multivalued": 'false',
-                                            "userinfo.token.claim": 'true',
-                                            "user.attribute": "test2",
-                                            "id.token.claim": 'true',
-                                            "access.token.claim": 'true',
-                                            "claim.name": "test2",
-                                            "jsonType.label": "String"}}]
-        toCreate["publicClient"] = False
-        toCreate["force"] = False
         set_module_args(toCreate)
         with self.assertRaises(AnsibleExitJson) as results:
             self.module.main()
@@ -770,17 +1079,17 @@ class KeycloakClientTestCase(ModuleTestCase):
                 self.assertEqual(mapper["config"]["user.attribute"], toCreateMapper["config"]["user.attribute"], "user.attribute: " + mapper["config"]["user.attribute"] + ": " + mapper["config"]["user.attribute"])
 
     def test_client_not_changed(self):
-        set_module_args(self.testClient)
+        set_module_args(self.testClients[0])
         with self.assertRaises(AnsibleExitJson) as results:
             self.module.main()
         self.assertFalse(results.exception.args[0]['changed'])
 
 
     def test_modify_client(self):
-       
-        self.toModifyClient["name"] = "test_modify_client_modified"
-        self.toModifyClient["description"] = "This client should have been modified"
-        self.toModifyClient["protocolMappers"] = [{"name": "test1Mapper",
+        toModifyClient = self.testClients[1].copy()
+        toModifyClient["name"] = "test_modify_client_modified"
+        toModifyClient["description"] = "This client should have been modified"
+        toModifyClient["protocolMappers"] = [{"name": "test1Mapper",
                                         "protocol": "openid-connect",
                                         "protocolMapper": "oidc-usermodel-attribute-mapper",
                                         "consentRequired": False,
@@ -792,16 +1101,16 @@ class KeycloakClientTestCase(ModuleTestCase):
                                             "access.token.claim": 'true',
                                             "claim.name": "modifiedclaim",
                                             "jsonType.label": "String"}}]
-        set_module_args(self.toModifyClient)
+        set_module_args(toModifyClient)
         with self.assertRaises(AnsibleExitJson) as results:
             self.module.main()
         self.assertTrue(results.exception.args[0]['end_state']['enabled'])
         self.assertTrue(results.exception.args[0]['changed'])
         
-        self.assertEqual(results.exception.args[0]['end_state']['name'], self.toModifyClient["name"], "name: " + results.exception.args[0]['end_state']['name'])
-        self.assertEqual(results.exception.args[0]['end_state']['description'], self.toModifyClient["description"], 'description: ' + results.exception.args[0]['end_state']['description'])
-        self.assertEqual(results.exception.args[0]['end_state']['redirectUris'].sort(),self.toModifyClient["redirectUris"].sort(),"redirectUris: " + str(results.exception.args[0]['end_state']['redirectUris'].sort()))
-        for toChangeMapper in self.toModifyClient["protocolMappers"]:
+        self.assertEqual(results.exception.args[0]['end_state']['name'], toModifyClient["name"], "name: " + results.exception.args[0]['end_state']['name'])
+        self.assertEqual(results.exception.args[0]['end_state']['description'], toModifyClient["description"], 'description: ' + results.exception.args[0]['end_state']['description'])
+        self.assertEqual(results.exception.args[0]['end_state']['redirectUris'].sort(),toModifyClient["redirectUris"].sort(),"redirectUris: " + str(results.exception.args[0]['end_state']['redirectUris'].sort()))
+        for toChangeMapper in toModifyClient["protocolMappers"]:
             mapperFound = False
             for mapper in results.exception.args[0]['end_state']['protocolMappers']:
                 if mapper["name"] == toChangeMapper["name"]:
@@ -812,8 +1121,8 @@ class KeycloakClientTestCase(ModuleTestCase):
                 self.assertEqual(mapper["config"]["claim.name"], toChangeMapper["config"]["claim.name"], "claim.name: " + toChangeMapper["config"]["claim.name"] + ": " + mapper["config"]["claim.name"])
                 self.assertEqual(mapper["config"]["user.attribute"], toChangeMapper["config"]["user.attribute"], "user.attribute: " + toChangeMapper["config"]["user.attribute"] + ": " + mapper["config"]["user.attribute"])
         OrderdRoles = sorted(results.exception.args[0]['end_state']['clientRoles'], key=lambda k: k['name'])
-        self.assertEqual(OrderdRoles[0]['name'], self.toModifyClient["roles"][0]['name'], "roles : " + OrderdRoles[0]['name'])
-        self.assertEqual(OrderdRoles[1]['name'], self.toModifyClient["roles"][1]['name'], "roles : " + OrderdRoles[1]['name'])
+        self.assertEqual(OrderdRoles[0]['name'], toModifyClient["roles"][0]['name'], "roles : " + OrderdRoles[0]['name'])
+        self.assertEqual(OrderdRoles[1]['name'], toModifyClient["roles"][1]['name'], "roles : " + OrderdRoles[1]['name'])
  
     def test_add_client_composite_roles(self):
         newClientRoles = [
@@ -828,11 +1137,11 @@ class KeycloakClientTestCase(ModuleTestCase):
                 "composite": True,
                 "composites": [
                     {
-                        "id": self.testClient['clientId'],
+                        "id": self.testClients[0]['clientId'],
                         "name": self.testClientRoles[0]['name']
                     },
                     {
-                        "id": self.testClient['clientId'],
+                        "id": self.testClients[0]['clientId'],
                         "name": self.testClientRoles[1]['name']
                     },
                     {
@@ -841,8 +1150,9 @@ class KeycloakClientTestCase(ModuleTestCase):
                 ]
             }
         ]
-        self.toAddCompositesForClientRole["roles"] = newClientRoles
-        set_module_args(self.toAddCompositesForClientRole)
+        toAddCompositesForClientRole = self.testClients[2].copy()
+        toAddCompositesForClientRole["roles"] = newClientRoles
+        set_module_args(toAddCompositesForClientRole)
         with self.assertRaises(AnsibleExitJson) as results:
             self.module.main()
         self.assertTrue(results.exception.args[0]['end_state']['enabled'])
@@ -861,37 +1171,41 @@ class KeycloakClientTestCase(ModuleTestCase):
             self.assertTrue(compositeFound, 'Composite ' + composite['name'] + ' not found')
     
     def test_remove_mapper_from_client(self):
-        self.toRemoveMapperFromClient["protocolMappers"][1]["state"] = "absent"
-        set_module_args(self.toRemoveMapperFromClient)
+        toRemoveMapperFromClient = self.testClients[3].copy()
+        toRemoveMapperFromClient["protocolMappers"][1]["state"] = "absent"
+        set_module_args(toRemoveMapperFromClient)
         with self.assertRaises(AnsibleExitJson) as results:
             self.module.main()
         self.assertTrue(results.exception.args[0]['changed'])
         mapperFound = False
         for mapper in results.exception.args[0]['end_state']['protocolMappers']:
-            if mapper["name"] == self.toRemoveMapperFromClient["protocolMappers"][1]["name"]:
+            if mapper["name"] == toRemoveMapperFromClient["protocolMappers"][1]["name"]:
                 mapperFound = True
                 break
-        self.assertFalse(mapperFound, "Mapper " + self.toRemoveMapperFromClient["protocolMappers"][1]["name"] + " has not been deleted")
+        self.assertFalse(mapperFound, "Mapper " + toRemoveMapperFromClient["protocolMappers"][1]["name"] + " has not been deleted")
          
     def test_remove_role_from_client(self):
-        self.toRemoveRoleFromClient["roles"][1]["state"] = "absent"
-        set_module_args(self.toRemoveRoleFromClient)
+        toRemoveRoleFromClient = self.testClients[4].copy()
+        toRemoveRoleFromClient["roles"][1]["state"] = "absent"
+        set_module_args(toRemoveRoleFromClient)
         with self.assertRaises(AnsibleExitJson) as results:
             self.module.main()
         self.assertTrue(results.exception.args[0]['changed'])
         roleFound = False
         for role in results.exception.args[0]['end_state']['clientRoles']:
-            if role["name"] == self.toRemoveRoleFromClient["roles"][1]["name"]:
+            if role["name"] == toRemoveRoleFromClient["roles"][1]["name"]:
                 roleFound = True
                 break
-        self.assertFalse(roleFound, "Role " + self.toRemoveRoleFromClient["roles"][1]["name"] + " has not been deleted")
+        self.assertFalse(roleFound, "Role " + toRemoveRoleFromClient["roles"][1]["name"] + " has not been deleted")
 
     def test_delete_client(self):
-        self.toDeleteClient["state"] = "absent"
-        set_module_args(self.toDeleteClient)
+        toDeleteClient = self.testClients[5].copy()
+        toDeleteClient["state"] = "absent"
+        set_module_args(toDeleteClient)
         with self.assertRaises(AnsibleExitJson) as results:
             self.module.main()
         self.assertTrue(results.exception.args[0]['changed'])
+<<<<<<< HEAD
 
     def test_add_client_scope_mappings_roles(self):
         newClientScopeMappings = {
@@ -938,3 +1252,16 @@ class KeycloakClientTestCase(ModuleTestCase):
             self.module.main()
         self.assertTrue(results.exception.args[0]['end_state']['enabled'])
         self.assertTrue(results.exception.args[0]['changed'])    
+=======
+        self.assertRegexpMatches(results.exception.args[0]['msg'], 'deleted', 'client not deleted')
+
+
+    def test_create_client_with_non_existing_client_composite_role(self):
+        toErrorClient = self.testClients[7].copy()
+        toErrorClient["state"] = "present"
+        set_module_args(toErrorClient)
+        with self.assertRaises(AnsibleFailJson) as results:
+            self.module.main()
+        self.assertRegexpMatches(results.exception.args[0]['msg'], 'client ' + toErrorClient["roles"][1]["composites"][1]["id"] + ' does not exist', 'error not generated')
+
+>>>>>>> SX5-984 Mauvais message d'erreur lors de la création de role client

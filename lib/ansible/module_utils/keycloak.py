@@ -596,6 +596,7 @@ class KeycloakAPI(object):
         :return: HTTPResponse object on success
         """
         client_url = URL_CLIENT.format(url=self.baseurl, realm=realm, id=id)
+<<<<<<< HEAD
         roles_url = URL_REALM_ROLES.format(url=self.baseurl, realm=realm)
         clients_url = URL_CLIENTS.format(url=self.baseurl, realm=realm)
         client_roles_url = URL_CLIENT_ROLES.format(url=self.baseurl, realm=realm, id=id)
@@ -619,6 +620,8 @@ class KeycloakAPI(object):
                 
 =======
 >>>>>>> SX5-868 Codestyle fix
+=======
+>>>>>>> SX5-984 Mauvais message d'erreur lors de la création de role client
         try:
             client_roles = None
             if camel('client_roles') in clientrep:
@@ -672,6 +675,7 @@ class KeycloakAPI(object):
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
                 self.create_or_update_client_roles(client_roles, roles_url, clients_url, client_roles_url)
 =======
                 self.create_or_update_client_roles(client_roles, roles_url, clients_url, client_roles_url, clientrep)
@@ -731,6 +735,12 @@ class KeycloakAPI(object):
 =======
                 self.create_or_update_client_roles(client_roles, roles_url, clients_url, client_roles_url)
 >>>>>>> SX5-868 New keycloak_realm module PR.
+=======
+                self.create_or_update_client_roles(
+                    clientrep[camel('client_id')], 
+                    client_roles,
+                    realm)
+>>>>>>> SX5-984 Mauvais message d'erreur lors de la création de role client
             return putResponse
 
         except Exception as e:
@@ -743,7 +753,6 @@ class KeycloakAPI(object):
         :param realm: realm for client to be created
         :return: HTTPResponse object on success
         """
-        roles_url = URL_REALM_ROLES.format(url=self.baseurl, realm=realm)
         clients_url = URL_CLIENTS.format(url=self.baseurl, realm=realm)
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -817,6 +826,7 @@ class KeycloakAPI(object):
                 clientrep[camel('protocol_mappers')] = client_protocol_mappers
                 self.create_or_update_client_mappers(client_url, clientrep)
             if client_roles is not None:
+<<<<<<< HEAD
                 client_roles_url = URL_CLIENT_ROLES.format(url=self.baseurl, realm=realm, id=self.get_client_id(clientrep[camel('client_id')], realm))
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -900,6 +910,12 @@ class KeycloakAPI(object):
 >>>>>>> SX5-868 Add new keycloak_component_module
 =======
                 self.create_or_update_client_roles(client_roles, roles_url, clients_url, client_roles_url)
+=======
+                self.create_or_update_client_roles(
+                    clientrep[camel('client_id')], 
+                    client_roles,
+                    realm)
+>>>>>>> SX5-984 Mauvais message d'erreur lors de la création de role client
             return postResponse
 >>>>>>> SX5-868 New keycloak_realm module PR.
         except Exception as e:
@@ -1685,6 +1701,7 @@ class KeycloakAPI(object):
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 >>>>>>> SX5-868 Add keycloak_component module with non mock unit tests.
         
 <<<<<<< HEAD
@@ -1754,6 +1771,10 @@ class KeycloakAPI(object):
 
 >>>>>>> SX5-868 New keycloak_realm module PR.
     def create_or_update_client_roles(self, newClientRoles, roleSvcBaseUrl, clientSvcBaseUrl, clientRolesUrl):
+=======
+
+    def create_or_update_client_roles(self, client_id, newClientRoles, realm='master'):
+>>>>>>> SX5-984 Mauvais message d'erreur lors de la création de role client
         """ Create or update client roles. Client roles can be added, updated or removed depending of the state.
 
         :param newClientRoles: Client roles to be added, updated or removed.
@@ -1762,6 +1783,7 @@ class KeycloakAPI(object):
         :param clientRolesUrl: Url of the actual client roles
         :return: True if the client roles have changed, False otherwise
         """
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -1892,6 +1914,12 @@ class KeycloakAPI(object):
 >>>>>>> SX5-868 Add new keycloak_component_module
 =======
 >>>>>>> SX5-868 New keycloak_realm module PR.
+=======
+        id_client = self.get_client_by_clientid(client_id=client_id, realm=realm)["id"]
+        clientRolesUrl = URL_CLIENT_ROLES.format(url=self.baseurl,
+                                                 realm=realm, 
+                                                 id=id_client)
+>>>>>>> SX5-984 Mauvais message d'erreur lors de la création de role client
         try:
             changed = False
             # Manage the roles
@@ -1907,6 +1935,7 @@ class KeycloakAPI(object):
                         newComposites = newClientRole['composites']
                         for newComposite in newComposites:
                             if "id" in newComposite and newComposite["id"] is not None:
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -2004,10 +2033,19 @@ class KeycloakAPI(object):
                                 if keycloakClient['clientId'] == newComposite["id"]:
                                     roles=json.load(open_url(clientSvcBaseUrl + '/' + keycloakClient['id'] + '/roles', method='GET', headers=self.restheaders))
                                     for role in roles:
+=======
+                                # Get the id of client for this role
+                                role_client = self.get_client_by_clientid(client_id=newComposite["id"],realm=realm)
+                                if role_client is None:
+                                    self.module.fail_json(msg="Unable to create or update client roles, client %s does not exist" % (newComposite["id"]))
+                                else:
+                                    for role in self.get_client_roles(client_id=role_client["id"], realm=realm):
+>>>>>>> SX5-984 Mauvais message d'erreur lors de la création de role client
                                         if role["name"] == newComposite["name"]:
                                             newComposite['id'] = role['id']
                                             newComposite['clientRole'] = True
                                             break
+<<<<<<< HEAD
                         else:
                             realmRoles=json.load(open_url(roleSvcBaseUrl, method='GET', headers=self.restheaders))
                             for realmRole in realmRoles:
@@ -2065,6 +2103,10 @@ class KeycloakAPI(object):
 =======
 >>>>>>> SX5-868 New keycloak_realm module PR.
                                 for realmRole in realmRoles:
+=======
+                            else:
+                                for realmRole in self.get_realm_roles(realm=realm):
+>>>>>>> SX5-984 Mauvais message d'erreur lors de la création de role client
                                     if realmRole["name"] == newComposite["name"]:
                                         newComposite['id'] = realmRole['id']
                                         newComposite['clientRole'] = False
@@ -2091,6 +2133,7 @@ class KeycloakAPI(object):
 >>>>>>> SX5-868 New keycloak_realm module PR.
                                         break
                     clientRoleFound = False
+<<<<<<< HEAD
                     clientRoles = json.load(
                         open_url(clientRolesUrl,
                                  method='GET',
@@ -2102,6 +2145,9 @@ class KeycloakAPI(object):
 >>>>>>> SX5-868 Add new keycloak_component_module
 =======
 >>>>>>> SX5-868 New keycloak_realm module PR.
+=======
+                    clientRoles = self.get_client_roles(client_id=id_client, realm=realm)
+>>>>>>> SX5-984 Mauvais message d'erreur lors de la création de role client
                     if len(clientRoles) > 0:
                         # Check if role to be created already exist for the client
                         for clientRole in clientRoles:
