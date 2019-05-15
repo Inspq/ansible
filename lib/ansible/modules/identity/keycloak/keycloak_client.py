@@ -974,6 +974,7 @@ def main():
 =======
         client_roles=dict(type='list', elements='dict', options=clientroles_spec, aliases=['clientRoles', 'roles']),
 <<<<<<< HEAD
+<<<<<<< HEAD
 >>>>>>> SX5-868 Code clean after shippable comments.
 =======
         scope_mappings=dict(type='dict', elements='dict', options=scopemappings_spec, aliases=['scopeMappings']),
@@ -983,6 +984,9 @@ def main():
 =======
         scope_mappings=dict(type='dict', elements='dict', options=scopemappings_spec, aliases=['scopeMappings']),
 >>>>>>> SX5-966 - Ajuster le module ansible keycloak_client pour générer les scopes d'un client
+=======
+        scope_mappings=dict(type='dict', aliases=['scopeMappings']),
+>>>>>>> SX5-966 - Correction syntax scope_mappings
         force=dict(type='bool', default=False),
     )
     argument_spec.update(meta_args)
