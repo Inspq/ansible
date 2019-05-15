@@ -417,6 +417,45 @@ class KeycloakClientTestCase(ModuleTestCase):
             ],
             "publicClient": False,
             "force": False
+        },
+        {
+            "auth_keycloak_url": "http://localhost:18081/auth",
+            "auth_username": "admin",
+            "auth_password": "admin",
+            "realm": "master",
+            "state": "present",
+            "clientId": "test_add_client_scope_mappings",
+            "rootUrl": "http://test6.com:8080",
+            "name": "Add scope mappings to this client",
+            "description": "scope mappings should be added to this client",
+            "adminUrl": "http://test6.com:8080/admin",
+            "baseUrl": "http://test6.com:8080",
+            "enabled": True,
+            "clientAuthenticatorType": "client-secret",
+            "redirectUris": ["http://test6.com:8080/secure"],
+            "webOrigins": ["http://test6.com:8080/secure"],
+            "consentRequired": False, 
+            "standardFlowEnabled": True,
+            "implicitFlowEnabled": True,
+            "directAccessGrantsEnabled": True,
+            "fullScopeAllowed": True,
+            "serviceAccountsEnabled": True,
+            "protocol": "openid-connect",
+            "bearerOnly": False,
+            "publicClient": False,
+            "roles": [
+                {
+                    "name":"test1",
+                    "description": "test1",
+                    "composite": False
+                },
+                {
+                    "name":"test2",
+                    "description": "test2",
+                    "composite": True,
+                    "composites": []
+                }
+            ]
         }
     ]
 
@@ -607,7 +646,6 @@ class KeycloakClientTestCase(ModuleTestCase):
         self.assertTrue(results.exception.args[0]['changed'])
         self.assertRegexpMatches(results.exception.args[0]['msg'], 'deleted', 'client not deleted')
 
-
     def test_create_client_with_non_existing_client_composite_role(self):
         toErrorClient = self.testClients[7].copy()
         toErrorClient["state"] = "present"
@@ -616,3 +654,49 @@ class KeycloakClientTestCase(ModuleTestCase):
             self.module.main()
         self.assertRegexpMatches(results.exception.args[0]['msg'], 'client ' + toErrorClient["roles"][1]["composites"][1]["id"] + ' does not exist', 'error not generated')
 
+    def test_add_client_scope_mappings_roles(self):
+        toAddnewClientScopeMappings = self.testClients[8].copy()
+        newClientScopeMappings = {
+            "realm": [
+                {
+                    "name": "uma_authorization",
+                    "state": "present"
+                },
+                {
+                    "name": "offline_access",
+                    "state": "present"
+                }
+            ],
+            "clients": [
+                {
+                    "clientID": "clientId1",
+                    "roles": [
+                        {
+                            "name": "clientRole11"
+                        },
+                        {
+                            "name": "clientRole12"
+                        }
+                    ]
+                },
+                {
+                    "clientID": "clientId2",
+                    "roles": [
+                        {
+                            "name": "clientRole21",
+                            "state": "present"
+                        },
+                        {
+                            "name": "clientRole22"
+                        }
+                    ]
+                }
+            ]
+        }
+
+        toAddnewClientScopeMappings["scope_mappings"] = newClientScopeMappings
+        set_module_args(toAddnewClientScopeMappings)
+        with self.assertRaises(AnsibleExitJson) as results:
+            self.module.main()
+        self.assertTrue(results.exception.args[0]['end_state']['enabled'])
+        self.assertTrue(results.exception.args[0]['changed'])    
