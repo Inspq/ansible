@@ -380,9 +380,6 @@ class KeycloakAPI(object):
         :return: HTTPResponse object on success
         """
         client_url = URL_CLIENT.format(url=self.baseurl, realm=realm, id=id)
-        roles_url = URL_REALM_ROLES.format(url=self.baseurl, realm=realm)
-        clients_url = URL_CLIENTS.format(url=self.baseurl, realm=realm)
-        client_roles_url = URL_CLIENT_ROLES.format(url=self.baseurl, realm=realm, id=id)
         try:
             client_roles = None
             if camel('client_roles') in clientrep:
@@ -398,7 +395,10 @@ class KeycloakAPI(object):
                 clientrep[camel('protocol_mappers')] = client_protocol_mappers
                 self.create_or_update_client_mappers(client_url, clientrep)
             if client_roles is not None:
-                self.create_or_update_client_roles(client_roles, roles_url, clients_url, client_roles_url)
+                self.create_or_update_client_roles(
+                    clientrep[camel('client_id')], 
+                    client_roles,
+                    realm)
             return putResponse
 
         except Exception as e:
@@ -411,7 +411,6 @@ class KeycloakAPI(object):
         :param realm: realm for client to be created
         :return: HTTPResponse object on success
         """
-        roles_url = URL_REALM_ROLES.format(url=self.baseurl, realm=realm)
         clients_url = URL_CLIENTS.format(url=self.baseurl, realm=realm)
         try:
             client_roles = None
@@ -431,8 +430,10 @@ class KeycloakAPI(object):
                 clientrep[camel('protocol_mappers')] = client_protocol_mappers
                 self.create_or_update_client_mappers(client_url, clientrep)
             if client_roles is not None:
-                client_roles_url = URL_CLIENT_ROLES.format(url=self.baseurl, realm=realm, id=self.get_client_id(clientrep[camel('client_id')], realm))
-                self.create_or_update_client_roles(client_roles, roles_url, clients_url, client_roles_url)
+                self.create_or_update_client_roles(
+                    clientrep[camel('client_id')], 
+                    client_roles,
+                    realm)
             return postResponse
         except Exception as e:
             self.module.fail_json(msg='Could not create client %s in realm %s: %s'
@@ -762,7 +763,7 @@ class KeycloakAPI(object):
         except Exception as e:
             self.module.fail_json(msg="Unable to add client roles %s: %s" % (clientRepresentation["id"], str(e)))
 
-    def create_or_update_client_roles(self, newClientRoles, roleSvcBaseUrl, clientSvcBaseUrl, clientRolesUrl):
+    def create_or_update_client_roles(self, client_id, newClientRoles, realm='master'):
         """ Create or update client roles. Client roles can be added, updated or removed depending of the state.
 
         :param newClientRoles: Client roles to be added, updated or removed.
@@ -771,6 +772,10 @@ class KeycloakAPI(object):
         :param clientRolesUrl: Url of the actual client roles
         :return: True if the client roles have changed, False otherwise
         """
+        id_client = self.get_client_by_clientid(client_id=client_id, realm=realm)["id"]
+        clientRolesUrl = URL_CLIENT_ROLES.format(url=self.baseurl,
+                                                 realm=realm, 
+                                                 id=id_client)
         try:
             changed = False
             # Manage the roles
@@ -786,36 +791,24 @@ class KeycloakAPI(object):
                         newComposites = newClientRole['composites']
                         for newComposite in newComposites:
                             if "id" in newComposite and newComposite["id"] is not None:
-                                keycloakClients = json.load(
-                                    open_url(clientSvcBaseUrl,
-                                             method='GET',
-                                             headers=self.restheaders))
-                                for keycloakClient in keycloakClients:
-                                    if keycloakClient['clientId'] == newComposite["id"]:
-                                        roles = json.load(
-                                            open_url(clientSvcBaseUrl + '/' + keycloakClient['id'] + '/roles',
-                                                     method='GET',
-                                                     headers=self.restheaders))
-                                        for role in roles:
-                                            if role["name"] == newComposite["name"]:
-                                                newComposite['id'] = role['id']
-                                                newComposite['clientRole'] = True
-                                                break
+                                # Get the id of client for this role
+                                role_client = self.get_client_by_clientid(client_id=newComposite["id"],realm=realm)
+                                if role_client is None:
+                                    self.module.fail_json(msg="Unable to create or update client roles, client %s does not exist" % (newComposite["id"]))
+                                else:
+                                    for role in self.get_client_roles(client_id=role_client["id"], realm=realm):
+                                        if role["name"] == newComposite["name"]:
+                                            newComposite['id'] = role['id']
+                                            newComposite['clientRole'] = True
+                                            break
                             else:
-                                realmRoles = json.load(
-                                    open_url(roleSvcBaseUrl,
-                                             method='GET',
-                                             headers=self.restheaders))
-                                for realmRole in realmRoles:
+                                for realmRole in self.get_realm_roles(realm=realm):
                                     if realmRole["name"] == newComposite["name"]:
                                         newComposite['id'] = realmRole['id']
                                         newComposite['clientRole'] = False
                                         break
                     clientRoleFound = False
-                    clientRoles = json.load(
-                        open_url(clientRolesUrl,
-                                 method='GET',
-                                 headers=self.restheaders))
+                    clientRoles = self.get_client_roles(client_id=id_client, realm=realm)
                     if len(clientRoles) > 0:
                         # Check if role to be created already exist for the client
                         for clientRole in clientRoles:
