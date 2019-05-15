@@ -521,7 +521,7 @@ options:
                 type: list
 >>>>>>> SX5-966 - Ajuster le module ansible keycloak_client pour générer les scopes d'un client
                 suboptions:
-                    clientID:
+                    id:
                         description:
                             - clientId of the client.
                     roles:
@@ -730,11 +730,11 @@ EXAMPLES = '''
         - name: realmRole2
           state: absent
       clients:
-        - clientID: clientId1
+        - id: clientId1
           roles:
             - name: clientRole11
             - name: clientRole12
-        - clientID: clientId2
+        - id: clientId2
           roles:
             - name: clientRole21
               state: absent
@@ -878,7 +878,7 @@ def main():
         state=dict(type='str', choices=['absent', 'present'], default='present'),
     )
     clientsscoperole_spec = dict(
-        clientID=dict(type='str'),
+        id=dict(type='str'),
         roles=dict(type='list', elements='dict', options=clientsrolescope_spec),
     )
     scopemappings_spec = dict(

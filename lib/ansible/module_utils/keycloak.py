@@ -1253,7 +1253,7 @@ class KeycloakAPI(object):
                 for clientToAssingRole in clientScopeClientRoles:
                     # Get the client roles
                     clientscope_id = self.get_client_by_clientid(
-                        clientscope_id=clientToAssingRole["clientId"],
+                        clientscope_id=clientToAssingRole["id"],
                         realm=realm)['id']
                     clientRoles = self.get_client_roles(
                         client_id=clientscope_id,
