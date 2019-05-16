@@ -41,6 +41,8 @@ options:
     realm:
         description:
             - The realm to create the client in.
+        type: str
+        default: master
     client_id:
         description:
             - Client id of client to be worked on. This is usually an alphanumeric name chosen by
