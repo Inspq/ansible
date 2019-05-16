@@ -322,18 +322,8 @@ options:
                       protocol mapper configuration through check-mode in the I(existing) field.
             state:
                 description:
-<<<<<<< HEAD
-<<<<<<< HEAD
                     - Desired state of the protocol mappers.
                       If present, the mapper will be added or updated.
-=======
-                    - Desired state of the protocol mappers. 
-                      If present, the mapper will be added or updated. 
->>>>>>> SX5-868 PR Added role management for keycloak_client module.
-=======
-                    - Desired state of the protocol mappers.
-                      If present, the mapper will be added or updated.
->>>>>>> SX5-868 Codestyle fix
                       If absent, the mapper will be removed
                 choices: [absent, present]
                 default: present
@@ -422,21 +412,9 @@ options:
                       client and signed by its key, base64-encoded.
     client_roles:
         description:
-<<<<<<< HEAD
-<<<<<<< HEAD
             - List of roles and their composites for the client.
               Client roles can be added, updated or removed depending it's state.
         aliases:
-=======
-            - List of roles and their composites for the client. 
-              Client roles can be added, updated or removed depending it's state.
-        aliases: 
->>>>>>> SX5-868 PR Added role management for keycloak_client module.
-=======
-            - List of roles and their composites for the client.
-              Client roles can be added, updated or removed depending it's state.
-        aliases:
->>>>>>> SX5-868 Codestyle fix
             - clientRoles
             - roles
         type: list
@@ -463,27 +441,7 @@ options:
                     name:
                         description:
                             - Name of the role. It can be a realm role name or a client role name.
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
         version_added: "2.9"
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> SX5-868 PR Added role management for keycloak_client module.
-=======
-        version_added: "2.9"
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
->>>>>>> SX5-868 Code clean after shippable comments.
-=======
-=======
->>>>>>> SX5-868 Remove aliases url, username and password for
-=======
-=======
->>>>>>> SX5-966 - Ajuster le module ansible keycloak_client pour générer les scopes d'un client
     scope_mappings:
         description:
             - List scope mappings for the client.
@@ -494,18 +452,11 @@ options:
             realm:
                 description:
                     - list of realm_access roles
-<<<<<<< HEAD
-=======
                 type: list
->>>>>>> SX5-966 - Ajuster le module ansible keycloak_client pour générer les scopes d'un client
                 suboptions:
                     name:
                         description:
                             - Name of realm role.
-<<<<<<< HEAD
-                    type: list
-=======
->>>>>>> SX5-966 - Ajuster le module ansible keycloak_client pour générer les scopes d'un client
                     state:
                         description:
                             - Desired state of realm_access roles mappings.
@@ -516,34 +467,12 @@ options:
             clients:
                 description:
                     - list of resource_access roles
-<<<<<<< HEAD
-=======
                 type: list
->>>>>>> SX5-966 - Ajuster le module ansible keycloak_client pour générer les scopes d'un client
                 suboptions:
                     id:
                         description:
                             - clientId of the client.
                     roles:
-<<<<<<< HEAD
-                    type: list
-                    suboptions:
-                        name:
-                            description:
-                                - Name of realm role.
-                        state:
-                            description:
-                                - Desired state of realm_access roles mappings.
-                                  If present, the role will be added or updated.
-                                  If absent, the role will be removed
-                            type: list
-                            choices: [absent, present]
-                            default: present
-        version_added: "2.9"
->>>>>>> SX5-966 - Ajuster le module ansible keycloak_client pour générer les scopes d'un client
-=======
->>>>>>> SX5-966 - revert Ajuster le module ansible keycloak_client pour générer les scopes d'un client
-=======
                         description:
                             - list of realm_access roles
                         type: list
@@ -559,22 +488,12 @@ options:
                                 choices: [absent, present]
                                 default: present
         version_added: "2.9"
->>>>>>> SX5-966 - Ajuster le module ansible keycloak_client pour générer les scopes d'un client
     force:
         type: bool
         description:
             - If true, existing client will be deleted an re-created.
         default: False
         version_added: "2.9"
-<<<<<<< HEAD
->>>>>>> SX5-868 Remove aliases url, username and password for
-=======
->>>>>>> SX5-868 PR Added role management for keycloak_client module.
-=======
-        version_added: "2.9"
->>>>>>> SX5-868 Code clean after shippable comments.
-=======
->>>>>>> SX5-868 Remove aliases url, username and password for
 extends_documentation_fragment:
     - keycloak
 author:
@@ -672,15 +591,7 @@ EXAMPLES = '''
         name: role list
         protocol: saml
         protocolMapper: saml-role-list-mapper
-<<<<<<< HEAD
-<<<<<<< HEAD
       - config:
-=======
-      - config: 
->>>>>>> SX5-868 PR Added role management for keycloak_client module.
-=======
-      - config:
->>>>>>> SX5-868 Codestyle fix
           multivalued: False
           userinfo.token.claim": True
           user.attribute: Test2
@@ -783,16 +694,8 @@ end_state:
         }
     }
 '''
-<<<<<<< HEAD
-<<<<<<< HEAD
 from ansible.module_utils.keycloak import KeycloakAPI, camel, keycloak_argument_spec
 from ansible.module_utils.basic import AnsibleModule
-=======
->>>>>>> SX5-868 Codestyle fix
-=======
-from ansible.module_utils.keycloak import KeycloakAPI, camel, keycloak_argument_spec
-from ansible.module_utils.basic import AnsibleModule
->>>>>>> SX5-868 Another code style fix for shippable.
 
 
 def sanitize_cr(clientrep):
@@ -824,23 +727,7 @@ def main():
         protocol=dict(type='str', choices=['openid-connect', 'saml']),
         protocolMapper=dict(type='str'),
         config=dict(type='dict'),
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
         state=dict(type='str', choices=['absent', 'present'], default='present'),
-=======
-        state=dict(type='str', choices=['absent','present'], default='present'),
->>>>>>> SX5-868 PR Added role management for keycloak_client module.
-=======
-        state=dict(type='str', choices=['absent', 'present'], default='present'),
->>>>>>> SX5-868 Code clean after shippable comments.
-=======
-        state=dict(type='str', choices=['absent','present'], default='present'),
->>>>>>> SX5-868 PR Added role management for keycloak_client module.
-=======
-        state=dict(type='str', choices=['absent', 'present'], default='present'),
->>>>>>> SX5-868 Code clean after shippable comments.
     )
     clientrolecomposites_spec = dict(
         name=dict(type='str'),
@@ -851,23 +738,7 @@ def main():
         description=dict(type='str'),
         composite=dict(type='bool'),
         composites=dict(type='list', elements='dict', options=clientrolecomposites_spec),
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
         state=dict(type='str', choices=['absent', 'present'], default='present'),
-=======
-        state=dict(type='str', choices=['absent','present'], default='present'),
->>>>>>> SX5-868 PR Added role management for keycloak_client module.
-=======
-        state=dict(type='str', choices=['absent', 'present'], default='present'),
->>>>>>> SX5-868 Code clean after shippable comments.
-=======
-        state=dict(type='str', choices=['absent','present'], default='present'),
->>>>>>> SX5-868 PR Added role management for keycloak_client module.
-=======
-        state=dict(type='str', choices=['absent', 'present'], default='present'),
->>>>>>> SX5-868 Code clean after shippable comments.
     )
     realmscoperole_spec = dict(
         name=dict(type='str'),
@@ -888,43 +759,12 @@ def main():
     meta_args = dict(
         state=dict(default='present', choices=['present', 'absent']),
         realm=dict(type='str', default='master'),
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
-        
->>>>>>> SX5-868 PR Added role management for keycloak_client module.
-=======
->>>>>>> SX5-868 code cleanup for shippable
         id=dict(type='str'),
         client_id=dict(type='str', aliases=['clientId']),
         name=dict(type='str'),
         description=dict(type='str'),
         root_url=dict(type='str', aliases=['rootUrl']),
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-        admin_url=dict(type='str', aliases=['adminUrl', 'url']),
-=======
-        admin_url=dict(type='str', aliases=['adminUrl','url']),
->>>>>>> SX5-868 PR Added role management for keycloak_client module.
-=======
-        admin_url=dict(type='str', aliases=['adminUrl', 'url']),
->>>>>>> SX5-868 Code clean after shippable comments.
-=======
-        admin_url=dict(type='str', aliases=['adminUrl','url']),
->>>>>>> SX5-868 PR Added role management for keycloak_client module.
-=======
-        admin_url=dict(type='str', aliases=['adminUrl', 'url']),
->>>>>>> SX5-868 Code clean after shippable comments.
-=======
         admin_url=dict(type='str', aliases=['adminUrl']),
->>>>>>> Sx5-868 remove alias url for argument admin_url in keycloak_client
-=======
-        admin_url=dict(type='str', aliases=['adminUrl']),
->>>>>>> SX5-868 Modifier le Jenkinsfile pour ne valider que les modules
         base_url=dict(type='str', aliases=['baseUrl']),
         surrogate_auth_required=dict(type='bool', aliases=['surrogateAuthRequired']),
         enabled=dict(type='bool'),
@@ -955,38 +795,8 @@ def main():
         use_template_mappers=dict(type='bool', aliases=['useTemplateMappers']),
         protocol_mappers=dict(type='list', elements='dict', options=protmapper_spec, aliases=['protocolMappers']),
         authorization_settings=dict(type='dict', aliases=['authorizationSettings']),
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
         client_roles=dict(type='list', elements='dict', options=clientroles_spec, aliases=['clientRoles', 'roles']),
-<<<<<<< HEAD
-=======
-        client_roles=dict(type='list', elements='dict', options=clientroles_spec, aliases=['clientRoles','roles']),
->>>>>>> SX5-868 PR Added role management for keycloak_client module.
-=======
-        client_roles=dict(type='list', elements='dict', options=clientroles_spec, aliases=['clientRoles', 'roles']),
-<<<<<<< HEAD
->>>>>>> SX5-868 Code clean after shippable comments.
-=======
-        client_roles=dict(type='list', elements='dict', options=clientroles_spec, aliases=['clientRoles','roles']),
->>>>>>> SX5-868 PR Added role management for keycloak_client module.
-=======
-        client_roles=dict(type='list', elements='dict', options=clientroles_spec, aliases=['clientRoles', 'roles']),
-<<<<<<< HEAD
-<<<<<<< HEAD
->>>>>>> SX5-868 Code clean after shippable comments.
-=======
-        scope_mappings=dict(type='dict', elements='dict', options=scopemappings_spec, aliases=['scopeMappings']),
->>>>>>> SX5-966 - Ajuster le module ansible keycloak_client pour générer les scopes d'un client
-=======
->>>>>>> SX5-966 - revert Ajuster le module ansible keycloak_client pour générer les scopes d'un client
-=======
-        scope_mappings=dict(type='dict', elements='dict', options=scopemappings_spec, aliases=['scopeMappings']),
->>>>>>> SX5-966 - Ajuster le module ansible keycloak_client pour générer les scopes d'un client
-=======
         scope_mappings=dict(type='dict', aliases=['scopeMappings']),
->>>>>>> SX5-966 - Correction syntax scope_mappings
         force=dict(type='bool', default=False),
     )
     argument_spec.update(meta_args)
@@ -1006,31 +816,7 @@ def main():
 
     # convert module parameters to client representation parameters (if they belong in there)
     client_params = [x for x in module.params
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
                      if x not in list(keycloak_argument_spec().keys()) + ['state', 'realm', 'url', 'force'] and
-=======
-                     if x not in list(keycloak_argument_spec().keys()) + ['state', 'realm','username','password','url','force'] and
->>>>>>> SX5-868 PR Added role management for keycloak_client module.
-=======
-                     if x not in list(keycloak_argument_spec().keys()) + ['state', 'realm', 'url','force'] and
->>>>>>> SX5-868 Code clean after shippable comments.
-=======
-                     if x not in list(keycloak_argument_spec().keys()) + ['state', 'realm', 'url', 'force'] and
->>>>>>> SX5-868 code cleanup for shippable
-=======
-                     if x not in list(keycloak_argument_spec().keys()) + ['state', 'realm','username','password','url','force'] and
->>>>>>> SX5-868 PR Added role management for keycloak_client module.
-=======
-                     if x not in list(keycloak_argument_spec().keys()) + ['state', 'realm', 'url','force'] and
->>>>>>> SX5-868 Code clean after shippable comments.
-=======
-                     if x not in list(keycloak_argument_spec().keys()) + ['state', 'realm', 'url', 'force'] and
->>>>>>> SX5-868 code cleanup for shippable
                      module.params.get(x) is not None]
     keycloak_argument_spec().keys()
     # See whether the client already exists in Keycloak
@@ -1110,38 +896,7 @@ def main():
         client_secret = kc.get_client_secret_by_id(after_client['id'], realm=realm)
         if client_secret is not None:
             result['clientSecret'] = client_secret
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
 
-=======
-            
->>>>>>> SX5-868 PR Added role management for keycloak_client module.
-=======
-
->>>>>>> SX5-868 code cleanup for shippable
-=======
-            
->>>>>>> SX5-868 PR Added role management for keycloak_client module.
-=======
-
->>>>>>> SX5-868 code cleanup for shippable
-=======
-        if module.params.get('scope_mappings') is not None:
-            kc.assing_scope_roles_to_client(
-                client_id=after_client['id'],
-                clientScopeRealmRoles=newClientScopeRealm["realmRoles"],
-                clientScopeClientRoles=newClientScopeClients["clientRoles"],
-                realm=realm)
->>>>>>> SX5-966 - Ajuster le module ansible keycloak_client pour générer les scopes d'un client
-=======
-
-<<<<<<< HEAD
->>>>>>> SX5-966 - revert Ajuster le module ansible keycloak_client pour générer les scopes d'un client
-=======
         if module.params.get('scope_mappings') is not None:
             kc.assing_scope_roles_to_client(
                 client_id=after_client['id'],
@@ -1149,7 +904,6 @@ def main():
                 clientScopeClientRoles=newClientScopeClients["clientRoles"],
                 realm=realm)
         
->>>>>>> SX5-966 - Ajuster le module ansible keycloak_client pour générer les scopes d'un client
         result['msg'] = 'Client %s has been created.' % updated_client['clientId']
         module.exit_json(**result)
     else:

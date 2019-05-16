@@ -81,18 +81,8 @@ options:
             - A dict of key/value pairs list to set as custom attributes for the group.
             - Those attributes will be added to attributes dict.
             - The purpose of this option is to be able tu user Ansible variable as attribute name.
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
         suboptions:
             name:
-<<<<<<< HEAD
-=======
-        suboptions:
-            name:
->>>>>>> SX5-868 Add role management and LDAP synchronization feature to
                 description:
                     - Name of the attribute
                 type: str
@@ -102,161 +92,25 @@ options:
                 type: str
         version_added: 2.9
 
-<<<<<<< HEAD
-=======
-        subOptions:
-=======
-        suboptions:
->>>>>>> SX5-868 Mise à jour de la documentation des modules Keycloak suite à la
-            name: 
-=======
->>>>>>> SX5-868 Ajustement du codestyle des modules Keycloak en préparation des
-                description:
-                    - Name of the attribute
-                type: str
-            value:
-                description:
-                    - Value of the attribute
-<<<<<<< HEAD
->>>>>>> SX5-868 Add role management to keycloak_group module. Add
-=======
-                type: str
-        version_added: 2.9
-
->>>>>>> SX5-868 Mise à jour de la documentation des modules Keycloak suite à la
-=======
-        subOptions:
-=======
-        suboptions:
->>>>>>> SX5-868 Mise à jour de la documentation des modules Keycloak suite à la
-            name: 
-                description:
-                    - Name of the attribute
-                type: str
-            value:
-                description:
-                    - Value of the attribute
-<<<<<<< HEAD
->>>>>>> SX5-868 Add role management to keycloak_group module. Add
-=======
-                type: str
-        version_added: 2.9
-
->>>>>>> SX5-868 Mise à jour de la documentation des modules Keycloak suite à la
-=======
->>>>>>> SX5-868 Add role management and LDAP synchronization feature to
     realmRoles:
         type: list
         description:
             - List of realm roles to assign to the group.
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
         version_added: 2.9
-=======
->>>>>>> SX5-868 Add role management to keycloak_group module. Add
-=======
-        version_added: 2.9
->>>>>>> SX5-868 Mise à jour de la documentation des modules Keycloak suite à la
-=======
->>>>>>> SX5-868 Add role management to keycloak_group module. Add
-=======
-        version_added: 2.9
->>>>>>> SX5-868 Mise à jour de la documentation des modules Keycloak suite à la
-=======
-        version_added: 2.9
->>>>>>> SX5-868 Add role management and LDAP synchronization feature to
     clientRoles:
         type: list
         description:
             - List of client roles to assign to group.
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
         suboptions:
             clientid:
                 type: str
-=======
-        subOptions:
-            clientid:
->>>>>>> SX5-868 Add role management to keycloak_group module. Add
-=======
-        suboptions:
-            clientid:
-                type: str
->>>>>>> SX5-868 Mise à jour de la documentation des modules Keycloak suite à la
-=======
-        subOptions:
-            clientid:
->>>>>>> SX5-868 Add role management to keycloak_group module. Add
-=======
-        suboptions:
-            clientid:
-                type: str
->>>>>>> SX5-868 Mise à jour de la documentation des modules Keycloak suite à la
-=======
-        suboptions:
-            clientid:
-                type: str
->>>>>>> SX5-868 Add role management and LDAP synchronization feature to
                 description:
                     - Client Id of the client role
             roles:
                 type: list
                 description:
                     - List of roles for this client to assing to group
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
         version_added: 2.9
-    path:
-        description:
-            Group path
-        version_added: 2.9
-=======
-    path:
-        description:
-            Group path
->>>>>>> SX5-868 Add role management to keycloak_group module. Add
-=======
-        version_added: 2.9
-    path:
-        description:
-            Group path
-        version_added: 2.9
->>>>>>> SX5-868 Mise à jour de la documentation des modules Keycloak suite à la
-    syncLdapMappers:
-        type: bool
-        description:
-            - If true, groups will be synchronized between Keycloak and LDAP.
-            - All user storages defined as user federation will be synchronized.
-            - A sync is done from LDAP to Keycloak before doing the job and from Keycloak to LDAP after.
-<<<<<<< HEAD
-        default: False 
-<<<<<<< HEAD
-<<<<<<< HEAD
-        version_added: 2.9
-=======
->>>>>>> SX5-868 Add role management to keycloak_group module. Add
-=======
-=======
-        default: False
->>>>>>> SX5-868 Ajustement du codestyle des modules Keycloak en préparation des
-        version_added: 2.9
->>>>>>> SX5-868 Mise à jour de la documentation des modules Keycloak suite à la
-=======
-=======
-        version_added: 2.9
->>>>>>> SX5-868 Mise à jour de la documentation des modules Keycloak suite à la
-=======
-        version_added: 2.9
->>>>>>> SX5-868 Add role management and LDAP synchronization feature to
     path:
         description:
             Group path
@@ -267,55 +121,16 @@ options:
             - If true, groups will be synchronized between Keycloak and LDAP.
             - All user storages defined as user federation will be synchronized.
             - A sync is done from LDAP to Keycloak before doing the job and from Keycloak to LDAP after.
-<<<<<<< HEAD
-<<<<<<< HEAD
-        default: False 
-<<<<<<< HEAD
->>>>>>> SX5-868 Add role management to keycloak_group module. Add
-=======
-=======
-        default: False
->>>>>>> SX5-868 Ajustement du codestyle des modules Keycloak en préparation des
-        version_added: 2.9
->>>>>>> SX5-868 Mise à jour de la documentation des modules Keycloak suite à la
-=======
         default: False
         version_added: 2.9
->>>>>>> SX5-868 Add role management and LDAP synchronization feature to
     force:
         type: bool
         description:
             - If true and the group already exist on the Keycloak server, it will be deleted and re-created with the new specification.
         default: False
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-        version_added: 2.9
-=======
->>>>>>> SX5-868 Add role management to keycloak_group module. Add
-=======
-        version_added: 2.9
->>>>>>> SX5-868 Mise à jour de la documentation des modules Keycloak suite à la
-notes:
-    - Presently, the I(access) attribute returned by the Keycloak API is read-only for groups.
-=======
-=======
-        version_added: 2.9
->>>>>>> SX5-868 Mise à jour de la documentation des modules Keycloak suite à la
-notes:
-<<<<<<< HEAD
-    - Presently, the I(access) attribute returned by the Keycloak API is read-only for groups. 
->>>>>>> SX5-868 Add role management to keycloak_group module. Add
-=======
-    - Presently, the I(access) attribute returned by the Keycloak API is read-only for groups.
->>>>>>> SX5-868 Ajustement du codestyle des modules Keycloak en préparation des
-=======
         version_added: 2.9
 notes:
     - Presently, the I(access) attribute returned by the Keycloak API is read-only for groups.
->>>>>>> SX5-868 Add role management and LDAP synchronization feature to
       This version of this module now support the I(realmRoles), I(clientRoles) as read-write attributes.
 
 extends_documentation_fragment:
@@ -509,37 +324,13 @@ def main():
     gid = module.params.get('id')
     name = module.params.get('name')
     attributes = module.params.get('attributes')
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
     # Add attribute received as a list to the attributes dict
-=======
-    # Add attribute received as a list to the attributes dict    
->>>>>>> SX5-868 Add role management to keycloak_group module. Add
-=======
-    # Add attribute received as a list to the attributes dict
->>>>>>> SX5-868 Ajustement du codestyle des modules Keycloak en préparation des
-=======
-    # Add attribute received as a list to the attributes dict
->>>>>>> SX5-868 Add role management and LDAP synchronization feature to
     kc.add_attributes_list_to_attributes_dict(module.params.get('attributes_list'), attributes)
     syncLdapMappers = module.params.get('syncLdapMappers')
     groupRealmRoles = module.params.get('realmRoles')
     groupClientRoles = module.params.get('clientRoles')
     force = module.params.get('force')
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
 
-=======
-    
->>>>>>> SX5-868 Add role management to keycloak_group module. Add
-=======
-
->>>>>>> SX5-868 Ajustement du codestyle des modules Keycloak en préparation des
-=======
-
->>>>>>> SX5-868 Add role management and LDAP synchronization feature to
     before_group = None         # current state of the group, for merging.
 
     # Synchronize LDAP group to Keycloak if syncLdapMappers is true
@@ -561,19 +352,7 @@ def main():
             module.params['attributes'][key] = [val] if not isinstance(val, list) else val
     excludes = ['state', 'realm', 'force', 'attributes_list', 'realmRoles', 'clientRoles', 'syncLdapMappers']
     group_params = [x for x in module.params
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
                     if x not in list(keycloak_argument_spec().keys()) + excludes and
-=======
-                    if x not in list(keycloak_argument_spec().keys()) + ['state', 'realm', 'force', 'username', 'password', 'url', 'attributes_list', 'realmRoles', 'clientRoles', 'syncLdapMappers'] and
->>>>>>> SX5-868 Add role management to keycloak_group module. Add
-=======
-                    if x not in list(keycloak_argument_spec().keys()) + excludes and
->>>>>>> SX5-868 Ajustement du codestyle des modules Keycloak en préparation des
-=======
-                    if x not in list(keycloak_argument_spec().keys()) + excludes and
->>>>>>> SX5-868 Add role management and LDAP synchronization feature to
                     module.params.get(x) is not None]
     # build a changeset
     changeset = {}

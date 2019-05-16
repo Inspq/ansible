@@ -1,219 +1,13 @@
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
-=======
->>>>>>> Sx5-868 Update the keycloak_client module documentation for support of
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> SX5-868 Manage client roles (add, delete update), remove protocolMappers
-=======
->>>>>>> Sx5-868 Update the keycloak_client module documentation for support of
-=======
->>>>>>> Sx5-868 Update the keycloak_client module documentation for support of
-=======
->>>>>>> SX5-868 Manage client roles (add, delete update), remove protocolMappers
-=======
->>>>>>> Sx5-868 Update the keycloak_client module documentation for support of
-=======
->>>>>>> SX5-868 Manage client roles (add, delete update), remove protocolMappers
-=======
-=======
->>>>>>> Sx5-868 Update the keycloak_client module documentation for support of
->>>>>>> Sx5-868 Update the keycloak_client module documentation for support of
-=======
->>>>>>> SX5-868 Add role management to keycloak_group module. Add
-=======
-=======
->>>>>>> SX5-868 Add role management to keycloak_group module. Add
-=======
->>>>>>> Sx5-868 Update the keycloak_client module documentation for support of
->>>>>>> Sx5-868 Update the keycloak_client module documentation for support of
-=======
->>>>>>> Sx5-868 Update the keycloak_client module documentation for support of
-=======
->>>>>>> Merge
-=======
-=======
->>>>>>> Sx5-868 Update the keycloak_client module documentation for support of
->>>>>>> Sx5-868 Update the keycloak_client module documentation for support of
-=======
->>>>>>> SX5-868 Manage client roles (add, delete update), remove protocolMappers
-=======
-=======
->>>>>>> Sx5-868 Update the keycloak_client module documentation for support of
->>>>>>> Sx5-868 Update the keycloak_client module documentation for support of
-=======
->>>>>>> SX5-868 Add role management to keycloak_group module. Add
-=======
->>>>>>> SX5-868 Correction de problème de merge lors du rebase de la branche.
-=======
->>>>>>> Sx5-868 Update the keycloak_client module documentation for support of
-=======
-=======
->>>>>>> Sx5-868 Update the keycloak_client module documentation for support of
-=======
->>>>>>> Sx5-868 Update the keycloak_client module documentation for support of
->>>>>>> Sx5-868 Update the keycloak_client module documentation for support of
->>>>>>> Sx5-868 Update the keycloak_client module documentation for support of
-=======
->>>>>>> SX5-868 Manage client roles (add, delete update), remove protocolMappers
 # -*- coding: utf-8 -*-
 # This unit test class need a Keycloak server running on localhost using port 18081.
 # An admin user must exist and his password need to be admin.
 # Use the following command to run a Keycloak server with Docker:
 # docker run -d --rm --name testkc -p 18081:8080 -e KEYCLOAK_USER=admin -e KEYCLOAK_PASSWORD=admin jboss/keycloak:latest
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> SX5-868 Add role management to keycloak_group module. Add
-
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> Sx5-868 Update the keycloak_client module documentation for support of
-=======
->>>>>>> SX5-868 Manage client roles (add, delete update), remove protocolMappers
-=======
->>>>>>> Sx5-868 Update the keycloak_client module documentation for support of
-=======
->>>>>>> SX5-868 Manage client roles (add, delete update), remove protocolMappers
-=======
->>>>>>> Sx5-868 Update the keycloak_client module documentation for support of
-=======
-<<<<<<< HEAD
-<<<<<<< HEAD
->>>>>>> Sx5-868 Update the keycloak_client module documentation for support of
-=======
->>>>>>> SX5-868 Manage client roles (add, delete update), remove protocolMappers
-=======
->>>>>>> Sx5-868 Update the keycloak_client module documentation for support of
-=======
-=======
->>>>>>> SX5-868 Manage client roles (add, delete update), remove protocolMappers
->>>>>>> SX5-868 Manage client roles (add, delete update), remove protocolMappers
-=======
->>>>>>> Sx5-868 Update the keycloak_client module documentation for support of
-=======
->>>>>>> SX5-868 Add role management to keycloak_group module. Add
-=======
->>>>>>> SX5-868 Manage client roles (add, delete update), remove protocolMappers
-=======
-
-<<<<<<< HEAD
->>>>>>> Sx5-868 Update the keycloak_client module documentation for support of
-=======
-=======
->>>>>>> SX5-868 Manage client roles (add, delete update), remove protocolMappers
->>>>>>> Merge
-=======
-=======
-=======
-
-<<<<<<< HEAD
->>>>>>> Sx5-868 Update the keycloak_client module documentation for support of
-<<<<<<< HEAD
-=======
->>>>>>> SX5-868 Manage client roles (add, delete update), remove protocolMappers
-=======
->>>>>>> Sx5-868 Update the keycloak_client module documentation for support of
-<<<<<<< HEAD
->>>>>>> Sx5-868 Update the keycloak_client module documentation for support of
-=======
->>>>>>> SX5-868 Manage client roles (add, delete update), remove protocolMappers
-=======
->>>>>>> Sx5-868 Update the keycloak_client module documentation for support of
-=======
->>>>>>> Sx5-868 Update the keycloak_client module documentation for support of
->>>>>>> SX5-868 Manage client roles (add, delete update), remove protocolMappers
-=======
->>>>>>> Sx5-868 Update the keycloak_client module documentation for support of
-=======
-=======
->>>>>>> SX5-868 Manage client roles (add, delete update), remove protocolMappers
->>>>>>> SX5-868 Manage client roles (add, delete update), remove protocolMappers
-=======
->>>>>>> Sx5-868 Update the keycloak_client module documentation for support of
-=======
->>>>>>> SX5-868 Add role management to keycloak_group module. Add
-=======
-
->>>>>>> Sx5-868 Update the keycloak_client module documentation for support of
-=======
->>>>>>> SX5-868 Manage client roles (add, delete update), remove protocolMappers
-=======
-
-
->>>>>>> Sx5-868 Update the keycloak_client module documentation for support of
-=======
->>>>>>> SX5-868 Manage client roles (add, delete update), remove protocolMappers
-=======
-=======
->>>>>>> SX5-868 Manage client roles (add, delete update), remove protocolMappers
-=======
->>>>>>> Sx5-868 Update the keycloak_client module documentation for support of
->>>>>>> Sx5-868 Update the keycloak_client module documentation for support of
->>>>>>> Sx5-868 Update the keycloak_client module documentation for support of
-import collections
-import os
-import unittest
-=======
->>>>>>> SX5-868 Correction de problème de merge lors du rebase de la branche.
-=======
-=======
->>>>>>> SX5-868 Manage client roles (add, delete update), remove protocolMappers
-import collections
-import os
-import unittest
->>>>>>> SX5-868 Manage client roles (add, delete update), remove protocolMappers
-=======
-
->>>>>>> SX5-868 Correction de problème de merge lors du rebase de la branche.
 
 from ansible.modules.identity.keycloak import keycloak_client
 from units.modules.utils import AnsibleExitJson, AnsibleFailJson, ModuleTestCase, set_module_args
 
-<<<<<<< HEAD
-<<<<<<< HEAD
 
-=======
->>>>>>> SX5-868 Manage client roles (add, delete update), remove protocolMappers
-=======
-
->>>>>>> SX5-868 Correction de problème de merge lors du rebase de la branche.
 class KeycloakClientTestCase(ModuleTestCase):
     testClientRoles = [
         {
@@ -227,121 +21,6 @@ class KeycloakClientTestCase(ModuleTestCase):
             "composite": False
         }
     ]
-<<<<<<< HEAD
-    testClient = {
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-        "auth_keycloak_url": "http://localhost:18081/auth",
-        "auth_username": "admin",
-        "auth_password": "admin",
-=======
-        "url": "http://localhost:18081/auth",
-        "username": "admin",
-        "password": "admin",
->>>>>>> SX5-868 Manage client roles (add, delete update), remove protocolMappers
-=======
-        "auth_keycloak_url": "http://localhost:18081/auth",
-        "auth_username": "admin",
-        "auth_password": "admin",
->>>>>>> SX5-868 Add keycloak_user module and non mock unit tests.
-=======
-        "url": "http://localhost:18081/auth",
-        "username": "admin",
-        "password": "admin",
->>>>>>> SX5-868 Manage client roles (add, delete update), remove protocolMappers
-=======
-        "auth_keycloak_url": "http://localhost:18081/auth",
-        "auth_username": "admin",
-        "auth_password": "admin",
->>>>>>> SX5-868 Add keycloak_user module and non mock unit tests.
-        "realm": "master",
-        "state": "present",
-        "clientId": "basetest",
-        "rootUrl": "http://test.com:8080",
-        "name": "basetestname",
-        "description": "Base testing",
-        "publicClient": False,
-        "force": False
-    }
-    toModifyClient = {
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-        "auth_keycloak_url": "http://localhost:18081/auth",
-        "auth_username": "admin",
-        "auth_password": "admin",
-=======
-        "url": "http://localhost:18081/auth",
-        "username": "admin",
-        "password": "admin",
->>>>>>> SX5-868 Manage client roles (add, delete update), remove protocolMappers
-=======
-        "auth_keycloak_url": "http://localhost:18081/auth",
-        "auth_username": "admin",
-        "auth_password": "admin",
->>>>>>> SX5-868 Add keycloak_user module and non mock unit tests.
-=======
-        "url": "http://localhost:18081/auth",
-        "username": "admin",
-        "password": "admin",
->>>>>>> SX5-868 Manage client roles (add, delete update), remove protocolMappers
-=======
-        "auth_keycloak_url": "http://localhost:18081/auth",
-        "auth_username": "admin",
-        "auth_password": "admin",
->>>>>>> SX5-868 Add keycloak_user module and non mock unit tests.
-        "realm": "master",
-        "state": "present",
-        "clientId": "test_modify_client",
-        "rootUrl": "http://test3.com:8080",
-        "name": "Modify client test",
-        "description": "This client will be modified",
-        "adminUrl": "http://test3.com:8080/admin",
-        "baseUrl": "http://test3.com:8080",
-        "enabled": True,
-        "clientAuthenticatorType": "client-secret",
-        "redirectUris": ["http://test3.com:8080/secure"],
-        "webOrigins": ["http://test3.com:8080/secure"],
-        "consentRequired": False,   
-        "standardFlowEnabled": True,
-        "implicitFlowEnabled": True,
-        "directAccessGrantsEnabled": True,
-        "serviceAccountsEnabled": True,
-        "fullScopeAllowed": True,
-        "protocol": "openid-connect",
-        "bearerOnly": False,
-        "publicClient": False,
-        "roles": [
-            {
-                "name":"test1",
-                "description": "test1",
-                "composite": False
-            },
-            {
-                "name":"test2",
-                "description": "test2",
-                "composite": True,
-                "composites": []
-            }
-        ],
-        "protocolMappers": [
-            {
-                "name": "test1Mapper",
-                "protocol": "openid-connect",
-                "protocolMapper": "oidc-usermodel-attribute-mapper",
-                "consentRequired": False,
-                "config": { 
-                    "multivalued": 'false',
-                    "userinfo.token.claim": False,
-                    "user.attribute": "test1",
-                    "id.token.claim": 'true',
-                    "access.token.claim": 'true',
-                    "claim.name": "test1",
-                    "jsonType.label": "String"
-=======
     testClients = [
         {
             "auth_keycloak_url": "http://localhost:18081/auth",
@@ -408,7 +87,6 @@ class KeycloakClientTestCase(ModuleTestCase):
                         "access.token.claim": 'true',
                         "claim.name": "test1",
                         "jsonType.label": "String"
->>>>>>> SX5-984 Mauvais message d'erreur lors de la création de role client
                     }
                 },
                 {
@@ -427,64 +105,6 @@ class KeycloakClientTestCase(ModuleTestCase):
                     }
                 }
             ]
-<<<<<<< HEAD
-        }
-    
-    toAddCompositesForClientRole = {
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-        "auth_keycloak_url": "http://localhost:18081/auth",
-        "auth_username": "admin",
-        "auth_password": "admin",
-=======
-        "url": "http://localhost:18081/auth",
-        "username": "admin",
-        "password": "admin",
->>>>>>> SX5-868 Manage client roles (add, delete update), remove protocolMappers
-=======
-        "auth_keycloak_url": "http://localhost:18081/auth",
-        "auth_username": "admin",
-        "auth_password": "admin",
->>>>>>> SX5-868 Add keycloak_user module and non mock unit tests.
-=======
-        "url": "http://localhost:18081/auth",
-        "username": "admin",
-        "password": "admin",
->>>>>>> SX5-868 Manage client roles (add, delete update), remove protocolMappers
-=======
-        "auth_keycloak_url": "http://localhost:18081/auth",
-        "auth_username": "admin",
-        "auth_password": "admin",
->>>>>>> SX5-868 Add keycloak_user module and non mock unit tests.
-        "realm": "master",
-        "state": "present",
-        "clientId": "test_add_client_composite_roles",
-        "rootUrl": "http://test5.com:8080",
-        "name": "Add composites role to this client",
-        "description": "Composites role should be added to this client",
-        "adminUrl": "http://test5.com:8080/admin",
-        "baseUrl": "http://test5.com:8080",
-        "enabled": True,
-        "clientAuthenticatorType": "client-secret",
-        "redirectUris": ["http://test5.com:8080/secure"],
-        "webOrigins": ["http://test5.com:8080/secure"],
-        "consentRequired": False,   
-        "standardFlowEnabled": True,
-        "implicitFlowEnabled": True,
-        "directAccessGrantsEnabled": True,
-        "fullScopeAllowed": True,
-        "serviceAccountsEnabled": True,
-        "protocol": "openid-connect",
-        "bearerOnly": False,
-        "publicClient": False,
-        "roles":  [
-            {
-                "name":"test1",
-                "description": "test1",
-                "composite": False
-=======
         },
         {
             "auth_keycloak_url": "http://localhost:18081/auth",
@@ -538,7 +158,6 @@ class KeycloakClientTestCase(ModuleTestCase):
                         "access.token.claim": 'true',
                         "claim.name": "test1",
                         "jsonType.label": "String"}
->>>>>>> SX5-984 Mauvais message d'erreur lors de la création de role client
                 },
                 {
                     "name": "test2Mapper",
@@ -555,169 +174,6 @@ class KeycloakClientTestCase(ModuleTestCase):
                         "jsonType.label": "String"
                     }
                 }
-<<<<<<< HEAD
-            }
-        ]
-    }
-    toRemoveMapperFromClient = {
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-        "auth_keycloak_url": "http://localhost:18081/auth",
-        "auth_username": "admin",
-        "auth_password": "admin",
-=======
-        "url": "http://localhost:18081/auth",
-        "username": "admin",
-        "password": "admin",
->>>>>>> SX5-868 Manage client roles (add, delete update), remove protocolMappers
-=======
-        "auth_keycloak_url": "http://localhost:18081/auth",
-        "auth_username": "admin",
-        "auth_password": "admin",
->>>>>>> SX5-868 Add keycloak_user module and non mock unit tests.
-=======
-        "url": "http://localhost:18081/auth",
-        "username": "admin",
-        "password": "admin",
->>>>>>> SX5-868 Manage client roles (add, delete update), remove protocolMappers
-=======
-        "auth_keycloak_url": "http://localhost:18081/auth",
-        "auth_username": "admin",
-        "auth_password": "admin",
->>>>>>> SX5-868 Add keycloak_user module and non mock unit tests.
-        "realm": "master",
-        "state": "present",
-        "clientId": "test_remove_mapper_from_client",
-        "rootUrl": "http://test.com:8080",
-        "name": "Test remove mapper",
-        "description": "Client from which we remove a mapper",
-        "publicClient": False,
-        "protocolMappers": [
-            {
-                "name": "thismapperstays",
-                "protocol": "openid-connect",
-                "protocolMapper": "oidc-usermodel-attribute-mapper",
-                "consentRequired": False,
-                "config": { 
-                    "multivalued": 'false',
-                    "userinfo.token.claim": False,
-                    "user.attribute": "test1",
-                    "id.token.claim": 'true',
-                    "access.token.claim": 'true',
-                    "claim.name": "test1",
-                    "jsonType.label": "String"}
-            },
-            {
-                "name": "thismappermustbedeleted",
-                "protocol": "openid-connect",
-                "protocolMapper": "oidc-usermodel-attribute-mapper",
-                "consentRequired": False,
-                "config": { 
-                    "multivalued": 'false',
-                    "userinfo.token.claim": 'true',
-                    "user.attribute": "test2",
-                    "id.token.claim": 'true',
-                    "access.token.claim": 'true',
-                    "claim.name": "test2",
-                    "jsonType.label": "String"
-                }
-            }
-        ],
-        "force": False
-    }
-    toRemoveRoleFromClient = {
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-        "auth_keycloak_url": "http://localhost:18081/auth",
-        "auth_username": "admin",
-        "auth_password": "admin",
-=======
-        "url": "http://localhost:18081/auth",
-        "username": "admin",
-        "password": "admin",
->>>>>>> SX5-868 Manage client roles (add, delete update), remove protocolMappers
-=======
-        "auth_keycloak_url": "http://localhost:18081/auth",
-        "auth_username": "admin",
-        "auth_password": "admin",
->>>>>>> SX5-868 Add keycloak_user module and non mock unit tests.
-=======
-        "url": "http://localhost:18081/auth",
-        "username": "admin",
-        "password": "admin",
->>>>>>> SX5-868 Manage client roles (add, delete update), remove protocolMappers
-=======
-        "auth_keycloak_url": "http://localhost:18081/auth",
-        "auth_username": "admin",
-        "auth_password": "admin",
->>>>>>> SX5-868 Add keycloak_user module and non mock unit tests.
-        "realm": "master",
-        "state": "present",
-        "clientId": "test_remove_role_from_client",
-        "rootUrl": "http://test.com:8080",
-        "name": "Test remove role",
-        "description": "Client from which we remove a role",
-        "publicClient": False,
-        "roles": [
-            {
-                "name":"thisrolestays",
-                "description": "This role must stay after the test",
-                "composite": False,
-                "state": "present"
-                },
-            {
-                "name":"thisrolemustbedeleted",
-                "description": "This role mus be deleted by the module",
-                "composite": False,
-                "state": "present"
-            }
-        ],
-        "force": False
-    }
-    toDeleteClient = {
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-        "auth_keycloak_url": "http://localhost:18081/auth",
-        "auth_username": "admin",
-        "auth_password": "admin",
-=======
-        "url": "http://localhost:18081/auth",
-        "username": "admin",
-        "password": "admin",
->>>>>>> SX5-868 Manage client roles (add, delete update), remove protocolMappers
-=======
-        "auth_keycloak_url": "http://localhost:18081/auth",
-        "auth_username": "admin",
-        "auth_password": "admin",
->>>>>>> SX5-868 Add keycloak_user module and non mock unit tests.
-=======
-        "url": "http://localhost:18081/auth",
-        "username": "admin",
-        "password": "admin",
->>>>>>> SX5-868 Manage client roles (add, delete update), remove protocolMappers
-=======
-        "auth_keycloak_url": "http://localhost:18081/auth",
-        "auth_username": "admin",
-        "auth_password": "admin",
->>>>>>> SX5-868 Add keycloak_user module and non mock unit tests.
-        "realm": "master",
-        "state": "present",
-        "clientId": "test_delete_client",
-        "name": "Client to delete",
-        "description": "this client should have been deleted",
-        "rootUrl": "http://test.com:8080",
-        "name": "basetestname",
-        "description": "Base testing",
-        "publicClient": False,
-        "force": False
-    }
-=======
             ]
         },
         {
@@ -961,67 +417,51 @@ class KeycloakClientTestCase(ModuleTestCase):
             ],
             "publicClient": False,
             "force": False
+        },
+        {
+            "auth_keycloak_url": "http://localhost:18081/auth",
+            "auth_username": "admin",
+            "auth_password": "admin",
+            "realm": "master",
+            "state": "present",
+            "clientId": "test_add_client_scope_mappings",
+            "rootUrl": "http://test6.com:8080",
+            "name": "Add scope mappings to this client",
+            "description": "scope mappings should be added to this client",
+            "adminUrl": "http://test6.com:8080/admin",
+            "baseUrl": "http://test6.com:8080",
+            "enabled": True,
+            "clientAuthenticatorType": "client-secret",
+            "redirectUris": ["http://test6.com:8080/secure"],
+            "webOrigins": ["http://test6.com:8080/secure"],
+            "consentRequired": False, 
+            "standardFlowEnabled": True,
+            "implicitFlowEnabled": True,
+            "directAccessGrantsEnabled": True,
+            "fullScopeAllowed": True,
+            "serviceAccountsEnabled": True,
+            "protocol": "openid-connect",
+            "bearerOnly": False,
+            "publicClient": False,
+            "roles": [
+                {
+                    "name":"test1",
+                    "description": "test1",
+                    "composite": False
+                },
+                {
+                    "name":"test2",
+                    "description": "test2",
+                    "composite": True,
+                    "composites": []
+                }
+            ]
         }
     ]
->>>>>>> SX5-984 Mauvais message d'erreur lors de la création de role client
 
     def setUp(self):
         super(KeycloakClientTestCase, self).setUp()
         self.module = keycloak_client
-<<<<<<< HEAD
-        self.testClient["roles"] = self.testClientRoles
-        set_module_args(self.testClient)
-        with self.assertRaises(AnsibleExitJson) as results:
-            self.module.main()
-        self.toModifyClient['roles'][1]['composites'].append({'id': self.testClient['clientId'],"name": self.testClientRoles[0]['name']})
-        set_module_args(self.toModifyClient)
-        with self.assertRaises(AnsibleExitJson) as results:
-            self.module.main()
-        self.toAddCompositesForClientRole['roles'][1]['composites'].append({'id': self.testClient['clientId'],"name": self.testClientRoles[0]['name']})
-        set_module_args(self.toAddCompositesForClientRole)
-        with self.assertRaises(AnsibleExitJson) as results:
-            self.module.main()
-        set_module_args(self.toRemoveMapperFromClient)
-        with self.assertRaises(AnsibleExitJson) as results:
-            self.module.main()
-        set_module_args(self.toRemoveRoleFromClient)
-        with self.assertRaises(AnsibleExitJson) as results:
-            self.module.main()
-        set_module_args(self.toDeleteClient)
-        with self.assertRaises(AnsibleExitJson) as results:
-            self.module.main()
-                
-    def test_create_client(self):
-        toCreate = {}
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-        toCreate["auth_keycloak_url"] = "http://localhost:18081/auth"
-        toCreate["auth_username"] = "admin"
-        toCreate["auth_password"] = "admin"
-=======
-        toCreate["url"] = "http://localhost:18081/auth"
-        toCreate["username"] = "admin"
-        toCreate["password"] = "admin"
->>>>>>> SX5-868 Manage client roles (add, delete update), remove protocolMappers
-=======
-        toCreate["auth_keycloak_url"] = "http://localhost:18081/auth"
-        toCreate["auth_username"] = "admin"
-        toCreate["auth_password"] = "admin"
->>>>>>> SX5-868 Add keycloak_user module and non mock unit tests.
-=======
-        toCreate["url"] = "http://localhost:18081/auth"
-        toCreate["username"] = "admin"
-        toCreate["password"] = "admin"
->>>>>>> SX5-868 Manage client roles (add, delete update), remove protocolMappers
-=======
-        toCreate["auth_keycloak_url"] = "http://localhost:18081/auth"
-        toCreate["auth_username"] = "admin"
-        toCreate["auth_password"] = "admin"
->>>>>>> SX5-868 Add keycloak_user module and non mock unit tests.
-        toCreate["realm"] = "master"
-=======
         for client in self.testClients:
             if client["clientId"] == "basetest":
                 client["roles"] = self.testClientRoles
@@ -1042,7 +482,6 @@ class KeycloakClientTestCase(ModuleTestCase):
  
     def test_create_client(self):
         toCreate = self.testClients[6].copy()
->>>>>>> SX5-984 Mauvais message d'erreur lors de la création de role client
         toCreate["state"] = "present"
         set_module_args(toCreate)
         with self.assertRaises(AnsibleExitJson) as results:
@@ -1205,9 +644,18 @@ class KeycloakClientTestCase(ModuleTestCase):
         with self.assertRaises(AnsibleExitJson) as results:
             self.module.main()
         self.assertTrue(results.exception.args[0]['changed'])
-<<<<<<< HEAD
+        self.assertRegexpMatches(results.exception.args[0]['msg'], 'deleted', 'client not deleted')
+
+    def test_create_client_with_non_existing_client_composite_role(self):
+        toErrorClient = self.testClients[7].copy()
+        toErrorClient["state"] = "present"
+        set_module_args(toErrorClient)
+        with self.assertRaises(AnsibleFailJson) as results:
+            self.module.main()
+        self.assertRegexpMatches(results.exception.args[0]['msg'], 'client ' + toErrorClient["roles"][1]["composites"][1]["id"] + ' does not exist', 'error not generated')
 
     def test_add_client_scope_mappings_roles(self):
+        toAddnewClientScopeMappings = self.testClients[8].copy()
         newClientScopeMappings = {
             "realm": [
                 {
@@ -1246,22 +694,9 @@ class KeycloakClientTestCase(ModuleTestCase):
             ]
         }
 
-        self.toAddnewClientScopeMappings["scope_mappings"] = newClientScopeMappings
-        set_module_args(self.toAddnewClientScopeMappings)
+        toAddnewClientScopeMappings["scope_mappings"] = newClientScopeMappings
+        set_module_args(toAddnewClientScopeMappings)
         with self.assertRaises(AnsibleExitJson) as results:
             self.module.main()
         self.assertTrue(results.exception.args[0]['end_state']['enabled'])
         self.assertTrue(results.exception.args[0]['changed'])    
-=======
-        self.assertRegexpMatches(results.exception.args[0]['msg'], 'deleted', 'client not deleted')
-
-
-    def test_create_client_with_non_existing_client_composite_role(self):
-        toErrorClient = self.testClients[7].copy()
-        toErrorClient["state"] = "present"
-        set_module_args(toErrorClient)
-        with self.assertRaises(AnsibleFailJson) as results:
-            self.module.main()
-        self.assertRegexpMatches(results.exception.args[0]['msg'], 'client ' + toErrorClient["roles"][1]["composites"][1]["id"] + ' does not exist', 'error not generated')
-
->>>>>>> SX5-984 Mauvais message d'erreur lors de la création de role client

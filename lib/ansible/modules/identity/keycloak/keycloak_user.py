@@ -15,41 +15,11 @@ ANSIBLE_METADATA = {'metadata_version': '1.1',
 
 DOCUMENTATION = '''
 ---
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
-author: "Etienne Sadio (etienne.sadio@inspq.qc.ca)"
->>>>>>> SX5-868 Add keycloak_user module and non mock unit tests.
-=======
->>>>>>> SX5-868 Mise à jour de la documentation des modules Keycloak suite à la
-=======
-author: "Etienne Sadio (etienne.sadio@inspq.qc.ca)"
->>>>>>> SX5-868 Add keycloak_user module and non mock unit tests.
-=======
->>>>>>> SX5-868 Mise à jour de la documentation des modules Keycloak suite à la
 module: keycloak_user
 short_description: create and Configure a user in Keycloak
 description:
     - This module creates, removes or update Keycloak users.
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
 version_added: "2.9"
-=======
-version_added: "2.8"
->>>>>>> SX5-868 Add keycloak_user module and non mock unit tests.
-=======
-version_added: "2.9"
->>>>>>> SX5-868 Mise à jour de la documentation des modules Keycloak suite à la
-=======
-version_added: "2.8"
->>>>>>> SX5-868 Add keycloak_user module and non mock unit tests.
-=======
-version_added: "2.9"
->>>>>>> SX5-868 Mise à jour de la documentation des modules Keycloak suite à la
 options:
     realm:
         description:
@@ -101,35 +71,11 @@ options:
             - List of ClientRoles for the user.
         required: false
     clientConsents:
-<<<<<<< HEAD
-<<<<<<< HEAD
         description:
             - client Authenticator Type.
         required: false
         type: list
-<<<<<<< HEAD
-<<<<<<< HEAD
         suboptions:
-=======
-        subOptions:
->>>>>>> SX5-868 Add keycloak_user module and non mock unit tests.
-=======
-        suboptions:
->>>>>>> SX5-868 Mise à jour de la documentation des modules Keycloak suite à la
-=======
-        description: 
-=======
-        description:
->>>>>>> SX5-868 Ajustement du codestyle des modules Keycloak en préparation des
-            - client Authenticator Type.
-        required: false
-        type: list
-<<<<<<< HEAD
-        subOptions:
->>>>>>> SX5-868 Add keycloak_user module and non mock unit tests.
-=======
-        suboptions:
->>>>>>> SX5-868 Mise à jour de la documentation des modules Keycloak suite à la
             clientId:
                 description:
                 - Client ID of the client role. Not the technical id of the client.
@@ -154,8 +100,6 @@ options:
         required: false
     federatedIdentities:
         description:
-<<<<<<< HEAD
-<<<<<<< HEAD
             - list of IDP of user.
         required: false
     attributes:
@@ -177,36 +121,6 @@ options:
     self:
         description:
             - user self administration.
-=======
-            - list of IDP of user. 
-=======
-            - list of IDP of user.
->>>>>>> SX5-868 Ajustement du codestyle des modules Keycloak en préparation des
-        required: false
-    attributes:
-        description:
-            - list user attributes.
-        required: false
-    access:
-        description:
-            - list user access.
-        required: false
-    disableableCredentialTypes:
-        description:
-            - list user Credential Type.
-        required: false
-    origin:
-        description:
-            - user origin.
-        required: false
-    self:
-        description:
-<<<<<<< HEAD
-            - user self administration. 
->>>>>>> SX5-868 Add keycloak_user module and non mock unit tests.
-=======
-            - user self administration.
->>>>>>> SX5-868 Ajustement du codestyle des modules Keycloak en préparation des
         required: false
     state:
         description:
@@ -223,68 +137,16 @@ extends_documentation_fragment:
     - keycloak
 notes:
     - module does not modify userId.
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-author: 
-    - Etienne Sadio (etienne.sadio@inspq.qc.ca)
-=======
->>>>>>> SX5-868 Add keycloak_user module and non mock unit tests.
-=======
-author: 
-=======
 author:
-<<<<<<< HEAD
->>>>>>> SX5-868 Ajustement du codestyle des modules Keycloak en préparation des
-=======
-author:
->>>>>>> SX5-868 Ajustement du codestyle des modules Keycloak en préparation des
-    - Etienne Sadio (etienne.sadio@inspq.qc.ca)
->>>>>>> SX5-868 Mise à jour de la documentation des modules Keycloak suite à la
-=======
->>>>>>> SX5-868 Add keycloak_user module and non mock unit tests.
-=======
-author: 
-    - Etienne Sadio (etienne.sadio@inspq.qc.ca)
->>>>>>> SX5-868 Mise à jour de la documentation des modules Keycloak suite à la
-=======
     - Philippe Gauthier (@elfelip)
->>>>>>> SX5-868 mise à jour de la documentation du module keycloak_user pour PR.
 '''
 
 EXAMPLES = '''
     - name: Create a user user1
       keycloak_user:
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
         auth_keycloak_url: http://localhost:8080/auth
         auth_sername: admin
         auth_password: password
-=======
-        url: http://localhost:8080
-        masterUsername: admin
-        masterpassword: password
->>>>>>> SX5-868 Add keycloak_user module and non mock unit tests.
-=======
-        auth_keycloak_url: http://localhost:8080/auth
-        auth_sername: admin
-        auth_password: password
->>>>>>> SX5-868 Mise à jour de la documentation des modules Keycloak suite à la
-=======
-        url: http://localhost:8080
-        masterUsername: admin
-        masterpassword: password
->>>>>>> SX5-868 Add keycloak_user module and non mock unit tests.
-=======
-        auth_keycloak_url: http://localhost:8080/auth
-        auth_sername: admin
-        auth_password: password
->>>>>>> SX5-868 Mise à jour de la documentation des modules Keycloak suite à la
         realm: master
         username: user1
         firstName: user1
@@ -297,8 +159,6 @@ EXAMPLES = '''
             value: password
             temporary: false
         attributes:
-<<<<<<< HEAD
-<<<<<<< HEAD
           attr1:
             - value1
           attr2:
@@ -308,24 +168,6 @@ EXAMPLES = '''
             roles:
             - role1
           - clientId: client2
-=======
-          attr1: 
-=======
-          attr1:
->>>>>>> SX5-868 Ajustement du codestyle des modules Keycloak en préparation des
-            - value1
-          attr2:
-            - value2
-        clientRoles:
-          - clientId: client1
-            roles:
-            - role1
-<<<<<<< HEAD
-          - clientId: client2 
->>>>>>> SX5-868 Add keycloak_user module and non mock unit tests.
-=======
-          - clientId: client2
->>>>>>> SX5-868 Ajustement du codestyle des modules Keycloak en préparation des
             roles:
             - role2
         groups:
@@ -336,33 +178,9 @@ EXAMPLES = '''
 
     - name: Re-create a User
       keycloak_user:
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
         auth_keycloak_url: http://localhost:8080/auth
         auth_sername: admin
         auth_password: password
-=======
-        url: http://localhost:8080
-        masterUsername: admin
-        masterpassword: password
->>>>>>> SX5-868 Add keycloak_user module and non mock unit tests.
-=======
-        auth_keycloak_url: http://localhost:8080/auth
-        auth_sername: admin
-        auth_password: password
->>>>>>> SX5-868 Mise à jour de la documentation des modules Keycloak suite à la
-=======
-        url: http://localhost:8080
-        masterUsername: admin
-        masterpassword: password
->>>>>>> SX5-868 Add keycloak_user module and non mock unit tests.
-=======
-        auth_keycloak_url: http://localhost:8080/auth
-        auth_sername: admin
-        auth_password: password
->>>>>>> SX5-868 Mise à jour de la documentation des modules Keycloak suite à la
         realm: master
         username: user1
         firstName: user1
@@ -375,8 +193,6 @@ EXAMPLES = '''
             value: password
             temporary: false
         attributes:
-<<<<<<< HEAD
-<<<<<<< HEAD
           attr1:
             - value1
           attr2:
@@ -386,24 +202,6 @@ EXAMPLES = '''
             roles:
             - role1
           - clientId: client2
-=======
-          attr1: 
-=======
-          attr1:
->>>>>>> SX5-868 Ajustement du codestyle des modules Keycloak en préparation des
-            - value1
-          attr2:
-            - value2
-        clientRoles:
-          - clientId: client1
-            roles:
-            - role1
-<<<<<<< HEAD
-          - clientId: client2 
->>>>>>> SX5-868 Add keycloak_user module and non mock unit tests.
-=======
-          - clientId: client2
->>>>>>> SX5-868 Ajustement du codestyle des modules Keycloak en préparation des
             roles:
             - role2
         groups:
@@ -415,33 +213,9 @@ EXAMPLES = '''
 
     - name: Remove User.
       keycloak_user:
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
         auth_keycloak_url: http://localhost:8080/auth
         auth_sername: admin
         auth_password: password
-=======
-        url: http://localhost:8080
-        masterUsername: admin
-        masterpassword: password
->>>>>>> SX5-868 Add keycloak_user module and non mock unit tests.
-=======
-        auth_keycloak_url: http://localhost:8080/auth
-        auth_sername: admin
-        auth_password: password
->>>>>>> SX5-868 Mise à jour de la documentation des modules Keycloak suite à la
-=======
-        url: http://localhost:8080
-        masterUsername: admin
-        masterpassword: password
->>>>>>> SX5-868 Add keycloak_user module and non mock unit tests.
-=======
-        auth_keycloak_url: http://localhost:8080/auth
-        auth_sername: admin
-        auth_password: password
->>>>>>> SX5-868 Mise à jour de la documentation des modules Keycloak suite à la
         realm: master
         username: user1
         state: absent
@@ -464,27 +238,12 @@ changed:
 from ansible.module_utils.keycloak import KeycloakAPI, keycloak_argument_spec, isDictEquals
 from ansible.module_utils.basic import AnsibleModule
 
-<<<<<<< HEAD
-<<<<<<< HEAD
 
-=======
->>>>>>> SX5-868 Add keycloak_user module and non mock unit tests.
-=======
-
->>>>>>> SX5-868 Ajustement du codestyle des modules Keycloak en préparation des
 def main():
     argument_spec = keycloak_argument_spec()
 
     client_role_spec = dict(
-<<<<<<< HEAD
-<<<<<<< HEAD
         clientId=dict(type='str', required=True),
-=======
-        clientId=dict(type='str',required=True),
->>>>>>> SX5-868 Add keycloak_user module and non mock unit tests.
-=======
-        clientId=dict(type='str', required=True),
->>>>>>> SX5-868 Ajustement du codestyle des modules Keycloak en préparation des
         roles=dict(type='list', required=True),
     )
     meta_args = dict(
@@ -568,8 +327,6 @@ def main():
         newUserRepresentation["realmRoles"] = module.params.get('realmRoles')
     if module.params.get('groups') is not None:
         newUserRepresentation["groups"] = module.params.get('groups')
-<<<<<<< HEAD
-<<<<<<< HEAD
 
     changed = False
     userRepresentation = kc.search_user_by_username(username=newUserRepresentation["username"], realm=realm)
@@ -577,38 +334,17 @@ def main():
     if userRepresentation == {}:  # The user does not exist
         # Create the user
         if (state == 'present'):  # If state is present
-=======
-    
-=======
-
->>>>>>> SX5-868 Ajustement du codestyle des modules Keycloak en préparation des
-    changed = False
-    userRepresentation = kc.search_user_by_username(username=newUserRepresentation["username"], realm=realm)
-
-    if userRepresentation == {}:  # The user does not exist
-        # Create the user
-<<<<<<< HEAD
-        if (state == 'present'): # If state is present
->>>>>>> SX5-868 Add keycloak_user module and non mock unit tests.
-=======
-        if (state == 'present'):  # If state is present
->>>>>>> SX5-868 Ajustement du codestyle des modules Keycloak en préparation des
             # Create the user
             userRepresentation = kc.create_user(newUserRepresentation=newUserRepresentation, realm=realm)
             # Add user ID to new representation
             newUserRepresentation['id'] = userRepresentation["id"]
             # Assign roles to user
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> SX5-868 Ajustement du codestyle des modules Keycloak en préparation des
             kc.assing_roles_to_user(
                 user_id=newUserRepresentation["id"],
                 userRealmRoles=newUserRepresentation['realmRoles'],
                 userClientRoles=newUserClientRolesRepresentation['clientRoles'],
                 realm=realm)
             # set user groups
-<<<<<<< HEAD
             kc.update_user_groups_membership(newUserRepresentation=newUserRepresentation, realm=realm)
             # Get the updated user realm roles
             userRepresentation["realmRoles"] = kc.get_user_realm_roles(user_id=userRepresentation["id"], realm=realm)
@@ -626,42 +362,11 @@ def main():
             if force:  # If the force option is set to true
                 # Delete the existing user
                 kc.delete_user(user_id=userRepresentation["id"], realm=realm)
-=======
-            kc.assing_roles_to_user(user_id=newUserRepresentation["id"], userRealmRoles=newUserRepresentation['realmRoles'], userClientRoles=newUserClientRolesRepresentation['clientRoles'], realm=realm)
-            #set user groups
-=======
->>>>>>> SX5-868 Ajustement du codestyle des modules Keycloak en préparation des
-            kc.update_user_groups_membership(newUserRepresentation=newUserRepresentation, realm=realm)
-            # Get the updated user realm roles
-            userRepresentation["realmRoles"] = kc.get_user_realm_roles(user_id=userRepresentation["id"], realm=realm)
-            # Get the user clientRoles
-            userRepresentation["clientRoles"] = kc.get_user_client_roles(user_id=userRepresentation["id"], realm=realm)
-            # Get the user groups
-            userRepresentation["groups"] = kc.get_user_groups(user_id=userRepresentation["id"], realm=realm)
-            changed = True
-            result["user"] = userRepresentation
-        elif state == 'absent':  # Otherwise, the status is absent
-            result["msg"] = 'User %s is absent' % (newUserRepresentation["username"])
-
-    else:  # the user already exists
-        if (state == 'present'):  # if desired state is present
-            if force:  # If the force option is set to true
-                # Delete the existing user
-<<<<<<< HEAD
-                kc.delete_user(user_id=userRepresentation["id"],realm=realm)
->>>>>>> SX5-868 Add keycloak_user module and non mock unit tests.
-=======
-                kc.delete_user(user_id=userRepresentation["id"], realm=realm)
->>>>>>> SX5-868 Ajustement du codestyle des modules Keycloak en préparation des
                 changed = True
                 # Recreate the user
                 userRepresentation = kc.create_user(newUserRepresentation=newUserRepresentation, realm=realm)
                 # Add user ID to new representation
                 newUserRepresentation['id'] = userRepresentation["id"]
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> SX5-868 Ajustement du codestyle des modules Keycloak en préparation des
             else:  # If the force option is false
                 excludes = [
                     "access",
@@ -676,39 +381,19 @@ def main():
                     "clientConsents",
                     "federatedIdentities",
                     "requiredActions"]
-<<<<<<< HEAD
                 # Add user ID to new representation
                 newUserRepresentation['id'] = userRepresentation["id"]
                 # Compare users
                 if not (isDictEquals(newUserRepresentation, userRepresentation, excludes)):  # If the new user does not introduce a change to the existing user
-=======
-            else: # If the force option is false
-                excludes = ["access","notBefore","createdTimestamp","totp","credentials","disableableCredentialTypes","realmRoles","clientRoles","groups","clientConsents","federatedIdentities","requiredActions"]
-                # Add user ID to new representation
-                newUserRepresentation['id'] = userRepresentation["id"]
-                # Compare users
-                if not (isDictEquals(newUserRepresentation, userRepresentation, excludes)): # If the new user does not introduce a change to the existing user
->>>>>>> SX5-868 Add keycloak_user module and non mock unit tests.
-=======
-                # Add user ID to new representation
-                newUserRepresentation['id'] = userRepresentation["id"]
-                # Compare users
-                if not (isDictEquals(newUserRepresentation, userRepresentation, excludes)):  # If the new user does not introduce a change to the existing user
->>>>>>> SX5-868 Ajustement du codestyle des modules Keycloak en préparation des
                     # Update the user
                     userRepresentation = kc.update_user(newUserRepresentation=newUserRepresentation, realm=realm)
                     changed = True
             # Assign roles to user
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> SX5-868 Ajustement du codestyle des modules Keycloak en préparation des
             if kc.assing_roles_to_user(
                     user_id=newUserRepresentation["id"],
                     userRealmRoles=newUserRepresentation['realmRoles'],
                     userClientRoles=newUserClientRolesRepresentation['clientRoles'],
                     realm=realm):
-<<<<<<< HEAD
                 changed = True
             # set user groups
             if kc.update_user_groups_membership(newUserRepresentation=newUserRepresentation, realm=realm):
@@ -721,53 +406,14 @@ def main():
             userRepresentation["groups"] = kc.get_user_groups(user_id=userRepresentation["id"], realm=realm)
             result["user"] = userRepresentation
         elif state == 'absent':  # Status is absent
-=======
-            if kc.assing_roles_to_user(user_id=newUserRepresentation["id"], userRealmRoles=newUserRepresentation['realmRoles'], userClientRoles=newUserClientRolesRepresentation['clientRoles'], realm=realm):
-=======
->>>>>>> SX5-868 Ajustement du codestyle des modules Keycloak en préparation des
-                changed = True
-            # set user groups
-            if kc.update_user_groups_membership(newUserRepresentation=newUserRepresentation, realm=realm):
-                changed = True
-            # Get the updated user realm roles
-            userRepresentation["realmRoles"] = kc.get_user_realm_roles(user_id=userRepresentation["id"], realm=realm)
-            # Get the user clientRoles
-            userRepresentation["clientRoles"] = kc.get_user_client_roles(user_id=userRepresentation["id"], realm=realm)
-            # Get the user groups
-            userRepresentation["groups"] = kc.get_user_groups(user_id=userRepresentation["id"], realm=realm)
-            result["user"] = userRepresentation
-<<<<<<< HEAD
-        elif state == 'absent': # Status is absent
->>>>>>> SX5-868 Add keycloak_user module and non mock unit tests.
-=======
-        elif state == 'absent':  # Status is absent
->>>>>>> SX5-868 Ajustement du codestyle des modules Keycloak en préparation des
             # Delete user
             kc.delete_user(user_id=userRepresentation['id'], realm=realm)
             result["msg"] = 'User %s deleted' % (userRepresentation['id'])
             changed = True
-<<<<<<< HEAD
-<<<<<<< HEAD
 
     result['changed'] = changed
     module.exit_json(**result)
 
 
-=======
-    
-=======
-
->>>>>>> SX5-868 Ajustement du codestyle des modules Keycloak en préparation des
-    result['changed'] = changed
-    module.exit_json(**result)
-
-
-<<<<<<< HEAD
-# import module snippets
-from ansible.module_utils.basic import *
-"""
->>>>>>> SX5-868 Add keycloak_user module and non mock unit tests.
-=======
->>>>>>> SX5-868 Ajustement du codestyle des modules Keycloak en préparation des
 if __name__ == '__main__':
     main()

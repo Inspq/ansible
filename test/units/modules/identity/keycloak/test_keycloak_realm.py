@@ -8,33 +8,9 @@ from ansible.module_utils.keycloak import isDictEquals
 class KeycloakRealmTestCase(ModuleTestCase):
     toCreateRealm = {
         'realm': 'test_create_realm',
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
         'auth_keycloak_url': 'http://localhost:18081/auth',
         'auth_username': 'admin',
         'auth_password': 'admin',
-=======
-        'url': 'http://localhost:18081/auth',
-        'username': 'admin',
-        'password': 'admin',
->>>>>>> Sx5-868 Add keycloak_realm module with non mock unit tests.
-=======
-        'auth_keycloak_url': 'http://localhost:18081/auth',
-        'auth_username': 'admin',
-        'auth_password': 'admin',
->>>>>>> SX5-868 Add keycloak_user module and non mock unit tests.
-=======
-        'url': 'http://localhost:18081/auth',
-        'username': 'admin',
-        'password': 'admin',
->>>>>>> Sx5-868 Add keycloak_realm module with non mock unit tests.
-=======
-        'auth_keycloak_url': 'http://localhost:18081/auth',
-        'auth_username': 'admin',
-        'auth_password': 'admin',
->>>>>>> SX5-868 Add keycloak_user module and non mock unit tests.
         'displayName': 'Test create realm',
         'displayNameHtml': 'Test Create Realm',
         'accessCodeLifespan': 60,
@@ -102,33 +78,9 @@ class KeycloakRealmTestCase(ModuleTestCase):
 
     toModifyRealm = {
         'realm': 'test_modify_realm',
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
         'auth_keycloak_url': 'http://localhost:18081/auth',
         'auth_username': 'admin',
         'auth_password': 'admin',
-=======
-        'url': 'http://localhost:18081/auth',
-        'username': 'admin',
-        'password': 'admin',
->>>>>>> Sx5-868 Add keycloak_realm module with non mock unit tests.
-=======
-        'auth_keycloak_url': 'http://localhost:18081/auth',
-        'auth_username': 'admin',
-        'auth_password': 'admin',
->>>>>>> SX5-868 Add keycloak_user module and non mock unit tests.
-=======
-        'url': 'http://localhost:18081/auth',
-        'username': 'admin',
-        'password': 'admin',
->>>>>>> Sx5-868 Add keycloak_realm module with non mock unit tests.
-=======
-        'auth_keycloak_url': 'http://localhost:18081/auth',
-        'auth_username': 'admin',
-        'auth_password': 'admin',
->>>>>>> SX5-868 Add keycloak_user module and non mock unit tests.
         'displayName': 'Test modify realm',
         'displayNameHtml': 'Test Modify Realm',
         'accessCodeLifespan': 60,
@@ -189,33 +141,9 @@ class KeycloakRealmTestCase(ModuleTestCase):
     }        
     toDeleteRealm = {
         'realm': 'test_delete_realm',
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
         'auth_keycloak_url': 'http://localhost:18081/auth',
         'auth_username': 'admin',
         'auth_password': 'admin',
-=======
-        'url': 'http://localhost:18081/auth',
-        'username': 'admin',
-        'password': 'admin',
->>>>>>> Sx5-868 Add keycloak_realm module with non mock unit tests.
-=======
-        'auth_keycloak_url': 'http://localhost:18081/auth',
-        'auth_username': 'admin',
-        'auth_password': 'admin',
->>>>>>> SX5-868 Add keycloak_user module and non mock unit tests.
-=======
-        'url': 'http://localhost:18081/auth',
-        'username': 'admin',
-        'password': 'admin',
->>>>>>> Sx5-868 Add keycloak_realm module with non mock unit tests.
-=======
-        'auth_keycloak_url': 'http://localhost:18081/auth',
-        'auth_username': 'admin',
-        'auth_password': 'admin',
->>>>>>> SX5-868 Add keycloak_user module and non mock unit tests.
         'displayName': 'Test delete realm',
         'displayNameHtml': 'Test Delete Realm',
         'state': 'present',
@@ -224,33 +152,9 @@ class KeycloakRealmTestCase(ModuleTestCase):
 
     toDoNotChangeRealm = {
         'realm': 'test_not_changed_realm',
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
         'auth_keycloak_url': 'http://localhost:18081/auth',
         'auth_username': 'admin',
         'auth_password': 'admin',
-=======
-        'url': 'http://localhost:18081/auth',
-        'username': 'admin',
-        'password': 'admin',
->>>>>>> Sx5-868 Add keycloak_realm module with non mock unit tests.
-=======
-        'auth_keycloak_url': 'http://localhost:18081/auth',
-        'auth_username': 'admin',
-        'auth_password': 'admin',
->>>>>>> SX5-868 Add keycloak_user module and non mock unit tests.
-=======
-        'url': 'http://localhost:18081/auth',
-        'username': 'admin',
-        'password': 'admin',
->>>>>>> Sx5-868 Add keycloak_realm module with non mock unit tests.
-=======
-        'auth_keycloak_url': 'http://localhost:18081/auth',
-        'auth_username': 'admin',
-        'auth_password': 'admin',
->>>>>>> SX5-868 Add keycloak_user module and non mock unit tests.
         'displayName': 'Test not changed realm',
         'displayNameHtml': 'Test Not Changed Realm',
         'accessCodeLifespan': 60,
@@ -317,55 +221,15 @@ class KeycloakRealmTestCase(ModuleTestCase):
     }        
     toDoNotChangeRealmForce = {
         'realm': 'test_do_not_change_realm_force',
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
         'auth_keycloak_url': 'http://localhost:18081/auth',
         'auth_username': 'admin',
         'auth_password': 'admin',
-=======
-        'url': 'http://localhost:18081/auth',
-        'username': 'admin',
-        'password': 'admin',
->>>>>>> Sx5-868 Add keycloak_realm module with non mock unit tests.
-=======
-        'auth_keycloak_url': 'http://localhost:18081/auth',
-        'auth_username': 'admin',
-        'auth_password': 'admin',
->>>>>>> SX5-868 Add keycloak_user module and non mock unit tests.
-=======
-        'url': 'http://localhost:18081/auth',
-        'username': 'admin',
-        'password': 'admin',
->>>>>>> Sx5-868 Add keycloak_realm module with non mock unit tests.
-=======
-        'auth_keycloak_url': 'http://localhost:18081/auth',
-        'auth_username': 'admin',
-        'auth_password': 'admin',
->>>>>>> SX5-868 Add keycloak_user module and non mock unit tests.
         'displayName': 'Test do not realm rorce',
         'displayNameHtml': 'Test Do Not Change Realm Force',
         'state': 'present',
         'force': False
     }        
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
     realmExcudes = ["auth_keycloak_url","auth_username","auth_password","state","force","eventsConfig","_ansible_keep_remote_files","_ansible_remote_tmp"]
-=======
-    realmExcudes = ["url","username","password","state","force","eventsConfig","_ansible_keep_remote_files","_ansible_remote_tmp"]
->>>>>>> Sx5-868 Add keycloak_realm module with non mock unit tests.
-=======
-    realmExcudes = ["auth_keycloak_url","auth_username","auth_password","state","force","eventsConfig","_ansible_keep_remote_files","_ansible_remote_tmp"]
->>>>>>> SX5-868 Add keycloak_user module and non mock unit tests.
-=======
-    realmExcudes = ["url","username","password","state","force","eventsConfig","_ansible_keep_remote_files","_ansible_remote_tmp"]
->>>>>>> Sx5-868 Add keycloak_realm module with non mock unit tests.
-=======
-    realmExcudes = ["auth_keycloak_url","auth_username","auth_password","state","force","eventsConfig","_ansible_keep_remote_files","_ansible_remote_tmp"]
->>>>>>> SX5-868 Add keycloak_user module and non mock unit tests.
     def setUp(self):
         super(KeycloakRealmTestCase, self).setUp()
         self.module = keycloak_realm
