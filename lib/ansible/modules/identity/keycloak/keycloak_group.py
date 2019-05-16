@@ -129,12 +129,51 @@ options:
             - If true and the group already exist on the Keycloak server, it will be deleted and re-created with the new specification.
         default: False
         version_added: 2.9
+    auth_keycloak_url:
+        description:
+            - URL to the Keycloak instance.
+        type: str
+        required: true
+
+    auth_client_id:
+        description:
+            - OpenID Connect I(client_id) to authenticate to the API with.
+        type: str
+        default: admin-cli
+        required: true
+
+    auth_realm:
+        description:
+            - Keycloak realm name to authenticate to for API access.
+        type: str
+        default: master
+
+    auth_client_secret:
+        description:
+            - Client Secret to use in conjunction with I(auth_client_id) (if required).
+        type: str
+
+    auth_username:
+        description:
+            - Username to authenticate for API access with.
+        type: str
+        required: true
+
+    auth_password:
+        description:
+            - Password to authenticate for API access with.
+        type: str
+        required: true
+
+    validate_certs:
+        description:
+            - Verify TLS certificates (do not disable this in production).
+        type: bool
+        default: yes
+
 notes:
     - Presently, the I(access) attribute returned by the Keycloak API is read-only for groups.
       This version of this module now support the I(realmRoles), I(clientRoles) as read-write attributes.
-
-extends_documentation_fragment:
-    - keycloak
 
 author:
     - Adam Goossens (@adamgoossens)

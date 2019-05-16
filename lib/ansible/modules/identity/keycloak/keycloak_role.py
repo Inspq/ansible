@@ -40,7 +40,7 @@ options:
             - This parameter indicate if the role is a client role.
             - For a ream role, this parameter must be false.
         default: false
-        required: false
+        type: bool
     containerId:
         description:
             - Id for the container of the role. For a realm role, it must be the realm name
@@ -50,7 +50,7 @@ options:
         description:
             - If true, the role is a composition of other realm and/or client role.
         default: false
-        required: false
+        type: bool
     composites:
         description:
             - List of roles to include to the composite realm role.
@@ -77,8 +77,48 @@ options:
         default: false
         description:
             - If true, allows to remove role and recreate it.
-extends_documentation_fragment:
-    - keycloak
+    auth_keycloak_url:
+        description:
+            - URL to the Keycloak instance.
+        type: str
+        required: true
+
+    auth_client_id:
+        description:
+            - OpenID Connect I(client_id) to authenticate to the API with.
+        type: str
+        default: admin-cli
+        required: true
+
+    auth_realm:
+        description:
+            - Keycloak realm name to authenticate to for API access.
+        type: str
+        default: master
+
+    auth_client_secret:
+        description:
+            - Client Secret to use in conjunction with I(auth_client_id) (if required).
+        type: str
+
+    auth_username:
+        description:
+            - Username to authenticate for API access with.
+        type: str
+        required: true
+
+    auth_password:
+        description:
+            - Password to authenticate for API access with.
+        type: str
+        required: true
+
+    validate_certs:
+        description:
+            - Verify TLS certificates (do not disable this in production).
+        type: bool
+        default: yes
+
 notes:
     - module does not modify role name.
 author:

@@ -41,6 +41,8 @@ options:
     realm:
         description:
             - The realm to create the client in.
+        type: str
+        default: master
     client_id:
         description:
             - Client id of client to be worked on. This is usually an alphanumeric name chosen by
@@ -441,7 +443,7 @@ options:
                     name:
                         description:
                             - Name of the role. It can be a realm role name or a client role name.
-        version_added: "2.9"
+        version_added: "2.7"
     scope_mappings:
         description:
             - List scope mappings for the client.
@@ -487,15 +489,55 @@ options:
                                       If absent, the role will be removed
                                 choices: [absent, present]
                                 default: present
-        version_added: "2.9"
+        version_added: "2.7"
     force:
         type: bool
         description:
             - If true, existing client will be deleted an re-created.
         default: False
-        version_added: "2.9"
-extends_documentation_fragment:
-    - keycloak
+        version_added: "2.7"
+    auth_keycloak_url:
+        description:
+            - URL to the Keycloak instance.
+        type: str
+        required: true
+
+    auth_client_id:
+        description:
+            - OpenID Connect I(client_id) to authenticate to the API with.
+        type: str
+        default: admin-cli
+        required: true
+
+    auth_realm:
+        description:
+            - Keycloak realm name to authenticate to for API access.
+        type: str
+        default: master
+
+    auth_client_secret:
+        description:
+            - Client Secret to use in conjunction with I(auth_client_id) (if required).
+        type: str
+
+    auth_username:
+        description:
+            - Username to authenticate for API access with.
+        type: str
+        required: true
+
+    auth_password:
+        description:
+            - Password to authenticate for API access with.
+        type: str
+        required: true
+
+    validate_certs:
+        description:
+            - Verify TLS certificates (do not disable this in production).
+        type: bool
+        default: yes
+
 author:
     - Eike Frost (@eikef)
 '''
@@ -851,7 +893,7 @@ def main():
         if client_param == 'roles':
             client_param = 'client_roles'
         changeset[camel(client_param)] = new_param_value
-    
+
     newClientScopeMappings = {}
     newClientScopeRealm = {}
     newClientScopeClients = {}
@@ -903,7 +945,7 @@ def main():
                 clientScopeRealmRoles=newClientScopeRealm["realmRoles"],
                 clientScopeClientRoles=newClientScopeClients["clientRoles"],
                 realm=realm)
-        
+
         result['msg'] = 'Client %s has been created.' % updated_client['clientId']
         module.exit_json(**result)
     else:
@@ -931,7 +973,7 @@ def main():
             if module._diff:
                 result['diff'] = dict(before=sanitize_cr(before_client),
                                       after=sanitize_cr(after_client))
-            
+
             if module.params.get('scope_mappings') is not None:
                 kc.assing_scope_roles_to_client(
                     client_id=after_client['id'],

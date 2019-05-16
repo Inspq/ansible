@@ -55,6 +55,7 @@ options:
         description:
             - Is internationalization enabled for this realm?
         required: false
+        type: bool
     supportedLocales:
         description:
             - List of supported languages for the realm.
@@ -106,6 +107,7 @@ options:
         description:
             - Enabled.
         default: True
+        type: bool
     sslRequired:
         description:
             - SSL Required.
@@ -114,22 +116,27 @@ options:
         description:
             - Registration Allowed.
         default: False
+        type: bool
     registrationEmailAsUsername:
         description:
             - Registration Email As Username.
         default: False
+        type: bool
     rememberMe:
         description:
             - Remember me.
         default: False
+        type: bool
     verifyEmail:
         description:
             - Verify Email.
         default: False
+        type: bool
     loginWithEmailAllowed:
         description:
             - Login With Email Allowed.
         default: True
+        type: bool
     duplicateEmailsAllowed:
         description:
             - Duplicate Emails Allowed.
@@ -144,14 +151,17 @@ options:
         description:
             - Edit Username Allowed.
         default: False
+        type: bool
     bruteForceProtected:
         description:
             - Brute Force Protected.
         default: False
+        type: bool
     permanentLockout:
         description:
             - Permanent Lockout.
         default: False
+        type: bool
     maxFailureWaitSeconds:
         description:
             - Max Failure Wait Seconds.
@@ -404,8 +414,48 @@ options:
         default: false
         description:
             - If true, allows to remove realm and recreate it.
-extends_documentation_fragment:
-    - keycloak
+    auth_keycloak_url:
+        description:
+            - URL to the Keycloak instance.
+        type: str
+        required: true
+
+    auth_client_id:
+        description:
+            - OpenID Connect I(client_id) to authenticate to the API with.
+        type: str
+        default: admin-cli
+        required: true
+
+    auth_realm:
+        description:
+            - Keycloak realm name to authenticate to for API access.
+        type: str
+        default: master
+
+    auth_client_secret:
+        description:
+            - Client Secret to use in conjunction with I(auth_client_id) (if required).
+        type: str
+
+    auth_username:
+        description:
+            - Username to authenticate for API access with.
+        type: str
+        required: true
+
+    auth_password:
+        description:
+            - Password to authenticate for API access with.
+        type: str
+        required: true
+
+    validate_certs:
+        description:
+            - Verify TLS certificates (do not disable this in production).
+        type: bool
+        default: yes
+
 notes:
   - module does not modify realm name.
 author:

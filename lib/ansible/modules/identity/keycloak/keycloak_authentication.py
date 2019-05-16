@@ -52,8 +52,48 @@ options:
         description:
             - If true, allows to remove the authentication flow and recreate it.
         required: false
-extends_documentation_fragment:
-    - keycloak
+    auth_keycloak_url:
+        description:
+            - URL to the Keycloak instance.
+        type: str
+        required: true
+
+    auth_client_id:
+        description:
+            - OpenID Connect I(client_id) to authenticate to the API with.
+        type: str
+        default: admin-cli
+        required: true
+
+    auth_realm:
+        description:
+            - Keycloak realm name to authenticate to for API access.
+        type: str
+        default: master
+
+    auth_client_secret:
+        description:
+            - Client Secret to use in conjunction with I(auth_client_id) (if required).
+        type: str
+
+    auth_username:
+        description:
+            - Username to authenticate for API access with.
+        type: str
+        required: true
+
+    auth_password:
+        description:
+            - Password to authenticate for API access with.
+        type: str
+        required: true
+
+    validate_certs:
+        description:
+            - Verify TLS certificates (do not disable this in production).
+        type: bool
+        default: yes
+
 
 author:
     - Philippe Gauthier (@elfelip)

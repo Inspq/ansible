@@ -40,7 +40,7 @@ options:
   enabled:
     description:
     - enabled.
-    required: false
+    type: bool
     default: true
   updateProfileFirstLoginMode:
     description:
@@ -50,19 +50,22 @@ options:
     description:
     - trust Email.
     required: false
+    type: bool
   storeToken:
     description:
     - store Token.
-    required: false
+    type: bool
     default: true
   addReadTokenRoleOnCreate:
     description:
     - add Read Token Role On Create.
     required: false
+    type: bool
   authenticateByDefault:
     description:
     - authenticate By Default.
     required: false
+    type: bool
   firstBrokerLoginFlowAlias:
     description:
     - first Broker Login Flow Alias.
@@ -75,6 +78,7 @@ options:
     description:
     - Link only option for identity provider
     default: False
+    type: bool
   config:
     description:
     - Detailed configuration of the identity provider.
@@ -169,8 +173,48 @@ options:
     - If true, allows to remove realm and recreate it.
     type: bool
     default: false
-extends_documentation_fragment:
-    - keycloak
+  auth_keycloak_url:
+    description:
+        - URL to the Keycloak instance.
+    type: str
+    required: true
+
+  auth_client_id:
+    description:
+        - OpenID Connect I(client_id) to authenticate to the API with.
+    type: str
+    default: admin-cli
+    required: true
+
+  auth_realm:
+    description:
+        - Keycloak realm name to authenticate to for API access.
+    type: str
+    default: master
+
+  auth_client_secret:
+    description:
+        - Client Secret to use in conjunction with I(auth_client_id) (if required).
+    type: str
+
+  auth_username:
+    description:
+        - Username to authenticate for API access with.
+    type: str
+    required: true
+
+  auth_password:
+    description:
+        - Password to authenticate for API access with.
+    type: str
+    required: true
+
+  validate_certs:
+    description:
+        - Verify TLS certificates (do not disable this in production).
+    type: bool
+    default: yes
+
 notes:
   - module does not modify identity provider alias.
 author:
