@@ -449,7 +449,7 @@ options:
             - List scope mappings for the client.
               Scope mappings can be added, updated or removed depending it's state.
         aliases:
-            - scopeMappings
+            - scope_mappings
         suboptions:
             realm:
                 description:
@@ -742,22 +742,6 @@ def main():
         composites=dict(type='list', elements='dict', options=clientrolecomposites_spec),
         state=dict(type='str', choices=['absent', 'present'], default='present'),
     )
-    realmscoperole_spec = dict(
-        name=dict(type='str'),
-        state=dict(type='str', choices=['absent', 'present'], default='present'),
-    )
-    clientsrolescope_spec = dict(
-        name=dict(type='str'),
-        state=dict(type='str', choices=['absent', 'present'], default='present'),
-    )
-    clientsscoperole_spec = dict(
-        id=dict(type='str'),
-        roles=dict(type='list', elements='dict', options=clientsrolescope_spec),
-    )
-    scopemappings_spec = dict(
-        realm=dict(type='list', elements='dict', options=realmscoperole_spec),
-        clients=dict(type='list', elements='dict', options=clientsscoperole_spec),
-    )
     meta_args = dict(
         state=dict(default='present', choices=['present', 'absent']),
         realm=dict(type='str', default='master'),
@@ -798,7 +782,7 @@ def main():
         protocol_mappers=dict(type='list', elements='dict', options=protmapper_spec, aliases=['protocolMappers']),
         authorization_settings=dict(type='dict', aliases=['authorizationSettings']),
         client_roles=dict(type='list', elements='dict', options=clientroles_spec, aliases=['clientRoles', 'roles']),
-        scope_mappings=dict(type='dict', aliases=['scopeMappings']),
+        scope_mappings=dict(type='dict'),
         force=dict(type='bool', default=False),
     )
     argument_spec.update(meta_args)
@@ -854,6 +838,7 @@ def main():
             client_param = 'client_roles'
         changeset[camel(client_param)] = new_param_value
 
+    
     newClientScopeMappings = {}
     newClientScopeRealm = {}
     newClientScopeClients = {}
@@ -905,7 +890,7 @@ def main():
                 clientScopeRealmRoles=newClientScopeRealm["realmRoles"],
                 clientScopeClientRoles=newClientScopeClients["clientRoles"],
                 realm=realm)
-
+            result['changed'] = True
         result['msg'] = 'Client %s has been created.' % updated_client['clientId']
         module.exit_json(**result)
     else:
@@ -933,9 +918,9 @@ def main():
             if module._diff:
                 result['diff'] = dict(before=sanitize_cr(before_client),
                                       after=sanitize_cr(after_client))
-
+            
             if module.params.get('scope_mappings') is not None:
-                kc.assing_scope_roles_to_client(
+                result['changed'] = kc.assing_scope_roles_to_client(
                     client_id=after_client['id'],
                     clientScopeRealmRoles=newClientScopeRealm["realmRoles"],
                     clientScopeClientRoles=newClientScopeClients["clientRoles"],

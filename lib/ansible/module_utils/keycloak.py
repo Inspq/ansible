@@ -42,10 +42,10 @@ URL_CLIENT = "{url}/admin/realms/{realm}/clients/{id}"
 URL_CLIENTS = "{url}/admin/realms/{realm}/clients"
 URL_CLIENT_ROLES = "{url}/admin/realms/{realm}/clients/{id}/roles"
 URL_CLIENT_SECRET = "{url}/admin/realms/{realm}/clients/{id}/client-secret"
-URL_CLIENT_SCOPE_MAPPINGS = "{url}/admin/realms/{realm}/clients/{id}/role-mappings"
-URL_CLIENT_REALM_SCOPE_MAPPINGS = "{url}/admin/realms/{realm}/clients/{id}/role-mappings/realm"
-URL_CLIENT_CLIENTS_ROLE_MAPPINGS = "{url}/admin/realms/{realm}/clients/{id}/role-mappings/clients"
-URL_CLIENT_CLIENT_SCOPE_MAPPINGS = "{url}/admin/realms/{realm}/clients/{id}/role-mappings/clients/{client_id}"
+URL_CLIENT_SCOPE_MAPPINGS = "{url}/admin/realms/{realm}/clients/{id}/scope-mappings"
+URL_CLIENT_REALM_SCOPE_MAPPINGS = "{url}/admin/realms/{realm}/clients/{id}/scope-mappings/realm"
+URL_CLIENT_CLIENTS_ROLE_MAPPINGS = "{url}/admin/realms/{realm}/clients/{id}/scope-mappings/clients"
+URL_CLIENT_CLIENT_SCOPE_MAPPINGS = "{url}/admin/realms/{realm}/clients/{id}/scope-mappings/clients/{client_id}"
 
 URL_CLIENTTEMPLATE = "{url}/admin/realms/{realm}/client-templates/{id}"
 URL_CLIENTTEMPLATES = "{url}/admin/realms/{realm}/client-templates"
@@ -389,6 +389,8 @@ class KeycloakAPI(object):
             if camel('client_roles') in clientrep:
                 client_roles = clientrep[camel('client_roles')]
                 del(clientrep[camel('client_roles')])
+            if camel('scope_mappings') in clientrep:
+                del(clientrep[camel('scope_mappings')])
             client_protocol_mappers = None
             if camel('protocol_mappers') in clientrep:
                 client_protocol_mappers = clientrep[camel('protocol_mappers')]
@@ -421,6 +423,8 @@ class KeycloakAPI(object):
             if camel('client_roles') in clientrep:
                 client_roles = clientrep[camel('client_roles')]
                 del(clientrep[camel('client_roles')])
+            if camel('scope_mappings') in clientrep:
+                del(clientrep[camel('scope_mappings')])
             client_protocol_mappers = None
             if camel('protocol_mappers') in clientrep:
                 client_protocol_mappers = clientrep[camel('protocol_mappers')]
@@ -588,11 +592,12 @@ class KeycloakAPI(object):
                     method='GET',
                     headers=self.restheaders))
             realmRoles = []
-            for scopeMapping in scope_mappings["realmMappings"]:
-                realmRoles.append(scopeMapping["name"])
+            if "realmMappings" in scope_mappings:
+                for scopeMapping in scope_mappings["realmMappings"]:
+                    realmRoles.append(scopeMapping["name"])
             return realmRoles
         except Exception as e:
-            self.module.fail_json(msg='Could not get role mappings for client %s in realm %s: %s'
+            self.module.fail_json(msg='Could not get scope mappings realm_roles for client %s in realm %s: %s'
                                       % (client_id, realm, str(e)))
 
     def update_client_scope_mappings_realm_roles(self, client_id, realmRolesRepresentation, realm='master'):
@@ -613,7 +618,7 @@ class KeycloakAPI(object):
                 headers=self.restheaders,
                 data=json.dumps(realmRolesRepresentation))
         except Exception as e:
-            self.module.fail_json(msg='Could not update realm role mappings for client %s in realm %s: %s'
+            self.module.fail_json(msg='Could not update scope mappings realm_roles for client %s in realm %s: %s'
                                       % (client_id, realm, str(e)))
 
     def delete_client_scope_mappings_realm_roles(self, client_id, realmRolesRepresentation, realm='master'):
@@ -634,7 +639,7 @@ class KeycloakAPI(object):
                 headers=self.restheaders,
                 data=json.dumps(realmRolesRepresentation))
         except Exception as e:
-            self.module.fail_json(msg='Could not delete realm role mappings for client %s in realm %s: %s'
+            self.module.fail_json(msg='Could not delete scope mappings realm_roles for client %s in realm %s: %s'
                                       % (client_id, realm, str(e)))
 
     def get_client_scope_mappings_client_roles(self, client_id, realm='master'):
@@ -655,17 +660,18 @@ class KeycloakAPI(object):
                     scope_mappings_url,
                     method='GET',
                     headers=self.restheaders))
-            for clientMapping in scope_mappings["clientMappings"].keys():
-                clientRole = {}
-                clientRole["clientId"] = scope_mappings["clientMappings"][clientMapping]["client"]
-                roles = []
-                for role in scope_mappings["clientMappings"][clientMapping]["mappings"]:
-                    roles.append(role["name"])
-                clientRole["roles"] = roles
-                clientRoles.append(clientRole)
+            if "clientMappings" in scope_mappings:
+                for clientMapping in scope_mappings["clientMappings"].keys():
+                    clientRole = {}
+                    clientRole["clientId"] = scope_mappings["clientMappings"][clientMapping]["client"]
+                    roles = []
+                    for role in scope_mappings["clientMappings"][clientMapping]["mappings"]:
+                        roles.append(role["name"])
+                    clientRole["roles"] = roles
+                    clientRoles.append(clientRole)
             return clientRoles
         except Exception as e:
-            self.module.fail_json(msg='Could not get role mappings for client %s in realm %s: %s'
+            self.module.fail_json(msg='Could not get scope mappings client_roles for client %s in realm %s: %s'
                                       % (client_id, realm, str(e)))
 
     def delete_client_scope_mappings_client_roles(self, client_id, clientscope_id, realm='master'):
@@ -687,7 +693,7 @@ class KeycloakAPI(object):
                 method='DELETE',
                 headers=self.restheaders)
         except Exception as e:
-            self.module.fail_json(msg='Could not delete client role mappings for client %s in realm %s: %s'
+            self.module.fail_json(msg='Could not delete scope mappings client_roles for client %s in realm %s: %s'
                                       % (client_id, realm, str(e)))
 
     def create_client_scope_mappings_client_roles(self, client_id, clientscope_id, rolesToAssing, realm='master'):
@@ -711,7 +717,7 @@ class KeycloakAPI(object):
                 headers=self.restheaders,
                 data=json.dumps(rolesToAssing))
         except Exception as e:
-            self.module.fail_json(msg='Could not create client role mappings for client %s in realm %s: %s'
+            self.module.fail_json(msg='Could not create scope mappings client_roles for client %s in realm %s: %s'
                                       % (client_id, realm, str(e)))
 
     def assing_scope_roles_to_client(self, client_id, clientScopeRealmRoles, clientScopeClientRoles, realm='master'):
@@ -774,7 +780,7 @@ class KeycloakAPI(object):
                 for clientToAssingRole in clientScopeClientRoles:
                     # Get the client roles
                     clientscope_id = self.get_client_by_clientid(
-                        clientscope_id=clientToAssingRole["id"],
+                        client_id=clientToAssingRole["id"],
                         realm=realm)['id']
                     clientRoles = self.get_client_roles(
                         client_id=clientscope_id,
