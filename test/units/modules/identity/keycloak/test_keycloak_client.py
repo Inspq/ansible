@@ -434,28 +434,11 @@ class KeycloakClientTestCase(ModuleTestCase):
             "clientAuthenticatorType": "client-secret",
             "redirectUris": ["http://test6.com:8080/secure"],
             "webOrigins": ["http://test6.com:8080/secure"],
-            "consentRequired": False, 
-            "standardFlowEnabled": True,
-            "implicitFlowEnabled": True,
-            "directAccessGrantsEnabled": True,
-            "fullScopeAllowed": True,
+            "fullScopeAllowed": False,
             "serviceAccountsEnabled": True,
             "protocol": "openid-connect",
             "bearerOnly": False,
-            "publicClient": False,
-            "roles": [
-                {
-                    "name":"test1",
-                    "description": "test1",
-                    "composite": False
-                },
-                {
-                    "name":"test2",
-                    "description": "test2",
-                    "composite": True,
-                    "composites": []
-                }
-            ]
+            "publicClient": False
         }
     ]
 
@@ -657,46 +640,23 @@ class KeycloakClientTestCase(ModuleTestCase):
     def test_add_client_scope_mappings_roles(self):
         toAddnewClientScopeMappings = self.testClients[8].copy()
         newClientScopeMappings = {
-            "realm": [
-                {
-                    "name": "uma_authorization",
-                    "state": "present"
-                },
-                {
-                    "name": "offline_access",
-                    "state": "present"
-                }
-            ],
-            "clients": [
-                {
-                    "clientID": "clientId1",
-                    "roles": [
-                        {
-                            "name": "clientRole11"
-                        },
-                        {
-                            "name": "clientRole12"
-                        }
-                    ]
-                },
-                {
-                    "clientID": "clientId2",
-                    "roles": [
-                        {
-                            "name": "clientRole21",
-                            "state": "present"
-                        },
-                        {
-                            "name": "clientRole22"
-                        }
-                    ]
-                }
-            ]
-        }
-
+                "realm": [
+                    {"name": "admin", "state": "present"},
+                    {"name": "offline_access","state": "present"}
+                ],
+                "clients": [
+                    {
+                        "id": "master-realm",
+                        "roles": [{"name": "view-events"},{"name": "manage-clients"}]
+                    },
+                    {
+                        "id": "master-realm",
+                        "roles": [{"name": "view-clients","state": "present"},{"name": "view-realm"}]
+                    }
+                ]
+            }
         toAddnewClientScopeMappings["scope_mappings"] = newClientScopeMappings
         set_module_args(toAddnewClientScopeMappings)
-        with self.assertRaises(AnsibleExitJson) as results:
+        with self.assertRaises(AnsibleExitJson) as results: 
             self.module.main()
-        self.assertTrue(results.exception.args[0]['end_state']['enabled'])
-        self.assertTrue(results.exception.args[0]['changed'])    
+        self.assertTrue(results.exception.args[0]['changed'])
