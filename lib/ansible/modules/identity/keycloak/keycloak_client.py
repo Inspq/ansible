@@ -742,6 +742,22 @@ def main():
         composites=dict(type='list', elements='dict', options=clientrolecomposites_spec),
         state=dict(type='str', choices=['absent', 'present'], default='present'),
     )
+    realmscopemappings_spec = dict(
+        name=dict(type='str'),
+        state=dict(type='str', choices=['absent', 'present'], default='present')
+    )
+    clientrolescopemappings_spec = dict(
+        name=dict(type='str'),
+        state=dict(type='str', choices=['absent', 'present'], default='present')
+    )
+    clientsscopemappings_spec = dict(
+        id=dict(type='str'),
+        roles=dict(type='list', options=clientrolescopemappings_spec)
+    )
+    scopemappings_spec = dict(
+        realm=dict(type='list', options=realmscopemappings_spec),
+        clients=dict(type='list', options=clientsscopemappings_spec)
+    )
     meta_args = dict(
         state=dict(default='present', choices=['present', 'absent']),
         realm=dict(type='str', default='master'),
@@ -782,7 +798,7 @@ def main():
         protocol_mappers=dict(type='list', elements='dict', options=protmapper_spec, aliases=['protocolMappers']),
         authorization_settings=dict(type='dict', aliases=['authorizationSettings']),
         client_roles=dict(type='list', elements='dict', options=clientroles_spec, aliases=['clientRoles', 'roles']),
-        scope_mappings=dict(type='dict', aliases=['scopeMappings']),
+        scope_mappings=dict(type='dict', aliases=['scopeMappings'], options=scopemappings_spec),
         force=dict(type='bool', default=False),
     )
     argument_spec.update(meta_args)
