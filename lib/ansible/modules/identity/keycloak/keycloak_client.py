@@ -854,7 +854,6 @@ def main():
             client_param = 'client_roles'
         changeset[camel(client_param)] = new_param_value
 
-    
     newClientScopeMappings = {}
     newClientScopeRealm = {}
     newClientScopeClients = {}
@@ -934,7 +933,7 @@ def main():
             if module._diff:
                 result['diff'] = dict(before=sanitize_cr(before_client),
                                       after=sanitize_cr(after_client))
-            
+
             if module.params.get('scope_mappings') is not None:
                 result['changed'] = kc.assing_scope_roles_to_client(
                     client_id=after_client['id'],
