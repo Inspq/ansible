@@ -449,7 +449,7 @@ options:
             - List scope mappings for the client.
               Scope mappings can be added, updated or removed depending it's state.
         aliases:
-            - scope_mappings
+            - scopeMappings
         suboptions:
             realm:
                 description:
@@ -782,7 +782,7 @@ def main():
         protocol_mappers=dict(type='list', elements='dict', options=protmapper_spec, aliases=['protocolMappers']),
         authorization_settings=dict(type='dict', aliases=['authorizationSettings']),
         client_roles=dict(type='list', elements='dict', options=clientroles_spec, aliases=['clientRoles', 'roles']),
-        scope_mappings=dict(type='dict'),
+        scope_mappings=dict(type='dict', aliases=['scopeMappings']),
         force=dict(type='bool', default=False),
     )
     argument_spec.update(meta_args)
