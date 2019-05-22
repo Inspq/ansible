@@ -2954,7 +2954,7 @@ class KeycloakAPI(object):
                     if client is None:
                         self.module.fail_json(
                             msg='Could not assign client roles to user %s in realm %s: client %s not found' % (user_id, realm, clientToAssingRole["clientId"]))
-                    client_id=client['id']
+                    client_id = client['id']
                     clientRoles = self.get_client_roles(
                         client_id=client_id,
                         realm=realm)
