@@ -277,7 +277,7 @@ class KeycloakAPI(object):
         """
         clientlist_url = URL_CLIENTS.format(url=self.baseurl, realm=realm)
         if filter is not None:
-            clientlist_url += '?clientId=%s' % filter
+            clientlist_url += '?clientId=%s' % urllib.quote(filter)
 
         try:
             return json.load(open_url(clientlist_url, method='GET', headers=self.restheaders,
@@ -2948,9 +2948,13 @@ class KeycloakAPI(object):
             if len(userClientRoles) > 0 and not isDictEquals(userClientRoles, newUserClientRoles):
                 for clientToAssingRole in userClientRoles:
                     # Get the client roles
-                    client_id = self.get_client_by_clientid(
+                    client = self.get_client_by_clientid(
                         client_id=clientToAssingRole["clientId"],
-                        realm=realm)['id']
+                        realm=realm)
+                    if client is None:
+                        self.module.fail_json(
+                            msg='Could not assign client roles to user %s in realm %s: client %s not found' % (user_id, realm, clientToAssingRole["clientId"]))
+                    client_id=client['id']
                     clientRoles = self.get_client_roles(
                         client_id=client_id,
                         realm=realm)
