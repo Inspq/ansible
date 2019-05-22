@@ -173,7 +173,45 @@ class KeycloakUserTestCase(ModuleTestCase):
             "clientRoles": [{"clientId": "master-realm","roles": ["manage-clients"]}],
             "state":"absent",
             "force":"no"
-        }        
+        },
+        {
+            "auth_keycloak_url": "http://localhost:18081/auth",
+            "auth_username": "admin",
+            "auth_password": "admin",
+            "realm": "master",
+            "username": "nonexistclient",
+            "firstName": "User-With",
+            "lastName": "Nonexisting-Clientrole",
+            "email": "user8@user.ca",
+            "enabled": True,
+            "emailVerified": False,
+            "credentials": [{"temporary": 'false',"type": "password","value": "password"}],
+            "clientRoles": [{"clientId": "doesnotexist","roles": ["manage-clients"]}],
+            "realmRoles": ["testUserRole1","testUserRole2"],
+            "attributes": {"attr1": ["value1"],"attr2": ["value2"]},
+            "groups": ["testUserGroup1","testUserGroup2"],
+            "state":"absent",
+            "force": False
+        },
+        {
+            "auth_keycloak_url": "http://localhost:18081/auth",
+            "auth_username": "admin",
+            "auth_password": "admin",
+            "realm": "master",
+            "username": "clientspaces",
+            "firstName": "User-With",
+            "lastName": "Clientrole-Withspaces",
+            "email": "user9@user.ca",
+            "enabled": True,
+            "emailVerified": False,
+            "credentials": [{"temporary": 'false',"type": "password","value": "password"}],
+            "clientRoles": [{"clientId": "does not exist","roles": ["manage-clients"]}],
+            "realmRoles": ["testUserRole1","testUserRole2"],
+            "attributes": {"attr1": ["value1"],"attr2": ["value2"]},
+            "groups": ["testUserGroup1","testUserGroup2"],
+            "state":"absent",
+            "force": False
+        }                
     ]
     
     def setUp(self):
@@ -196,6 +234,13 @@ class KeycloakUserTestCase(ModuleTestCase):
             with self.assertRaises(AnsibleExitJson) as results:
                 self.module.main()
     def tearDown(self):
+        self.module = keycloak_user
+        for user in self.testUsers:
+            theUser = user.copy()
+            theUser["state"] = "absent"
+            set_module_args(theUser)
+            with self.assertRaises(AnsibleExitJson) as results:
+                self.module.main()
         self.module = keycloak_group
         for theGroup in self.testGroups:
             theGroup["state"] = "absent"
@@ -273,3 +318,19 @@ class KeycloakUserTestCase(ModuleTestCase):
             self.module.main()
         self.assertTrue(results.exception.args[0]['changed'])
         self.assertTrue(isDictEquals(toCreate, results.exception.args[0]["user"], self.compareExcludes), "user: " + str(toCreate) + " : " + str(results.exception.args[0]["user"]))
+
+    def test_create_user_with_non_existing_client_role(self):
+        toCreate = self.testUsers[7].copy()
+        toCreate["state"] = "present"
+        set_module_args(toCreate)
+        with self.assertRaises(AnsibleFailJson) as results:
+            self.module.main()
+        self.assertRegexpMatches(results.exception.args[0]['msg'], 'client ' + toCreate["clientRoles"][0]["clientId"] + ' not found', 'error not generated')
+
+    def test_create_user_with_non_existing_client_role_containing_spaces(self):
+        toCreate = self.testUsers[8].copy()
+        toCreate["state"] = "present"
+        set_module_args(toCreate)
+        with self.assertRaises(AnsibleFailJson) as results:
+            self.module.main()
+        self.assertRegexpMatches(results.exception.args[0]['msg'], 'client ' + toCreate["clientRoles"][0]["clientId"] + ' not found', 'error not generated')

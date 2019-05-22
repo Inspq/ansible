@@ -37,11 +37,12 @@ options:
         description:
             - Enabled user.
         default: true
+        type: bool
     emailVerified:
         description:
             - check the validity of user email.
         default: false
-        required: false
+        type: bool
     firstName:
         description:
             - User firstName.
