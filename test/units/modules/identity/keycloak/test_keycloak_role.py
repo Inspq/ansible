@@ -44,8 +44,27 @@ class KeycloakRoleTestCase(ModuleTestCase):
                         "protocol": "openid-connect",
                         "bearerOnly": False,
                         "publicClient": False,
+                    },
+                    {
+                        "clientId": "TestUPPER_underscore",
+                        "name": "Test client with uppercase and underscore",
+                        "description": "Tish is a client with uppercase letters and underscore in clientID",
+                        "adminUrl": "http://testupper.com:8080/admin",
+                        "baseUrl": "http://testupper.com:8080",
+                        "enabled": True,
+                        "clientAuthenticatorType": "client-secret",
+                        "redirectUris": ["http://testupper.com:8080/secure"],
+                        "webOrigins": ["http://testupper.com:8080/secure"],
+                        "consentRequired": False,   
+                        "standardFlowEnabled": True,
+                        "implicitFlowEnabled": True,
+                        "directAccessGrantsEnabled": True,
+                        "serviceAccountsEnabled": True,
+                        "protocol": "openid-connect",
+                        "bearerOnly": False,
+                        "publicClient": False,
                         }
-                    ]
+                ]
     clientRoles = [
                     {
                         "name":"admin",
@@ -61,143 +80,195 @@ class KeycloakRoleTestCase(ModuleTestCase):
     url = "http://localhost:18081"
     headers = ""
     roleSvcBaseUrl = ""
-    toCreateRole = {
-        "auth_username":"admin", 
-        "auth_password":"admin",
-        "realm":"master",
-        "auth_keycloak_url":"http://localhost:18081/auth",
-        "name":"test_create_role",
-        "description":"Test create role",
-        "composite":True,
-        "composites":[
-            {
-                "clientId":"master-realm",
-                "name":"manage-clients"
-                },
-            {
-                "clientId":"master-realm",
-                "name":"manage-users"
-                },
-            {
-                "name":"uma_authorization"}
-        ],
-        "state":"absent",
-        "force":False
-    }
-    toDoNotChangeRole = {
-        "auth_username":"admin", 
-        "auth_password":"admin",
-        "realm":"master",
-        "auth_keycloak_url":"http://localhost:18081/auth",
-        "name":"test_role_not_changed",
-        "description":"Test role not changed",
-        "composite":True,
-        "composites":[
-            {
-                "clientId":"master-realm",
-                "name":"manage-clients"
-                },
-            {
-                "clientId":"master-realm",
-                "name":"manage-users"
-                },
-            {
-                "name":"uma_authorization"}
-        ],
-        "state":"present",
-        "force":False
-    }
-    toDoNotChangeRoleForce = {
-        "auth_username":"admin", 
-        "auth_password":"admin",
-        "realm":"master",
-        "auth_keycloak_url":"http://localhost:18081/auth",
-        "name":"test_role_modify_force",
-        "description":"test_role_modify_force",
-        "composite":True,
-        "composites":[
-            {
-                "clientId":"master-realm",
-                "name":"manage-clients"
-                },
-            {
-                "clientId":"master-realm",
-                "name":"manage-users"
-                },
-            {
-                "name":"uma_authorization"}
-        ],
-        "state":"present",
-        "force":False
-    }
-    toChangeRole = {
-        "auth_username":"admin", 
-        "auth_password":"admin",
-        "realm":"master",
-        "auth_keycloak_url":"http://localhost:18081/auth",
-        "name":"test_modify_role",
-        "description":"Test modify role",
-        "composite":True,
-        "composites":[
-            {
-                "clientId":"master-realm",
-                "name":"manage-clients"
-                },
-            {
-                "clientId":"master-realm",
-                "name":"manage-users"
-                },
-            {
-                "name":"uma_authorization"}
-        ],
-        "state":"present",
-        "force":False
-    }
-    toDeleteRole = {
-        "auth_username":"admin", 
-        "auth_password":"admin",
-        "realm":"master",
-        "auth_keycloak_url":"http://localhost:18081/auth",
-        "name":"test_delete_role",
-        "description":"Test delete role",
-        "composite":True,
-        "composites":[
-            {
-                "clientId":"master-realm",
-                "name":"manage-clients"
-                },
-            {
-                "clientId":"master-realm",
-                "name":"manage-users"
-                },
-            {
-                "name":"uma_authorization"}
-        ],
-        "state":"present",
-        "force":False
-    }
-
-    toChangeRoleTwoRoles = {
-        "auth_username":"admin", 
-        "auth_password":"admin",
-        "realm":"master",
-        "auth_keycloak_url":"http://localhost:18081/auth",
-        "name":"test_modify_role_two_client_role_with_same_name",
-        "description":"Test modify role two client roles with same name",
-        "composite":True,
-        "composites":[
-            {
-                "clientId":"test1",
-                "name":"admin"
-                },
-            {
-                "clientId":"test1",
-                "name":"manager"
-                }
-        ],
-        "state":"present",
-        "force":False
-    }
+    testRoles = [
+        {
+            "auth_username":"admin", 
+            "auth_password":"admin",
+            "realm":"master",
+            "auth_keycloak_url":"http://localhost:18081/auth",
+            "name":"test_create_role",
+            "description":"Test create role",
+            "composite":True,
+            "composites":[
+                {
+                    "clientId":"master-realm",
+                    "name":"manage-clients"
+                    },
+                {
+                    "clientId":"master-realm",
+                    "name":"manage-users"
+                    },
+                {
+                    "name":"uma_authorization"}
+            ],
+            "state":"absent",
+            "force":False
+        },
+        {
+            "auth_username":"admin", 
+            "auth_password":"admin",
+            "realm":"master",
+            "auth_keycloak_url":"http://localhost:18081/auth",
+            "name":"test_role_not_changed",
+            "description":"Test role not changed",
+            "composite":True,
+            "composites":[
+                {
+                    "clientId":"master-realm",
+                    "name":"manage-clients"
+                    },
+                {
+                    "clientId":"master-realm",
+                    "name":"manage-users"
+                    },
+                {
+                    "name":"uma_authorization"}
+            ],
+            "state":"present",
+            "force":False
+        },
+        {
+            "auth_username":"admin", 
+            "auth_password":"admin",
+            "realm":"master",
+            "auth_keycloak_url":"http://localhost:18081/auth",
+            "name":"test_role_modify_force",
+            "description":"test_role_modify_force",
+            "composite":True,
+            "composites":[
+                {
+                    "clientId":"master-realm",
+                    "name":"manage-clients"
+                    },
+                {
+                    "clientId":"master-realm",
+                    "name":"manage-users"
+                    },
+                {
+                    "name":"uma_authorization"}
+            ],
+            "state":"present",
+            "force":False
+        },
+        {
+            "auth_username":"admin", 
+            "auth_password":"admin",
+            "realm":"master",
+            "auth_keycloak_url":"http://localhost:18081/auth",
+            "name":"test_modify_role",
+            "description":"Test modify role",
+            "composite":True,
+            "composites":[
+                {
+                    "clientId":"master-realm",
+                    "name":"manage-clients"
+                    },
+                {
+                    "clientId":"master-realm",
+                    "name":"manage-users"
+                    },
+                {
+                    "name":"uma_authorization"}
+            ],
+            "state":"present",
+            "force":False
+        },
+        {
+            "auth_username":"admin", 
+            "auth_password":"admin",
+            "realm":"master",
+            "auth_keycloak_url":"http://localhost:18081/auth",
+            "name":"test_delete_role",
+            "description":"Test delete role",
+            "composite":True,
+            "composites":[
+                {
+                    "clientId":"master-realm",
+                    "name":"manage-clients"
+                    },
+                {
+                    "clientId":"master-realm",
+                    "name":"manage-users"
+                    },
+                {
+                    "name":"uma_authorization"}
+            ],
+            "state":"present",
+            "force":False
+        },
+        {
+            "auth_username":"admin", 
+            "auth_password":"admin",
+            "realm":"master",
+            "auth_keycloak_url":"http://localhost:18081/auth",
+            "name":"test_modify_role_two_client_role_with_same_name",
+            "description":"Test modify role two client roles with same name",
+            "composite":True,
+            "composites":[
+                {
+                    "clientId":"test1",
+                    "name":"admin"
+                    },
+                {
+                    "clientId":"test1",
+                    "name":"manager"
+                    }
+            ],
+            "state":"present",
+            "force":False
+        },
+        {
+            "auth_username":"admin", 
+            "auth_password":"admin",
+            "realm":"master",
+            "auth_keycloak_url":"http://localhost:18081/auth",
+            "name":"test_role_with_client_roles_containing_uppercase_and_underscore",
+            "description":"Test create role with client roles containing uppercase and underscore",
+            "composite":True,
+            "composites":[
+                {
+                    "clientId":"TestUPPER_underscore",
+                    "name":"admin"
+                    }
+            ],
+            "state":"absent",
+            "force":False
+        },
+        {
+            "auth_username":"admin", 
+            "auth_password":"admin",
+            "realm":"master",
+            "auth_keycloak_url":"http://localhost:18081/auth",
+            "name":"test_role_with_non_existing_client_role",
+            "description":"Test create role with client roles of non existing client",
+            "composite":True,
+            "composites":[
+                {
+                    "clientId":"InexistingClient",
+                    "name":"admin"
+                    }
+            ],
+            "state":"absent",
+            "force":False
+        },
+        {
+            "auth_username":"admin", 
+            "auth_password":"admin",
+            "realm":"master",
+            "auth_keycloak_url":"http://localhost:18081/auth",
+            "name":"test_role_with_existing_client_but_non_existing_role",
+            "description":"Test modify role with existing client but non existing roles",
+            "composite":True,
+            "composites":[
+                {
+                    "clientId":"TestUPPER_underscore",
+                    "name":"admin"
+                    }
+            ],
+            "state":"present",
+            "force":False
+        }
+    ]
 
     roleExcudes = ["auth_keycloak_url","auth_username","auth_password","state","force","realm","composites","_ansible_keep_remote_files","_ansible_remote_tmp"]
     kc = None
@@ -234,30 +305,40 @@ class KeycloakRoleTestCase(ModuleTestCase):
             print(str(e))
 
         self.module = keycloak_role
-        set_module_args(self.toCreateRole)
-        with self.assertRaises(AnsibleExitJson) as results:
-            self.module.main()
-        set_module_args(self.toDoNotChangeRole)
-        with self.assertRaises(AnsibleExitJson) as results:
-            self.module.main()
-        set_module_args(self.toDoNotChangeRoleForce)
-        with self.assertRaises(AnsibleExitJson) as results:
-            self.module.main()
-        set_module_args(self.toChangeRole)
-        with self.assertRaises(AnsibleExitJson) as results:
-            self.module.main()
-        set_module_args(self.toDeleteRole)
-        with self.assertRaises(AnsibleExitJson) as results:
-            self.module.main()
-        set_module_args(self.toChangeRoleTwoRoles)
-        with self.assertRaises(AnsibleExitJson) as results:
-            self.module.main()
+        for role in self.testRoles:
+            set_module_args(role)
+            with self.assertRaises(AnsibleExitJson) as results:
+                self.module.main()
 
     def tearDown(self):
+        username = "admin"
+        password = "admin"
+        # Delete Clients
+        try:
+            self.headers = loginAndSetHeaders(self.url, username, password)
+            clientSvcBaseUrl = self.url + "/auth/admin/realms/master/clients/"
+            
+            for testClient in self.testClients:
+                getResponse = requests.get(clientSvcBaseUrl, headers=self.headers, params={'clientId': testClient["clientId"]})
+                
+                if len(getResponse.json()) > 0:
+                    clientRepresentation = getResponse.json()[0]
+                    requests.delete(clientSvcBaseUrl + clientRepresentation["id"], headers=self.headers)
+        except requests.exceptions.RequestException, e:
+            print(str(e))
+        # Delete roles
+        self.module = keycloak_role
+        for role in self.testRoles:
+            theRole = role.copy()
+            theRole["state"] = "absent"
+            set_module_args(theRole)
+            with self.assertRaises(AnsibleExitJson) as results:
+                self.module.main()
+        
         super(KeycloakRoleTestCase, self).tearDown()           
         
     def test_create_role(self):
-        toCreate = self.toCreateRole.copy()
+        toCreate = self.testRoles[0].copy()
         toCreate["state"] = "present"
         set_module_args(toCreate)
         with self.assertRaises(AnsibleExitJson) as results:
@@ -267,7 +348,7 @@ class KeycloakRoleTestCase(ModuleTestCase):
         self.assertTrue(isDictEquals(toCreate["composites"], results.exception.args[0]['composites'], self.roleExcudes), 'Realm role composites created does not comply to specifications.')
     
     def test_role_not_changed(self):
-        toDoNotChange = self.toDoNotChangeRole.copy()
+        toDoNotChange = self.testRoles[1].copy()
         set_module_args(toDoNotChange)
         with self.assertRaises(AnsibleExitJson) as results:
             self.module.main()
@@ -276,7 +357,7 @@ class KeycloakRoleTestCase(ModuleTestCase):
         self.assertTrue(isDictEquals(toDoNotChange["composites"], results.exception.args[0]['composites'], self.roleExcudes), 'Realm role composites not modified does not comply to specifications.')
 
     def test_role_modify_force(self):
-        toDoNotChange = self.toDoNotChangeRoleForce.copy()
+        toDoNotChange = self.testRoles[2].copy()
         toDoNotChange["force"] = True
         set_module_args(toDoNotChange)
         with self.assertRaises(AnsibleExitJson) as results:
@@ -286,8 +367,8 @@ class KeycloakRoleTestCase(ModuleTestCase):
         self.assertTrue(isDictEquals(toDoNotChange["composites"], results.exception.args[0]['composites'], self.roleExcudes), 'Realm role composites not modified force does not comply to specifications.')
 
     def test_modify_role(self):
-        newToChange = self.toChangeRole.copy()
-        newToChange["description"] = self.toChangeRole["description"] + " modified"
+        newToChange = self.testRoles[3].copy()
+        newToChange["description"] = newToChange["description"] + " modified"
         set_module_args(newToChange)
         with self.assertRaises(AnsibleExitJson) as results:
             self.module.main()
@@ -296,7 +377,7 @@ class KeycloakRoleTestCase(ModuleTestCase):
         self.assertTrue(isDictEquals(newToChange["composites"], results.exception.args[0]['composites'], self.roleExcudes), 'Realm role composites modified does not comply to specifications.')        
         
     def test_delete_role(self):
-        toDelete = self.toDeleteRole.copy()
+        toDelete = self.testRoles[4].copy()
         toDelete["state"] = "absent"
         set_module_args(toDelete)
         with self.assertRaises(AnsibleExitJson) as results:
@@ -317,8 +398,8 @@ class KeycloakRoleTestCase(ModuleTestCase):
             print(str(e)) 
     
     def test_modify_role_two_client_role_with_same_name(self):
-        newToChangeTwoRoles = self.toChangeRoleTwoRoles.copy()
-        newToChangeTwoRoles["description"] = self.toChangeRoleTwoRoles["description"] + " modified"
+        newToChangeTwoRoles = self.testRoles[5].copy()
+        newToChangeTwoRoles["description"] = newToChangeTwoRoles["description"] + " modified"
         newToChangeTwoRoles["composites"] = [
                 {
                     "clientId":"test2",
@@ -335,8 +416,34 @@ class KeycloakRoleTestCase(ModuleTestCase):
         self.assertTrue(results.exception.args[0]['changed'])
         self.assertTrue(isDictEquals(newToChangeTwoRoles, results.exception.args[0]['role'], self.roleExcudes), 'Realm role modified two client roles does not comply to specifications.')
         newComposites = []
-        for composite in self.toChangeRoleTwoRoles["composites"]:
+        for composite in self.testRoles[5]["composites"]:
             newComposites.append(composite)
         for composite in newToChangeTwoRoles["composites"]:
             newComposites.append(composite)
         self.assertTrue(isDictEquals(newComposites, results.exception.args[0]['composites'], self.roleExcudes), 'Realm role composites modified two client roles does not comply to specifications.')
+        
+    def test_create_role_composites_with_client_role_clientid_contain_uppercase_and_underscore(self):
+        toCreate = self.testRoles[6].copy()
+        toCreate["state"] = "present"
+        set_module_args(toCreate)
+        with self.assertRaises(AnsibleExitJson) as results:
+            self.module.main()
+        self.assertTrue(results.exception.args[0]['changed'])
+        self.assertTrue(isDictEquals(toCreate, results.exception.args[0]['role'], self.roleExcudes), 'Realm role created does not comply to specifications.')
+        self.assertTrue(isDictEquals(toCreate["composites"], results.exception.args[0]['composites'], self.roleExcudes), 'Realm role composites created does not comply to specifications.')
+
+    def test_create_role_composites_with_non_existing_client(self):
+        toCreate = self.testRoles[7].copy()
+        toCreate["state"] = "present"
+        set_module_args(toCreate)
+        with self.assertRaises(AnsibleFailJson) as results:
+            self.module.main()
+        self.assertTrue(results.exception.args[0]['failed'])
+
+    def test_modify_role_composites_existing_client_but_non_existing_role(self):
+        toCreate = self.testRoles[8].copy()
+        toCreate["composites"][0]["name"] = "nonexistingrole"
+        set_module_args(toCreate)
+        with self.assertRaises(AnsibleExitJson) as results:
+            self.module.main()
+        self.assertFalse(results.exception.args[0]['changed'])
