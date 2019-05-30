@@ -439,6 +439,8 @@ class KeycloakRoleTestCase(ModuleTestCase):
         with self.assertRaises(AnsibleFailJson) as results:
             self.module.main()
         self.assertTrue(results.exception.args[0]['failed'])
+        self.assertRegexpMatches(results.exception.args[0]['msg'], 'client ' + toCreate["composites"][0]["clientId"] + ' not found', 'error not generated: ' + results.exception.args[0]['msg'])
+
 
     def test_modify_role_composites_existing_client_but_non_existing_role(self):
         toCreate = self.testRoles[8].copy()

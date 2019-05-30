@@ -2569,7 +2569,10 @@ class KeycloakAPI(object):
                             client = self.get_client_by_clientid(
                                 client_id=newComposite["clientId"],
                                 realm=realm)
-                            if client != {}:
+                            if client == None:
+                                self.module.fail_json(msg='Could not create or update realm role, client %s not found in realm %s'
+                                      % (newComposite["clientId"], realm))
+                            else:
                                 # Get client's roles
                                 roles = self.get_client_roles(
                                     client_id=client["id"],
