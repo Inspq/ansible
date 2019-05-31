@@ -996,12 +996,12 @@ class KeycloakAPI(object):
         """
         try:
             client_role_url = URL_CLIENT_ROLE_BY_NAME.format(url=self.baseurl,
-                                                       realm=realm,
-                                                       id=client_id,
-                                                       name=name)
+                                                             realm=realm,
+                                                             id=client_id,
+                                                             name=name)
             clientRoleRepresentation = json.load(open_url(client_role_url,
-                                                           method='GET',
-                                                           headers=self.restheaders))
+                                                          method='GET',
+                                                          headers=self.restheaders))
             return clientRoleRepresentation
         except Exception as e:
             self.module.fail_json(msg="Unable to get client %s role %s in realm %s: %s" % (client_id, name, realm, str(e)))
@@ -2522,6 +2522,7 @@ class KeycloakAPI(object):
         except Exception as e:
             self.module.fail_json(msg='Could not get realm role %s composites in realm %s: %s'
                                       % (name, realm, str(e)))
+
     def get_realm_role_composites_client(self, name, clientId, realm='master'):
         """
         Get realm role's composites
