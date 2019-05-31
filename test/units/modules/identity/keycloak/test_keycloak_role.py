@@ -241,13 +241,6 @@ class KeycloakRoleTestCase(ModuleTestCase):
             "auth_keycloak_url":"http://localhost:18081/auth",
             "name":"test_role_with_non_existing_client_role",
             "description":"Test create role with client roles of non existing client",
-            "composite":True,
-            "composites":[
-                {
-                    "clientId":"InexistingClient",
-                    "name":"admin"
-                    }
-            ],
             "state":"absent",
             "force":False
         },
@@ -258,13 +251,6 @@ class KeycloakRoleTestCase(ModuleTestCase):
             "auth_keycloak_url":"http://localhost:18081/auth",
             "name":"test_role_with_existing_client_but_non_existing_role",
             "description":"Test modify role with existing client but non existing roles",
-            "composite":True,
-            "composites":[
-                {
-                    "clientId":"TestUPPER_underscore",
-                    "name":"admin"
-                    }
-            ],
             "state":"present",
             "force":False
         }
@@ -434,6 +420,13 @@ class KeycloakRoleTestCase(ModuleTestCase):
 
     def test_create_role_composites_with_non_existing_client(self):
         toCreate = self.testRoles[7].copy()
+        toCreate["composite"] = True
+        toCreate["composites"] = [
+            {
+                "clientId":"InexistingClient",
+                "name":"admin"
+                }
+            ]
         toCreate["state"] = "present"
         set_module_args(toCreate)
         with self.assertRaises(AnsibleFailJson) as results:
@@ -441,11 +434,17 @@ class KeycloakRoleTestCase(ModuleTestCase):
         self.assertTrue(results.exception.args[0]['failed'])
         self.assertRegexpMatches(results.exception.args[0]['msg'], 'client ' + toCreate["composites"][0]["clientId"] + ' not found', 'error not generated: ' + results.exception.args[0]['msg'])
 
-
     def test_modify_role_composites_existing_client_but_non_existing_role(self):
         toCreate = self.testRoles[8].copy()
-        toCreate["composites"][0]["name"] = "nonexistingrole"
+        toCreate["composite"] = True
+        toCreate["composites"] = [
+            {
+                "clientId":"TestUPPER_underscore",
+                "name":"nonexistingrole"
+                }
+            ]
         set_module_args(toCreate)
-        with self.assertRaises(AnsibleExitJson) as results:
+        with self.assertRaises(AnsibleFailJson) as results:
             self.module.main()
-        self.assertFalse(results.exception.args[0]['changed'])
+        self.assertTrue(results.exception.args[0]['failed'])
+        self.assertRegexpMatches(results.exception.args[0]['msg'], 'HTTP Error 404', 'error not generated: ' + results.exception.args[0]['msg'])
