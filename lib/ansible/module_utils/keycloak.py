@@ -26,6 +26,7 @@
 # USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 from __future__ import absolute_import, division, print_function
+from __builtin__ import False
 
 __metaclass__ = type
 
@@ -41,6 +42,7 @@ URL_TOKEN = "{url}/realms/{realm}/protocol/openid-connect/token"
 URL_CLIENT = "{url}/admin/realms/{realm}/clients/{id}"
 URL_CLIENTS = "{url}/admin/realms/{realm}/clients"
 URL_CLIENT_ROLES = "{url}/admin/realms/{realm}/clients/{id}/roles"
+URL_CLIENT_ROLE_BY_NAME = URL_CLIENT_ROLES + "/{name}"
 URL_CLIENT_SECRET = "{url}/admin/realms/{realm}/clients/{id}/client-secret"
 URL_CLIENT_SCOPE_MAPPINGS = "{url}/admin/realms/{realm}/clients/{id}/scope-mappings"
 URL_CLIENT_REALM_SCOPE_MAPPINGS = "{url}/admin/realms/{realm}/clients/{id}/scope-mappings/realm"
@@ -93,6 +95,8 @@ URL_REALM_EVENT_CONFIG = "{url}/admin/realms/{realm}/events/config"
 URL_REALM_ROLES = "{url}/admin/realms/{realm}/roles"
 URL_REALM_ROLE = "{url}/admin/realms/{realm}/roles/{name}"
 URL_REALM_ROLE_COMPOSITES = "{url}/admin/realms/{realm}/roles/{name}/composites"
+URL_REALM_ROLE_COMPOSITES_REALM = URL_REALM_ROLE_COMPOSITES + "/realm"
+URL_REALM_ROLE_COMPOSITES_CLIENT = URL_REALM_ROLE_COMPOSITES + "/clients/{client}"
 
 
 def keycloak_argument_spec():
@@ -971,7 +975,7 @@ class KeycloakAPI(object):
         """ Get all client's roles
 
         :param client_id: id of the client
-        :return: Client's roles representation is added to the client representation as clientRoles key
+        :return: Client's roles representation
         """
         try:
             client_roles_url = URL_CLIENT_ROLES.format(url=self.baseurl,
@@ -983,6 +987,24 @@ class KeycloakAPI(object):
             return clientRolesRepresentation
         except Exception as e:
             self.module.fail_json(msg="Unable to get client's %s roles in realm %s: %s" % (client_id, realm, str(e)))
+
+    def get_client_role_by_name(self, client_id, name, realm='master'):
+        """ Get client role by name
+        :param client_id: id of the client
+        :param name: Name if the role to get
+        :return: Client's role representation is added to the client representation as clientRoles key
+        """
+        try:
+            client_role_url = URL_CLIENT_ROLE_BY_NAME.format(url=self.baseurl,
+                                                       realm=realm,
+                                                       id=client_id,
+                                                       name=name)
+            clientRoleRepresentation = json.load(open_url(client_role_url,
+                                                           method='GET',
+                                                           headers=self.restheaders))
+            return clientRoleRepresentation
+        except Exception as e:
+            self.module.fail_json(msg="Unable to get client %s role %s in realm %s: %s" % (client_id, name, realm, str(e)))
 
     def add_client_roles_to_representation(self, clientSvcBaseUrl, clientRolesUrl, clientRepresentation):
         """ Add client roles and their composites to the client representation in order to return this information to the user
@@ -2500,6 +2522,56 @@ class KeycloakAPI(object):
         except Exception as e:
             self.module.fail_json(msg='Could not get realm role %s composites in realm %s: %s'
                                       % (name, realm, str(e)))
+    def get_realm_role_composites_client(self, name, clientId, realm='master'):
+        """
+        Get realm role's composites
+        :param name: Name of the role to get the composites from
+        :param realm: Realm
+        :return: Representation of the realm role's composites.
+        """
+        try:
+            realm_role_composites_url = URL_REALM_ROLE_COMPOSITES_CLIENT.format(
+                url=self.baseurl,
+                realm=realm,
+                name=name,
+                client=clientId)
+            composites = json.load(
+                open_url(
+                    realm_role_composites_url,
+                    method='GET',
+                    headers=self.restheaders))
+            return composites
+        except HTTPError as e:
+            if e.code == 404:
+                return None
+            else:
+                self.module.fail_json(msg='Could not get realm role %s composites client %s for realm %s: %s'
+                                          % (name, clientId, realm, str(e)))
+        except Exception as e:
+            self.module.fail_json(msg='Could not get realm role %s composites client %s for realm %s: %s'
+                                  % (name, clientId, realm, str(e)))
+
+    def get_realm_role_composites_realm(self, name, realm='master'):
+        """
+        Get realm role's composites
+        :param name: Name of the role to get the composites from
+        :param realm: Realm
+        :return: Representation of the realm role's composites.
+        """
+        try:
+            realm_role_composites_url = URL_REALM_ROLE_COMPOSITES_REALM.format(
+                url=self.baseurl,
+                realm=realm,
+                name=name)
+            composites = json.load(
+                open_url(
+                    realm_role_composites_url,
+                    method='GET',
+                    headers=self.restheaders))
+            return composites
+        except Exception as e:
+            self.module.fail_json(msg='Could not get realm role %s realm composites %s for realm %s: %s'
+                                  % (name, realm, str(e)))
 
     def create_realm_role_composites(self, newCompositesToCreate, name, realm='master'):
         """
@@ -2534,59 +2606,36 @@ class KeycloakAPI(object):
         changed = False
         newCompositesToCreate = []
         try:
-            # Get the realm role's composites already present on the Keycloak server
-            existingComposites = self.get_realm_role_composites(
-                name=newRoleRepresentation["name"],
-                realm=realm)
-            if existingComposites is None:
-                existingComposites = []
-            for existingComposite in existingComposites:
-                newCompositesToCreate.append(existingComposite)
-            # If new version of the role is composite and there are composites in it
-            if newComposites is not None and newRoleRepresentation["composite"]:
-                for newComposite in newComposites:
-                    newCompositeFound = False
-                    # Search composite to assing in composites of the role on the Keycloak Server
-                    for composite in existingComposites:
-                        if composite["clientRole"] and "clientId" in newComposite:  # If composite is a client role
-                            # Get the clientId
-                            client = self.get_client_by_id(
-                                id=composite["containerId"],
+            realmRoleCompositeRealm = self.get_realm_role_composites_realm(name=newRoleRepresentation["name"], realm=realm)
+            for newComposite in newComposites:
+                # If composite is a client role
+                if "clientId" in newComposite:
+                    # Get the client
+                    client = self.get_client_by_clientid(
+                        client_id=newComposite["clientId"],
+                        realm=realm)
+                    if client is None:
+                        self.module.fail_json(msg='Could not create or update realm role, client %s not found in realm %s'
+                                              % (newComposite["clientId"], realm))
+                    else:
+                        # Get the client roles the realm role already have for this client
+                        clientRoles = self.get_realm_role_composites_client(name=newRoleRepresentation["name"], clientId=client["id"], realm=realm)
+                        # If the realm role does not aready have this client role
+                        if clientRoles is None or not any(composite.get('name', None) == newComposite["name"] for composite in clientRoles):
+                            # Get client's roles
+                            role = self.get_client_role_by_name(
+                                client_id=client["id"],
+                                name=newComposite["name"],
                                 realm=realm)
-                            clientId = client["clientId"]
-                            if composite["name"] == newComposite["name"] and clientId == newComposite["clientId"]:
-                                newCompositeFound = True
-                                break
-                        elif composite["name"] == newComposite["name"]:
-                            newCompositeFound = True
-                            break
-                    # If role is not already assigned to the role
-                    if not newCompositeFound:
-                        roles = []
-                        # If composite is a client role
-                        if "clientId" in newComposite:
-                            # Get the client
-                            client = self.get_client_by_clientid(
-                                client_id=newComposite["clientId"],
-                                realm=realm)
-                            if client is None:
-                                self.module.fail_json(msg='Could not create or update realm role, client %s not found in realm %s'
-                                                      % (newComposite["clientId"], realm))
-                            else:
-                                # Get client's roles
-                                roles = self.get_client_roles(
-                                    client_id=client["id"],
-                                    realm=realm)
-                        else:  # It is a REALM role
-                            # Get all realm roles
-                            roles = self.get_realm_roles(realm=realm)
-                        # Search in all roles found which is the role to assigne
-                        for role in roles:
-                            # Id role is found
-                            if role["name"] == newComposite["name"]:
-                                newCompositesToCreate.append(role)
-                                changed = True
-            if changed:
+                            newCompositesToCreate.append(role)
+                            changed = True
+                else:  # It is a REALM role
+                    if not any(composite.get('name', None) == newComposite["name"] for composite in realmRoleCompositeRealm):
+                        # Get realm role
+                        role = self.get_realm_role(name=newComposite["name"], realm=realm)
+                        newCompositesToCreate.append(role)
+                        changed = True
+            if changed and len(newCompositesToCreate) > 0:
                 self.create_realm_role_composites(
                     newCompositesToCreate=newCompositesToCreate,
                     name=newRoleRepresentation["name"],
