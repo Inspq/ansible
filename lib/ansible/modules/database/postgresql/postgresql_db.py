@@ -159,34 +159,32 @@ EXAMPLES = r'''
 '''
 
 import os
-import pipes
 import subprocess
 import traceback
 
-PSYCOPG2_IMP_ERR = None
 try:
     import psycopg2
     import psycopg2.extras
 except ImportError:
-    PSYCOPG2_IMP_ERR = traceback.format_exc()
     HAS_PSYCOPG2 = False
 else:
     HAS_PSYCOPG2 = True
 
 import ansible.module_utils.postgres as pgutils
-from ansible.module_utils.basic import AnsibleModule, missing_required_lib
+from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils.database import SQLParseError, pg_quote_identifier
 from ansible.module_utils.six import iteritems
+from ansible.module_utils.six.moves import shlex_quote
 from ansible.module_utils._text import to_native
 
 
 class NotSupportedError(Exception):
     pass
 
-
 # ===========================================
 # PostgreSQL module specific support methods.
 #
+
 
 def set_owner(cursor, db, owner):
     query = "ALTER DATABASE %s OWNER TO %s" % (
@@ -350,9 +348,9 @@ def db_dump(module, target, target_opts="",
         # in a portable way.
         fifo = os.path.join(module.tmpdir, 'pg_fifo')
         os.mkfifo(fifo)
-        cmd = '{1} <{3} > {2} & {0} >{3}'.format(cmd, comp_prog_path, pipes.quote(target), fifo)
+        cmd = '{1} <{3} > {2} & {0} >{3}'.format(cmd, comp_prog_path, shlex_quote(target), fifo)
     else:
-        cmd = '{0} > {1}'.format(cmd, pipes.quote(target))
+        cmd = '{0} > {1}'.format(cmd, shlex_quote(target))
 
     return do_with_password(module, cmd, password)
 
@@ -404,7 +402,7 @@ def db_restore(module, target, target_opts="",
         else:
             return p2.returncode, '', stderr2, 'cmd: ****'
     else:
-        cmd = '{0} < {1}'.format(cmd, pipes.quote(target))
+        cmd = '{0} < {1}'.format(cmd, shlex_quote(target))
 
     return do_with_password(module, cmd, password)
 
@@ -421,9 +419,9 @@ def login_flags(db, host, port, user, db_prefix=True):
     flags = []
     if db:
         if db_prefix:
-            flags.append(' --dbname={0}'.format(pipes.quote(db)))
+            flags.append(' --dbname={0}'.format(shlex_quote(db)))
         else:
-            flags.append(' {0}'.format(pipes.quote(db)))
+            flags.append(' {0}'.format(shlex_quote(db)))
     if host:
         flags.append(' --host={0}'.format(host))
     if port:
@@ -493,8 +491,8 @@ def main():
 
     raw_connection = state in ("dump", "restore")
 
-    if not HAS_PSYCOPG2 and not raw_connection:
-        module.fail_json(msg=missing_required_lib('psycopg2'), exception=PSYCOPG2_IMP_ERR)
+    if not raw_connection:
+        pgutils.ensure_required_libs(module)
 
     # To use defaults values, keyword arguments must be absent, so
     # check which values are empty and don't include in the **kw
@@ -522,7 +520,6 @@ def main():
 
     if not raw_connection:
         try:
-            pgutils.ensure_libs(sslrootcert=module.params.get('ca_cert'))
             db_connection = psycopg2.connect(database=maintenance_db, **kw)
 
             # Enable autocommit so we can create databases
@@ -575,16 +572,9 @@ def main():
             try:
                 rc, stdout, stderr, cmd = method(module, target, target_opts, db, **kw)
                 if rc != 0:
-                    module.fail_json(msg='Dump of database %s failed' % db,
-                                     stdout=stdout, stderr=stderr, rc=rc, cmd=cmd)
-
-                elif stderr and 'warning' not in str(stderr):
-                    module.fail_json(msg='Dump of database %s failed' % db,
-                                     stdout=stdout, stderr=stderr, rc=1, cmd=cmd)
-
+                    module.fail_json(msg=stderr, stdout=stdout, rc=rc, cmd=cmd)
                 else:
-                    module.exit_json(changed=True, msg='Dump of database %s has been done' % db,
-                                     stdout=stdout, stderr=stderr, rc=rc, cmd=cmd)
+                    module.exit_json(changed=True, msg=stdout, stderr=stderr, rc=rc, cmd=cmd)
             except SQLParseError as e:
                 module.fail_json(msg=to_native(e), exception=traceback.format_exc())
 

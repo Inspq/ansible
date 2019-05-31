@@ -27,7 +27,6 @@ import pwd
 import re
 import time
 
-from functools import wraps
 from numbers import Number
 
 try:
@@ -451,7 +450,12 @@ class Templar:
 
         return jinja_exts
 
-    def set_available_variables(self, variables):
+    @property
+    def available_variables(self):
+        return self._available_variables
+
+    @available_variables.setter
+    def available_variables(self, variables):
         '''
         Sets the list of template variables this Templar instance will use
         to template things, so we don't have to pass them around between
@@ -463,6 +467,13 @@ class Templar:
             raise AnsibleAssertionError("the type of 'variables' should be a dict but was a %s" % (type(variables)))
         self._available_variables = variables
         self._cached_result = {}
+
+    def set_available_variables(self, variables):
+        display.deprecated(
+            'set_available_variables is being deprecated. Use "@available_variables.setter" instead.',
+            version='2.13'
+        )
+        self.available_variables = variables
 
     def template(self, variable, convert_bare=False, preserve_trailing_newlines=True, escape_backslashes=True, fail_on_undefined=None, overrides=None,
                  convert_data=True, static_vars=None, cache=True, disable_lookups=False):
@@ -695,7 +706,7 @@ class Templar:
                         display.display(msg, log_only=True)
                     else:
                         raise AnsibleError(to_native(msg))
-                ran = None
+                ran = [] if wantlist else None
 
             if ran and not allow_unsafe:
                 if wantlist:
@@ -797,7 +808,7 @@ class Templar:
                     errmsg += "Make sure your variable name does not contain invalid characters like '-': %s" % to_native(te)
                     raise AnsibleUndefinedVariable(errmsg)
                 else:
-                    display.debug("failing because of a type error, template data is: %s" % to_native(data))
+                    display.debug("failing because of a type error, template data is: %s" % to_text(data))
                     raise AnsibleError("Unexpected templating type error occurred on (%s): %s" % (to_native(data), to_native(te)))
 
             if USE_JINJA2_NATIVE and not isinstance(res, string_types):
