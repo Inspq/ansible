@@ -6,6 +6,8 @@
 
 from ansible.modules.identity.keycloak import keycloak_client
 from units.modules.utils import AnsibleExitJson, AnsibleFailJson, ModuleTestCase, set_module_args
+from __builtin__ import True
+from ansible.module_utils.keycloak import isDictEquals
 
 
 class KeycloakClientTestCase(ModuleTestCase):
@@ -439,9 +441,24 @@ class KeycloakClientTestCase(ModuleTestCase):
             "protocol": "openid-connect",
             "bearerOnly": False,
             "publicClient": False
+        },
+        {
+            "auth_keycloak_url": "http://localhost:18081/auth",
+            "auth_username": "admin",
+            "auth_password": "admin",
+            "realm": "master",
+            "state": "present",
+            "clientId": "test_client_brearer_only_to_confidential",
+            "rootUrl": "http://test6.com:8080",
+            "name": "Transform a bearer only client to confidential",
+            "description": "Transform a bearer only client to confidential with service accounts enabled",
+            "adminUrl": "http://test7.com:8080/admin",
+            "enabled": True,
+            "protocol": "openid-connect",
+            "bearerOnly": True,
         }
     ]
-
+    compareExcludes = ["auth_keycloak_url", "auth_username", "auth_password", "realm", "state", "force", "credentials","_ansible_keep_remote_files","_ansible_remote_tmp"]
     def setUp(self):
         super(KeycloakClientTestCase, self).setUp()
         self.module = keycloak_client
@@ -660,3 +677,25 @@ class KeycloakClientTestCase(ModuleTestCase):
         with self.assertRaises(AnsibleExitJson) as results: 
             self.module.main()
         self.assertTrue(results.exception.args[0]['changed'])
+        
+    def test_bearer_only_client_to_confidential_with_service_accounts_enabled(self):
+        toModifyClient = self.testClients[9].copy()
+        toModifyClient["baseUrl"] = "http://test7.com:8080"
+        toModifyClient["clientAuthenticatorType"] = "client-secret"
+        toModifyClient["redirectUris"] = ["http://test7.com:8080/secure"]
+        toModifyClient["webOrigins"] = ["http://test6.com:8080/secure"]
+        toModifyClient["fullScopeAllowed"] = False
+        toModifyClient["serviceAccountsEnabled"] = True
+        toModifyClient["bearerOnly"] = False
+        toModifyClient["publicClient"] = False
+        toModifyClient["directAccessGrantsEnabled"] = True
+        set_module_args(toModifyClient)
+        with self.assertRaises(AnsibleExitJson) as results:
+            self.module.main()
+        self.assertTrue(results.exception.args[0]['end_state']['enabled'])
+        self.assertTrue(results.exception.args[0]['changed'])
+        self.assertTrue(isDictEquals(toModifyClient, results.exception.args[0]['end_state'],exclude=self.compareExcludes))
+        #self.assertEqual(results.exception.args[0]['end_state']['name'], toModifyClient["name"], "name: " + results.exception.args[0]['end_state']['name'])
+        #self.assertEqual(results.exception.args[0]['end_state']['description'], toModifyClient["description"], 'description: ' + results.exception.args[0]['end_state']['description'])
+        #self.assertEqual(results.exception.args[0]['end_state']['redirectUris'].sort(),toModifyClient["redirectUris"].sort(),"redirectUris: " + str(results.exception.args[0]['end_state']['redirectUris'].sort()))
+
