@@ -403,7 +403,8 @@ def main():
     # Créer un représentation du realm recu en paramètres
     newIdPRepresentation = {}
     newIdPRepresentation["alias"] = module.params.get('alias')
-    newIdPRepresentation["displayName"] = module.params.get('displayName')
+    if module.params.get('displayName') is not None:
+        newIdPRepresentation["displayName"] = module.params.get('displayName')
     newIdPRepresentation["providerId"] = module.params.get('providerId')
     newIdPRepresentation["enabled"] = module.params.get('enabled')
     if module.params.get('updateProfileFirstLoginMode') is not None:
