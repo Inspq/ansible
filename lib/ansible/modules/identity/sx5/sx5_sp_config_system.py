@@ -1100,8 +1100,8 @@ def integrityCheckComposants(spConfigUrl,clientSvcBaseUrl,headers):
     updatedSysteme = 0
     getResponse = requests.get(spConfigUrl+"/systemes", headers=headers)
     if getResponse.status_code == 200:
-        SystemesdataResponse = getResponse.json()
-        if not SystemesdataResponse:
+        systemesdataResponse = getResponse.json()
+        if not systemesdataResponse:
             updatedSysteme = 0
         else:
             for spSysteme in systemesdataResponse:
