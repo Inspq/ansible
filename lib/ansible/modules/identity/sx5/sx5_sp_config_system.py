@@ -434,6 +434,7 @@ def system(params):
                                 systemes = dataResponseSystem,
                                 entreesAdressesApprovisionnement = dataResponseadressesApprovisionnement,
                                 entreesTableCorrespondance = dataResponsetableCorrespondance,
+                                integrityCheckComposants = integrityCheckComposants(spConfigUrl,clientSvcBaseUrl,headers),
                                 pilotRole = messagepilotRole
                                 )
                             result = dict(
@@ -551,6 +552,7 @@ def system(params):
                                 systemes = dataResponseSystem,
                                 entreesAdressesApprovisionnement = dataResponseadressesApprovisionnement,
                                 entreesTableCorrespondance = dataResponsetableCorrespondance,
+                                integrityCheckComposants = integrityCheckComposants(spConfigUrl,clientSvcBaseUrl,headers),
                                 pilotRole = messagepilotRole
                                 )
                             result = dict(
@@ -701,7 +703,8 @@ def system(params):
                         fact = dict(
                             systemes = dataResponse,
                             entreesAdressesApprovisionnement = dataResponseadressesApprovisionnement,
-                            entreesTableCorrespondance = dataResponsetableCorrespondance
+                            entreesTableCorrespondance = dataResponsetableCorrespondance,
+                            integrityCheckComposants = integrityCheckComposants(spConfigUrl,clientSvcBaseUrl,headers)
                             )
                         result = dict(
                             ansible_facts = fact,
@@ -728,6 +731,7 @@ def system(params):
                                 systemes = dataResponsesystem,
                                 entreesAdressesApprovisionnement = dataResponseadressesApprovisionnement,
                                 entreesTableCorrespondance = dataResponsetableCorrespondance,
+                                integrityCheckComposants = integrityCheckComposants(spConfigUrl,clientSvcBaseUrl,headers),
                                 pilotRole = messagepilotRole
                                 )
                             result = dict(
@@ -845,6 +849,7 @@ def system(params):
                                 systemes = dataResponseSystem,
                                 entreesAdressesApprovisionnement = dataResponseadressesApprovisionnement,
                                 entreesTableCorrespondance = dataResponsetableCorrespondance,
+                                integrityCheckComposants = integrityCheckComposants(spConfigUrl,clientSvcBaseUrl,headers),
                                 pilotRole = messagepilotRole
                                 )
                             result = dict(
@@ -890,6 +895,7 @@ def system(params):
                     )
     elif state == 'absent':# Supprimer le systeme
         try:
+            integrityCheckComposants(spConfigUrl,clientSvcBaseUrl,headers)
             getResponse = requests.get(spConfigUrl+"/systemes/"+newSystemDBRepresentation["systemShortName"], headers=headers)
             if getResponse.status_code == 200:
                 dataResponse = getResponse.json()
@@ -1090,6 +1096,42 @@ def addpilotRoles(newSystemDBRepresentation,spConfigUrl,clientSvcBaseUrl,roleSvc
         msspilotRole = {"info": messageaddpilotRole} 
         messagepilotRole.append(msspilotRole)
     return messagepilotRole
+def integrityCheckComposants(spConfigUrl,clientSvcBaseUrl,headers)
+    updatedSysteme = 0
+    getResponse = requests.get(spConfigUrl+"/systemes", headers=headers)
+    if getResponse.status_code == 200:
+        SystemesdataResponse = getResponse.json()
+        if not SystemesdataResponse:
+            updatedSysteme = 0
+        else:
+            for spSysteme in systemesdataResponse:
+                spgetResponse = requests.get(spConfigUrl+"/systemes/"+spSysteme["cleUnique"], headers=headers)
+                if spgetResponse.status_code == 200:#systeme existe
+                    spdataResponse = spgetResponse.json()
+                    client = []
+                    for composant in spdataResponse["composants"]:
+                        getResponseKeycloak = requests.get(clientSvcBaseUrl, headers=headers, params={'clientId': composant["clientId"]})
+                        clientS={}
+                        if getResponseKeycloak.status_code == 200:
+                            dataResponseKeycloak = getResponseKeycloak.json()
+                            for dataKeycloak in dataResponseKeycloak:
+                                if composant["clientId"] == dataKeycloak["clientId"]:
+                                    role = []
+                                    getResponseKeycloakClientRoles = requests.get(clientSvcBaseUrl+dataKeycloak["id"]+"/roles", headers=headers)
+                                    if getResponseKeycloakClientRoles.status_code == 200:
+                                        dataResponseroles = getResponseKeycloakClientRoles.json()
+                                        for dataKeycloakrole in dataResponseroles:
+                                            for clientRoles in composant["roles"]:
+                                                if dataKeycloakrole["name"] == clientRoles["nom"]:
+                                                    roleS={"uuidRoleKeycloak": dataKeycloakrole["id"],"nom": dataKeycloakrole["name"],"description": dataKeycloakrole["description"]}
+                                                    role.append(roleS)
+                                    clientS={"nom": dataKeycloak["name"],"uuidKeycloak": dataKeycloak["id"],"clientId": dataKeycloak["clientId"],"description": dataKeycloak["description"],"roles": role}
+                                    client.append(clientS)
+                    bodySystem = {"nom": spdataResponse["nom"],"cleUnique": spdataResponse["cleUnique"],"composants": client}
+                    requests.put(spConfigUrl+"/systemes/"+spSysteme["cleUnique"], headers=headers,json=bodySystem)
+                    updatedSysteme = updatedSysteme + 1
+    return updatedSysteme
+
 # import module snippets
 from ansible.module_utils.basic import *
 
