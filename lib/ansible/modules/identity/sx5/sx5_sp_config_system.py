@@ -1122,7 +1122,7 @@ def spIntegrityCheckComposants(spConfigUrl,clientSvcBaseUrl,headers,cleUnique):
                         client.append(clientS)
         bodySystem = {"nom": spdataResponse["nom"],"cleUnique": spdataResponse["cleUnique"],"composants": client}
         requests.put(spConfigUrl+"/systemes/"+cleUnique, headers=headers,json=bodySystem)
-    return updatedSysteme
+    return updatedComposant
 
 # import module snippets
 from ansible.module_utils.basic import *
