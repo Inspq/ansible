@@ -1096,7 +1096,7 @@ def addpilotRoles(newSystemDBRepresentation,spConfigUrl,clientSvcBaseUrl,roleSvc
         msspilotRole = {"info": messageaddpilotRole} 
         messagepilotRole.append(msspilotRole)
     return messagepilotRole
-def integrityCheckComposants(spConfigUrl,clientSvcBaseUrl,headers)
+def integrityCheckComposants(spConfigUrl,clientSvcBaseUrl,headers):
     updatedSysteme = 0
     getResponse = requests.get(spConfigUrl+"/systemes", headers=headers)
     if getResponse.status_code == 200:
