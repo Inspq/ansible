@@ -371,15 +371,7 @@ def system(params):
                         clientS={}
                         if getResponseKeycloak.status_code == 200:
                             dataResponseKeycloak = getResponseKeycloak.json()
-                            if not dataResponseKeycloak:
-                                clientS={
-                                    "nom": "",
-                                    "uuidKeycloak":"",
-                                    "clientId": clientKeycloak["clientid"],
-                                    "description": "",
-                                    "roles": []
-                                }
-                            else:
+                            if dataResponseKeycloak:
                                 for dataKeycloak in dataResponseKeycloak:
                                     if dataKeycloak["clientId"] == clientKeycloak["clientId"]:
                                         role = []
@@ -398,7 +390,7 @@ def system(params):
                                             "description": dataKeycloak["description"],
                                             "roles": role
                                         }
-                        client.append(clientS)
+                                client.append(clientS)
                     bodySystem = {
                             "nom": newSystemDBRepresentation["systemName"],
                             "cleUnique": newSystemDBRepresentation["systemShortName"],
@@ -424,7 +416,7 @@ def system(params):
                             # Add or update pilotRole
                             messagepilotRole = None
                             if "pilotRoles" in params and params['pilotRoles'] is not None:
-                                messagepilotRole = addpilotRoles(newSystemDBRepresentation,spConfigUrl,clientSvcBaseUrl,roleSvcBaseUrl,headers,params)
+                                messagepilotRole = addpilotRoles(newSystemDBRepresentation,spConfigUrl,clientSvcBaseUrl,roleSvcBaseUrl,headers,params,realm=realm)
                             getResponsetableCorrespondance = requests.get(spConfigUrl+"/systemes/"+dataResponseSystem["cleUnique"]+"/tableCorrespondance", headers=headers)
                             dataResponsetableCorrespondance = getResponsetableCorrespondance.json()
                             getResponseadressesApprovisionnement = requests.get(spConfigUrl+"/systemes/"+dataResponseSystem["cleUnique"]+"/adressesApprovisionnement", headers=headers)
@@ -490,15 +482,7 @@ def system(params):
                         clientS={}
                         if getResponseKeycloak.status_code == 200:
                             dataResponseKeycloak = getResponseKeycloak.json()
-                            if not dataResponseKeycloak:
-                                clientS={
-                                    "nom": "",
-                                    "uuidKeycloak":"",
-                                    "clientId": clientKeycloak["clientId"],
-                                    "description": "",
-                                    "roles": []
-                                }
-                            else:
+                            if dataResponseKeycloak:
                                 for dataKeycloak in dataResponseKeycloak:
                                     if dataKeycloak["clientId"] == clientKeycloak["clientId"]:
                                         role = []
@@ -517,7 +501,7 @@ def system(params):
                                             "description": dataKeycloak["description"],
                                             "roles": role
                                         }
-                        client.append(clientS)
+                                client.append(clientS)
 
                     bodySystem = {
                             "nom": newSystemDBRepresentation["systemName"],
@@ -542,7 +526,7 @@ def system(params):
                             # Add or update pilotRole
                             messagepilotRole = None
                             if "pilotRoles" in params and params['pilotRoles'] is not None:
-                                messagepilotRole = addpilotRoles(newSystemDBRepresentation,spConfigUrl,clientSvcBaseUrl,roleSvcBaseUrl,headers,params)
+                                messagepilotRole = addpilotRoles(newSystemDBRepresentation,spConfigUrl,clientSvcBaseUrl,roleSvcBaseUrl,headers,params,realm=realm)
                             getResponsetableCorrespondance = requests.get(spConfigUrl+"/systemes/"+dataResponseSystem["cleUnique"]+"/tableCorrespondance", headers=headers)
                             dataResponsetableCorrespondance = getResponsetableCorrespondance.json()
                             getResponseadressesApprovisionnement = requests.get(spConfigUrl+"/systemes/"+dataResponseSystem["cleUnique"]+"/adressesApprovisionnement", headers=headers)
@@ -653,15 +637,7 @@ def system(params):
                         clientS={}
                         if getResponseKeycloak.status_code == 200:
                             dataResponseKeycloak = getResponseKeycloak.json()
-                            if not dataResponseKeycloak:
-                                clientS={
-                                    "nom": "",
-                                    "uuidKeycloak":"",
-                                    "clientId": clientKeycloak["clientId"],
-                                    "description": "",
-                                    "roles": []
-                                }
-                            else:
+                            if dataResponseKeycloak:
                                 for dataKeycloak in dataResponseKeycloak:
                                     if dataKeycloak["clientId"] == clientKeycloak["clientId"]:
                                         role = []
@@ -680,7 +656,7 @@ def system(params):
                                             "description": dataKeycloak["description"],
                                             "roles": role
                                         }
-                        client.append(clientS)
+                                client.append(clientS)
                     bodySystem = {
                             "nom": newSystemDBRepresentation["systemName"],
                             "cleUnique": newSystemDBRepresentation["systemShortName"],
@@ -721,7 +697,7 @@ def system(params):
                             # Add or update pilotRole
                             messagepilotRole = None
                             if "pilotRoles" in params and params['pilotRoles'] is not None:
-                                messagepilotRole = addpilotRoles(newSystemDBRepresentation,spConfigUrl,clientSvcBaseUrl,roleSvcBaseUrl,headers,params)
+                                messagepilotRole = addpilotRoles(newSystemDBRepresentation,spConfigUrl,clientSvcBaseUrl,roleSvcBaseUrl,headers,params,realm=realm)
                             getResponsetableCorrespondance = requests.get(spConfigUrl+"/systemes/"+dataResponsesystem["cleUnique"]+"/tableCorrespondance", headers=headers)
                             dataResponsetableCorrespondance = getResponsetableCorrespondance.json()
                             getResponseadressesApprovisionnement = requests.get(spConfigUrl+"/systemes/"+dataResponsesystem["cleUnique"]+"/adressesApprovisionnement", headers=headers)
@@ -787,15 +763,7 @@ def system(params):
                         clientS={}
                         if getResponseKeycloak.status_code == 200:
                             dataResponseKeycloak = getResponseKeycloak.json()
-                            if not dataResponseKeycloak:
-                                clientS={
-                                    "nom": "",
-                                    "uuidKeycloak":"",
-                                    "clientId": clientKeycloak["clientId"],
-                                    "description": "",
-                                    "roles": []
-                                }
-                            else:
+                            if dataResponseKeycloak:
                                 for dataKeycloak in dataResponseKeycloak:
                                     if dataKeycloak["clientId"] == clientKeycloak["clientId"]:
                                         role = []
@@ -814,7 +782,7 @@ def system(params):
                                             "description": dataKeycloak["description"],
                                             "roles": role
                                         }
-                        client.append(clientS)
+                                client.append(clientS)
 
                     bodySystem = {
                             "nom": newSystemDBRepresentation["systemName"],
@@ -839,7 +807,7 @@ def system(params):
                             # Add or update pilotRole
                             messagepilotRole = None
                             if "pilotRoles" in params and params['pilotRoles'] is not None:
-                                messagepilotRole = addpilotRoles(newSystemDBRepresentation,spConfigUrl,clientSvcBaseUrl,roleSvcBaseUrl,headers,params)
+                                messagepilotRole = addpilotRoles(newSystemDBRepresentation,spConfigUrl,clientSvcBaseUrl,roleSvcBaseUrl,headers,params,realm=realm)
                             getResponsetableCorrespondance = requests.get(spConfigUrl+"/systemes/"+dataResponseSystem["cleUnique"]+"/tableCorrespondance", headers=headers)
                             dataResponsetableCorrespondance = getResponsetableCorrespondance.json()
                             getResponseadressesApprovisionnement = requests.get(spConfigUrl+"/systemes/"+dataResponseSystem["cleUnique"]+"/adressesApprovisionnement", headers=headers)
@@ -1035,7 +1003,7 @@ def createOrUpdateClientRoles(pilotClientRoles, clientSvcBaseUrl, roleSvcBaseUrl
                 requests.delete(clientSvcBaseUrl + clientRepresentation['id'] + '/roles/' + newClientRole['name'], headers=headers)
                 changed = True
     return changed        
-def addpilotRoles(newSystemDBRepresentation,spConfigUrl,clientSvcBaseUrl,roleSvcBaseUrl,headers,params):
+def addpilotRoles(newSystemDBRepresentation,spConfigUrl,clientSvcBaseUrl,roleSvcBaseUrl,headers,params,realm):
     messagepilotRole = []
     for pilotRole in newSystemDBRepresentation["pilotRoles"]:
         #set roles in Keycloak

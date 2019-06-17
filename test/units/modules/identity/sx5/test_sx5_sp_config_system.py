@@ -4,165 +4,277 @@ from ansible.modules.identity.sx5.sx5_sp_config_system import system
 from ansible.modules.identity.keycloak import keycloak_client
 from ansible.module_utils.sx5_sp_config_system_utils import loginAndSetHeaders
 from units.modules.utils import AnsibleExitJson, ModuleTestCase, set_module_args
+from wheel.signatures import assertTrue
+from __builtin__ import False, True
 
 class Sx5SystemTestCase(ModuleTestCase):
+    systemsToCreate = [
+        {
+            "spUrl": "http://localhost:18081",
+            "spUsername": "admin",
+            "spPassword": "admin",
+            "spRealm": "master",
+            "spConfigClient_id": "admin-cli", 
+            "spConfigClient_secret": "",
+            "spConfigUrl": "http://localhost:18182/config",
+            "systemName": "SystemeAReconfigurer",
+            "systemShortName": "SAR",
+            "clients": [
+                {
+                    "clientId": "clientasupprimer"
+                }
+            ],
+            "sadu_principal": "http://sadu.system.a.reconfiguer",
+            "sadu_secondary": [{"adresse": "http://sadu_secondary1"},{"adresse": "http://sadu_secondary2"}],
+            "clientRoles_mapper": [
+                {
+                    "spClientRole": "roleInSp11",
+                    "eq_sadu_role": "roleSadu11"
+                },
+                {
+                    "spClientRole": "roleInSp12",
+                    "eq_sadu_role": "roleSadu12"
+                }
+            ],
+            "clientRoles": [
+                {
+                    "spClientRoleId": "test1",
+                    "spClientRoleName": "test1",
+                    "spClientRoleDescription": "test1"
+                },
+                {
+                    "spClientRoleId": "toCreate",
+                    "spClientRoleName": "toCreate",
+                    "spClientRoleDescription": "toCreate"
+                }
+            ],
+            "pilotRoles": [
+                {
+                    "habilitationClientId": "habilitationClient1", 
+                    "roles": [
+                        {
+                            "name": "pilot-system1",
+                            "description": "Role1",
+                            "composite": True,
+                            "composites": [
+                                { 
+                                    "id": "clientasupprimer", 
+                                    "name": "test1"
+                                }
+                            ],
+                            "state": "present"
+                        }
+                    ]
+                }
+            ],
+            "state": "present",
+            "force": False
+        }
+    ]
+    clientTemplate = {
+        "auth_keycloak_url": "http://localhost:18081/auth",
+        "auth_username": "admin",
+        "auth_password": "admin",
+        "realm": "master",
+        "state": "present",
+        "rootUrl": "http://test.com:18182",
+        "description": "Ceci est un test",
+        "adminUrl": "http://test.com:18182/admin",
+        "enabled": True,
+        "clientAuthenticatorType": "client-secret",
+        "redirectUris": ["http://test.com:18182/secure","http://test1.com:18182/secure"],
+        "webOrigins": ["*"],
+        "bearerOnly": False,
+        "publicClient": False,
+        "force": False
+        }
+    clientsToCreate = [
+        {
+            "clientId": "clientsystem11",
+            "name": "clientsystem11",
+            "roles": [{"name":"test1","description": "test1","composite": "False"},
+                         {"name":"toCreate","description": "toCreate","composite": True,"composites": [{"id": "master-realm","name": "view-users"}]}
+                         ]
+            },
+        {
+            "clientId": "clientsystem21",
+            "name": "clientsystem21",
+            "roles": [{"name":"test2","description": "test2","composite": "False"},
+                         {"name":"toDoNotChange","description": "toDoNotChange","composite": True,"composites": [{"id": "master-realm","name": "view-users"}]}
+                         ]
+            },
+        {
+            "clientId": "clientsystem31",
+            "name": "clientsystem31",
+            "roles": [{"name":"test31","description": "test31","composite": "False"},
+                         {"name":"toChange","description": "toChange","composite": True,"composites": [{"id": "master-realm","name": "view-users"}]}
+                         ]
+            },
+        {
+            "clientId": "clientsystemChange31",
+            "name": "clientsystemChange31",
+            "roles": [{"name":"test31","description": "test31","composite": "False"},
+                         {"name":"toChange","description": "toChange","composite": True,"composites": [{"id": "master-realm","name": "view-users"}]}
+                         ]
+            },
+        {
+            "clientId": "clientsystem32",
+            "name": "clientsystem32",
+            "roles": [{"name":"test32","description": "test32","composite": "False"},
+                         {"name":"toChange","description": "toChange","composite": True,"composites": [{"id": "master-realm","name": "view-users"}]}
+                         ]
+            },
+        {
+            "clientId": "clientsystemChange32",
+            "name": "clientsystemChange32",
+            "roles": [{"name":"test32","description": "test32","composite": "False"},
+                         {"name":"toChange","description": "toChange","composite": True,"composites": [{"id": "master-realm","name": "view-users"}]}
+                         ]
+            },
+        {
+            "clientId": "clientsystemNS1",
+            "name": "clientsystemNS1",
+            "roles": [{"name":"testNS1","description": "testNS1","composite": "False"},
+                         {"name":"toCreate","description": "toCreate","composite": True,"composites": [{"id": "master-realm","name": "view-users"}]}
+                         ]
+            },
+        
+        {
+            "clientId": "clientsystemNS21",
+            "name": "clientsystemNS21",
+            "roles": [{"name":"testNS2","description": "testNS2","composite": "False"},
+                         {"name":"toDoNotChange","description": "toDoNotChange","composite": True,"composites": [{"id": "master-realm","name": "view-users"}]}
+                         ]
+            },
+        {
+            "clientId": "clientsystemNS31",
+            "name": "clientsystemNS31",
+            "roles": [{"name":"testNS31","description": "testNS31","composite": "False"},
+                         {"name":"toChange","description": "toChange","composite": True,"composites": [{"id": "master-realm","name": "view-users"}]}
+                         ]
+            },
+        {
+            "clientId": "clientsystemChangeNS31",
+            "name": "clientsystemChangeNS31",
+            "roles": [{"name":"testNS31","description": "testNS31","composite": "False"},
+                         {"name":"toChange","description": "toChange","composite": True,"composites": [{"id": "master-realm","name": "view-users"}]}
+                         ]
+            },
+        {
+            "clientId": "clientsystemNS32",
+            "name": "clientsystemNS32",
+            "roles": [{"name":"testNS32","description": "testNS32","composite": "False"},
+                         {"name":"toChange","description": "toChange","composite": True,"composites": [{"id": "master-realm","name": "view-users"}]}
+                         ]
+            },
+        {
+            "clientId": "clientsystemChangeNS32",
+            "name": "clientsystemChangeNS32",
+            "roles": [{"name":"testNS32","description": "testNS32","composite": "False"},
+                         {"name":"toChange","description": "toChange","composite": True,"composites": [{"id": "master-realm","name": "view-users"}]}
+                         ]
+            },
+        {
+            "clientId": "clientsystem41",
+            "name": "clientsystem41",
+            "roles": [{"name":"test4","description": "test4","composite": "False"},
+                         {"name":"toDelete","description": "toDelete","composite": True,"composites": [{"id": "master-realm","name": "view-users"}]}
+                         ]
+            },
+        {
+            "clientId": "habilitationClient1",
+            "name": "habilitationClient1",
+            "roles": [{"name":"HRole1","description": "HRole1","composite": "False"},
+                         {"name":"HRole2","description": "HRole2","composite": True,"composites": [{"id": "master-realm","name": "view-users"}]}
+                         ]
+            },
+        {
+            "clientId": "habilitationClient2",
+            "name": "habilitationClient2",
+            "roles": [{"name":"HRole1","description": "HRole1","composite": "False"},
+                         {"name":"HRole2","description": "HRole2","composite": True,"composites": [{"id": "master-realm","name": "view-users"}]}
+                         ]
+            },
+        {
+            "clientId": "habilitationClient3",
+            "name": "habilitationClient3",
+            "roles": [{"name":"HRole1","description": "HRole1","composite": "False"},
+                         {"name":"HRole2","description": "HRole2","composite": True,"composites": [{"id": "master-realm","name": "view-users"}]}
+                         ]
+            },
+        {
+            "clientId": "habilitationClient4",
+            "name": "habilitationClient4",
+            "roles": [{"name":"HRole1","description": "HRole1","composite": "False"},
+                         {"name":"HRole2","description": "HRole2","composite": True,"composites": [{"id": "master-realm","name": "view-users"}]}
+                         ]
+            },
+        {
+            "clientId": "habilitationClient5",
+            "name": "habilitationClient5",
+            "roles": [{"name":"HRole1","description": "HRole1","composite": "False"},
+                         {"name":"HRole2","description": "HRole2","composite": True,"composites": [{"id": "master-realm","name": "view-users"}]}
+                         ]
+            },
+        {
+            "clientId": "habilitationClient6",
+            "name": "habilitationClient6",
+            "roles": [{"name":"HPilot1","description": "HPilot1","composite": "False"},
+                      {"name":"HPilot2","description": "HPilot2","composite": True,"composites": [{"id": "master-realm","name": "view-users"}]}
+                ]
+            },        
+        {
+            "clientId": "clientasupprimer",
+            "name": "clientasupprimer",
+            "roles": [{"name":"test1","description": "test1","composite": "False"}]
+            },
+        {
+            "clientId": "clientarecreer",
+            "name": "clientarecreer",
+            "roles": [{"name":"test1","description": "test1","composite": "False"}]
+            },
+        ]
+    clientsToDelete = [
+        {
+            "clientId": "clientasupprimer"
+        }
+    ]
     def setUp(self):
         super(Sx5SystemTestCase, self).setUp()
-        clientsToCreate = [
-            {
-                "clientId": "clientsystem11",
-                "name": "clientsystem11",
-                "roles": [{"name":"test1","description": "test1","composite": "False"},
-                             {"name":"toCreate","description": "toCreate","composite": True,"composites": [{"id": "master-realm","name": "view-users"}]}
-                             ]
-                },
-            {
-                "clientId": "clientsystem21",
-                "name": "clientsystem21",
-                "roles": [{"name":"test2","description": "test2","composite": "False"},
-                             {"name":"toDoNotChange","description": "toDoNotChange","composite": True,"composites": [{"id": "master-realm","name": "view-users"}]}
-                             ]
-                },
-            {
-                "clientId": "clientsystem31",
-                "name": "clientsystem31",
-                "roles": [{"name":"test31","description": "test31","composite": "False"},
-                             {"name":"toChange","description": "toChange","composite": True,"composites": [{"id": "master-realm","name": "view-users"}]}
-                             ]
-                },
-            {
-                "clientId": "clientsystemChange31",
-                "name": "clientsystemChange31",
-                "roles": [{"name":"test31","description": "test31","composite": "False"},
-                             {"name":"toChange","description": "toChange","composite": True,"composites": [{"id": "master-realm","name": "view-users"}]}
-                             ]
-                },
-            {
-                "clientId": "clientsystem32",
-                "name": "clientsystem32",
-                "roles": [{"name":"test32","description": "test32","composite": "False"},
-                             {"name":"toChange","description": "toChange","composite": True,"composites": [{"id": "master-realm","name": "view-users"}]}
-                             ]
-                },
-            {
-                "clientId": "clientsystemChange32",
-                "name": "clientsystemChange32",
-                "roles": [{"name":"test32","description": "test32","composite": "False"},
-                             {"name":"toChange","description": "toChange","composite": True,"composites": [{"id": "master-realm","name": "view-users"}]}
-                             ]
-                },
-            {
-                "clientId": "clientsystemNS1",
-                "name": "clientsystemNS1",
-                "roles": [{"name":"testNS1","description": "testNS1","composite": "False"},
-                             {"name":"toCreate","description": "toCreate","composite": True,"composites": [{"id": "master-realm","name": "view-users"}]}
-                             ]
-                },
-            
-            {
-                "clientId": "clientsystemNS21",
-                "name": "clientsystemNS21",
-                "roles": [{"name":"testNS2","description": "testNS2","composite": "False"},
-                             {"name":"toDoNotChange","description": "toDoNotChange","composite": True,"composites": [{"id": "master-realm","name": "view-users"}]}
-                             ]
-                },
-            {
-                "clientId": "clientsystemNS31",
-                "name": "clientsystemNS31",
-                "roles": [{"name":"testNS31","description": "testNS31","composite": "False"},
-                             {"name":"toChange","description": "toChange","composite": True,"composites": [{"id": "master-realm","name": "view-users"}]}
-                             ]
-                },
-            {
-                "clientId": "clientsystemChangeNS31",
-                "name": "clientsystemChangeNS31",
-                "roles": [{"name":"testNS31","description": "testNS31","composite": "False"},
-                             {"name":"toChange","description": "toChange","composite": True,"composites": [{"id": "master-realm","name": "view-users"}]}
-                             ]
-                },
-            {
-                "clientId": "clientsystemNS32",
-                "name": "clientsystemNS32",
-                "roles": [{"name":"testNS32","description": "testNS32","composite": "False"},
-                             {"name":"toChange","description": "toChange","composite": True,"composites": [{"id": "master-realm","name": "view-users"}]}
-                             ]
-                },
-            {
-                "clientId": "clientsystemChangeNS32",
-                "name": "clientsystemChangeNS32",
-                "roles": [{"name":"testNS32","description": "testNS32","composite": "False"},
-                             {"name":"toChange","description": "toChange","composite": True,"composites": [{"id": "master-realm","name": "view-users"}]}
-                             ]
-                },
-            {
-                "clientId": "clientsystem41",
-                "name": "clientsystem41",
-                "roles": [{"name":"test4","description": "test4","composite": "False"},
-                             {"name":"toDelete","description": "toDelete","composite": True,"composites": [{"id": "master-realm","name": "view-users"}]}
-                             ]
-                },
-            {
-                "clientId": "habilitationClient1",
-                "name": "habilitationClient1",
-                "roles": [{"name":"HRole1","description": "HRole1","composite": "False"},
-                             {"name":"HRole2","description": "HRole2","composite": True,"composites": [{"id": "master-realm","name": "view-users"}]}
-                             ]
-                },
-            {
-                "clientId": "habilitationClient2",
-                "name": "habilitationClient2",
-                "roles": [{"name":"HRole1","description": "HRole1","composite": "False"},
-                             {"name":"HRole2","description": "HRole2","composite": True,"composites": [{"id": "master-realm","name": "view-users"}]}
-                             ]
-                },
-            {
-                "clientId": "habilitationClient3",
-                "name": "habilitationClient3",
-                "roles": [{"name":"HRole1","description": "HRole1","composite": "False"},
-                             {"name":"HRole2","description": "HRole2","composite": True,"composites": [{"id": "master-realm","name": "view-users"}]}
-                             ]
-                },
-            {
-                "clientId": "habilitationClient4",
-                "name": "habilitationClient4",
-                "roles": [{"name":"HRole1","description": "HRole1","composite": "False"},
-                             {"name":"HRole2","description": "HRole2","composite": True,"composites": [{"id": "master-realm","name": "view-users"}]}
-                             ]
-                },
-            {
-                "clientId": "habilitationClient5",
-                "name": "habilitationClient5",
-                "roles": [{"name":"HRole1","description": "HRole1","composite": "False"},
-                             {"name":"HRole2","description": "HRole2","composite": True,"composites": [{"id": "master-realm","name": "view-users"}]}
-                             ]
-                }
-            ]
-        toCreateClient = {}
-        toCreateClient["auth_keycloak_url"] = "http://localhost:18081/auth"
-        toCreateClient["auth_username"] = "admin"
-        toCreateClient["auth_password"] = "admin"
-        toCreateClient["realm"] = "master"
-        toCreateClient["state"] = "present"
-        toCreateClient["rootUrl"] = "http://test.com:18182"
-        toCreateClient["description"] = "Ceci est un test"
-        toCreateClient["adminUrl"] = "http://test.com:18182/admin"
-        toCreateClient["enabled"] = True
-        toCreateClient["clientAuthenticatorType"] = "client-secret"
-        toCreateClient["redirectUris"] = ["http://test.com:18182/secure","http://test1.com:18182/secure"]
-        toCreateClient["webOrigins"] = ["*"]
-        toCreateClient["bearerOnly"] = False
-        toCreateClient["publicClient"] = False
-        toCreateClient["force"] = False
+        toCreateClient = self.clientTemplate.copy()
         self.module = keycloak_client
-
-        for theClient in clientsToCreate:
+        for theClient in self.clientsToCreate:
             toCreateClient["clientId"] = theClient["clientId"]
             toCreateClient["name"] = theClient["name"]
             toCreateClient["roles"] = theClient["roles"]
             set_module_args(toCreateClient)
             with self.assertRaises(AnsibleExitJson) as results:
                 self.module.main()
-    
+        for systeme in self.systemsToCreate:
+            system(systeme)
+        toDeleteClient = self.clientTemplate.copy()
+        toDeleteClient["state"] = "absent"
+        for theClient in self.clientsToDelete:
+            toDeleteClient["clientId"] = theClient["clientId"]
+            set_module_args(toDeleteClient)
+            with self.assertRaises(AnsibleExitJson) as results:
+                self.module.main()
+
+    def tearDown(self):
+        for systeme in self.systemsToCreate:
+            systemCleanup = systeme.copy()
+            systemCleanup["state"] = "absent"
+            system(systemCleanup)
+        toDeleteClient = self.clientTemplate.copy()
+        toDeleteClient["state"] = "absent"
+        for theClient in self.clientsToCreate:
+            toDeleteClient["clientId"] = theClient["clientId"]
+            set_module_args(toDeleteClient)
+            with self.assertRaises(AnsibleExitJson) as results:
+                self.module.main()
+            
+        super(Sx5SystemTestCase, self).tearDown()
+                        
     def test_create_system(self):
         toCreate = {}
         toCreate["spUrl"] = "http://localhost:18081"
@@ -347,13 +459,7 @@ class Sx5SystemTestCase(ModuleTestCase):
             self.assertTrue(clientFound, newToChangeClient["clientId"] + " not found")
     
     def test_modify_system_habilitation_clients(self):
-        createHabiliatationClient = {
-                "clientId": "habilitationClient6",
-                "name": "habilitationClient6",
-                "roles": [{"name":"HPilot1","description": "HPilot1","composite": "False"},
-                             {"name":"HPilot2","description": "HPilot2","composite": True,"composites": [{"id": "master-realm","name": "view-users"}]}
-                             ]
-                }
+        createHabilitationClient = self.clientsToCreate[18].copy()
         toCreateClient = {}
         toCreateClient["auth_keycloak_url"] = "http://localhost:18081/auth"
         toCreateClient["auth_username"] = "admin"
@@ -370,9 +476,9 @@ class Sx5SystemTestCase(ModuleTestCase):
         toCreateClient["bearerOnly"] = False
         toCreateClient["publicClient"] = False
         toCreateClient["force"] = False
-        toCreateClient["clientId"] = createHabiliatationClient["clientId"]
-        toCreateClient["name"] = createHabiliatationClient["name"]
-        toCreateClient["roles"] = createHabiliatationClient["roles"]
+        toCreateClient["clientId"] = createHabilitationClient["clientId"]
+        toCreateClient["name"] = createHabilitationClient["name"]
+        toCreateClient["roles"] = createHabilitationClient["roles"]
         
         self.module = keycloak_client
         set_module_args(toCreateClient)
@@ -584,3 +690,24 @@ class Sx5SystemTestCase(ModuleTestCase):
         #print str(results)
         self.assertTrue(results['changed'])
         self.assertEqual(results['stdout'], 'deleted', 'system has been deleted')
+        
+    def test_modify_system_clients_for_components(self):
+        toModifySystem = self.systemsToCreate[0].copy()
+        toModifySystem["clients"] = [
+                {
+                    "clientId": "clientarecreer"
+                }
+            ]
+        results = system(toModifySystem)
+        self.assertTrue(results['changed'])
+        systemClients = results["ansible_facts"]["systemes"]["composants"]
+        clientFound = False
+        for client in systemClients:
+            if client["clientId"] == toModifySystem["clients"][0]["clientId"]:
+                clientFound = True
+                break
+        self.assertTrue(clientFound, "Le client " + toModifySystem["clients"][0]["clientId"] + " ne fait pas partie des composants")
+    
+        
+        
+        
