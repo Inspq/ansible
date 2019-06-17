@@ -24,28 +24,34 @@ options:
         description:
             - The name of the realm in which is the authentication.
         required: true
+        type: str
     alias:
         description:
             - Alias for the authentication flow
         required: true
+        type: str
     providerId:
         description:
             - providerId for the new flow when not copied from an existing flow.
         required: false
+        type: str
     copyFrom:
         description:
             - flowAlias of the authentication flow to use for the copy.
         required: false
+        type: str
     authenticationExecutions:
         description:
             - Configuration structure for the executions
         required: false
+        type: list
     state:
         description:
             - Control if the authentication flow must exists or not
         choices: [ "present", "absent" ]
         default: present
         required: false
+        type: str
     force:
         type: bool
         default: false

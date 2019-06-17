@@ -25,67 +25,83 @@ options:
         description:
             - The name of the realm.
         default: master
+        type: str
     displayName:
         description:
             - The display name of the realm.
         required: false
         aliases: ['name']
+        type: str
     displayNameHtml:
         description:
             - The name to use within the HTML page of the realm.
         required: true
         aliases: ['namehtml']
+        type: str
     loginTheme:
         description:
             - Theme to use at logon for this realm.
         required: false
+        type: str
     adminTheme:
         description:
             - Theme to use for this realm's admin console.
         required: false
+        type: str
     emailTheme:
         description:
             - Theme to use for this realm's emails.
         required: false
+        type: str
     accountTheme:
         description:
             - Theme to use for this realm's accounts.
         required: false
+        type: str
     internationalizationEnabled:
         description:
             - Is internationalization enabled for this realm?
         required: false
+        type: bool
     supportedLocales:
         description:
             - List of supported languages for the realm.
         required: false
+        type: list
     defaultLocale:
         description:
             - If multiple locales are supported, which one will be used as default language.
         required: false
+        type: str
     accessCodeLifespan:
         description:
             - access code lifespan.
         default: 60
+        type: int
     accessCodeLifespanLogin:
         description:
             - access code lifespan login.
         default: 1800
+        type: int
     accessCodeLifespanUserAction:
         description:
             - access code lifespan user action.
         default: 300
+        type: int
     accessTokenLifespan:
         description:
             - Access token lifespan.
         default: 300
+        type: int
     accessTokenLifespanForImplicitFlow:
         description:
             - Access token lifespan for implicit flow.
         default: 900
+        type: int
     notBefore:
         description:
             - Not Before.
+        type: int
     revokeRefreshToken:
         description:
             - Revoke Refresh Token.
@@ -94,42 +110,52 @@ options:
         description:
             - Sso Session Max Lifespan.
         default: 36000
+        type: int
     offlineSessionIdleTimeout:
         description:
             - Offline Session Idle Timeout.
         default: 2592000
+        type: int
     ssoSessionIdleTimeout:
         description:
             - SSO session idle timeout.
         default: 1800
+        type: int
     enabled:
         description:
             - Enabled.
         default: True
+        type: bool
     sslRequired:
         description:
             - SSL Required.
         default: external
+        type: str
     registrationAllowed:
         description:
             - Registration Allowed.
         default: False
+        type: bool
     registrationEmailAsUsername:
         description:
             - Registration Email As Username.
         default: False
+        type: bool
     rememberMe:
         description:
             - Remember me.
         default: False
+        type: bool
     verifyEmail:
         description:
             - Verify Email.
         default: False
+        type: bool
     loginWithEmailAllowed:
         description:
             - Login With Email Allowed.
         default: True
+        type: bool
     duplicateEmailsAllowed:
         description:
             - Duplicate Emails Allowed.
@@ -144,81 +170,99 @@ options:
         description:
             - Edit Username Allowed.
         default: False
+        type: bool
     bruteForceProtected:
         description:
             - Brute Force Protected.
         default: False
+        type: bool
     permanentLockout:
         description:
             - Permanent Lockout.
         default: False
+        type: bool
     maxFailureWaitSeconds:
         description:
             - Max Failure Wait Seconds.
         default: 900
+        type: int
     minimumQuickLoginWaitSeconds:
         description:
             - Minimum Quick Login Wait Seconds.
         default: 60
+        type: int
     waitIncrementSeconds:
         description:
             - Wait Increment Seconds.
         default: 60
+        type: int
     quickLoginCheckMilliSeconds:
         description:
             - Quick Login Check MilliSeconds.
         default: 1000
+        type: int
     maxDeltaTimeSeconds:
         description:
             - Max Delta Time Seconds.
         default: 43200
-        required: false
+        type: int
     failureFactor:
         description:
             - Failure Factor.
         default: 30
+        type: int
     defaultRoles:
         description:
             - Default roles.
         default: [ "offline_access", "uma_authorization" ]
+        type: list
     requiredCredentials:
         description:
             - Required Credentials.
         default: [ "password" ]
+        type: list
     passwordPolicy:
         description:
             - Password Policy.
         default: hashIterations(20000)
         required: false
+        type: str
     otpPolicyType:
         description:
             - Otp Policy Type.
         default: totp
+        type: str
     otpPolicyAlgorithm:
         description:
             - Otp Policy Algorithm.
         default: HmacSHA1
+        type: str
     otpPolicyInitialCounter:
         description:
             - Otp Policy Initial Counter.
         default: 0
+        type: int
     otpPolicyDigits:
         description:
             - Otp Policy Digits.
         default: 6
+        type: int
     otpPolicyLookAheadWindow:
         description:
             - Otp Policy Look Ahead Window.
         default: 1
+        type: int
     otpPolicyPeriod:
         description:
             - Otp Policy Period.
         default: 30
+        type: int
     smtpServer:
         description:
         - SMTP Server.
         default: {}
         required: false
+        type: dict
         suboptions:
             replyToDisplayName:
                 description:
@@ -287,6 +331,7 @@ options:
         description:
             - Event configuration for the realm.
         required: false
+        type: dict
         suboptions:
             eventsEnabled:
                 description:
@@ -369,36 +414,44 @@ options:
         description:
             - Browser Flow.
         default: browser
+        type: str
     registrationFlow:
         description:
             - Registration Flow.
         default: registration
         required: false
+        type: str
     directGrantFlow:
         description:
             - Direct Grant Flow.
         default: direct grant
+        type: str
     resetCredentialsFlow:
         description:
             - Reset Credentials Flow.
         default: reset credentials
+        type: str
     clientAuthenticationFlow:
         description:
             - Client Authentication Flow.
         default: clients
+        type: str
     attributes:
         description:
             - Attributes.
         required: false
+        type: dict
     browserSecurityHeaders:
         description:
             - Browser Security Headers.
         required: false
+        type: dict
     state:
         choices: [ "present", "absent" ]
         default: present
         description:
             - Control if the realm exists.
+        type: str
     force:
         type: bool
         default: false
