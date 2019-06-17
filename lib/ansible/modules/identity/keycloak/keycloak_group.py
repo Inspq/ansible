@@ -114,6 +114,7 @@ options:
     path:
         description:
             Group path
+        type: str
         version_added: 2.9
     syncLdapMappers:
         type: bool

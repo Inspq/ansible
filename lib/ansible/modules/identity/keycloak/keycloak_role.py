@@ -27,14 +27,17 @@ options:
             - The name of the realm in which is the role.
         required: true
         default: master
+        type: str
     name:
         description:
             - Name for the realm level role.
         required: true
+        type: str
     description:
         description:
             - Description of the role.
         required: false
+        type: str
     clientRole:
         description:
             - This parameter indicate if the role is a client role.
@@ -46,6 +49,7 @@ options:
             - Id for the container of the role. For a realm role, it must be the realm name
             - Value will be defaulted to {{ realm }} if not defined.
         required: false
+        type: str
     composite:
         description:
             - If true, the role is a composition of other realm and/or client role.
@@ -56,6 +60,7 @@ options:
             - List of roles to include to the composite realm role.
             - If the composite role is a client role, the clientId (not id of the client) must be specified.
         required: false
+        type: list
         suboptions:
             name:
                 description:
@@ -71,7 +76,7 @@ options:
             - Control if the role must exists or not
         choices: [ "present", "absent" ]
         default: present
-        required: false
+        type: str
     force:
         type: bool
         default: false

@@ -38,6 +38,7 @@ options:
             - On C(absent), the client will be removed if it exists
         choices: ['present', 'absent']
         default: 'present'
+        type: str
     realm:
         description:
             - The realm to create the client in.
@@ -50,34 +51,41 @@ options:
               This is 'clientId' in the Keycloak REST API.
         aliases:
             - clientId
+        type: str
     id:
         description:
             - Id of client to be worked on. This is usually an UUID. Either this or I(client_id)
               is required. If you specify both, this takes precedence.
+        type: str
     name:
         description:
             - Name of the client (this is not the same as I(client_id))
+        type: str
     description:
         description:
             - Description of the client in Keycloak
+        type: str
     root_url:
         description:
             - Root URL appended to relative URLs for this client
               This is 'rootUrl' in the Keycloak REST API.
         aliases:
             - rootUrl
+        type: str
     admin_url:
         description:
             - URL to the admin interface of the client
               This is 'adminUrl' in the Keycloak REST API.
         aliases:
             - adminUrl
+        type: str
     base_url:
         description:
             - Default URL to use when the auth server needs to redirect or link back to the client
               This is 'baseUrl' in the Keycloak REST API.
         aliases:
             - baseUrl
+        type: str
     enabled:
         description:
             - Is this client enabled or not?
@@ -93,12 +101,14 @@ options:
         choices: ['client-secret', 'client-jwt']
         aliases:
             - clientAuthenticatorType
+        type: str
     secret:
         description:
             - When using I(client_authenticator_type) C(client-secret) (the default), you can
               specify a secret here (otherwise one will be generated if it does not exit). If
               changing this secret, the module will not register a change currently (but the
               changed secret will be saved).
+        type: str
     registration_access_token:
         description:
             - The registration access token provides access for clients to the client registration
@@ -106,6 +116,7 @@ options:
               This is 'registrationAccessToken' in the Keycloak REST API.
         aliases:
             - registrationAccessToken
+        type: str
     default_roles:
         description:
             - list of default roles for this client. If the client roles referenced do not exist
@@ -113,24 +124,28 @@ options:
               This is 'defaultRoles' in the Keycloak REST API.
         aliases:
             - defaultRoles
+        type: list
     redirect_uris:
         description:
             - Acceptable redirect URIs for this client.
               This is 'redirectUris' in the Keycloak REST API.
         aliases:
             - redirectUris
+        type: list
     web_origins:
         description:
             - List of allowed CORS origins.
               This is 'webOrigins' in the Keycloak REST API.
         aliases:
             - webOrigins
+        type: list
     not_before:
         description:
             - Revoke any tokens issued before this date for this client (this is a UNIX timestamp).
               This is 'notBefore' in the Keycloak REST API.
         aliases:
             - notBefore
+        type: int
     bearer_only:
         description:
             - The access type of this client is bearer-only.
@@ -199,6 +214,7 @@ options:
             - Type of client (either C(openid-connect) or C(saml).
         choices: ['openid-connect', 'saml']
         default: openid-connect
+        type: str
     full_scope_allowed:
         description:
             - Is the "Full Scope Allowed" feature set for this client or not.
@@ -212,6 +228,7 @@ options:
               This is 'nodeReRegistrationTimeout' in the Keycloak REST API.
         aliases:
             - nodeReRegistrationTimeout
+        type: int
     registered_nodes:
         description:
             - dict of registered cluster nodes (with C(nodename) as the key and last registration
@@ -219,6 +236,7 @@ options:
               This is 'registeredNodes' in the Keycloak REST API.
         aliases:
             - registeredNodes
+        type: dict
     client_template:
         description:
             - Client template to use for this client. If it does not exist this field will silently
@@ -226,6 +244,7 @@ options:
               This is 'clientTemplate' in the Keycloak REST API.
         aliases:
             - clientTemplate
+        type: str
     use_template_config:
         description:
             - Whether or not to use configuration from the I(client_template).
@@ -261,30 +280,37 @@ options:
               This is 'authorizationSettings' in the Keycloak REST API.
         aliases:
             - authorizationSettings
+        type: dict
     protocol_mappers:
         description:
             - a list of dicts defining protocol mappers for this client.
               This is 'protocolMappers' in the Keycloak REST API.
         aliases:
             - protocolMappers
+        type: list
         suboptions:
             consentRequired:
                 description:
                     - Specifies whether a user needs to provide consent to a client for this mapper to be active.
+                type: str
             consentText:
                 description:
                     - The human-readable name of the consent the user is presented to accept.
+                type: str
             id:
                 description:
                     - Usually a UUID specifying the internal ID of this protocol mapper instance.
+                type: str
             name:
                 description:
                     - The name of this protocol mapper.
+                type: str
             protocol:
                 description:
                     - This is either C(openid-connect) or C(saml), this specifies for which protocol this protocol mapper
                       is active.
                 choices: ['openid-connect', 'saml']
+                type: str
             protocolMapper:
                 description:
                     - The Keycloak-internal name of the type of this protocol-mapper. While an exhaustive list is
@@ -315,6 +341,7 @@ options:
                     - An exhaustive list of available mappers on your installation can be obtained on
                       the admin console by going to Server Info -> Providers and looking under
                       'protocol-mapper'.
+                type: str
             config:
                 description:
                     - Dict specifying the configuration options for the protocol mapper; the
@@ -322,6 +349,7 @@ options:
                       other than by the source of the mappers and its parent class(es). An example is given
                       below. It is easiest to obtain valid config values by dumping an already-existing
                       protocol mapper configuration through check-mode in the I(existing) field.
+                type: dict
             state:
                 description:
                     - Desired state of the protocol mappers.
@@ -329,6 +357,7 @@ options:
                       If absent, the mapper will be removed
                 choices: [absent, present]
                 default: present
+                type: str
     attributes:
         description:
             - A dict of further attributes for this client. This can contain various configuration
@@ -336,51 +365,66 @@ options:
               permissible options is not available; possible options as of Keycloak 3.4 are listed below. The Keycloak
               API does not validate whether a given option is appropriate for the protocol used; if specified
               anyway, Keycloak will simply not use it.
+        type: dict
         suboptions:
             saml.authnstatement:
                 description:
                     - For SAML clients, boolean specifying whether or not a statement containing method and timestamp
                       should be included in the login response.
+                type: str
             saml.client.signature:
                 description:
                     - For SAML clients, boolean specifying whether a client signature is required and validated.
+                type: str
             saml.encrypt:
                 description:
                     - Boolean specifying whether SAML assertions should be encrypted with the client's public key.
+                type: str
             saml.force.post.binding:
                 description:
                     - For SAML clients, boolean specifying whether always to use POST binding for responses.
+                type: str
             saml.onetimeuse.condition:
                 description:
                     - For SAML clients, boolean specifying whether a OneTimeUse condition should be included in login responses.
+                type: str
             saml.server.signature:
                 description:
                     - Boolean specifying whether SAML documents should be signed by the realm.
+                type: str
             saml.server.signature.keyinfo.ext:
                 description:
                     - For SAML clients, boolean specifying whether REDIRECT signing key lookup should be optimized through inclusion
                       of the signing key id in the SAML Extensions element.
+                type: str
             saml.signature.algorithm:
                 description:
                     - Signature algorithm used to sign SAML documents. One of C(RSA_SHA256), C(RSA_SHA1), C(RSA_SHA512), or C(DSA_SHA1).
+                type: str
             saml.signing.certificate:
                 description:
                     - SAML signing key certificate, base64-encoded.
+                type: str
             saml.signing.private.key:
                 description:
                     - SAML signing key private key, base64-encoded.
+                type: str
             saml_assertion_consumer_url_post:
                 description:
                     - SAML POST Binding URL for the client's assertion consumer service (login responses).
+                type: str
             saml_assertion_consumer_url_redirect:
                 description:
                     - SAML Redirect Binding URL for the client's assertion consumer service (login responses).
+                type: str
             saml_force_name_id_format:
                 description:
                     - For SAML clients, Boolean specifying whether to ignore requested NameID subject format and using the configured one instead.
+                type: str
             saml_name_id_format:
                 description:
                     - For SAML clients, the NameID format to use (one of C(username), C(email), C(transient), or C(persistent))
+                type: str
             saml_signature_canonicalization_method:
                 description:
                     - SAML signature canonicalization method. This is one of four values, namely
@@ -388,26 +432,33 @@ options:
                       C(http://www.w3.org/2001/10/xml-exc-c14n#WithComments) for EXCLUSIVE_WITH_COMMENTS,
                       C(http://www.w3.org/TR/2001/REC-xml-c14n-20010315) for INCLUSIVE, and
                       C(http://www.w3.org/TR/2001/REC-xml-c14n-20010315#WithComments) for INCLUSIVE_WITH_COMMENTS.
+                type: str
             saml_single_logout_service_url_post:
                 description:
                     - SAML POST binding url for the client's single logout service.
+                type: str
             saml_single_logout_service_url_redirect:
                 description:
                     - SAML redirect binding url for the client's single logout service.
+                type: str
             user.info.response.signature.alg:
                 description:
                     - For OpenID-Connect clients, JWA algorithm for signed UserInfo-endpoint responses. One of C(RS256) or C(unsigned).
+                type: str
             request.object.signature.alg:
                 description:
                     - For OpenID-Connect clients, JWA algorithm which the client needs to use when sending
                       OIDC request object. One of C(any), C(none), C(RS256).
+                type: str
             use.jwks.url:
                 description:
                     - For OpenID-Connect clients, boolean specifying whether to use a JWKS URL to obtain client
                       public keys.
+                type: str
             jwks.url:
                 description:
                     - For OpenID-Connect clients, URL where client keys in JWK are stored.
+                type: str
             jwt.credential.certificate:
                 description:
                     - For OpenID-Connect clients, client certificate for validating JWT issued by
@@ -424,9 +475,11 @@ options:
             name:
                 description:
                     - Name of the role
+                type: str
             description:
                 description:
                     - Description of the role
+                type: str
             composite:
                 description:
                     - Is the role is a composite or not.
@@ -440,9 +493,11 @@ options:
                     id:
                         description:
                             - clientId of the client if the composite is a client role.
+                        type: str
                     name:
                         description:
                             - Name of the role. It can be a realm role name or a client role name.
+                        type: str
         version_added: "2.7"
     scope_mappings:
         description:
@@ -450,6 +505,7 @@ options:
               Scope mappings can be added, updated or removed depending it's state.
         aliases:
             - scopeMappings
+        type: dict
         suboptions:
             realm:
                 description:
@@ -459,6 +515,7 @@ options:
                     name:
                         description:
                             - Name of realm role.
+                        type: str
                     state:
                         description:
                             - Desired state of realm_access roles mappings.
@@ -466,6 +523,7 @@ options:
                               If absent, the role will be removed
                         choices: [absent, present]
                         default: present
+                        type: str
             clients:
                 description:
                     - list of resource_access roles
@@ -474,6 +532,7 @@ options:
                     id:
                         description:
                             - clientId of the client.
+                        type: str
                     roles:
                         description:
                             - list of realm_access roles
@@ -482,6 +541,7 @@ options:
                             name:
                                 description:
                                     - Name of realm role.
+                                type: str
                             state:
                                 description:
                                     - Desired state of client_access roles mappings.
@@ -489,6 +549,7 @@ options:
                                       If absent, the role will be removed
                                 choices: [absent, present]
                                 default: present
+                                type: str
         version_added: "2.7"
     force:
         type: bool
@@ -501,37 +562,31 @@ options:
             - URL to the Keycloak instance.
         type: str
         required: true
-
     auth_client_id:
         description:
             - OpenID Connect I(client_id) to authenticate to the API with.
         type: str
         default: admin-cli
         required: true
-
     auth_realm:
         description:
             - Keycloak realm name to authenticate to for API access.
         type: str
         default: master
-
     auth_client_secret:
         description:
             - Client Secret to use in conjunction with I(auth_client_id) (if required).
         type: str
-
     auth_username:
         description:
             - Username to authenticate for API access with.
         type: str
         required: true
-
     auth_password:
         description:
             - Password to authenticate for API access with.
         type: str
         required: true
-
     validate_certs:
         description:
             - Verify TLS certificates (do not disable this in production).

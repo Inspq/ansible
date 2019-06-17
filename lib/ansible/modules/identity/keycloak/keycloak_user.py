@@ -25,10 +25,12 @@ options:
         description:
             - The name of the realm in which is the client.
         default: master
+        type: str
     username:
         description:
             - username for the user.
         required: true
+        type: str
     id:
         description:
             - ID of the user on the keycloak server if known
@@ -47,30 +49,37 @@ options:
         description:
             - User firstName.
         required: false
+        type: str
     lastName:
         description:
             - User lastName.
         required: false
+        type: str
     email:
         description:
             - User email.
         required: false
+        type: str
     federationLink:
         description:
             - Federation Link.
         required: false
+        type: str
     serviceAccountClientId:
         description:
             - Description of the client Application.
         required: false
+        type: str
     realmRoles:
         description:
             - List of ClientRoles for the user.
         required: false
+        type: list
     clientRoles:
         description:
             - List of ClientRoles for the user.
         required: false
+        type: list
     clientConsents:
         description:
             - client Authenticator Type.
@@ -91,44 +100,54 @@ options:
         description:
             - List of groups for the user.
         required: true
+        type: list
     credentials:
         description:
             - User credentials.
         required: false
+        type: list
     requiredActions:
         description:
             - requiredActions user Auth.
         required: false
+        type: list
     federatedIdentities:
         description:
             - list of IDP of user.
         required: false
+        type: list
     attributes:
         description:
             - list user attributes.
         required: false
+        type: dict
     access:
         description:
             - list user access.
         required: false
+        type: dict
     disableableCredentialTypes:
         description:
             - list user Credential Type.
         required: false
+        type: list
     origin:
         description:
             - user origin.
         required: false
+        type: str
     self:
         description:
             - user self administration.
         required: false
+        type: str
     state:
         description:
             - Control if the user must exists or not
         choices: [ "present", "absent" ]
         default: present
         required: false
+        type: str
     force:
         description:
             - If true, allows to remove user and recreate it.

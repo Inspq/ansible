@@ -28,19 +28,23 @@ options:
         description:
             - The name of the realm in which is the component.
         required: true
+        type: str
     id:
         description:
             - ID of the component when it have already been created and it is known.
         required: false
+        type: str
     name:
         description:
             - Name of the Component
         required: true
+        type: str
     providerId:
         description:
             - ProviderId of the component
         choices: ["ldap","allowed-client-templates","trusted-hosts","allowed-protocol-mappers","max-clients","scope","consent-required","rsa-generated"]
         required: true
+        type: str
     providerType:
         description:
             - Provider type of component
@@ -51,14 +55,17 @@ options:
             - authenticatorConfig
             - requiredActions
         required: true
+        type: str
     parentId:
         description:
             - Parent ID of the component. Use the realm name for top level component.
         required: true
+        type: str
     config:
         description:
             - Configuration of the component to create, update or delete.
         required: false
+        type: dict
         suboptions:
             vendor:
                 description:
@@ -406,6 +413,7 @@ options:
             - If the parameter is absent, no sync will be triggered
         required: false
         choices: ["triggerFullSync", "triggerChangedUsersSync"]
+        type: str
     syncLdapMappers:
         description:
             - Type of LDAP mapper synchronization must be triggerd for
@@ -413,12 +421,14 @@ options:
             - If the parameter is absent, no sync will be triggered
         required: false
         choices: ["fedToKeycloak", "keycloakToFed"]
+        type: str
     state:
         description:
             - Control if the component must exists or not
         choices: [ "present", "absent" ]
         default: present
         required: false
+        type: str
     force:
         description:
             - If true, allows to remove component and recreate it.

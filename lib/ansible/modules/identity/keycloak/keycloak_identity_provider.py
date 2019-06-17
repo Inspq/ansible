@@ -25,27 +25,32 @@ options:
     description:
     - The name of the realm in which is the identity provider.
     default: master
+    type: str
   alias:
     description:
     - The alias of the identity provider.
     required: true
+    type: str
   displayName:
     description:
     - The display name of the realm.
     required: false
+    type: str
   providerId:
     description:
     - Type of identity provider.
     required: false
+    type: str
   enabled:
     description:
     - enabled.
-    type: bool
     default: true
+    type: bool
   updateProfileFirstLoginMode:
     description:
     - update Profile First Login Mode.
     required: false
+    type: str
   trustEmail:
     description:
     - trust Email.
@@ -54,8 +59,8 @@ options:
   storeToken:
     description:
     - store Token.
-    type: bool
     default: true
+    type: bool
   addReadTokenRoleOnCreate:
     description:
     - add Read Token Role On Create.
@@ -70,10 +75,12 @@ options:
     description:
     - first Broker Login Flow Alias.
     required: false
+    type: str
   postBrokerLoginFlowAlias:
     description:
     - post Broker Login Flow Alias.
     required: false
+    type: str
   linkOnly:
     description:
     - Link only option for identity provider
@@ -168,6 +175,7 @@ options:
     - Control if the realm exists.
     choices: [ "present", "absent" ]
     default: present
+    type: str
   force:
     description:
     - If true, allows to remove realm and recreate it.

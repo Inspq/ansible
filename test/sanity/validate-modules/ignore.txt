@@ -575,8 +575,6 @@ lib/ansible/modules/files/synchronize.py E325
 lib/ansible/modules/files/synchronize.py E327
 lib/ansible/modules/files/unarchive.py E323
 lib/ansible/modules/identity/cyberark/cyberark_user.py E324
-lib/ansible/modules/identity/keycloak/keycloak_clienttemplate.py E324
-lib/ansible/modules/identity/keycloak/keycloak_clienttemplate.py E325
 lib/ansible/modules/messaging/rabbitmq_binding.py E324
 lib/ansible/modules/messaging/rabbitmq_exchange.py E324
 lib/ansible/modules/messaging/rabbitmq_exchange.py E326
