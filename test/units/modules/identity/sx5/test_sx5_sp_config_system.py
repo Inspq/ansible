@@ -4,7 +4,7 @@ from ansible.modules.identity.sx5.sx5_sp_config_system import system
 from ansible.modules.identity.keycloak import keycloak_client
 from ansible.module_utils.sx5_sp_config_system_utils import loginAndSetHeaders
 from units.modules.utils import AnsibleExitJson, ModuleTestCase, set_module_args
-from wheel.signatures import assertTrue
+
 from __builtin__ import False, True
 
 class Sx5SystemTestCase(ModuleTestCase):
