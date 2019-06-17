@@ -280,7 +280,7 @@ class InventoryManager(object):
                         tb = ''.join(traceback.format_tb(sys.exc_info()[2]))
                         failures.append({'src': source, 'plugin': plugin_name, 'exc': AnsibleError(e), 'tb': tb})
                 else:
-                    display.vvv("%s declined parsing %s as it did not pass it's verify_file() method" % (plugin_name, source))
+                    display.vvv("%s declined parsing %s as it did not pass its verify_file() method" % (plugin_name, source))
             else:
                 if not parsed and failures:
                     # only if no plugin processed files should we show errors.
@@ -360,8 +360,8 @@ class InventoryManager(object):
                 # mainly useful for hostvars[host] access
                 if not ignore_limits and self._subset:
                     # exclude hosts not in a subset, if defined
-                    subset = self._evaluate_patterns(self._subset)
-                    hosts = [h for h in hosts if h in subset]
+                    subset_uuids = [s._uuid for s in self._evaluate_patterns(self._subset)]
+                    hosts = [h for h in hosts if h._uuid in subset_uuids]
 
                 if not ignore_restrictions and self._restriction:
                     # exclude hosts mentioned in any restriction (ex: failed hosts)

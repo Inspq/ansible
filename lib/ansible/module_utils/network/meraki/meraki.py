@@ -30,7 +30,9 @@
 # USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import os
+import re
 from ansible.module_utils.basic import AnsibleModule, json, env_fallback
+from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
 from ansible.module_utils.urls import fetch_url
 from ansible.module_utils.six.moves.urllib.parse import urlencode
 from ansible.module_utils._text import to_native, to_bytes, to_text
@@ -42,6 +44,7 @@ def meraki_argument_spec():
                 use_proxy=dict(type='bool', default=False),
                 use_https=dict(type='bool', default=True),
                 validate_certs=dict(type='bool', default=True),
+                output_format=dict(type='str', choices=['camelcase', 'snakecase'], default='snakecase', fallback=(env_fallback, ['ANSIBLE_MERAKI_FORMAT'])),
                 output_level=dict(type='str', default='normal', choices=['normal', 'debug']),
                 timeout=dict(type='int', default=30),
                 org_name=dict(type='str', aliases=['organization']),
@@ -62,6 +65,7 @@ class MerakiModule(object):
         self.org_id = None
         self.net_id = None
         self.check_mode = module.check_mode
+        self.key_map = {}
 
         # normal output
         self.existing = None
@@ -130,16 +134,25 @@ class MerakiModule(object):
         else:
             self.params['protocol'] = 'http'
 
-    def sanitize(self, original, proposed):
-        """Determine which keys are unique to original"""
-        keys = []
-        for k, v in original.items():
-            try:
-                if proposed[k] and k not in self.ignored_keys:
-                    pass
-            except KeyError:
-                keys.append(k)
-        return keys
+    def sanitize_keys(self, data):
+        if isinstance(data, dict):
+            items = {}
+            for k, v in data.items():
+                try:
+                    new = {self.key_map[k]: data[k]}
+                    items[self.key_map[k]] = self.sanitize_keys(data[k])
+                except KeyError:
+                    snake_k = re.sub('([a-z0-9])([A-Z])', r'\1_\2', k).lower()
+                    new = {snake_k: data[k]}
+                    items[snake_k] = self.sanitize_keys(data[k])
+            return items
+        elif isinstance(data, list):
+            items = []
+            for i in data:
+                items.append(self.sanitize_keys(i))
+            return items
+        elif isinstance(data, int) or isinstance(data, str) or isinstance(data, float):
+            return data
 
     def is_update_required(self, original, proposed, optional_ignore=None):
         ''' Compare two data-structures '''
@@ -232,20 +245,19 @@ class MerakiModule(object):
             self.nets.append(t)
         return self.nets
 
-    # def get_net(self, org_name, net_name, data=None):
-    #     path = self.construct_path('get_all', function='network', org_id=org_id)
-    #     r = self.request(path, method='GET')
-    #     return r
-
-    def get_net(self, org_name, net_name, org_id=None, data=None):
+    def get_net(self, org_name, net_name=None, org_id=None, data=None, net_id=None):
         ''' Return network information '''
         if not data:
             if not org_id:
                 org_id = self.get_org_id(org_name)
             data = self.get_nets(org_id=org_id)
         for n in data:
-            if n['name'] == net_name:
-                return n
+            if net_id:
+                if n['id'] == net_id:
+                    return n
+            elif net_name:
+                if n['name'] == net_name:
+                    return n
         return False
 
     def get_net_id(self, org_name=None, net_name=None, data=None):
@@ -269,6 +281,20 @@ class MerakiModule(object):
             if name == template['name']:
                 return template['id']
         self.fail_json(msg='No configuration template named {0} found'.format(name))
+
+    def convert_camel_to_snake(self, data):
+        """
+        Converts a dictionary or list to snake case from camel case
+        :type data: dict or list
+        :return: Converted data structure, if list or dict
+        """
+
+        if isinstance(data, dict):
+            return camel_dict_to_snake_dict(data, ignore_list=('tags', 'tag'))
+        elif isinstance(data, list):
+            return [camel_dict_to_snake_dict(item, ignore_list=('tags', 'tag')) for item in data]
+        else:
+            return data
 
     def construct_params_list(self, keys, aliases=None):
         qs = {}
@@ -345,8 +371,15 @@ class MerakiModule(object):
         if self.params['output_level'] == 'debug':
             self.result['method'] = self.method
             self.result['url'] = self.url
-
         self.result.update(**kwargs)
+        if self.params['output_format'] == 'camelcase':
+            self.module.deprecate("Update your playbooks to support snake_case format instead of camelCase format.", version=2.13)
+        else:
+            if 'data' in self.result:
+                try:
+                    self.result['data'] = self.convert_camel_to_snake(self.result['data'])
+                except (KeyError, AttributeError):
+                    pass
         self.module.exit_json(**self.result)
 
     def fail_json(self, msg, **kwargs):

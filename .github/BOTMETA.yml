@@ -61,23 +61,23 @@ files:
   $modules/cloud/amazon/ec2_ami.py: willthames
   $modules/cloud/amazon/ec2_asg.py: $team_ansible s-hertel ryansb
   $modules/cloud/amazon/ec2_group.py: $team_ansible
-  $modules/cloud/amazon/ec2_group_facts.py: willthames
+  $modules/cloud/amazon/ec2_group_info.py: willthames
   $modules/cloud/amazon/ec2_instance.py: Shaps
-  $modules/cloud/amazon/ec2_instance_facts.py: willthames
+  $modules/cloud/amazon/ec2_instance_info.py: willthames
   $modules/cloud/amazon/ec2_key.py: $team_ansible
   $modules/cloud/amazon/ec2_lc.py: $team_ansible
-  $modules/cloud/amazon/ec2_lc_facts.py: willthames
+  $modules/cloud/amazon/ec2_lc_info.py: willthames
   $modules/cloud/amazon/ec2_metric_alarm.py: $team_ansible
   $modules/cloud/amazon/ec2_tag.py: $team_ansible
   $modules/cloud/amazon/ec2_vol.py: $team_ansible
   $modules/cloud/amazon/ec2_vpc_endpoint.py: willthames
-  $modules/cloud/amazon/ec2_vpc_endpoint_facts.py: willthames
+  $modules/cloud/amazon/ec2_vpc_endpoint_info.py: willthames
   $modules/cloud/amazon/ec2_vpc_igw.py: willthames
-  $modules/cloud/amazon/ec2_vpc_igw_facts.py: willthames
-  $modules/cloud/amazon/ec2_vpc_nat_gateway_facts.py: willthames
+  $modules/cloud/amazon/ec2_vpc_igw_info.py: willthames
+  $modules/cloud/amazon/ec2_vpc_nat_gateway_info.py: willthames
   $modules/cloud/amazon/ec2_vpc_net.py: $team_ansible
-  $modules/cloud/amazon/ec2_vpc_net_facts.py: whiter
-  $modules/cloud/amazon/ec2_vpc_peering_facts.py: willthames
+  $modules/cloud/amazon/ec2_vpc_net_info.py: whiter
+  $modules/cloud/amazon/ec2_vpc_peering_info.py: willthames
   $modules/cloud/amazon/ec2_vpc_subnet.py: willthames
   $modules/cloud/amazon/ecs_cluster.py: willthames
   $modules/cloud/amazon/ecs_ecr.py: willthames
@@ -87,7 +87,7 @@ files:
   $modules/cloud/amazon/ecs_taskdefinition.py: willthames
   $modules/cloud/amazon/ecs_taskdefinition_facts.py: willthames
   $modules/cloud/amazon/elasticache.py: alachaum
-  $modules/cloud/amazon/elb_target_group_facts.py: willthames
+  $modules/cloud/amazon/elb_target_group_info.py: willthames
   $modules/cloud/amazon/iam.py: $team_ansible
   $modules/cloud/amazon/iam_cert.py: $team_ansible
   $modules/cloud/amazon/iam_group.py: willthames
@@ -147,7 +147,8 @@ files:
   $modules/cloud/huawei/: &huawei
     keywords: [ cloud, huawei, hwc ]
     labels: [ cloud, huawei ]
-    maintainers: $team_huawei
+    maintainers: $team_ansible
+    ignored: $team_huawei
   $modules/cloud/kubevirt/: &kubevirt
     keywords: [ kubevirt ]
     labels: [ cloud, kubevirt ]
@@ -301,7 +302,9 @@ files:
     labels: [ asa, cisco, networking ]
   $modules/network/avi/: $team_avi
   $modules/network/bigswitch/: jayakody tedelhourani vuile
-  $modules/network/cloudengine/: QijunPan xuxiaowei0512
+  $modules/network/cloudengine/:
+    maintainers: $team_ansible
+    ignored: $team_huawei
   $modules/network/cnos/: dkasberg amuraleedhar
   $modules/network/cumulus/: $team_cumulus
   $modules/network/dellos10/: skg-net
@@ -696,6 +699,8 @@ files:
   $module_utils/gitlab.py: *gitlab
   $module_utils/hwc_utils.py: &huawei_hwc
     <<: *huawei
+    maintainers: $team_ansible
+    ignored: $team_huawei
     support: community
     labels:
       - networking
@@ -740,7 +745,8 @@ files:
   $module_utils/network/bigswitch:
     maintainers: jayakody tedelhourani vuile
   $module_utils/network/cloudengine:
-    maintainers: QijunPan
+    maintainers: $team_ansible
+    ignored: $team_huawei
   $module_utils/network/cnos:
     maintainers: dkasberg amuraleedhar
   $module_utils/network/common:
@@ -993,6 +999,10 @@ files:
     maintainers: $team_networking
     labels: networking
 ###############################
+# plugins/become
+  $plugins/become/:
+    support: core
+###############################
 # plugins/cache
   $plugins/cache/__init__.py:
     support: core
@@ -1072,6 +1082,9 @@ files:
 # plugins/connection
   $plugins/connection/:
     support: core
+  $plugins/connection/buildah.py:
+    support: community
+    maintainers: TomasTomecek
   $plugins/connection/docker.py:
     <<: *docker
     support: community
@@ -1095,10 +1108,19 @@ files:
   $plugins/connection/persistent.py:
     maintainers: $team_networking
     labels: networking
+  $plugins/connection/podman.py:
+    support: community
+    maintainers: TomasTomecek
   $plugins/connection/psrp.py: *windows_core
   $plugins/connection/saltstack.py:
     support: community
   $plugins/connection/winrm.py: *windows_core
+  $plugins/connection/vmware_tools.py:
+    support: community
+    maintainers: $team_vmware
+    labels:
+      - vmware
+      - cloud
 ###############################
 # plugins/doc_fragments
   $plugins/doc_fragments/:
@@ -1117,7 +1139,9 @@ files:
     support: community
     supershipit: $team_google
     maintainers: $team_google
-  $plugins/doc_fragments/hwc.py: *huawei
+  $plugins/doc_fragments/hwc.py:
+    maintainers: $team_ansible
+    ignored: $team_huawei
   $plugins/doc_fragments/intersight.py: *intersight
   $plugins/doc_fragments/mso.py: *aci
   $plugins/doc_fragments/mysql.py: *mysql
@@ -1394,7 +1418,9 @@ files:
   test/integration/targets/gcp:
     maintainers: $team_google
     supershipit: $team_google
-  test/integration/targets/hwc_: *huawei
+  test/integration/targets/hwc_:
+    maintainers: $team_ansible
+    ignored: $team_huawei
   test/integration/targets/inventory_docker: *docker
   test/integration/targets/inventory_docker_swarm:
     <<: *docker
@@ -1430,7 +1456,9 @@ files:
     <<: *docker
     support: community
   test/units/module_utils/facts/network/test_generic_bsd.py: *bsd
-  test/units/module_utils/hwc: *huawei_hwc
+  test/units/module_utils/hwc:
+    maintainers: $team_ansible
+    ignored: $team_huawei
   test/units/module_utils/acme: *crypto
   test/units/module_utils/xenserver/: bvitnik
   test/units/modules/cloud/docker:
@@ -1448,6 +1476,9 @@ files:
   test/units/modules/network/nso: *nso
   test/units/modules/network/nxos: *nxos
   test/units/modules/storage/hpe3par: *hpe3par
+  test/units/modules/storage/netapp:
+    maintainers: $team_netapp
+    support: community
   test/utils/shippable/:
     notified: mattclay
   hacking/report.py:
@@ -1483,7 +1514,7 @@ macros:
   team_google: rambleraptor erjohnso
   team_hcloud: cschmitt-hcloud LKaemmerling
   team_hpux: bcoca dagwieers davx8342
-  team_huawei: zhongjun2 zengchen1024 niuzhenguo freesky-edward TommyLike edisonxiang
+  team_huawei: zhongjun2 zengchen1024 niuzhenguo freesky-edward TommyLike edisonxiang QijunPan xuxiaowei0512
   team_imc: dagwieers
   team_intersight: dsoper2 movinalot
   team_ios: rcarrillocruz
@@ -1515,7 +1546,7 @@ macros:
   team_rhn: alikins barnabycourt FlossWare vritant
   team_scaleway: remyleone abarbare DenBeke jerome-quere kindermoumoute QuentinBrosse
   team_solaris: bcoca dagwieers danowar2k fishman jpdasma jasperla mator scathatheworm troy2914 xen0l
-  team_tower: ghjm matburt ryanpetrello rooftopcellist AlanCoding jladdjr kdelee
+  team_tower: ghjm matburt ryanpetrello rooftopcellist AlanCoding jladdjr kdelee chrismeyersfsu
   team_ucs: dsoper2 movinalot SDBrett vallard vvb
   team_vmware: Akasurde dav1x warthog9 Tomorrow9 goneri pgbidkar
   team_virt: joshainglis karmab

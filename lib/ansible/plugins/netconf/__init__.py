@@ -26,6 +26,7 @@ from ansible.errors import AnsibleError
 from ansible.plugins import AnsiblePlugin
 from ansible.module_utils._text import to_native
 from ansible.module_utils.basic import missing_required_lib
+from ansible.module_utils.six import string_types
 
 try:
     from ncclient.operations import RPCError

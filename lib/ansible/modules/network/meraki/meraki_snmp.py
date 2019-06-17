@@ -117,32 +117,32 @@ data:
             returned: success
             type: str
             sample: 16100
-        v2cEnabled:
+        v2c_enabled:
             description: Shows enabled state of SNMPv2c
             returned: success
             type: bool
             sample: true
-        v3Enabled:
+        v3_enabled:
             description: Shows enabled state of SNMPv3
             returned: success
             type: bool
             sample: true
-        v3AuthMode:
+        v3_auth_mode:
             description: The SNMP version 3 authentication mode either MD5 or SHA.
             returned: success
             type: str
             sample: SHA
-        v3PrivMode:
+        v3_priv_mode:
             description: The SNMP version 3 privacy mode DES or AES128.
             returned: success
             type: str
             sample: AES128
-        v2CommunityString:
+        v2_community_string:
             description: Automatically generated community string for SNMPv2c.
             returned: When SNMPv2c is enabled.
             type: str
             sample: o/8zd-JaSb
-        v3User:
+        v3_user:
             description: Automatically generated username for SNMPv3.
             returned: When SNMPv3c is enabled.
             type: str
@@ -219,8 +219,6 @@ def main():
     # the module
     argument_spec = meraki_argument_spec()
     argument_spec.update(state=dict(type='str', choices=['present', 'query'], default='present'),
-                         org_name=dict(type='str', aliases=['organization']),
-                         org_id=dict(type='int'),
                          v2c_enabled=dict(type='bool'),
                          v3_enabled=dict(type='bool'),
                          v3_auth_mode=dict(type='str', choices=['SHA', 'MD5']),

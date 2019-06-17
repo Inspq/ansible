@@ -151,15 +151,20 @@ EXAMPLES = r'''
     - fillfactor=10
     - autovacuum_analyze_threshold=1
 
-- name: Create an unlogged table
+- name: Create an unlogged table in schema acme
   postgresql_table:
-    name: useless_data
+    name: acme.useless_data
     columns: waste_id int
     unlogged: true
 
 - name: Rename table foo to bar
   postgresql_table:
     table: foo
+    rename: bar
+
+- name: Rename table foo from schema acme to bar
+  postgresql_table:
+    name: acme.foo
     rename: bar
 
 - name: Set owner to someuser
@@ -178,9 +183,9 @@ EXAMPLES = r'''
     name: foo
     truncate: yes
 
-- name: Drop table foo
+- name: Drop table foo from schema acme
   postgresql_table:
-    name: foo
+    name: acme.foo
     state: absent
 
 - name: Drop table bar cascade
@@ -232,7 +237,11 @@ except ImportError:
 
 from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils.database import SQLParseError, pg_quote_identifier
-from ansible.module_utils.postgres import connect_to_db, postgres_common_argument_spec
+from ansible.module_utils.postgres import (
+    connect_to_db,
+    exec_sql,
+    postgres_common_argument_spec,
+)
 from ansible.module_utils._text import to_native
 
 
@@ -260,13 +269,20 @@ class Table(object):
 
     def __exists_in_db(self):
         """Check table exists and refresh info"""
+        if "." in self.name:
+            schema = self.name.split('.')[-2]
+            tblname = self.name.split('.')[-1]
+        else:
+            schema = 'public'
+            tblname = self.name
+
         query = ("SELECT t.tableowner, t.tablespace, c.reloptions "
                  "FROM pg_tables AS t "
                  "INNER JOIN pg_class AS c ON  c.relname = t.tablename "
                  "INNER JOIN pg_namespace AS n ON c.relnamespace = n.oid "
                  "WHERE t.tablename = '%s' "
-                 "AND n.nspname = 'public'" % self.name)
-        res = self.__exec_sql(query)
+                 "AND n.nspname = '%s'" % (tblname, schema))
+        res = exec_sql(self, query, add_to_executed=False)
         if res:
             self.exists = True
             self.info = dict(
@@ -342,8 +358,7 @@ class Table(object):
         if tblspace:
             query += " TABLESPACE %s" % pg_quote_identifier(tblspace, 'database')
 
-        if self.__exec_sql(query, ddl=True):
-            self.executed_queries.append(query)
+        if exec_sql(self, query, ddl=True):
             changed = True
 
         if owner:
@@ -390,8 +405,7 @@ class Table(object):
         if tblspace:
             query += " TABLESPACE %s" % pg_quote_identifier(tblspace, 'database')
 
-        if self.__exec_sql(query, ddl=True):
-            self.executed_queries.append(query)
+        if exec_sql(self, query, ddl=True):
             changed = True
 
         if owner:
@@ -401,49 +415,35 @@ class Table(object):
 
     def truncate(self):
         query = "TRUNCATE TABLE %s" % pg_quote_identifier(self.name, 'table')
-        self.executed_queries.append(query)
-        return self.__exec_sql(query, ddl=True)
+        return exec_sql(self, query, ddl=True)
 
     def rename(self, newname):
         query = "ALTER TABLE %s RENAME TO %s" % (pg_quote_identifier(self.name, 'table'),
                                                  pg_quote_identifier(newname, 'table'))
-        self.executed_queries.append(query)
-        return self.__exec_sql(query, ddl=True)
+        return exec_sql(self, query, ddl=True)
 
     def set_owner(self, username):
         query = "ALTER TABLE %s OWNER TO %s" % (pg_quote_identifier(self.name, 'table'),
                                                 pg_quote_identifier(username, 'role'))
-        self.executed_queries.append(query)
-        return self.__exec_sql(query, ddl=True)
+        return exec_sql(self, query, ddl=True)
 
     def drop(self, cascade=False):
+        if not self.exists:
+            return False
+
         query = "DROP TABLE %s" % pg_quote_identifier(self.name, 'table')
         if cascade:
             query += " CASCADE"
-        self.executed_queries.append(query)
-        return self.__exec_sql(query, ddl=True)
+        return exec_sql(self, query, ddl=True)
 
     def set_tblspace(self, tblspace):
         query = "ALTER TABLE %s SET TABLESPACE %s" % (pg_quote_identifier(self.name, 'table'),
                                                       pg_quote_identifier(tblspace, 'database'))
-        self.executed_queries.append(query)
-        return self.__exec_sql(query, ddl=True)
+        return exec_sql(self, query, ddl=True)
 
     def set_stor_params(self, params):
         query = "ALTER TABLE %s SET (%s)" % (pg_quote_identifier(self.name, 'table'), params)
-        self.executed_queries.append(query)
-        return self.__exec_sql(query, ddl=True)
-
-    def __exec_sql(self, query, ddl=False):
-        try:
-            self.cursor.execute(query)
-            if not ddl:
-                res = self.cursor.fetchall()
-                return res
-            return True
-        except Exception as e:
-            self.module.fail_json(msg="Cannot execute SQL '%s': %s" % (query, to_native(e)))
-        return False
+        return exec_sql(self, query, ddl=True)
 
 
 # ===========================================
