@@ -55,99 +55,99 @@ pipeline {
                 }
            	}
         }
-    //     stage ('Tests unitaires des modules ansible de Keycloak sur la dernière version de Keycloak') {
-    //         steps {
-    //             sh "docker run -d --rm --name testldap -p 10389:389 ${THREEEIGHTYNINEDS_IMAGE}:${THREEEIGHTYNINEDS_VERSION}"
-    //             sh "docker run -d --rm --name testkc -p 18081:8080 --link testldap:testldap -e KEYCLOAK_USER=admin -e KEYCLOAK_PASSWORD=admin -e KEYCLOAK_CONFIG=standalone-test.xml ${KEYCLOAK_IMAGE}:${KEYCLOAK_VERSION}"
-    //             sh '''
-    //             until $(curl --output /dev/null --silent --head --fail http://localhost:18081/auth)
-    //             do 
-    //             	printf '.'
-    //             	sleep 5
-    //             done
-    //             '''
-    //             script {
-    //                 try {
-	// 	                sh "nosetests --with-xunit --xunit-file=nosetests-keycloak.xml test/units/module_utils/test_keycloak_utils.py test/units/modules/identity/keycloak/test_keycloak_authentication.py test/units/modules/identity/keycloak/test_keycloak_client.py test/units/modules/identity/keycloak/test_keycloak_group.py test/units/modules/identity/keycloak/test_keycloak_identity_provider.py test/units/modules/identity/keycloak/test_keycloak_realm.py test/units/modules/identity/keycloak/test_keycloak_role.py test/units/modules/identity/keycloak/test_keycloak_user.py test/units/modules/identity/keycloak/test_keycloak_component.py"
-    //                 }
-    //                 catch (exc){
-    //                     currentBuild.result = 'UNSTABLE'
-    //                 }
-    //             }
-    //             sh "docker stop testkc"
-    //             sh "docker stop testldap"
-    //         }
-    //         post {
-    //             success {
-    //                 junit '**/nosetests-keycloak.xml'
-    //             }
-    //             unstable{
-    //                 junit '**/nosetests-keycloak.xml'
-    //             }
-    //         }
-    //     }
-    //     stage ('Tests unitaires des modules ansible de Keycloak sur la dernière version de RHSSO') {
-    //         steps {
-    //             sh "docker run -d --rm --name testldap -p 10389:389 ${THREEEIGHTYNINEDS_IMAGE}:${THREEEIGHTYNINEDS_VERSION}"
-    //             sh "docker run -d --rm --name testrhsso -p 18081:8080 --link testldap:testldap -e KEYCLOAK_USER=admin -e KEYCLOAK_PASSWORD=admin -e KEYCLOAK_CONFIG=standalone-test.xml ${RHSSO_IMAGE}:${RHSSO_VERSION}"
-    //             sh '''
-    //             until $(curl --output /dev/null --silent --head --fail http://localhost:18081/auth)
-    //             do 
-    //             	printf '.'
-    //             	sleep 5
-    //             done
-    //             '''
-    //             script {
-    //                 try {
-	// 	                sh "nosetests --with-xunit --xunit-file=nosetests-rhsso.xml test/units/module_utils/test_keycloak_utils.py test/units/modules/identity/keycloak/test_keycloak_authentication.py test/units/modules/identity/keycloak/test_keycloak_client.py test/units/modules/identity/keycloak/test_keycloak_group.py test/units/modules/identity/keycloak/test_keycloak_identity_provider.py test/units/modules/identity/keycloak/test_keycloak_realm.py test/units/modules/identity/keycloak/test_keycloak_role.py test/units/modules/identity/keycloak/test_keycloak_user.py test/units/modules/identity/keycloak/test_keycloak_component.py"
-    //                 }
-    //                 catch (exc){
-    //                     currentBuild.result = 'UNSTABLE'
-    //                 }
-    //             }
-    //             sh "docker stop testrhsso"
-    //             sh "docker stop testldap"
-    //         }
-    //         post {
-    //             success {
-    //                 junit '**/nosetests-rhsso.xml'
-    //             }
-    //             unstable{
-    //                 junit '**/nosetests-rhsso.xml'
-    //             }
-    //         }
-    //     }
-    //   stage ('Tests unitaires des modules ansible de sx5-sp-config') {
-    //         steps {
-    //             sh "docker run -d --rm --name testkc -p 18081:8080 -e KEYCLOAK_USER=admin -e KEYCLOAK_PASSWORD=admin -e KEYCLOAK_CONFIG=standalone-test.xml ${KEYCLOAK_IMAGE}:${KEYCLOAK_VERSION}"
-    //             sh '''
-    //             until $(curl --output /dev/null --silent --head --fail http://localhost:18081/auth)
-    //             do 
-    //             	printf '.'
-    //             	sleep 5
-    //             done
-    //             '''
-    //             sh "ansible-playbook -i sx5-sp-config.hosts -e sx5spconfig_image_version=latest deploy-sx5-sp-config.yml"
-    //             script {
-    //                 try {
-	// 	                sh "source hacking/env-setup; nosetests --with-xunit --xunit-file=nosetests-sx5-sp-config.xml test/units/module_utils/test_sx5_sp_config_system_utils.py test/units/modules/identity/sx5/test_sx5_sp_config_system.py"
-    //                 }
-    //                 catch (exc){
-    //                     currentBuild.result = 'UNSTABLE'
-    //                 }
-    //             }
-    //             sh "ansible-playbook -i sx5-sp-config.hosts cleanup-sx5-sp-config.yml"
-    //             sh "docker stop testkc"
-    //         }
-    //         post {
-    //             success {
-    //                 junit '**/nosetests-sx5-sp-config.xml'
-    //             }
-    //             unstable{
-    //                 junit '**/nosetests-sx5-sp-config.xml'
-    //             }
-    //         }
-    //     }
+        stage ('Tests unitaires des modules ansible de Keycloak sur la dernière version de Keycloak') {
+            steps {
+                sh "docker run -d --rm --name testldap -p 10389:389 ${THREEEIGHTYNINEDS_IMAGE}:${THREEEIGHTYNINEDS_VERSION}"
+                sh "docker run -d --rm --name testkc -p 18081:8080 --link testldap:testldap -e KEYCLOAK_USER=admin -e KEYCLOAK_PASSWORD=admin -e KEYCLOAK_CONFIG=standalone-test.xml ${KEYCLOAK_IMAGE}:${KEYCLOAK_VERSION}"
+                sh '''
+                until $(curl --output /dev/null --silent --head --fail http://localhost:18081/auth)
+                do 
+                	printf '.'
+                	sleep 5
+                done
+                '''
+                script {
+                    try {
+		                sh "nosetests --with-xunit --xunit-file=nosetests-keycloak.xml test/units/module_utils/test_keycloak_utils.py test/units/modules/identity/keycloak/test_keycloak_authentication.py test/units/modules/identity/keycloak/test_keycloak_client.py test/units/modules/identity/keycloak/test_keycloak_group.py test/units/modules/identity/keycloak/test_keycloak_identity_provider.py test/units/modules/identity/keycloak/test_keycloak_realm.py test/units/modules/identity/keycloak/test_keycloak_role.py test/units/modules/identity/keycloak/test_keycloak_user.py test/units/modules/identity/keycloak/test_keycloak_component.py"
+                    }
+                    catch (exc){
+                        currentBuild.result = 'UNSTABLE'
+                    }
+                }
+                sh "docker stop testkc"
+                sh "docker stop testldap"
+            }
+            post {
+                success {
+                    junit '**/nosetests-keycloak.xml'
+                }
+                unstable{
+                    junit '**/nosetests-keycloak.xml'
+                }
+            }
+        }
+        stage ('Tests unitaires des modules ansible de Keycloak sur la dernière version de RHSSO') {
+            steps {
+                sh "docker run -d --rm --name testldap -p 10389:389 ${THREEEIGHTYNINEDS_IMAGE}:${THREEEIGHTYNINEDS_VERSION}"
+                sh "docker run -d --rm --name testrhsso -p 18081:8080 --link testldap:testldap -e KEYCLOAK_USER=admin -e KEYCLOAK_PASSWORD=admin -e KEYCLOAK_CONFIG=standalone-test.xml ${RHSSO_IMAGE}:${RHSSO_VERSION}"
+                sh '''
+                until $(curl --output /dev/null --silent --head --fail http://localhost:18081/auth)
+                do 
+                	printf '.'
+                	sleep 5
+                done
+                '''
+                script {
+                    try {
+		                sh "nosetests --with-xunit --xunit-file=nosetests-rhsso.xml test/units/module_utils/test_keycloak_utils.py test/units/modules/identity/keycloak/test_keycloak_authentication.py test/units/modules/identity/keycloak/test_keycloak_client.py test/units/modules/identity/keycloak/test_keycloak_group.py test/units/modules/identity/keycloak/test_keycloak_identity_provider.py test/units/modules/identity/keycloak/test_keycloak_realm.py test/units/modules/identity/keycloak/test_keycloak_role.py test/units/modules/identity/keycloak/test_keycloak_user.py test/units/modules/identity/keycloak/test_keycloak_component.py"
+                    }
+                    catch (exc){
+                        currentBuild.result = 'UNSTABLE'
+                    }
+                }
+                sh "docker stop testrhsso"
+                sh "docker stop testldap"
+            }
+            post {
+                success {
+                    junit '**/nosetests-rhsso.xml'
+                }
+                unstable{
+                    junit '**/nosetests-rhsso.xml'
+                }
+            }
+        }
+      stage ('Tests unitaires des modules ansible de sx5-sp-config') {
+            steps {
+                sh "docker run -d --rm --name testkc -p 18081:8080 -e KEYCLOAK_USER=admin -e KEYCLOAK_PASSWORD=admin -e KEYCLOAK_CONFIG=standalone-test.xml ${KEYCLOAK_IMAGE}:${KEYCLOAK_VERSION}"
+                sh '''
+                until $(curl --output /dev/null --silent --head --fail http://localhost:18081/auth)
+                do 
+                	printf '.'
+                	sleep 5
+                done
+                '''
+                sh "ansible-playbook -i sx5-sp-config.hosts -e sx5spconfig_image_version=latest deploy-sx5-sp-config.yml"
+                script {
+                    try {
+		                sh "source hacking/env-setup; nosetests --with-xunit --xunit-file=nosetests-sx5-sp-config.xml test/units/module_utils/test_sx5_sp_config_system_utils.py test/units/modules/identity/sx5/test_sx5_sp_config_system.py"
+                    }
+                    catch (exc){
+                        currentBuild.result = 'UNSTABLE'
+                    }
+                }
+                sh "ansible-playbook -i sx5-sp-config.hosts cleanup-sx5-sp-config.yml"
+                sh "docker stop testkc"
+            }
+            post {
+                success {
+                    junit '**/nosetests-sx5-sp-config.xml'
+                }
+                unstable{
+                    junit '**/nosetests-sx5-sp-config.xml'
+                }
+            }
+        }
         stage ('Tests unitaires des modules ansible de sx5-habilitation') {
             steps {
                 sh "docker run -d --rm --name testkc -p 18081:8080 -e KEYCLOAK_USER=admin -e KEYCLOAK_PASSWORD=admin -e KEYCLOAK_CONFIG=standalone-test.xml ${KEYCLOAK_IMAGE}:${KEYCLOAK_VERSION}"
