@@ -302,7 +302,6 @@ class KeycloakAPI(object):
             self.module.fail_json(msg='Could not obtain access token from %s: %s'
                                       % (auth_url, str(e)))
 
-
     def get_clients(self, realm='master', filter=None):
         """ Obtains client representations for clients in a realm
 
