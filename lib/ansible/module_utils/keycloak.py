@@ -271,6 +271,38 @@ class KeycloakAPI(object):
         else:
             self.module.fail_json(msg='Could not obtain access token from %s' % auth_url)
 
+    def get_grant_type_password_access_token(self, client_id, client_secret, username, password, realm='master'):
+        """ Obtains access_token using password grant_type
+
+        :param realm: realm to be queried
+        :param client_id: client_id to be queried
+        :param client_secret: client_secret to be queried
+        :param username: username to be queried
+        :param password: password to be queried
+        :return: jwt access_token
+        """
+        self.baseurl = self.module.params.get('auth_keycloak_url')
+        self.validate_certs = self.module.params.get('validate_certs')
+        payload = {'grant_type': 'password',
+                   'client_id': client_id,
+                   'client_secret': client_secret,
+                   'username': username,
+                   'password': password}
+        # Remove empty items, for instance missing client_secret
+        payload = dict((k, v) for k, v in payload.items() if v is not None)
+        auth_url = URL_TOKEN.format(url=self.baseurl, realm=realm)
+        try:
+            r = json.load(open_url(auth_url, method='POST',
+                                   validate_certs=self.validate_certs, data=urlencode(payload)))
+            return r['access_token']
+        except ValueError as e:
+            self.module.fail_json(msg='API returned invalid JSON when trying to obtain access token from %s: %s'
+                                      % (auth_url, str(e)))
+        except Exception as e:
+            self.module.fail_json(msg='Could not obtain access token from %s: %s'
+                                      % (auth_url, str(e)))
+
+
     def get_clients(self, realm='master', filter=None):
         """ Obtains client representations for clients in a realm
 
