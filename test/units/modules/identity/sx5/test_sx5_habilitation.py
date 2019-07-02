@@ -1,7 +1,8 @@
 from ansible.modules.identity.keycloak import keycloak_user, keycloak_group, keycloak_role
 from ansible.modules.identity.sx5 import sx5_habilitation
 from ansible.module_utils.keycloak import isDictEquals
-from units.modules.utils import ModuleTestCase
+from units.modules.utils import AnsibleExitJson, AnsibleFailJson, ModuleTestCase, set_module_args
+
 import datetime
 class Sx5HabilitationTestCase(ModuleTestCase):
     testUsers = [
@@ -109,22 +110,23 @@ class Sx5HabilitationTestCase(ModuleTestCase):
         }                
     ]
     
-    # def setUp(self):
-    #     super(KeycloakUserTestCase, self).setUp()
-    #     self.module = keycloak_user
-    #     for theUser in self.testUsers:
-    #         set_module_args(theUser)
-    #         with self.assertRaises(AnsibleExitJson) as results:
-    #             self.module.main()
-    # def tearDown(self):
-    #     self.module = keycloak_user
-    #     for user in self.testUsers:
-    #         theUser = user.copy()
-    #         theUser["state"] = "absent"
-    #         set_module_args(theUser)
-    #         with self.assertRaises(AnsibleExitJson) as results:
-    #             self.module.main()
-    #     super(KeycloakUserTestCase, self).tearDown()           
+    def setUp(self):
+        super(Sx5HabilitationTestCase, self).setUp()
+        self.module = keycloak_user
+        for theUser in self.testUsers:
+            set_module_args(theUser)
+            with self.assertRaises(AnsibleExitJson) as results:
+                self.module.main()
+
+    def tearDown(self):
+        self.module = keycloak_user
+        for user in self.testUsers:
+            theUser = user.copy()
+            theUser["state"] = "absent"
+            set_module_args(theUser)
+            with self.assertRaises(AnsibleExitJson) as results:
+                self.module.main()
+        super(Sx5HabilitationTestCase, self).tearDown()           
  
     def test_operation_list(self):
         
