@@ -2810,7 +2810,7 @@ class KeycloakAPI(object):
                     headers=self.restheaders))
             realmRoles = []
             for roleMapping in role_mappings["realmMappings"]:
-                realmRoles.append(roleMapping["name"])
+                realmRoles.append({"id": roleMapping["id"], "name": roleMapping["name"]})
             return realmRoles
         except Exception as e:
             self.module.fail_json(msg='Could not get role mappings for user %s in realm %s: %s'
@@ -2860,7 +2860,7 @@ class KeycloakAPI(object):
                 clientRole["clientId"] = userMappings["clientMappings"][clientMapping]["client"]
                 roles = []
                 for role in userMappings["clientMappings"][clientMapping]["mappings"]:
-                    roles.append(role["name"])
+                    roles.append({"id": role["id"], "name": role["name"]})
                 clientRole["roles"] = roles
                 clientRoles.append(clientRole)
             return clientRoles

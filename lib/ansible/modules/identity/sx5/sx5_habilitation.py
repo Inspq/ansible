@@ -63,7 +63,7 @@ EXAMPLES = '''
     - name: remove the accreditations that are expired.
       sx5_habilitation:
         auth_keycloak_url: http://localhost:8080/auth
-        auth_sername: admin
+        auth_username: admin
         auth_password: password
         realm: master
         spConfigUrl: http://localhost:8089/config
@@ -74,7 +74,7 @@ EXAMPLES = '''
     - name: list the accreditations that are expired.
       sx5_habilitation:
         auth_keycloak_url: http://localhost:8080/auth
-        auth_sername: admin
+        auth_username: admin
         auth_password: password
         realm: master
         spConfigUrl: http://localhost:8089/config
@@ -85,7 +85,7 @@ EXAMPLES = '''
     - name: extend the accreditations that are expired.
       sx5_habilitation:
         auth_keycloak_url: http://localhost:8080/auth
-        auth_sername: admin
+        auth_username: admin
         auth_password: password
         realm: master
         spConfigUrl: http://localhost:8089/config
@@ -135,7 +135,7 @@ def main():
     module = AnsibleModule(argument_spec=argument_spec,
                            supports_check_mode=True)
 
-    result = dict(changed=False, msg='', habilitation={})
+    result = dict(changed=False, msg={}, habilitation={})
 
     # Obtain access token, initialize API
     kc = KeycloakAPI(module)
@@ -143,12 +143,12 @@ def main():
     realm = module.params.get('realm')
     operation = module.params.get('operation')
     duration = module.params.get('duration')
-    spConfigUrl = module.params.get['spConfigUrl']
-    username = module.params.get['spUsername']
-    password = module.params.get['spPassword']
-    clientid = module.params.get['spConfigClient_id']
-    if module.params.get['spConfigClient_secret'] is not None:
-        clientSecret = module.params.get['spConfigClient_secret']
+    spConfigUrl = module.params.get('spConfigUrl')
+    username = module.params.get('auth_username')
+    password = module.params.get('auth_password')
+    clientid = module.params.get('spConfigClient_id')
+    if module.params.get('spConfigClient_secret') is not None:
+        clientSecret = module.params.get('spConfigClient_secret')
     else:
         clientSecret = ''
     changed = False
@@ -160,6 +160,7 @@ def main():
     deleteExpiredHabilitations = []
     deleteExpiredHabilitationsInKc = []
     extExpiredHabilitations = []
+    msg = []
     #getResponse = requests.get(spConfigUrl+"/habilitations/echue", headers=headers)
     expiredHabilitations = json.load(
         open_url(spConfigUrl+"/habilitations/echue",
@@ -173,36 +174,40 @@ def main():
             if operation == "list":
                 listeExpiredHabilitations.append(expiredHabilitation)
             elif operation == "remove":
-                userRepresentation = kc.search_user_by_username(username=expiredHabilitation["idUtilisateur"], realm=realm)
-                if userRepresentation == {}:  # The user does not exist
+                #userRepresentation = kc.search_user_by_username(username=expiredHabilitation["idUtilisateur"], realm=realm)
+                getkcResponse = open_url(kc.baseurl+"/admin/realms/"+realm+"/users/"+expiredHabilitation["idUtilisateur"],method='GET',headers=kc.restheaders)
+                if getkcResponse.getcode() == 404:  # The user does not exist
                     deleteResponse = open_url(
                         spConfigUrl+"/habilitations/"+expiredHabilitation["idUtilisateur"]+"/"+expiredHabilitation["idRole"],
                         method='DELETE',
                         headers=headers)
                     #deleteResponse = requests.delete(spConfigUrl+"/habilitations/"+expiredHabilitation["idUtilisateur"]+"/"+expiredHabilitation["idRole"],headers=headers)
-                    deleteExpiredHabilitations.append(expiredHabilitation)
+                    if deleteResponse.getcode() == 204:
+                        deleteExpiredHabilitations.append(expiredHabilitation)
                     changed = True
-                    result["msg"] = result["msg"] + "Habilitation delete from spConfig DB. msg = %s \n" % (deleteResponse)
-                else:
+                    message = "Habilitation delete from spConfig DB. msg = status: %s, info: %s" % (deleteResponse.getcode(),deleteResponse.info())
+                    msg.append({"result": message})
+                elif getkcResponse.getcode() == 200:
                     # Search role in realm role
-                    userRealmRoles = kc.get_user_client_roles(user_id=expiredHabilitation["idUtilisateur"],realm=realm)
+                    userRealmRoles = kc.get_user_realm_roles(user_id=expiredHabilitation["idUtilisateur"],realm=realm)
                     for realmRole in userRealmRoles:
                         if realmRole["id"] == expiredHabilitation["idRole"]:
                             # Delete exiting realm Roles
                             deletekcResponse = open_url(
                                 kc.baseurl+"/admin/realms/"+realm+"/users/"+expiredHabilitation["idUtilisateur"]+"/role-mappings/realm",
                                 method='DELETE',
-                                headers=kc.restheaders,
-                                data=json.dumps(realmRole)
-                                )
+                                headers=kc.restheaders)
                             deleteResponse = open_url(
                                 spConfigUrl+"/habilitations/"+expiredHabilitation["idUtilisateur"]+"/"+expiredHabilitation["idRole"],
                                 method='DELETE',
                                 headers=headers)
-                            deleteExpiredHabilitations.append(expiredHabilitation)
-                            deleteExpiredHabilitationsInKc.append(expiredHabilitation)
+                            if deleteResponse.getcode() == 204:
+                                deleteExpiredHabilitations.append(expiredHabilitation)
+                            if deletekcResponse.getcode() == 204:
+                                deleteExpiredHabilitationsInKc.append(expiredHabilitation)
                             changed = True
-                            result["msg"] = result["msg"] + "Habilitation delete from spConfig DB. msg = %s and delete from kc msg = %s \n" % (deleteResponse,deletekcResponse)
+                            message = "Habilitation delete from spConfig DB. msg = status: %s, info: %s and delete from kc msg = status: %s, info: %s" % (deleteResponse.getcode(),deleteResponse.info(),deletekcResponse.getcode(),deletekcResponse.info())
+                            msg.append({"result": message})
                             break
                     # Search role in client role
                     userClientRoles = kc.get_user_client_roles(user_id=expiredHabilitation["idUtilisateur"],realm=realm)
@@ -219,33 +224,38 @@ def main():
                                         deletekcResponse = open_url(
                                             kc.baseurl+"/admin/realms/"+realm+"/users/"+expiredHabilitation["idUtilisateur"]+"/role-mappings/clients/"+client_id,
                                             method='DELETE',
-                                            headers=kc.restheaders,
-                                            data=json.dumps(clientRole)
+                                            headers=kc.restheaders
                                             )
                                         deleteResponse = open_url(
                                             spConfigUrl+"/habilitations/"+expiredHabilitation["idUtilisateur"]+"/"+expiredHabilitation["idRole"],
                                             method='DELETE',
                                             headers=headers)
-                                        deleteExpiredHabilitations.append(expiredHabilitation)
-                                        deleteExpiredHabilitationsInKc.append(expiredHabilitation)
+                                        if deleteResponse.getcode() == 204:
+                                            deleteExpiredHabilitations.append(expiredHabilitation)
+                                        if deletekcResponse.getcode() == 204:
+                                            deleteExpiredHabilitationsInKc.append(expiredHabilitation)
                                         changed = True
-                                        result["msg"] = result["msg"] + "Habilitation delete from spConfig DB. msg = %s and delete from kc msg = %s \n" % (deleteResponse,deletekcResponse)
+                                        message = "Habilitation delete from spConfig DB. msg = status: %s, info: %s and delete from kc msg = status: %s, info: %s" % (deleteResponse.getcode(),deleteResponse.info(),deletekcResponse.getcode(),deletekcResponse.info())
+                                        msg.append({"result": message})
             elif operation == "extend":
-                newdate_extension = datetime.datetime.strptime(expiredHabilitation["dateEcheance"], '%y/%m/%d') + datetime.timedelta(days=duration)
+                newdate_extension = datetime.datetime.strptime(expiredHabilitation["dateEcheance"], '%Y-%m-%d')
+                newdate_extension = newdate_extension + datetime.timedelta(days=duration)
                 newHabilitation={
                     "idUtilisateur": expiredHabilitation["idUtilisateur"],
                     "idRole": expiredHabilitation["idRole"],
-                    "dateEcheance": newdate_extension
+                    "dateEcheance": newdate_extension.strftime('%Y-%m-%d')
                 }
                 putResponse = open_url(
                     spConfigUrl+"/habilitations/"+expiredHabilitation["idUtilisateur"]+"/"+expiredHabilitation["idRole"],
                     method='PUT',
+                    headers=headers,
                     data=json.dumps(newHabilitation)
                 )
-                #putResponse = requests.put(spConfigUrl+"/habilitations/"+expiredHabilitation["idUtilisateur"]+"/"+expiredHabilitation["idRole"],headers=headers,json=newHabilitation)
-                extExpiredHabilitations.append(newHabilitation)
+                if putResponse.getcode() == 200:
+                    extExpiredHabilitations.append(newHabilitation)
                 changed = True
-                result["msg"] = result["msg"] + "Habilitation update from spConfig DB. msg = %s \n" % (putResponse)
+                message = "Habilitation update from spConfig DB. msg = status: %s, info: %s" % (putResponse.getcode(),putResponse.info())
+                msg.append({"result": message})
     msgResponse = {
         "operationType": operation,
         "ExpiredHabilitations": listeExpiredHabilitations,
@@ -253,6 +263,7 @@ def main():
         "deleteExpiredHabilitationsInKc": deleteExpiredHabilitationsInKc,
         "extExpiredHabilitations": extExpiredHabilitations
     }
+    result["msg"] = msg
     result["habilitation"] = msgResponse
     result['changed'] = changed
     module.exit_json(**result)
