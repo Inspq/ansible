@@ -23,7 +23,7 @@ class KeycloakUserTestCase(ModuleTestCase):
             "force":False
             }
         ]
-    compareExcludes = ["auth_keycloak_url", "auth_username", "auth_password", "realm", "state", "force", "credentials","_ansible_keep_remote_files","_ansible_remote_tmp"]
+    compareExcludes = ["auth_keycloak_url", "auth_username", "auth_password", "realm", "state", "force", "credentials","_ansible_keep_remote_files","_ansible_remote_tmp","id"]
     testRoles = [
         {
             "auth_username":"admin", 
