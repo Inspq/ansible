@@ -2815,7 +2815,7 @@ class KeycloakAPI(object):
         except Exception as e:
             self.module.fail_json(msg='Could not get role mappings for user %s in realm %s: %s'
                                       % (user_id, realm, str(e)))
-    
+
     def get_user_realm_roles_with_id(self, user_id, realm='master'):
         """
         Get realm roles for a user.
