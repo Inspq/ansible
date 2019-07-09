@@ -2810,6 +2810,31 @@ class KeycloakAPI(object):
                     headers=self.restheaders))
             realmRoles = []
             for roleMapping in role_mappings["realmMappings"]:
+                realmRoles.append(roleMapping["name"])
+            return realmRoles
+        except Exception as e:
+            self.module.fail_json(msg='Could not get role mappings for user %s in realm %s: %s'
+                                      % (user_id, realm, str(e)))
+    
+    def get_user_realm_roles_with_id(self, user_id, realm='master'):
+        """
+        Get realm roles for a user.
+        :param user_id: User ID
+        :param realm: Realm
+        :return: Representation of the realm roles.
+        """
+        try:
+            role_mappings_url = URL_USER_ROLE_MAPPINGS.format(
+                url=self.baseurl,
+                realm=realm,
+                id=user_id)
+            role_mappings = json.load(
+                open_url(
+                    role_mappings_url,
+                    method='GET',
+                    headers=self.restheaders))
+            realmRoles = []
+            for roleMapping in role_mappings["realmMappings"]:
                 realmRoles.append({"id": roleMapping["id"], "name": roleMapping["name"]})
             return realmRoles
         except Exception as e:
@@ -2838,6 +2863,37 @@ class KeycloakAPI(object):
                                       % (user_id, realm, str(e)))
 
     def get_user_client_roles(self, user_id, realm='master'):
+        """
+        Get client roles for a user.
+        :param user_id: User ID
+        :param realm: Realm
+        :return: Representation of the client roles.
+        """
+        try:
+            clientRoles = []
+            role_mappings_url = URL_USER_ROLE_MAPPINGS.format(
+                url=self.baseurl,
+                realm=realm,
+                id=user_id)
+            userMappings = json.load(
+                open_url(
+                    role_mappings_url,
+                    method='GET',
+                    headers=self.restheaders))
+            for clientMapping in userMappings["clientMappings"].keys():
+                clientRole = {}
+                clientRole["clientId"] = userMappings["clientMappings"][clientMapping]["client"]
+                roles = []
+                for role in userMappings["clientMappings"][clientMapping]["mappings"]:
+                    roles.append(role["name"])
+                clientRole["roles"] = roles
+                clientRoles.append(clientRole)
+            return clientRoles
+        except Exception as e:
+            self.module.fail_json(msg='Could not get role mappings for user %s in realm %s: %s'
+                                      % (user_id, realm, str(e)))
+
+    def get_user_client_roles_with_id(self, user_id, realm='master'):
         """
         Get client roles for a user.
         :param user_id: User ID

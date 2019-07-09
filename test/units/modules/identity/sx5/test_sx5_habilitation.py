@@ -208,8 +208,24 @@ class Sx5HabilitationTestCase(ModuleTestCase):
                 self.module.main()
             #print results.exception.args[0]["user"]["clientRoles"]
             newdate_echeance = datetime.date.today().strftime('%Y-%m-%d')
-            for roles in results.exception.args[0]["user"]["clientRoles"]:
-                for role in roles["roles"]:
+            getRoleMappings=open_url(toList["auth_keycloak_url"]+"/admin/realms/"+toList["realm"]+"/users/"+results.exception.args[0]["user"]["id"]+"/role-mappings",headers=headers,method='GET')
+            #print getRoleMappings.read()
+            roleMappings = getRoleMappings.read()
+            roleMappings = json.loads(roleMappings)
+            for realmRoles in roleMappings["realmMappings"]:
+                newHabilitation={"idUtilisateur": results.exception.args[0]["user"]["id"],"idRole": realmRoles["id"],"dateEcheance": newdate_echeance}
+                getSysteme = open_url(toList["spConfigUrl"]+"/systemes/"+toCreateSystem["systemShortName"],headers=headers,method='GET')
+                exitSysteme = getSysteme.read()
+                exitSysteme = json.loads(exitSysteme)
+                for c in exitSysteme["composants"]:
+                    for r in c["roles"]:
+                        if r["uuidRoleKeycloak"] == realmRoles["id"]:
+                            postResponse = open_url(toList["spConfigUrl"]+"/habilitations/",headers=headers,data=json.dumps(newHabilitation),method='POST')
+                            print postResponse.read()
+                            ExpiredHabilitations.append(newHabilitation)
+            for clientId in results.exception.args[0]["user"]["clientRoles"]:
+                cid=clientId["clientId"]
+                for role in roleMappings["clientMappings"][cid]["mappings"]:
                     newHabilitation={"idUtilisateur": results.exception.args[0]["user"]["id"],"idRole": role["id"],"dateEcheance": newdate_echeance}
                     getSysteme = open_url(toList["spConfigUrl"]+"/systemes/"+toCreateSystem["systemShortName"],headers=headers,method='GET')
                     exitSysteme = getSysteme.read()
@@ -262,12 +278,27 @@ class Sx5HabilitationTestCase(ModuleTestCase):
                 self.module.main()
             #print results.exception.args[0]["user"]["clientRoles"]
             newdate_echeance = datetime.date.today().strftime('%Y-%m-%d')
-            for roles in results.exception.args[0]["user"]["clientRoles"]:
-                for role in roles["roles"]:
+            getRoleMappings=open_url(toRemove["auth_keycloak_url"]+"/admin/realms/"+toRemove["realm"]+"/users/"+results.exception.args[0]["user"]["id"]+"/role-mappings",headers=headers,method='GET')
+            #print getRoleMappings.read()
+            roleMappings = getRoleMappings.read()
+            roleMappings = json.loads(roleMappings)
+            for realmRoles in roleMappings["realmMappings"]:
+                newHabilitation={"idUtilisateur": results.exception.args[0]["user"]["id"],"idRole": realmRoles["id"],"dateEcheance": newdate_echeance}
+                getSysteme = open_url(toRemove["spConfigUrl"]+"/systemes/"+toCreateSystem["systemShortName"],headers=headers,method='GET')
+                exitSysteme = getSysteme.read()
+                exitSysteme = json.loads(exitSysteme)
+                for c in exitSysteme["composants"]:
+                    for r in c["roles"]:
+                        if r["uuidRoleKeycloak"] == realmRoles["id"]:
+                            postResponse = open_url(toRemove["spConfigUrl"]+"/habilitations/",headers=headers,data=json.dumps(newHabilitation),method='POST')
+                            print postResponse.read()
+                            ExpiredHabilitations.append(newHabilitation)
+            for clientId in results.exception.args[0]["user"]["clientRoles"]:
+                cid=clientId["clientId"]
+                for role in roleMappings["clientMappings"][cid]["mappings"]:
                     newHabilitation={"idUtilisateur": results.exception.args[0]["user"]["id"],"idRole": role["id"],"dateEcheance": newdate_echeance}
                     getSysteme = open_url(toRemove["spConfigUrl"]+"/systemes/"+toCreateSystem["systemShortName"],headers=headers,method='GET')
                     exitSysteme = getSysteme.read()
-
                     exitSysteme = json.loads(exitSysteme)
                     for c in exitSysteme["composants"]:
                         for r in c["roles"]:
@@ -344,8 +375,24 @@ class Sx5HabilitationTestCase(ModuleTestCase):
                 self.module.main()
             #print results.exception.args[0]["user"]["clientRoles"]
             newdate_echeance = datetime.date.today().strftime('%Y-%m-%d')
-            for roles in results.exception.args[0]["user"]["clientRoles"]:
-                for role in roles["roles"]:
+            getRoleMappings=open_url(toExpend["auth_keycloak_url"]+"/admin/realms/"+toExpend["realm"]+"/users/"+results.exception.args[0]["user"]["id"]+"/role-mappings",headers=headers,method='GET')
+            #print getRoleMappings.read()
+            roleMappings = getRoleMappings.read()
+            roleMappings = json.loads(roleMappings)
+            for realmRoles in roleMappings["realmMappings"]:
+                newHabilitation={"idUtilisateur": results.exception.args[0]["user"]["id"],"idRole": realmRoles["id"],"dateEcheance": newdate_echeance}
+                getSysteme = open_url(toExpend["spConfigUrl"]+"/systemes/"+toCreateSystem["systemShortName"],headers=headers,method='GET')
+                exitSysteme = getSysteme.read()
+                exitSysteme = json.loads(exitSysteme)
+                for c in exitSysteme["composants"]:
+                    for r in c["roles"]:
+                        if r["uuidRoleKeycloak"] == realmRoles["id"]:
+                            postResponse = open_url(toExpend["spConfigUrl"]+"/habilitations/",headers=headers,data=json.dumps(newHabilitation),method='POST')
+                            print postResponse.read()
+                            ExpiredHabilitations.append(newHabilitation)
+            for clientId in results.exception.args[0]["user"]["clientRoles"]:
+                cid=clientId["clientId"]
+                for role in roleMappings["clientMappings"][cid]["mappings"]:
                     newHabilitation={"idUtilisateur": results.exception.args[0]["user"]["id"],"idRole": role["id"],"dateEcheance": newdate_echeance}
                     getSysteme = open_url(toExpend["spConfigUrl"]+"/systemes/"+toCreateSystem["systemShortName"],headers=headers,method='GET')
                     exitSysteme = getSysteme.read()
@@ -354,7 +401,7 @@ class Sx5HabilitationTestCase(ModuleTestCase):
                         for r in c["roles"]:
                             if r["uuidRoleKeycloak"] == role["id"]:
                                 postResponse = open_url(toExpend["spConfigUrl"]+"/habilitations/",headers=headers,data=json.dumps(newHabilitation),method='POST')
-                                #print postResponse.read()
+                                print postResponse.read()
                                 ExpiredHabilitations.append(newHabilitation)
         
         toListBifor = toList

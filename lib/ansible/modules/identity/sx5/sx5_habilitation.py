@@ -189,7 +189,7 @@ def main():
                     msg.append({"result": message})
                 elif getkcResponse.getcode() == 200:
                     # Search role in realm role
-                    userRealmRoles = kc.get_user_realm_roles(user_id=expiredHabilitation["idUtilisateur"],realm=realm)
+                    userRealmRoles = kc.get_user_realm_roles_with_id(user_id=expiredHabilitation["idUtilisateur"],realm=realm)
                     for realmRole in userRealmRoles:
                         if realmRole["id"] == expiredHabilitation["idRole"]:
                             # Delete exiting realm Roles
@@ -210,7 +210,7 @@ def main():
                             msg.append({"result": message})
                             break
                     # Search role in client role
-                    userClientRoles = kc.get_user_client_roles(user_id=expiredHabilitation["idUtilisateur"],realm=realm)
+                    userClientRoles = kc.get_user_client_roles_with_id(user_id=expiredHabilitation["idUtilisateur"],realm=realm)
                     for clientRole in userClientRoles:
                         # Get the client roles
                         client = kc.get_client_by_clientid(client_id=clientRole["clientId"],realm=realm)
