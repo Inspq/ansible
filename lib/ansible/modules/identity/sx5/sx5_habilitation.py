@@ -150,7 +150,7 @@ def main():
     if module.params.get('spConfigClient_secret') is not None:
         clientSecret = module.params.get('spConfigClient_secret')
     else:
-        clientSecret = ''
+        clientSecret = kc.get_client_secret_by_id(kc.get_client_id(clientid,realm),realm)
     changed = False
     accesToken = kc.get_grant_type_password_access_token(clientid, clientSecret, username, password, realm)
     headers = {'Authorization': 'Bearer ' + accesToken,'Content-Type': 'application/json'}
