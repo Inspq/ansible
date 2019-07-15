@@ -173,6 +173,8 @@ def main():
         else:
             if operation == "list":
                 listeExpiredHabilitations.append(expiredHabilitation)
+                message = "Habilitation ExpiredHabilitations added"
+                msg.append({"result": message})
             elif operation == "remove":
                 #userRepresentation = kc.search_user_by_username(username=expiredHabilitation["idUtilisateur"], realm=realm)
                 getkcResponse = open_url(kc.baseurl+"/admin/realms/"+realm+"/users/"+expiredHabilitation["idUtilisateur"],method='GET',headers=kc.restheaders)
