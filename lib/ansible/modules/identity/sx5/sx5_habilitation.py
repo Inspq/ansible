@@ -220,7 +220,7 @@ def main():
                             break
                     # Search role in client role
                     userClientRoles = kc.get_user_client_roles_with_id(user_id=expiredHabilitation["idUtilisateur"],realm=realm)
-                    message = "Habilitation get User %s RealmRoles. msg = ClientRoles" % (expiredHabilitation["idUtilisateur"], ClientRoles)
+                    message = "Habilitation get User %s RealmRoles. msg = ClientRoles" % (expiredHabilitation["idUtilisateur"], userClientRoles)
                     msgRm.append({"info": message})
                     for clientRole in userClientRoles:
                         # Get the client roles
