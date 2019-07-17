@@ -1,5 +1,4 @@
 from units.modules.utils import AnsibleExitJson, AnsibleFailJson, ModuleTestCase, set_module_args
-from units.compat.mock import patch
 from ansible.modules.identity.keycloak import keycloak_user, keycloak_role, keycloak_client
 from ansible.modules.identity.sx5 import sx5_habilitation
 from ansible.module_utils.keycloak import KeycloakAPI, keycloak_argument_spec, isDictEquals
@@ -7,6 +6,8 @@ from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils.sx5_sp_config_system_utils import loginAndSetHeaders
 from ansible.module_utils.urls import open_url
 from ansible.modules.identity.sx5.sx5_sp_config_system import system
+from ansible.module_utils.six.moves.urllib.error import HTTPError
+
 import json
 import datetime
 
@@ -148,8 +149,61 @@ class Sx5HabilitationTestCase(ModuleTestCase):
                          ]
             }
     ]
+    systemsToCreate = [
+        {
+            "spUrl": "http://localhost:18081",
+            "spUsername": "admin",
+            "spPassword": "admin",
+            "spRealm": "master",
+            "spConfigClient_id": "admin-cli", 
+            "spConfigClient_secret": "",
+            "spConfigUrl": "http://localhost:18182/config",
+            "systemName": "system1",
+            "systemShortName": "S1",
+            "clients": [{"clientId": "clientsystem11"}],
+            "clientRoles": [{"spClientRoleId": "test1", "spClientRoleName": "test1", "spClientRoleDescription": "test1"},{"spClientRoleId": "toCreate", "spClientRoleName": "toCreate", "spClientRoleDescription": "toCreate"}],
+            "state": "present",
+            "force": False
+        },
+        {
+            "spUrl": "http://localhost:18081",
+            "spUsername": "admin",
+            "spPassword": "admin",
+            "spRealm": "master",
+            "spConfigClient_id": "admin-cli", 
+            "spConfigClient_secret": "",
+            "spConfigUrl": "http://localhost:18182/config",
+            "systemName": "system2",
+            "systemShortName": "S3",
+            "clients": [{"clientId": "clientsystem21"}],
+            "clientRoles": [{"spClientRoleId": "test2", "spClientRoleName": "test2", "spClientRoleDescription": "test2"},{"spClientRoleId": "toremoveChange", "spClientRoleName": "toremoveChange", "spClientRoleDescription": "toremoveChange"}],
+            "state": "present",
+            "force": False
+        }    
+    ]
+    habilitationsEchus = [
+        {
+            "username": "user1",
+            "clientRoles": [{"clientId": "clientsystem11","roles": ["test1"]}],
+            "dateEcheance": "2019-01-01",
+            "spConfigUrl": "http://localhost:18182/config"
+        },
+        {
+            "username": "user4",
+            "clientRoles": [{"clientId": "clientsystem21","roles": ["test2"]}],
+            "dateEcheance": "2019-02-01",
+            "spConfigUrl": "http://localhost:18182/config"
+        }
+    ]
+    userIndex = {}
+    clientIndex = {}
+    expiredHabilitationsIndex = []
+    
     def setUp(self):
         super(Sx5HabilitationTestCase, self).setUp()
+        self.userIndex = {}
+        self.clientIndex = {}
+        self.expiredHabilitationsIndex = []
         toCreateClient = self.clientTemplate.copy()
         self.module = keycloak_client
         for theClient in self.clientsToCreate:
@@ -159,8 +213,74 @@ class Sx5HabilitationTestCase(ModuleTestCase):
             set_module_args(toCreateClient)
             with self.assertRaises(AnsibleExitJson) as results:
                 self.module.main()
+            self.clientIndex[theClient["clientId"]] = results.exception.args[0]["end_state"]["id"]
+        self.module = keycloak_user
+        for theUser in self.testUsers:
+            createdUser = {}
+            set_module_args(theUser)
+            with self.assertRaises(AnsibleExitJson) as results:
+                self.module.main()
+            createdUser["id"] = results.exception.args[0]["user"]["id"]
+            # Obtenir ses roles de realm
+            headers = loginAndSetHeaders("http://localhost:18081", theUser["realm"], theUser["auth_username"], theUser["auth_password"], "admin-cli", "")
+            roleMappingsUrl = theUser["auth_keycloak_url"]+"/admin/realms/"+theUser["realm"]+"/users/"+results.exception.args[0]["user"]["id"]+"/role-mappings"
+            roleMappings=json.load(open_url(roleMappingsUrl,headers=headers,method='GET'))
+            createdUser["roles"] = roleMappings
+            self.userIndex[theUser["username"]] = createdUser
+        for systemToCreate in self.systemsToCreate:
+            system(systemToCreate)
+        for habilitation in self.habilitationsEchus:
+            userId = self.userIndex[habilitation["username"]]["id"]
+            listeDesRoles = []
+            if "realmRoles" in habilitation:
+                for roleToExpire in habilitation["realmRoles"]:
+                    for userRole in self.userIndex[habilitation["username"]]["roles"]["realmMappings"]:
+                        if userRole["name"] == roleToExpire:
+                            listeDesRoles.append(userRole["id"])
+            if "clientRoles" in habilitation:
+                for client in habilitation["clientRoles"]:
+                    for roleToExpire in client["roles"]:
+                        if client["clientId"] in self.userIndex[habilitation["username"]]["roles"]["clientMappings"]:
+                            for userRole in self.userIndex[habilitation["username"]]["roles"]["clientMappings"][client["clientId"]]["mappings"]:
+                                if userRole["name"] == roleToExpire:
+                                    listeDesRoles.append(userRole["id"])
+            dateEcheance = habilitation["dateEcheance"]
+            for roleToExpire in listeDesRoles:
+                newHabilitation={"idUtilisateur": userId,"idRole": roleToExpire,"dateEcheance": dateEcheance}
+                try:
+                    open_url(habilitation["spConfigUrl"]+"/habilitations/",headers=headers,data=json.dumps(newHabilitation),method='POST')
+                    self.expiredHabilitationsIndex.append(newHabilitation)
+                except Exception as e:
+                    print(str(e))
+    
+            
     def tearDown(self):
         toCreateClient = self.clientTemplate.copy()
+        for expiredHabilitation in self.expiredHabilitationsIndex:
+            try:
+                headers = loginAndSetHeaders("http://localhost:18081", "master", "admin", "admin", "admin-cli", "")
+                url = "http://localhost:18182/config/habilitations/"+expiredHabilitation["idUtilisateur"]+"/"+expiredHabilitation["idRole"]
+                open_url(
+                    url=url,
+                    headers=headers,
+                    method='DELETE')
+            except HTTPError as e:
+                if e.code != 404:
+                    print(str(e))
+            except Exception as e:
+                print(str(e))
+            
+        for systemToCreate in self.systemsToCreate:
+            systemToDelete = systemToCreate.copy()
+            systemToDelete["state"] = "absent"
+            system(systemToCreate)
+        self.module = keycloak_user
+        for theUser in self.testUsers:
+            userToDelete = theUser.copy()
+            userToDelete["state"] = "absent"
+            set_module_args(userToDelete)
+            with self.assertRaises(AnsibleExitJson) as results:
+                self.module.main()
         self.module = keycloak_client
         for theClient in self.clientsToCreate:
             toCreateClient["clientId"] = theClient["clientId"]
@@ -173,23 +293,6 @@ class Sx5HabilitationTestCase(ModuleTestCase):
         super(Sx5HabilitationTestCase, self).tearDown()           
  
     def test_operation_list(self):
-        
-        toCreateSystem = {}
-        toCreateSystem["spUrl"] = "http://localhost:18081"
-        toCreateSystem["spUsername"] = "admin"
-        toCreateSystem["spPassword"] = "admin"
-        toCreateSystem["spRealm"] = "master"
-        toCreateSystem["spConfigClient_id"] = "admin-cli" 
-        toCreateSystem["spConfigClient_secret"] = ""
-        toCreateSystem["spConfigUrl"] = "http://localhost:18182/config"
-        toCreateSystem["systemName"] = "system1"
-        toCreateSystem["systemShortName"] = "S1"
-        toCreateSystem["clients"] = [{"clientId": "clientsystem11"}]
-        toCreateSystem["clientRoles"] = [{"spClientRoleId": "test1", "spClientRoleName": "test1", "spClientRoleDescription": "test1"},{"spClientRoleId": "toCreate", "spClientRoleName": "toCreate", "spClientRoleDescription": "toCreate"}]
-        toCreateSystem["state"] = "present"
-        toCreateSystem["force"] = False
-        system(toCreateSystem)
-
         toList = {}
         toList["auth_keycloak_url"] = "http://localhost:18081/auth"
         toList["auth_username"] = "admin"
@@ -199,67 +302,13 @@ class Sx5HabilitationTestCase(ModuleTestCase):
         toList["spConfigClient_id"] = "admin-cli"
         toList["spConfigClient_secret"] = ""
         toList["operation"] = "list"
-        headers = loginAndSetHeaders("http://localhost:18081", toList["realm"], toList["auth_username"], toList["auth_password"], toList["spConfigClient_id"], toList["spConfigClient_secret"])
-        ExpiredHabilitations = []
-        self.module = keycloak_user
-        for theUser in self.testUsers:
-            set_module_args(theUser)
-            with self.assertRaises(AnsibleExitJson) as results:
-                self.module.main()
-            #print results.exception.args[0]["user"]["clientRoles"]
-            newdate_echeance = datetime.date.today().strftime('%Y-%m-%d')
-            getRoleMappings=open_url(toList["auth_keycloak_url"]+"/admin/realms/"+toList["realm"]+"/users/"+results.exception.args[0]["user"]["id"]+"/role-mappings",headers=headers,method='GET')
-            #print getRoleMappings.read()
-            roleMappings = getRoleMappings.read()
-            roleMappings = json.loads(roleMappings)
-            for realmRoles in roleMappings["realmMappings"]:
-                newHabilitation={"idUtilisateur": results.exception.args[0]["user"]["id"],"idRole": realmRoles["id"],"dateEcheance": newdate_echeance}
-                getSysteme = open_url(toList["spConfigUrl"]+"/systemes/"+toCreateSystem["systemShortName"],headers=headers,method='GET')
-                exitSysteme = getSysteme.read()
-                exitSysteme = json.loads(exitSysteme)
-                for c in exitSysteme["composants"]:
-                    for r in c["roles"]:
-                        if r["uuidRoleKeycloak"] == realmRoles["id"]:
-                            postResponse = open_url(toList["spConfigUrl"]+"/habilitations/",headers=headers,data=json.dumps(newHabilitation),method='POST')
-                            print postResponse.read()
-                            ExpiredHabilitations.append(newHabilitation)
-            for clientId in results.exception.args[0]["user"]["clientRoles"]:
-                cid=clientId["clientId"]
-                for role in roleMappings["clientMappings"][cid]["mappings"]:
-                    newHabilitation={"idUtilisateur": results.exception.args[0]["user"]["id"],"idRole": role["id"],"dateEcheance": newdate_echeance}
-                    getSysteme = open_url(toList["spConfigUrl"]+"/systemes/"+toCreateSystem["systemShortName"],headers=headers,method='GET')
-                    exitSysteme = getSysteme.read()
-                    exitSysteme = json.loads(exitSysteme)
-                    for c in exitSysteme["composants"]:
-                        for r in c["roles"]:
-                            if r["uuidRoleKeycloak"] == role["id"]:
-                                postResponse = open_url(toList["spConfigUrl"]+"/habilitations/",headers=headers,data=json.dumps(newHabilitation),method='POST')
-                                print postResponse.read()
-                                ExpiredHabilitations.append(newHabilitation)
-
         self.module = sx5_habilitation
         set_module_args(toList)
         with self.assertRaises(AnsibleExitJson) as results1:
             self.module.main()
-        self.assertEqual(results1.exception.args[0]["habilitation"]["ExpiredHabilitations"],ExpiredHabilitations,"operation = list : mismatch ExpiredHabilitations")
+        self.assertEqual(results1.exception.args[0]["habilitation"]["ExpiredHabilitations"],self.expiredHabilitationsIndex,"operation = list : mismatch ExpiredHabilitations")
 
     def test_operation_remove(self):
-        toCreateSystem = {}
-        toCreateSystem["spUrl"] = "http://localhost:18081"
-        toCreateSystem["spUsername"] = "admin"
-        toCreateSystem["spPassword"] = "admin"
-        toCreateSystem["spRealm"] = "master"
-        toCreateSystem["spConfigClient_id"] = "admin-cli" 
-        toCreateSystem["spConfigClient_secret"] = ""
-        toCreateSystem["spConfigUrl"] = "http://localhost:18182/config"
-        toCreateSystem["systemName"] = "system2"
-        toCreateSystem["systemShortName"] = "S2"
-        toCreateSystem["clients"] = [{"clientId": "clientsystem21"}]
-        toCreateSystem["clientRoles"] = [{"spClientRoleId": "test2", "spClientRoleName": "test2", "spClientRoleDescription": "test2"},{"spClientRoleId": "toremoveChange", "spClientRoleName": "toremoveChange", "spClientRoleDescription": "toremoveChange"}]
-        toCreateSystem["state"] = "present"
-        toCreateSystem["force"] = False
-        system(toCreateSystem)
-
         toRemove = {}
         toRemove["auth_keycloak_url"] = "http://localhost:18081/auth"
         toRemove["auth_username"] = "admin"
@@ -269,83 +318,89 @@ class Sx5HabilitationTestCase(ModuleTestCase):
         toRemove["spConfigClient_id"] = "admin-cli"
         toRemove["spConfigClient_secret"] = ""
         toRemove["operation"] = "remove"
-        headers = loginAndSetHeaders("http://localhost:18081", toRemove["realm"], toRemove["auth_username"], toRemove["auth_password"], toRemove["spConfigClient_id"], toRemove["spConfigClient_secret"])
-        ExpiredHabilitations = []
-        self.module = keycloak_user
-        for theUser in self.testUsers:
-            set_module_args(theUser)
-            with self.assertRaises(AnsibleExitJson) as results:
-                self.module.main()
-            #print results.exception.args[0]["user"]["clientRoles"]
-            newdate_echeance = datetime.date.today().strftime('%Y-%m-%d')
-            getRoleMappings=open_url(toRemove["auth_keycloak_url"]+"/admin/realms/"+toRemove["realm"]+"/users/"+results.exception.args[0]["user"]["id"]+"/role-mappings",headers=headers,method='GET')
-            #print getRoleMappings.read()
-            roleMappings = getRoleMappings.read()
-            roleMappings = json.loads(roleMappings)
-            for realmRoles in roleMappings["realmMappings"]:
-                newHabilitation={"idUtilisateur": results.exception.args[0]["user"]["id"],"idRole": realmRoles["id"],"dateEcheance": newdate_echeance}
-                getSysteme = open_url(toRemove["spConfigUrl"]+"/systemes/"+toCreateSystem["systemShortName"],headers=headers,method='GET')
-                exitSysteme = getSysteme.read()
-                exitSysteme = json.loads(exitSysteme)
-                for c in exitSysteme["composants"]:
-                    for r in c["roles"]:
-                        if r["uuidRoleKeycloak"] == realmRoles["id"]:
-                            postResponse = open_url(toRemove["spConfigUrl"]+"/habilitations/",headers=headers,data=json.dumps(newHabilitation),method='POST')
-                            print postResponse.read()
-                            ExpiredHabilitations.append(newHabilitation)
-            for clientId in results.exception.args[0]["user"]["clientRoles"]:
-                cid=clientId["clientId"]
-                for role in roleMappings["clientMappings"][cid]["mappings"]:
-                    newHabilitation={"idUtilisateur": results.exception.args[0]["user"]["id"],"idRole": role["id"],"dateEcheance": newdate_echeance}
-                    getSysteme = open_url(toRemove["spConfigUrl"]+"/systemes/"+toCreateSystem["systemShortName"],headers=headers,method='GET')
-                    exitSysteme = getSysteme.read()
-                    exitSysteme = json.loads(exitSysteme)
-                    for c in exitSysteme["composants"]:
-                        for r in c["roles"]:
-                            if r["uuidRoleKeycloak"] == role["id"]:
-                                postResponse = open_url(toRemove["spConfigUrl"]+"/habilitations/",headers=headers,data=json.dumps(newHabilitation),method='POST')
-                                print postResponse.read()
-                                ExpiredHabilitations.append(newHabilitation)
         self.module = sx5_habilitation
         set_module_args(toRemove)
         with self.assertRaises(AnsibleExitJson) as results1:
             self.module.main()
-        #print results1.exception.args[0]["msg"]
-        self.assertEqual(results1.exception.args[0]["habilitation"]["deleteExpiredHabilitations"],ExpiredHabilitations,"operation = list : mismatch deleteExpiredHabilitations")
-        self.assertEqual(results1.exception.args[0]["habilitation"]["deleteExpiredHabilitationsInKc"],ExpiredHabilitations,"operation = list : mismatch deleteExpiredHabilitationsInKc")
+        self.assertEqual(results1.exception.args[0]["habilitation"]["deleteExpiredHabilitations"],self.expiredHabilitationsIndex,"operation = list : mismatch deleteExpiredHabilitations")
+        self.assertEqual(results1.exception.args[0]["habilitation"]["deleteExpiredHabilitationsInKc"],self.expiredHabilitationsIndex,"operation = list : mismatch deleteExpiredHabilitationsInKc")
+
+    def test_operation_remove_with_deleted_user(self):
+        userToDelete = self.testUsers[0].copy()
+        userToDelete["state"] = "absent"
+        self.module = keycloak_user
+        set_module_args(userToDelete)
+        with self.assertRaises(AnsibleExitJson) as results:
+            self.module.main()
+        toRemove = {}
+        toRemove["auth_keycloak_url"] = "http://localhost:18081/auth"
+        toRemove["auth_username"] = "admin"
+        toRemove["auth_password"] = "admin"
+        toRemove["realm"] = "master"
+        toRemove["spConfigUrl"] = "http://localhost:18182/config"
+        toRemove["spConfigClient_id"] = "admin-cli"
+        toRemove["spConfigClient_secret"] = ""
+        toRemove["operation"] = "remove"
+        self.module = sx5_habilitation
+        set_module_args(toRemove)
+        with self.assertRaises(AnsibleExitJson) as results1:
+            self.module.main()
+        self.assertEqual(results1.exception.args[0]["habilitation"]["deleteExpiredHabilitations"],self.expiredHabilitationsIndex,"operation = remove : mismatch deleteExpiredHabilitations")
+        deleteExpiredHabilitationsInKc = []
+        deleteExpiredHabilitationsInKc.append(self.expiredHabilitationsIndex[1])
+        self.assertEqual(results1.exception.args[0]["habilitation"]["deleteExpiredHabilitationsInKc"],deleteExpiredHabilitationsInKc,"operation = remove : mismatch deleteExpiredHabilitationsInKc")
+
+    def test_operation_remove_with_deleted_user_client_role(self):
+        userToUpdate = self.testUsers[0].copy()
+        userToUpdate["clientRoles"] = [{"clientId": "clientsystem11","roles": []}]
+        self.module = keycloak_user
+        set_module_args(userToUpdate)
+        with self.assertRaises(AnsibleExitJson) as results:
+            self.module.main()
+        toRemove = {}
+        toRemove["auth_keycloak_url"] = "http://localhost:18081/auth"
+        toRemove["auth_username"] = "admin"
+        toRemove["auth_password"] = "admin"
+        toRemove["realm"] = "master"
+        toRemove["spConfigUrl"] = "http://localhost:18182/config"
+        toRemove["spConfigClient_id"] = "admin-cli"
+        toRemove["spConfigClient_secret"] = ""
+        toRemove["operation"] = "remove"
+        self.module = sx5_habilitation
+        set_module_args(toRemove)
+        with self.assertRaises(AnsibleExitJson) as results1:
+            self.module.main()
+        self.assertEqual(results1.exception.args[0]["habilitation"]["deleteExpiredHabilitations"],self.expiredHabilitationsIndex,"operation = list : mismatch deleteExpiredHabilitations")
+        self.assertEqual(results1.exception.args[0]["habilitation"]["deleteExpiredHabilitationsInKc"],self.expiredHabilitationsIndex,"operation = list : mismatch deleteExpiredHabilitationsInKc")
+
+    def test_operation_remove_with_deleted_client(self):
+        clientToDelete = self.clientsToCreate[0].copy()
+        for key in self.clientTemplate.keys():
+            clientToDelete[key] = self.clientTemplate[key]
+        clientToDelete["state"] = "absent"
+        self.module = keycloak_client
+        set_module_args(clientToDelete)
+        with self.assertRaises(AnsibleExitJson) as results:
+            self.module.main()
+        toRemove = {}
+        toRemove["auth_keycloak_url"] = "http://localhost:18081/auth"
+        toRemove["auth_username"] = "admin"
+        toRemove["auth_password"] = "admin"
+        toRemove["realm"] = "master"
+        toRemove["spConfigUrl"] = "http://localhost:18182/config"
+        toRemove["spConfigClient_id"] = "admin-cli"
+        toRemove["spConfigClient_secret"] = ""
+        toRemove["operation"] = "remove"
+        self.module = sx5_habilitation
+        set_module_args(toRemove)
+        with self.assertRaises(AnsibleExitJson) as results1:
+            self.module.main()
+        self.assertEqual(results1.exception.args[0]["habilitation"]["deleteExpiredHabilitations"],self.expiredHabilitationsIndex,"operation = remove : mismatch deleteExpiredHabilitations")
+        deleteExpiredHabilitationsInKc = []
+        deleteExpiredHabilitationsInKc.append(self.expiredHabilitationsIndex[1])
+        self.assertEqual(results1.exception.args[0]["habilitation"]["deleteExpiredHabilitationsInKc"],deleteExpiredHabilitationsInKc,"operation = remove : mismatch deleteExpiredHabilitationsInKc")
 
     def test_operation_expend(self):
-        toCreateSystem = {}
-        toCreateSystem["spUrl"] = "http://localhost:18081"
-        toCreateSystem["spUsername"] = "admin"
-        toCreateSystem["spPassword"] = "admin"
-        toCreateSystem["spRealm"] = "master"
-        toCreateSystem["spConfigClient_id"] = "admin-cli" 
-        toCreateSystem["spConfigClient_secret"] = ""
-        toCreateSystem["spConfigUrl"] = "http://localhost:18182/config"
-        toCreateSystem["systemName"] = "system1"
-        toCreateSystem["systemShortName"] = "S1"
-        toCreateSystem["clients"] = [{"clientId": "clientsystem11"}]
-        toCreateSystem["clientRoles"] = [{"spClientRoleId": "test1", "spClientRoleName": "test1", "spClientRoleDescription": "test1"},{"spClientRoleId": "toCreate", "spClientRoleName": "toCreate", "spClientRoleDescription": "toCreate"}]
-        toCreateSystem["state"] = "present"
-        toCreateSystem["force"] = False
-        system(toCreateSystem)
-        toCreateSystem = {}
-        toCreateSystem["spUrl"] = "http://localhost:18081"
-        toCreateSystem["spUsername"] = "admin"
-        toCreateSystem["spPassword"] = "admin"
-        toCreateSystem["spRealm"] = "master"
-        toCreateSystem["spConfigClient_id"] = "admin-cli" 
-        toCreateSystem["spConfigClient_secret"] = ""
-        toCreateSystem["spConfigUrl"] = "http://localhost:18182/config"
-        toCreateSystem["systemName"] = "system2"
-        toCreateSystem["systemShortName"] = "S2"
-        toCreateSystem["clients"] = [{"clientId": "clientsystem21"}]
-        toCreateSystem["clientRoles"] = [{"spClientRoleId": "test2", "spClientRoleName": "test2", "spClientRoleDescription": "test2"},{"spClientRoleId": "toremoveChange", "spClientRoleName": "toremoveChange", "spClientRoleDescription": "toremoveChange"}]
-        toCreateSystem["state"] = "present"
-        toCreateSystem["force"] = False
-        system(toCreateSystem)
-        
         toExpend = {}
         toExpend["auth_keycloak_url"] = "http://localhost:18081/auth"
         toExpend["auth_username"] = "admin"
@@ -357,74 +412,38 @@ class Sx5HabilitationTestCase(ModuleTestCase):
         toExpend["operation"] = "extend"
         toExpend["duration"] = 1
 
-        toList = {}
-        toList["auth_keycloak_url"] = "http://localhost:18081/auth"
-        toList["auth_username"] = "admin"
-        toList["auth_password"] = "admin"
-        toList["realm"] = "master"
-        toList["spConfigUrl"] = "http://localhost:18182/config"
-        toList["spConfigClient_id"] = "admin-cli"
-        toList["spConfigClient_secret"] = ""
-        toList["operation"] = "list"
-        headers = loginAndSetHeaders("http://localhost:18081", toExpend["realm"], toExpend["auth_username"], toExpend["auth_password"], toExpend["spConfigClient_id"], toExpend["spConfigClient_secret"])
+        #toList = {}
+        #toList["auth_keycloak_url"] = "http://localhost:18081/auth"
+        #toList["auth_username"] = "admin"
+        #toList["auth_password"] = "admin"
+        #toList["realm"] = "master"
+        #toList["spConfigUrl"] = "http://localhost:18182/config"
+        #toList["spConfigClient_id"] = "admin-cli"
+        #toList["spConfigClient_secret"] = ""
+        #toList["operation"] = "list"
         ExpiredHabilitations = []
-        self.module = keycloak_user
-        for theUser in self.testUsers:
-            set_module_args(theUser)
-            with self.assertRaises(AnsibleExitJson) as results:
-                self.module.main()
-            #print results.exception.args[0]["user"]["clientRoles"]
-            newdate_echeance = datetime.date.today().strftime('%Y-%m-%d')
-            getRoleMappings=open_url(toExpend["auth_keycloak_url"]+"/admin/realms/"+toExpend["realm"]+"/users/"+results.exception.args[0]["user"]["id"]+"/role-mappings",headers=headers,method='GET')
-            #print getRoleMappings.read()
-            roleMappings = getRoleMappings.read()
-            roleMappings = json.loads(roleMappings)
-            for realmRoles in roleMappings["realmMappings"]:
-                newHabilitation={"idUtilisateur": results.exception.args[0]["user"]["id"],"idRole": realmRoles["id"],"dateEcheance": newdate_echeance}
-                getSysteme = open_url(toExpend["spConfigUrl"]+"/systemes/"+toCreateSystem["systemShortName"],headers=headers,method='GET')
-                exitSysteme = getSysteme.read()
-                exitSysteme = json.loads(exitSysteme)
-                for c in exitSysteme["composants"]:
-                    for r in c["roles"]:
-                        if r["uuidRoleKeycloak"] == realmRoles["id"]:
-                            postResponse = open_url(toExpend["spConfigUrl"]+"/habilitations/",headers=headers,data=json.dumps(newHabilitation),method='POST')
-                            print postResponse.read()
-                            ExpiredHabilitations.append(newHabilitation)
-            for clientId in results.exception.args[0]["user"]["clientRoles"]:
-                cid=clientId["clientId"]
-                for role in roleMappings["clientMappings"][cid]["mappings"]:
-                    newHabilitation={"idUtilisateur": results.exception.args[0]["user"]["id"],"idRole": role["id"],"dateEcheance": newdate_echeance}
-                    getSysteme = open_url(toExpend["spConfigUrl"]+"/systemes/"+toCreateSystem["systemShortName"],headers=headers,method='GET')
-                    exitSysteme = getSysteme.read()
-                    exitSysteme = json.loads(exitSysteme)
-                    for c in exitSysteme["composants"]:
-                        for r in c["roles"]:
-                            if r["uuidRoleKeycloak"] == role["id"]:
-                                postResponse = open_url(toExpend["spConfigUrl"]+"/habilitations/",headers=headers,data=json.dumps(newHabilitation),method='POST')
-                                print postResponse.read()
-                                ExpiredHabilitations.append(newHabilitation)
-        
-        toListBifor = toList
-        self.module = sx5_habilitation
-        set_module_args(toListBifor)
-        with self.assertRaises(AnsibleExitJson) as results1:
-            self.module.main()
-        #print results1.exception.args[0]
-        self.assertEqual(results1.exception.args[0]["habilitation"]["ExpiredHabilitations"],ExpiredHabilitations,"operation = list : mismatch ExpiredHabilitations")
-
+        for habilitation in self.expiredHabilitationsIndex:
+            hab = {}
+            newdate_extension = datetime.datetime.strptime(habilitation["dateEcheance"], '%Y-%m-%d')
+            newdate_extension = newdate_extension + datetime.timedelta(days=toExpend["duration"])
+            hab["dateEcheance"] = datetime.datetime.strftime(newdate_extension, '%Y-%m-%d')
+            hab["idUtilisateur"] = habilitation["idUtilisateur"]  
+            hab["idRole"] = habilitation["idRole"]
+            ExpiredHabilitations.append(hab)
         self.module = sx5_habilitation
         set_module_args(toExpend)
         with self.assertRaises(AnsibleExitJson) as results2:
             self.module.main()
         #print results2.exception.args[0]
-        self.assertNotEqual(results2.exception.args[0]["habilitation"]["extExpiredHabilitations"],ExpiredHabilitations,"operation = extend : mismatch extend ExpiredHabilitations")
+        self.assertNotEqual(results2.exception.args[0]["habilitation"]["extExpiredHabilitations"],self.expiredHabilitationsIndex,"operation = extend : ExpiredHabilitations not extended")
+        self.assertEqual(results2.exception.args[0]["habilitation"]["extExpiredHabilitations"],ExpiredHabilitations,"operation = extend : mismatch extend ExpiredHabilitations")
 
-        toListAfter = toList
-        self.module = sx5_habilitation
-        set_module_args(toListAfter)
-        with self.assertRaises(AnsibleExitJson) as results3:
-            self.module.main()
+        #toListAfter = toList
+        #self.module = sx5_habilitation
+        #set_module_args(toListAfter)
+        #with self.assertRaises(AnsibleExitJson) as results3:
+        #    self.module.main()
         #print results3.exception.args[0]
-        self.assertNotEqual(results3.exception.args[0]["habilitation"]["extExpiredHabilitations"],results2.exception.args[0]["habilitation"]["extExpiredHabilitations"],"operation = extend : mismatch ExpiredHabilitations")
-        self.assertEqual(results3.exception.args[0]["habilitation"]["ExpiredHabilitations"],[],"operation = extend : mismatch ExpiredHabilitations")
+        #self.assertNotEqual(results3.exception.args[0]["habilitation"]["extExpiredHabilitations"],results2.exception.args[0]["habilitation"]["extExpiredHabilitations"],"operation = extend : mismatch ExpiredHabilitations")
+        #self.assertEqual(results3.exception.args[0]["habilitation"]["ExpiredHabilitations"],[],"operation = extend : mismatch ExpiredHabilitations")
         

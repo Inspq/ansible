@@ -17,6 +17,11 @@
 # You should have received a copy of the GNU General Public License
 # along with Ansible.  If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import absolute_import, division, print_function
+
+__metaclass__ = type
+
+
 ANSIBLE_METADATA = {'metadata_version': '1.1',
                     'status': ['preview'],
                     'supported_by': 'community'}
@@ -24,78 +29,86 @@ ANSIBLE_METADATA = {'metadata_version': '1.1',
 
 DOCUMENTATION = '''
 ---
-author: "Etienne Sadio (etienne.sadio@inspq.qc.ca)"
 module: sx5_sp_config_system
-short_description: Configure a system application in SX5 SP DB  
+short_description: Configure a system application in SX5 SP DB
 description:
-    - This module creates, creat or update system application in SX5 SP DB.
+    - This module creates, create or update system application in SX5 SP DB.
 version_added: "2.3"
 options:
     spUrl:
         description:
             - The url of the Keycloak server. used to check the presence of the client in services provider
-        default:    
         required: true
+        type: str
     spUsername:
         description:
             - The username to logon in Keycloak.
         required: true
+        type: str
     spPassword:
         description:
             - The password for the user to logon in Keycloak.
         required: true
+        type: str
     spRealm:
         description:
             - The name of the Keycloak realm in which is the client.
         required: true
+        type: str
     spConfigUrl:
         description:
             - sx5-config DB REST services URL.
         required: true
+        type: str
     spConfigClient_id:
         description:
             - Sx5-sp-Config Client ID.
         required: true
+        type: str
     spConfigClient_secret:
         description:
             - Sx5-sp-Config Client Secret.
         required: false
+        type: str
     systemShortName:
         description:
             - System Short Name acronym without espace.
         required: false
+        type: str
     systemName:
         description:
             - System name of Client ID.
         required: true
+        type: str
     clients:
         description:
             - list of OIDC Client ID for the client in Keycloak.
         required: true
+        type: list
     clientRoles:
         description:
             - list of role in keycloak.
-        default: 
+        type: list
         required: false
     sadu_principal:
         description:
-            - Princidal provisioning services URL.
-        default: 
+            - Principal provisioning services URL.
+        type: str
         required: false
     sadu_secondary:
         description:
             - list of secondary provisioning services URL.
-        default: 
+        type: str
         required: false
     clientRoles_mapper:
         description:
             - list of role correspondance between keycloak roles end SADU roles.
-        default: 
         required: false
+        type: list
     pilotRoles:
         description:
             - list of piloting roles in keycloak.
-        default: 
+        type: list
         required: false
     force:
         choices: [ "yes", "no" ]
@@ -103,14 +116,18 @@ options:
         description:
             - If yes, allows to remove client and recreate it.
         required: false
+        type: str
     state:
         description:
             - Control if the client must exists or not
         choices: [ "present", "absent" ]
         default: present
         required: false
+        type: str
 notes:
     - module does not modify clientId in keycloak.
+author:
+    - INSPQ SX5 Team (@moi8407)
 '''
 
 EXAMPLES = '''
@@ -129,7 +146,7 @@ EXAMPLES = '''
         sadu_secondary:
         - adresse: http://localhost:8088/sadu2
         - adresse: http://localhost:8088/sadu3
-        clients: 
+        clients:
         - clientId: client1
         - clientId: client2
         clientRoles_mapper:
@@ -146,7 +163,7 @@ EXAMPLES = '''
           spClientRoleDescription: roleDescription2
         pilotRoles:
         - habilitationClientId: habilitationClient1
-          roles: 
+          roles:
           - name: "rolesName"
             description: "Role1"
             composite: true
@@ -155,7 +172,7 @@ EXAMPLES = '''
                 name: role1ofclient
             state: present
         - habilitationClientId: habilitationClient2
-          roles: 
+          roles:
           - name: "rolesName"
             description: "Role2"
             composite: true
@@ -164,7 +181,7 @@ EXAMPLES = '''
                 name: role1ofclient
             state: present
         state: present
-    
+
     - name: Re-create a system system1 with default settings.
       sx5_sp_config_system:
         spUrl: http://localhost:8080/auth
@@ -180,7 +197,7 @@ EXAMPLES = '''
         sadu_secondary:
         - adresse: http://localhost:8088/sadu2
         - adresse: http://localhost:8088/sadu3
-        clients: 
+        clients:
         - clientId: client1
         - clientId: client2
         clientRoles_mapper:
@@ -197,7 +214,7 @@ EXAMPLES = '''
           spClientRoleDescription: roleDescription2
         pilotRoles:
         - habilitationClientId: habilitationClient1
-          roles: 
+          roles:
           - name: "rolesName"
             description: "Role1"
             composite: true
@@ -206,7 +223,7 @@ EXAMPLES = '''
                 name: role1ofclient
             state: present
         - habilitationClientId: habilitationClient2
-          roles: 
+          roles:
           - name: "rolesName"
             description: "Role2"
             composite: true
@@ -216,7 +233,7 @@ EXAMPLES = '''
             state: present
         state: present
         force: yes
-    
+
     - name: Remove system1.
       sx5_sp_config_system:
         spUrl: http://localhost:8080/auth
@@ -229,7 +246,7 @@ EXAMPLES = '''
         systemName: system1
         systemShortName: S1
         sadu_principal: http://localhost:8088/sadu1
-        state: adsent
+        state: absent
 '''
 RETURN = '''
 ansible_facts:
@@ -251,28 +268,28 @@ changed:
 '''
 import requests
 import json
-import urllib
-from ansible.module_utils.sx5_sp_config_system_utils import *
-from __builtin__ import isinstance    
+from ansible.module_utils.sx5_sp_config_system_utils import loginAndSetHeaders, isDictEquals
+from ansible.module_utils.basic import AnsibleModule
+
 
 def main():
     module = AnsibleModule(
-        argument_spec = dict(
+        argument_spec=dict(
             spUrl=dict(type='str', required=True),
             spUsername=dict(type='str', required=True),
             spPassword=dict(required=True),
             spRealm=dict(type='str', required=True),
-            spConfigUrl = dict(type='str', required=True),
+            spConfigUrl=dict(type='str', required=True),
             spConfigClient_id=dict(type='str', required=True),
             spConfigClient_secret=dict(type='str', required=False),
             systemName=dict(type='str', required=True),
             systemShortName=dict(type='str', required=True),
-            sadu_principal = dict(type='str', required=False),
-            sadu_secondary = dict(type='list', default=[]),
+            sadu_principal=dict(type='str', required=False),
+            sadu_secondary=dict(type='list', default=[]),
             clients=dict(type='list', default=[]),
             clientRoles=dict(type='list', default=[]),
             pilotRoles=dict(type='list', default=[]),
-            clientRoles_mapper = dict(type='list', default=[]),
+            clientRoles_mapper=dict(type='list', default=[]),
             force=dict(type='bool', default=False),
             state=dict(choices=["absent", "present"], default='present'),
         ),
@@ -280,14 +297,15 @@ def main():
     )
     params = module.params.copy()
     params['force'] = module.boolean(module.params['force'])
-    
+
     result = system(params)
-    
+
     if result['rc'] != 0:
         module.fail_json(msg='non-zero return code', **result)
     else:
         module.exit_json(**result)
-    
+
+
 def system(params):
     spUrl = params['spUrl']
     username = params['spUsername']
@@ -301,8 +319,8 @@ def system(params):
     force = params['force']
     spConfigUrl = params['spConfigUrl']
     state = params['state']
-        
-    # Créer un représentation du system pour BD SP config
+
+    # Creer un representation du system pour BD SP config
     newSystemDBRepresentation = {}
     if "spRealm" in params and params["spRealm"] is not None:
         newSystemDBRepresentation["spRealm"] = params['spRealm'].decode("utf-8")
@@ -322,7 +340,6 @@ def system(params):
         newSystemDBRepresentation["clientRoles"] = params['clientRoles']
     if "pilotRoles" in params and params['pilotRoles'] is not None:
         newSystemDBRepresentation["pilotRoles"] = params['pilotRoles']
-    rc = 0
     result = dict()
     changed = False
     clientSvcBaseUrl = spUrl + "/auth/admin/realms/" + realm + "/clients/"
@@ -331,36 +348,38 @@ def system(params):
         headers = loginAndSetHeaders(spUrl, realm, username, password, clientid, clientSecret)
     except Exception, e:
         result = dict(
-            stderr   = 'login: ' + str(e),
-            rc       = 1,
-            changed  = changed
-            )
+            stderr='login: ' + str(e),
+            rc=1,
+            changed=changed
+        )
         return result
-    if state == 'present':# Si le status est présent
-        if force: # Si force est de yes modifier le systeme meme s'il existe
+    if state == 'present':  # Si le status est present
+        if force:  # Si force est de yes modifier le systeme meme s'il existe
             try:
-                getResponse = requests.get(spConfigUrl+"/systemes/"+newSystemDBRepresentation["systemShortName"], headers=headers)
-                if getResponse.status_code == 200:#systeme existe, on le supprime et on le recree
+                getResponse = requests.get(
+                    spConfigUrl + "/systemes/" + newSystemDBRepresentation["systemShortName"],
+                    headers=headers)
+                if getResponse.status_code == 200:  # systeme existe, on le supprime et on le recree
                     dataResponse = getResponse.json()
                     adresse = []
                     rolemapper = []
                     if "sadu_principal" in params and params['sadu_principal'] is not None:
-                        adresseP={
+                        adresseP = {
                             "principale": True,
                             "adresse": newSystemDBRepresentation["sadu_principal"]
                         }
                         adresse.append(adresseP)
                         for sadu_secondary in newSystemDBRepresentation["sadu_secondary"]:
                             if "sadu_secondary" in params and params['sadu_secondary'] is not None:
-                                adresseS={
+                                adresseS = {
                                     "principale": False,
                                     "adresse": sadu_secondary["adresse"]
                                 }
                                 adresse.append(adresseS)
-                       
+
                         for clientRoles_mapper in newSystemDBRepresentation["clientRoles_mapper"]:
                             if "sadu_secondary" in params and params['sadu_secondary'] is not None:
-                                role={
+                                role = {
                                     "roleKeycloak": clientRoles_mapper["spClientRole"],
                                     "roleSysteme": clientRoles_mapper["eq_sadu_role"]
                                 }
@@ -368,22 +387,27 @@ def system(params):
                     client = []
                     for clientKeycloak in newSystemDBRepresentation["clients"]:
                         getResponseKeycloak = requests.get(clientSvcBaseUrl, headers=headers, params={'clientId': clientKeycloak["clientid"]})
-                        clientS={}
+                        clientS = {}
                         if getResponseKeycloak.status_code == 200:
                             dataResponseKeycloak = getResponseKeycloak.json()
                             if dataResponseKeycloak:
                                 for dataKeycloak in dataResponseKeycloak:
                                     if dataKeycloak["clientId"] == clientKeycloak["clientId"]:
                                         role = []
-                                        getResponseKeycloakClientRoles = requests.get(clientSvcBaseUrl+dataKeycloak["id"]+"/roles", headers=headers)
+                                        getResponseKeycloakClientRoles = requests.get(
+                                            clientSvcBaseUrl + dataKeycloak["id"] + "/roles",
+                                            headers=headers)
                                         if getResponseKeycloakClientRoles.status_code == 200:
                                             dataResponseroles = getResponseKeycloakClientRoles.json()
                                             for dataKeycloakrole in dataResponseroles:
                                                 for clientRoles in newSystemDBRepresentation["clientRoles"]:
                                                     if dataKeycloakrole["name"] == clientRoles["spClientRoleId"]:
-                                                        roleS={"uuidRoleKeycloak": dataKeycloakrole["id"],"nom": clientRoles["spClientRoleId"],"description": clientRoles["spClientRoleDescription"]}
+                                                        roleS = {
+                                                            "uuidRoleKeycloak": dataKeycloakrole["id"],
+                                                            "nom": clientRoles["spClientRoleId"],
+                                                            "description": clientRoles["spClientRoleDescription"]}
                                                         role.append(roleS)
-                                        clientS={
+                                        clientS = {
                                             "nom": dataKeycloak["name"],
                                             "uuidKeycloak": dataKeycloak["id"],
                                             "clientId": dataKeycloak["clientId"],
@@ -392,523 +416,619 @@ def system(params):
                                         }
                                 client.append(clientS)
                     bodySystem = {
-                            "nom": newSystemDBRepresentation["systemName"],
-                            "cleUnique": newSystemDBRepresentation["systemShortName"],
-                            "composants": client
-                        }
-                    bodyAdressesApprovisionnement = {
-                            "cleUnique": newSystemDBRepresentation["systemShortName"],
-                            "entreesAdressesApprovisionnement": adresse
-                        }
+                        "nom": newSystemDBRepresentation["systemName"],
+                        "cleUnique": newSystemDBRepresentation["systemShortName"],
+                        "composants": client}
+                    bodyAdrAppr = {
+                        "cleUnique": newSystemDBRepresentation["systemShortName"],
+                        "entreesAdressesApprovisionnement": adresse}
                     bodyTableCorrespondance = {
-                            "cleUnique": newSystemDBRepresentation["systemShortName"],
-                            "entreesTableCorrespondance": rolemapper
-                        }
-                        #suite
+                        "cleUnique": newSystemDBRepresentation["systemShortName"],
+                        "entreesTableCorrespondance": rolemapper}
                     try:
-                        requests.delete(spConfigUrl+"/systemes/"+dataResponse["cleUnique"],headers=headers)
-                        requests.post(spConfigUrl+"/systemes/",headers=headers,json=bodySystem)
-                        getResponseSystem = requests.get(spConfigUrl+"/systemes/"+dataResponse["cleUnique"], headers=headers)
+                        requests.delete(
+                            spConfigUrl + "/systemes/" + dataResponse["cleUnique"],
+                            headers=headers)
+                        requests.post(
+                            spConfigUrl + "/systemes/",
+                            headers=headers,
+                            json=bodySystem)
+                        getResponseSystem = requests.get(
+                            spConfigUrl + "/systemes/" + dataResponse["cleUnique"],
+                            headers=headers)
                         if getResponseSystem.status_code == 200:
                             dataResponseSystem = getResponseSystem.json()
-                            requests.put(spConfigUrl+"/systemes/"+dataResponseSystem["cleUnique"]+"/adressesApprovisionnement",headers=headers,json=bodyAdressesApprovisionnement)
-                            requests.put(spConfigUrl+"/systemes/"+dataResponseSystem["cleUnique"]+"/tableCorrespondance",headers=headers,json=bodyTableCorrespondance)
+                            requests.put(
+                                spConfigUrl + "/systemes/" + dataResponseSystem["cleUnique"] + "/adressesApprovisionnement",
+                                headers=headers,
+                                json=bodyAdrAppr)
+                            requests.put(
+                                spConfigUrl + "/systemes/" + dataResponseSystem["cleUnique"] + "/tableCorrespondance",
+                                headers=headers,
+                                json=bodyTableCorrespondance)
                             # Add or update pilotRole
                             messagepilotRole = None
                             if "pilotRoles" in params and params['pilotRoles'] is not None:
-                                messagepilotRole = addpilotRoles(newSystemDBRepresentation,spConfigUrl,clientSvcBaseUrl,roleSvcBaseUrl,headers,params,realm=realm)
-                            getResponsetableCorrespondance = requests.get(spConfigUrl+"/systemes/"+dataResponseSystem["cleUnique"]+"/tableCorrespondance", headers=headers)
+                                messagepilotRole = addpilotRoles(
+                                    newSystemDBRepresentation,
+                                    spConfigUrl,
+                                    clientSvcBaseUrl,
+                                    roleSvcBaseUrl,
+                                    headers,
+                                    params,
+                                    realm=realm)
+                            getResponsetableCorrespondance = requests.get(
+                                spConfigUrl + "/systemes/" + dataResponseSystem["cleUnique"] + "/tableCorrespondance",
+                                headers=headers)
                             dataResponsetableCorrespondance = getResponsetableCorrespondance.json()
-                            getResponseadressesApprovisionnement = requests.get(spConfigUrl+"/systemes/"+dataResponseSystem["cleUnique"]+"/adressesApprovisionnement", headers=headers)
+                            getResponseadressesApprovisionnement = requests.get(
+                                spConfigUrl + "/systemes/" + dataResponseSystem["cleUnique"] + "/adressesApprovisionnement",
+                                headers=headers)
                             dataResponseadressesApprovisionnement = getResponseadressesApprovisionnement.json()
                             changed = True
                             fact = dict(
-                                systemes = dataResponseSystem,
-                                entreesAdressesApprovisionnement = dataResponseadressesApprovisionnement,
-                                entreesTableCorrespondance = dataResponsetableCorrespondance,
-                                integrityCheckComposants = spIntegrityCheckComposants(spConfigUrl,clientSvcBaseUrl,headers,dataResponseSystem["cleUnique"]),
-                                pilotRole = messagepilotRole
-                                )
+                                systemes=dataResponseSystem,
+                                entreesAdressesApprovisionnement=dataResponseadressesApprovisionnement,
+                                entreesTableCorrespondance=dataResponsetableCorrespondance,
+                                integrityCheckComposants=spIntegrityCheckComposants(
+                                    spConfigUrl,
+                                    clientSvcBaseUrl,
+                                    headers,
+                                    dataResponseSystem["cleUnique"]),
+                                pilotRole=messagepilotRole)
                             result = dict(
-                                ansible_facts = fact,
-                                rc = 0,
-                                changed = changed
-                                )
+                                ansible_facts=fact,
+                                rc=0,
+                                changed=changed)
                     except requests.exceptions.RequestException, e:
                         fact = dict(
-                            systemes = newSystemDBRepresentation)
+                            systemes=newSystemDBRepresentation)
                         result = dict(
-                            ansible_facts= fact,
-                            stderr   = 'Update systemes: ' + newSystemDBRepresentation["systemName"] + ' erreur: ' + str(e),
-                            rc       = 1,
-                            changed  = changed
-                            )
+                            ansible_facts=fact,
+                            stderr='Update systemes: ' + newSystemDBRepresentation["systemName"] + ' erreur: ' + str(e),
+                            rc=1,
+                            changed=changed)
                     except ValueError, e:
                         fact = dict(
-                            systemes = newSystemDBRepresentation)
+                            systemes=newSystemDBRepresentation)
                         result = dict(
-                            ansible_facts= fact,
-                            stderr   = 'Update systemes: ' + newSystemDBRepresentation["systemName"] + ' erreur: ' + str(e),
-                            rc       = 1,
-                            changed  = changed
-                            )
-                elif getResponse.status_code == 404: #systeme n'existe pas, le creer
+                            ansible_facts=fact,
+                            stderr='Update systemes: ' + newSystemDBRepresentation["systemName"] + ' erreur: ' + str(e),
+                            rc=1,
+                            changed=changed)
+                elif getResponse.status_code == 404:  # systeme n'existe pas, le creer
                     adresse = []
                     rolemapper = []
                     if "sadu_principal" in params and params['sadu_principal'] is not None:
-                        adresseP={
+                        adresseP = {
                             "principale": True,
-                            "adresse": newSystemDBRepresentation["sadu_principal"]
-                        }
+                            "adresse": newSystemDBRepresentation["sadu_principal"]}
                         adresse.append(adresseP)
                         for sadu_secondary in newSystemDBRepresentation["sadu_secondary"]:
                             if "sadu_secondary" in params and params['sadu_secondary'] is not None:
-                                adresseS={
+                                adresseS = {
                                     "principale": False,
-                                    "adresse": sadu_secondary["adresse"]
-                                }
+                                    "adresse": sadu_secondary["adresse"]}
                                 adresse.append(adresseS)
-                        
+
                         for clientRoles_mapper in newSystemDBRepresentation["clientRoles_mapper"]:
                             if "sadu_secondary" in params and params['sadu_secondary'] is not None:
-                                role={
+                                role = {
                                     "roleKeycloak": clientRoles_mapper["spClientRole"],
-                                    "roleSysteme": clientRoles_mapper["eq_sadu_role"]
-                                }
+                                    "roleSysteme": clientRoles_mapper["eq_sadu_role"]}
                                 rolemapper.append(role)
                     client = []
                     for clientKeycloak in newSystemDBRepresentation["clients"]:
-                        getResponseKeycloak = requests.get(clientSvcBaseUrl, headers=headers, params={'clientId': clientKeycloak["clientId"]})
-                        clientS={}
+                        getResponseKeycloak = requests.get(
+                            clientSvcBaseUrl,
+                            headers=headers,
+                            params={'clientId': clientKeycloak["clientId"]})
+                        clientS = {}
                         if getResponseKeycloak.status_code == 200:
                             dataResponseKeycloak = getResponseKeycloak.json()
                             if dataResponseKeycloak:
                                 for dataKeycloak in dataResponseKeycloak:
                                     if dataKeycloak["clientId"] == clientKeycloak["clientId"]:
                                         role = []
-                                        getResponseKeycloakClientRoles = requests.get(clientSvcBaseUrl+dataKeycloak["id"]+"/roles", headers=headers)
+                                        getResponseKeycloakClientRoles = requests.get(
+                                            clientSvcBaseUrl + dataKeycloak["id"] + "/roles",
+                                            headers=headers)
                                         if getResponseKeycloakClientRoles.status_code == 200:
                                             dataResponseroles = getResponseKeycloakClientRoles.json()
                                             for dataKeycloakrole in dataResponseroles:
                                                 for clientRoles in newSystemDBRepresentation["clientRoles"]:
                                                     if dataKeycloakrole["name"] == clientRoles["spClientRoleId"]:
-                                                        roleS={"uuidRoleKeycloak": dataKeycloakrole["id"],"nom": clientRoles["spClientRoleId"],"description": clientRoles["spClientRoleDescription"]}
+                                                        roleS = {
+                                                            "uuidRoleKeycloak": dataKeycloakrole["id"],
+                                                            "nom": clientRoles["spClientRoleId"],
+                                                            "description": clientRoles["spClientRoleDescription"]}
                                                         role.append(roleS)
-                                        clientS={
+                                        clientS = {
                                             "nom": dataKeycloak["name"],
                                             "uuidKeycloak": dataKeycloak["id"],
                                             "clientId": dataKeycloak["clientId"],
                                             "description": dataKeycloak["description"],
-                                            "roles": role
-                                        }
+                                            "roles": role}
                                 client.append(clientS)
 
                     bodySystem = {
-                            "nom": newSystemDBRepresentation["systemName"],
-                            "cleUnique": newSystemDBRepresentation["systemShortName"],
-                            "composants": client
-                        }
-                    bodyAdressesApprovisionnement = {
-                            "cleUnique": newSystemDBRepresentation["systemShortName"],
-                            "entreesAdressesApprovisionnement": adresse
-                        }
+                        "nom": newSystemDBRepresentation["systemName"],
+                        "cleUnique": newSystemDBRepresentation["systemShortName"],
+                        "composants": client}
+                    bodyAdrAppr = {
+                        "cleUnique": newSystemDBRepresentation["systemShortName"],
+                        "entreesAdressesApprovisionnement": adresse}
                     bodyTableCorrespondance = {
-                            "cleUnique": newSystemDBRepresentation["systemShortName"],
-                            "entreesTableCorrespondance": rolemapper
-                        }
+                        "cleUnique": newSystemDBRepresentation["systemShortName"],
+                        "entreesTableCorrespondance": rolemapper}
                     try:
-                        requests.post(spConfigUrl+"/systemes/",headers=headers,json=bodySystem)
-                        getResponseSystem = requests.get(spConfigUrl+"/systemes/"+newSystemDBRepresentation["systemShortName"], headers=headers)
+                        requests.post(
+                            spConfigUrl + "/systemes/",
+                            headers=headers,
+                            json=bodySystem)
+                        getResponseSystem = requests.get(
+                            spConfigUrl + "/systemes/" + newSystemDBRepresentation["systemShortName"],
+                            headers=headers)
                         if getResponseSystem.status_code == 200:
                             dataResponseSystem = getResponseSystem.json()
-                            requests.put(spConfigUrl+"/systemes/"+dataResponseSystem["cleUnique"]+"/adressesApprovisionnement",headers=headers,json=bodyAdressesApprovisionnement)
-                            requests.put(spConfigUrl+"/systemes/"+dataResponseSystem["cleUnique"]+"/tableCorrespondance",headers=headers,json=bodyTableCorrespondance)
+                            requests.put(
+                                spConfigUrl + "/systemes/" + dataResponseSystem["cleUnique"] + "/adressesApprovisionnement",
+                                headers=headers,
+                                json=bodyAdrAppr)
+                            requests.put(
+                                spConfigUrl + "/systemes/" + dataResponseSystem["cleUnique"] + "/tableCorrespondance",
+                                headers=headers,
+                                json=bodyTableCorrespondance)
                             # Add or update pilotRole
                             messagepilotRole = None
                             if "pilotRoles" in params and params['pilotRoles'] is not None:
-                                messagepilotRole = addpilotRoles(newSystemDBRepresentation,spConfigUrl,clientSvcBaseUrl,roleSvcBaseUrl,headers,params,realm=realm)
-                            getResponsetableCorrespondance = requests.get(spConfigUrl+"/systemes/"+dataResponseSystem["cleUnique"]+"/tableCorrespondance", headers=headers)
+                                messagepilotRole = addpilotRoles(
+                                    newSystemDBRepresentation,
+                                    spConfigUrl,
+                                    clientSvcBaseUrl,
+                                    roleSvcBaseUrl,
+                                    headers,
+                                    params,
+                                    realm=realm)
+                            getResponsetableCorrespondance = requests.get(
+                                spConfigUrl + "/systemes/" + dataResponseSystem["cleUnique"] + "/tableCorrespondance",
+                                headers=headers)
                             dataResponsetableCorrespondance = getResponsetableCorrespondance.json()
-                            getResponseadressesApprovisionnement = requests.get(spConfigUrl+"/systemes/"+dataResponseSystem["cleUnique"]+"/adressesApprovisionnement", headers=headers)
+                            getResponseadressesApprovisionnement = requests.get(
+                                spConfigUrl + "/systemes/" + dataResponseSystem["cleUnique"] + "/adressesApprovisionnement",
+                                headers=headers)
                             dataResponseadressesApprovisionnement = getResponseadressesApprovisionnement.json()
                             changed = True
                             fact = dict(
-                                systemes = dataResponseSystem,
-                                entreesAdressesApprovisionnement = dataResponseadressesApprovisionnement,
-                                entreesTableCorrespondance = dataResponsetableCorrespondance,
-                                integrityCheckComposants = spIntegrityCheckComposants(spConfigUrl,clientSvcBaseUrl,headers,dataResponseSystem["cleUnique"]),
-                                pilotRole = messagepilotRole
-                                )
+                                systemes=dataResponseSystem,
+                                entreesAdressesApprovisionnement=dataResponseadressesApprovisionnement,
+                                entreesTableCorrespondance=dataResponsetableCorrespondance,
+                                integrityCheckComposants=spIntegrityCheckComposants(
+                                    spConfigUrl,
+                                    clientSvcBaseUrl,
+                                    headers,
+                                    dataResponseSystem["cleUnique"]),
+                                pilotRole=messagepilotRole)
                             result = dict(
-                                ansible_facts = fact,
-                                rc = 0,
-                                changed = changed
-                                )
+                                ansible_facts=fact,
+                                rc=0,
+                                changed=changed)
                     except requests.exceptions.RequestException, e:
                         fact = dict(
-                            systemes = newSystemDBRepresentation)
+                            systemes=newSystemDBRepresentation)
                         result = dict(
-                            ansible_facts= fact,
-                            stderr   = 'Update systemes: ' + newSystemDBRepresentation["systemName"] + ' erreur: ' + str(e),
-                            rc       = 1,
-                            changed  = changed
-                            )
+                            ansible_facts=fact,
+                            stderr='Update systemes: ' + newSystemDBRepresentation["systemName"] + ' erreur: ' + str(e),
+                            rc=1,
+                            changed=changed)
                     except ValueError, e:
                         fact = dict(
-                            systemes = newSystemDBRepresentation)
+                            systemes=newSystemDBRepresentation)
                         result = dict(
-                            ansible_facts= fact,
-                            stderr   = 'Update systemes: ' + newSystemDBRepresentation["systemName"] + ' erreur: ' + str(e),
-                            rc       = 1,
-                            changed  = changed
-                            )
+                            ansible_facts=fact,
+                            stderr='Update systemes: ' + newSystemDBRepresentation["systemName"] + ' erreur: ' + str(e),
+                            rc=1,
+                            changed=changed)
             except requests.exceptions.RequestException, e:
                 fact = dict(
-                    systemes = newSystemDBRepresentation)
+                    systemes=newSystemDBRepresentation)
                 result = dict(
-                    ansible_facts= fact,
-                    stderr   = 'Get systeme: ' + newSystemDBRepresentation["systemName"] + ' erreur: ' + str(e),
-                    rc       = 1,
-                    changed  = changed
-                    )
+                    ansible_facts=fact,
+                    stderr='Get systeme: ' + newSystemDBRepresentation["systemName"] + ' erreur: ' + str(e),
+                    rc=1,
+                    changed=changed)
             except ValueError, e:
                 fact = dict(
-                    systemes = newSystemDBRepresentation)
+                    systemes=newSystemDBRepresentation)
                 result = dict(
-                    ansible_facts= fact,
-                    stderr   = 'Get systeme: ' + newSystemDBRepresentation["systemName"] + ' erreur: ' + str(e),
-                    rc       = 1,
-                    changed  = changed
-                    )
+                    ansible_facts=fact,
+                    stderr='Get systeme: ' + newSystemDBRepresentation["systemName"] + ' erreur: ' + str(e),
+                    rc=1,
+                    changed=changed)
         # Si force est a no modifier le systeme s'il change
         else:
             try:
-                getResponse = requests.get(spConfigUrl+"/systemes/"+newSystemDBRepresentation["systemShortName"], headers=headers)
-                if getResponse.status_code == 200:#systeme exist
+                getResponse = requests.get(
+                    spConfigUrl + "/systemes/" + newSystemDBRepresentation["systemShortName"],
+                    headers=headers)
+                if getResponse.status_code == 200:  # systeme exist
                     dataResponse = getResponse.json()
                     adresse = []
                     rolemapper = []
                     if "sadu_principal" in params and params['sadu_principal'] is not None:
-                        adresseP={
+                        adresseP = {
                             "principale": True,
-                            "adresse": newSystemDBRepresentation["sadu_principal"]
-                        }
+                            "adresse": newSystemDBRepresentation["sadu_principal"]}
                         adresse.append(adresseP)
                         for sadu_secondary in newSystemDBRepresentation["sadu_secondary"]:
                             if "sadu_secondary" in params and params['sadu_secondary'] is not None:
-                                adresseS={
+                                adresseS = {
                                     "principale": False,
-                                    "adresse": sadu_secondary["adresse"]
-                                }
+                                    "adresse": sadu_secondary["adresse"]}
                                 adresse.append(adresseS)
-                        
+
                         for clientRoles_mapper in newSystemDBRepresentation["clientRoles_mapper"]:
                             if "sadu_secondary" in params and params['sadu_secondary'] is not None:
-                                role={
+                                role = {
                                     "roleKeycloak": clientRoles_mapper["spClientRole"],
-                                    "roleSysteme": clientRoles_mapper["eq_sadu_role"]
-                                }
+                                    "roleSysteme": clientRoles_mapper["eq_sadu_role"]}
                                 rolemapper.append(role)
                     client = []
                     keycloakClients = []
                     for keycloakClient in dataResponse["composants"]:
-                            keycloakClients.append(keycloakClient)
+                        keycloakClients.append(keycloakClient)
 
                     for newKeycloakClient in newSystemDBRepresentation["clients"]:
-                            keycloakClientFound = False
-                            for existingKeycloakClient in keycloakClients:
-                                if newKeycloakClient['clientId'] == existingKeycloakClient['clientId']:
-                                    keycloakClientFound = True
-                            if not keycloakClientFound:
-                                keycloakClients.append(newKeycloakClient)
-                    
+                        keycloakClientFound = False
+                        for existingKeycloakClient in keycloakClients:
+                            if newKeycloakClient['clientId'] == existingKeycloakClient['clientId']:
+                                keycloakClientFound = True
+                        if not keycloakClientFound:
+                            keycloakClients.append(newKeycloakClient)
+
                     for existRoles in keycloakClient["roles"]:
                         roleFound = False
                         for newRoles in newSystemDBRepresentation["clientRoles"]:
                             if existRoles['nom'] == newRoles['spClientRoleId']:
                                 roleFound = True
                         if not roleFound:
-                            roleS={"spClientRoleId": existRoles['nom'],"spClientRoleName": existRoles['nom'],"spClientRoleDescription": existRoles['description']}
+                            roleS = {
+                                "spClientRoleId": existRoles['nom'],
+                                "spClientRoleName": existRoles['nom'],
+                                "spClientRoleDescription": existRoles['description']}
                             newSystemDBRepresentation["clientRoles"].append(roleS)
 
-                    
                     for clientKeycloak in keycloakClients:
-                        getResponseKeycloak = requests.get(clientSvcBaseUrl, headers=headers, params={'clientId': clientKeycloak["clientId"]})
-                        clientS={}
+                        getResponseKeycloak = requests.get(
+                            clientSvcBaseUrl,
+                            headers=headers,
+                            params={'clientId': clientKeycloak["clientId"]})
+                        clientS = {}
                         if getResponseKeycloak.status_code == 200:
                             dataResponseKeycloak = getResponseKeycloak.json()
                             if dataResponseKeycloak:
                                 for dataKeycloak in dataResponseKeycloak:
                                     if dataKeycloak["clientId"] == clientKeycloak["clientId"]:
                                         role = []
-                                        getResponseKeycloakClientRoles = requests.get(clientSvcBaseUrl+dataKeycloak["id"]+"/roles", headers=headers)
+                                        getResponseKeycloakClientRoles = requests.get(
+                                            clientSvcBaseUrl + dataKeycloak["id"] + "/roles",
+                                            headers=headers)
                                         if getResponseKeycloakClientRoles.status_code == 200:
                                             dataResponseroles = getResponseKeycloakClientRoles.json()
                                             for dataKeycloakrole in dataResponseroles:
                                                 for clientRoles in newSystemDBRepresentation["clientRoles"]:
                                                     if dataKeycloakrole["name"] == clientRoles["spClientRoleId"]:
-                                                        roleS={"uuidRoleKeycloak": dataKeycloakrole["id"],"nom": clientRoles["spClientRoleId"],"description": clientRoles["spClientRoleDescription"]}
+                                                        roleS = {
+                                                            "uuidRoleKeycloak": dataKeycloakrole["id"],
+                                                            "nom": clientRoles["spClientRoleId"],
+                                                            "description": clientRoles["spClientRoleDescription"]}
                                                         role.append(roleS)
-                                        clientS={
+                                        clientS = {
                                             "nom": dataKeycloak["name"],
                                             "uuidKeycloak": dataKeycloak["id"],
                                             "clientId": dataKeycloak["clientId"],
                                             "description": dataKeycloak["description"],
-                                            "roles": role
-                                        }
+                                            "roles": role}
                                 client.append(clientS)
                     bodySystem = {
-                            "nom": newSystemDBRepresentation["systemName"],
-                            "cleUnique": newSystemDBRepresentation["systemShortName"],
-                            "composants": client
-                        }
-                    bodyAdressesApprovisionnement = {
-                            "cleUnique": newSystemDBRepresentation["systemShortName"],
-                            "entreesAdressesApprovisionnement": adresse
-                        }
+                        "nom": newSystemDBRepresentation["systemName"],
+                        "cleUnique": newSystemDBRepresentation["systemShortName"],
+                        "composants": client}
+                    bodyAdrAppr = {
+                        "cleUnique": newSystemDBRepresentation["systemShortName"],
+                        "entreesAdressesApprovisionnement": adresse}
                     bodyTableCorrespondance = {
-                            "cleUnique": newSystemDBRepresentation["systemShortName"],
-                            "entreesTableCorrespondance": rolemapper
-                        }
-                    getResponsetableCorrespondance = requests.get(spConfigUrl+"/systemes/"+dataResponse["cleUnique"]+"/tableCorrespondance", headers=headers)
+                        "cleUnique": newSystemDBRepresentation["systemShortName"],
+                        "entreesTableCorrespondance": rolemapper}
+                    getResponsetableCorrespondance = requests.get(
+                        spConfigUrl + "/systemes/" + dataResponse["cleUnique"] + "/tableCorrespondance",
+                        headers=headers)
                     dataResponsetableCorrespondance = getResponsetableCorrespondance.json()
-                    getResponseadressesApprovisionnement = requests.get(spConfigUrl+"/systemes/"+dataResponse["cleUnique"]+"/adressesApprovisionnement", headers=headers)
+                    getResponseadressesApprovisionnement = requests.get(
+                        spConfigUrl + "/systemes/" + dataResponse["cleUnique"] + "/adressesApprovisionnement",
+                        headers=headers)
                     dataResponseadressesApprovisionnement = getResponseadressesApprovisionnement.json()
-                    if bodySystem["composants"] == dataResponse["composants"] and bodyAdressesApprovisionnement["entreesAdressesApprovisionnement"] == dataResponseadressesApprovisionnement["entreesAdressesApprovisionnement"] and bodyTableCorrespondance["entreesTableCorrespondance"] == dataResponsetableCorrespondance["entreesTableCorrespondance"]:
+                    if (bodySystem["composants"] == dataResponse["composants"] and
+                            bodyAdrAppr["entreesAdressesApprovisionnement"] == dataResponseadressesApprovisionnement["entreesAdressesApprovisionnement"] and
+                            bodyTableCorrespondance["entreesTableCorrespondance"] == dataResponsetableCorrespondance["entreesTableCorrespondance"]):
                         changed = False
                         fact = dict(
-                            systemes = dataResponse,
-                            entreesAdressesApprovisionnement = dataResponseadressesApprovisionnement,
-                            entreesTableCorrespondance = dataResponsetableCorrespondance,
-                            integrityCheckComposants = spIntegrityCheckComposants(spConfigUrl,clientSvcBaseUrl,headers,dataResponse["cleUnique"])
-                            )
+                            systemes=dataResponse,
+                            entreesAdressesApprovisionnement=dataResponseadressesApprovisionnement,
+                            entreesTableCorrespondance=dataResponsetableCorrespondance,
+                            integrityCheckComposants=spIntegrityCheckComposants(
+                                spConfigUrl,
+                                clientSvcBaseUrl,
+                                headers,
+                                dataResponse["cleUnique"]))
                         result = dict(
-                            ansible_facts = fact,
-                            rc = 0,
-                            changed = changed
-                            )
+                            ansible_facts=fact,
+                            rc=0,
+                            changed=changed)
                     else:
                         try:
-                            requests.put(spConfigUrl+"/systemes/"+dataResponse["cleUnique"], headers=headers,json=bodySystem)
-                            getResponsesystem = requests.get(spConfigUrl+"/systemes/"+dataResponse["cleUnique"], headers=headers)
+                            requests.put(
+                                spConfigUrl + "/systemes/" + dataResponse["cleUnique"],
+                                headers=headers,
+                                json=bodySystem)
+                            getResponsesystem = requests.get(
+                                spConfigUrl + "/systemes/" + dataResponse["cleUnique"],
+                                headers=headers)
                             dataResponsesystem = getResponsesystem.json()
-                            requests.put(spConfigUrl+"/systemes/"+dataResponsesystem["cleUnique"]+"/adressesApprovisionnement",headers=headers,json=bodyAdressesApprovisionnement)
-                            requests.put(spConfigUrl+"/systemes/"+dataResponsesystem["cleUnique"]+"/tableCorrespondance",headers=headers,json=bodyTableCorrespondance)
+                            requests.put(
+                                spConfigUrl + "/systemes/" + dataResponsesystem["cleUnique"] + "/adressesApprovisionnement",
+                                headers=headers,
+                                json=bodyAdrAppr)
+                            requests.put(
+                                spConfigUrl + "/systemes/" + dataResponsesystem["cleUnique"] + "/tableCorrespondance",
+                                headers=headers,
+                                json=bodyTableCorrespondance)
                             # Add or update pilotRole
                             messagepilotRole = None
                             if "pilotRoles" in params and params['pilotRoles'] is not None:
-                                messagepilotRole = addpilotRoles(newSystemDBRepresentation,spConfigUrl,clientSvcBaseUrl,roleSvcBaseUrl,headers,params,realm=realm)
-                            getResponsetableCorrespondance = requests.get(spConfigUrl+"/systemes/"+dataResponsesystem["cleUnique"]+"/tableCorrespondance", headers=headers)
+                                messagepilotRole = addpilotRoles(
+                                    newSystemDBRepresentation,
+                                    spConfigUrl,
+                                    clientSvcBaseUrl,
+                                    roleSvcBaseUrl,
+                                    headers,
+                                    params,
+                                    realm=realm)
+                            getResponsetableCorrespondance = requests.get(
+                                spConfigUrl + "/systemes/" + dataResponsesystem["cleUnique"] + "/tableCorrespondance",
+                                headers=headers)
                             dataResponsetableCorrespondance = getResponsetableCorrespondance.json()
-                            getResponseadressesApprovisionnement = requests.get(spConfigUrl+"/systemes/"+dataResponsesystem["cleUnique"]+"/adressesApprovisionnement", headers=headers)
+                            getResponseadressesApprovisionnement = requests.get(
+                                spConfigUrl + "/systemes/" + dataResponsesystem["cleUnique"] + "/adressesApprovisionnement",
+                                headers=headers)
                             dataResponseadressesApprovisionnement = getResponseadressesApprovisionnement.json()
                             changed = True
                             fact = dict(
-                                systemes = dataResponsesystem,
-                                entreesAdressesApprovisionnement = dataResponseadressesApprovisionnement,
-                                entreesTableCorrespondance = dataResponsetableCorrespondance,
-                                integrityCheckComposants = spIntegrityCheckComposants(spConfigUrl,clientSvcBaseUrl,headers,dataResponsesystem["cleUnique"]),
-                                pilotRole = messagepilotRole
-                                )
+                                systemes=dataResponsesystem,
+                                entreesAdressesApprovisionnement=dataResponseadressesApprovisionnement,
+                                entreesTableCorrespondance=dataResponsetableCorrespondance,
+                                integrityCheckComposants=spIntegrityCheckComposants(
+                                    spConfigUrl,
+                                    clientSvcBaseUrl,
+                                    headers,
+                                    dataResponsesystem["cleUnique"]),
+                                pilotRole=messagepilotRole)
                             result = dict(
-                                ansible_facts = fact,
-                                rc = 0,
-                                changed = changed
-                                )
+                                ansible_facts=fact,
+                                rc=0,
+                                changed=changed)
                         except requests.exceptions.RequestException, e:
                             fact = dict(
-                                systemes = newSystemDBRepresentation)
+                                systemes=newSystemDBRepresentation)
                             result = dict(
-                                ansible_facts= fact,
-                                stderr   = 'Update systemes: ' + newSystemDBRepresentation["systemName"] + ' erreur: ' + str(e),
-                                rc       = 1,
-                                changed  = changed
-                                )
+                                ansible_facts=fact,
+                                stderr='Update systemes: ' + newSystemDBRepresentation["systemName"] + ' erreur: ' + str(e),
+                                rc=1,
+                                changed=changed)
                         except ValueError, e:
                             fact = dict(
-                                systemes = newSystemDBRepresentation)
+                                systemes=newSystemDBRepresentation)
                             result = dict(
-                                ansible_facts= fact,
-                                stderr   = 'Update systemes: ' + newSystemDBRepresentation["systemName"] + ' erreur: ' + str(e),
-                                rc       = 1,
-                                changed  = changed
-                                )
-                elif getResponse.status_code == 404: #systeme n'existe pas, le creer
+                                ansible_facts=fact,
+                                stderr='Update systemes: ' + newSystemDBRepresentation["systemName"] + ' erreur: ' + str(e),
+                                rc=1,
+                                changed=changed)
+                elif getResponse.status_code == 404:  # systeme n'existe pas, le creer
                     adresse = []
                     rolemapper = []
                     if "sadu_principal" in params and params['sadu_principal'] is not None:
-                        adresseP={
+                        adresseP = {
                             "principale": True,
-                            "adresse": newSystemDBRepresentation["sadu_principal"]
-                        }
+                            "adresse": newSystemDBRepresentation["sadu_principal"]}
                         adresse.append(adresseP)
                         for sadu_secondary in newSystemDBRepresentation["sadu_secondary"]:
                             if "sadu_secondary" in params and params['sadu_secondary'] is not None:
-                                adresseS={
+                                adresseS = {
                                     "principale": False,
-                                    "adresse": sadu_secondary["adresse"]
-                                }
+                                    "adresse": sadu_secondary["adresse"]}
                                 adresse.append(adresseS)
-                        
+
                         for clientRoles_mapper in newSystemDBRepresentation["clientRoles_mapper"]:
                             if "sadu_secondary" in params and params['sadu_secondary'] is not None:
-                                role={
+                                role = {
                                     "roleKeycloak": clientRoles_mapper["spClientRole"],
-                                    "roleSysteme": clientRoles_mapper["eq_sadu_role"]
-                                }
+                                    "roleSysteme": clientRoles_mapper["eq_sadu_role"]}
                                 rolemapper.append(role)
                     client = []
                     for clientKeycloak in newSystemDBRepresentation["clients"]:
-                        getResponseKeycloak = requests.get(clientSvcBaseUrl, headers=headers, params={'clientId': clientKeycloak["clientId"]})
-                        clientS={}
+                        getResponseKeycloak = requests.get(
+                            clientSvcBaseUrl,
+                            headers=headers,
+                            params={'clientId': clientKeycloak["clientId"]})
+                        clientS = {}
                         if getResponseKeycloak.status_code == 200:
                             dataResponseKeycloak = getResponseKeycloak.json()
                             if dataResponseKeycloak:
                                 for dataKeycloak in dataResponseKeycloak:
                                     if dataKeycloak["clientId"] == clientKeycloak["clientId"]:
                                         role = []
-                                        getResponseKeycloakClientRoles = requests.get(clientSvcBaseUrl+dataKeycloak["id"]+"/roles", headers=headers)
+                                        getResponseKeycloakClientRoles = requests.get(
+                                            clientSvcBaseUrl + dataKeycloak["id"] + "/roles",
+                                            headers=headers)
                                         if getResponseKeycloakClientRoles.status_code == 200:
                                             dataResponseroles = getResponseKeycloakClientRoles.json()
                                             for dataKeycloakrole in dataResponseroles:
                                                 for clientRoles in newSystemDBRepresentation["clientRoles"]:
                                                     if dataKeycloakrole["name"] == clientRoles["spClientRoleId"]:
-                                                        roleS={"uuidRoleKeycloak": dataKeycloakrole["id"],"nom": clientRoles["spClientRoleId"],"description": clientRoles["spClientRoleDescription"]}
+                                                        roleS = {
+                                                            "uuidRoleKeycloak": dataKeycloakrole["id"],
+                                                            "nom": clientRoles["spClientRoleId"],
+                                                            "description": clientRoles["spClientRoleDescription"]}
                                                         role.append(roleS)
-                                        clientS={
+                                        clientS = {
                                             "nom": dataKeycloak["name"],
                                             "uuidKeycloak": dataKeycloak["id"],
                                             "clientId": dataKeycloak["clientId"],
                                             "description": dataKeycloak["description"],
-                                            "roles": role
-                                        }
+                                            "roles": role}
                                 client.append(clientS)
 
                     bodySystem = {
-                            "nom": newSystemDBRepresentation["systemName"],
-                            "cleUnique": newSystemDBRepresentation["systemShortName"],
-                            "composants": client
-                        }
-                    bodyAdressesApprovisionnement = {
-                            "cleUnique": newSystemDBRepresentation["systemShortName"],
-                            "entreesAdressesApprovisionnement": adresse
-                        }
+                        "nom": newSystemDBRepresentation["systemName"],
+                        "cleUnique": newSystemDBRepresentation["systemShortName"],
+                        "composants": client}
+                    bodyAdrAppr = {
+                        "cleUnique": newSystemDBRepresentation["systemShortName"],
+                        "entreesAdressesApprovisionnement": adresse}
                     bodyTableCorrespondance = {
-                            "cleUnique": newSystemDBRepresentation["systemShortName"],
-                            "entreesTableCorrespondance": rolemapper
-                        }
+                        "cleUnique": newSystemDBRepresentation["systemShortName"],
+                        "entreesTableCorrespondance": rolemapper}
                     try:
-                        requests.post(spConfigUrl+"/systemes/",headers=headers,json=bodySystem)
-                        getResponseSystem = requests.get(spConfigUrl+"/systemes/"+newSystemDBRepresentation["systemShortName"], headers=headers)
+                        requests.post(
+                            spConfigUrl + "/systemes/",
+                            headers=headers,
+                            json=bodySystem)
+                        getResponseSystem = requests.get(
+                            spConfigUrl + "/systemes/" + newSystemDBRepresentation["systemShortName"],
+                            headers=headers)
                         if getResponseSystem.status_code == 200:
                             dataResponseSystem = getResponseSystem.json()
-                            requests.put(spConfigUrl+"/systemes/"+dataResponseSystem["cleUnique"]+"/adressesApprovisionnement",headers=headers,json=bodyAdressesApprovisionnement)
-                            requests.put(spConfigUrl+"/systemes/"+dataResponseSystem["cleUnique"]+"/tableCorrespondance",headers=headers,json=bodyTableCorrespondance)
+                            requests.put(
+                                spConfigUrl + "/systemes/" + dataResponseSystem["cleUnique"] + "/adressesApprovisionnement",
+                                headers=headers,
+                                json=bodyAdrAppr)
+                            requests.put(
+                                spConfigUrl + "/systemes/" + dataResponseSystem["cleUnique"] + "/tableCorrespondance",
+                                headers=headers,
+                                json=bodyTableCorrespondance)
                             # Add or update pilotRole
                             messagepilotRole = None
                             if "pilotRoles" in params and params['pilotRoles'] is not None:
-                                messagepilotRole = addpilotRoles(newSystemDBRepresentation,spConfigUrl,clientSvcBaseUrl,roleSvcBaseUrl,headers,params,realm=realm)
-                            getResponsetableCorrespondance = requests.get(spConfigUrl+"/systemes/"+dataResponseSystem["cleUnique"]+"/tableCorrespondance", headers=headers)
+                                messagepilotRole = addpilotRoles(
+                                    newSystemDBRepresentation,
+                                    spConfigUrl,
+                                    clientSvcBaseUrl,
+                                    roleSvcBaseUrl,
+                                    headers,
+                                    params,
+                                    realm=realm)
+                            getResponsetableCorrespondance = requests.get(
+                                spConfigUrl + "/systemes/" + dataResponseSystem["cleUnique"] + "/tableCorrespondance",
+                                headers=headers)
                             dataResponsetableCorrespondance = getResponsetableCorrespondance.json()
-                            getResponseadressesApprovisionnement = requests.get(spConfigUrl+"/systemes/"+dataResponseSystem["cleUnique"]+"/adressesApprovisionnement", headers=headers)
+                            getResponseadressesApprovisionnement = requests.get(
+                                spConfigUrl + "/systemes/" + dataResponseSystem["cleUnique"] + "/adressesApprovisionnement",
+                                headers=headers)
                             dataResponseadressesApprovisionnement = getResponseadressesApprovisionnement.json()
                             changed = True
                             fact = dict(
-                                systemes = dataResponseSystem,
-                                entreesAdressesApprovisionnement = dataResponseadressesApprovisionnement,
-                                entreesTableCorrespondance = dataResponsetableCorrespondance,
-                                integrityCheckComposants = spIntegrityCheckComposants(spConfigUrl,clientSvcBaseUrl,headers,newSystemDBRepresentation["systemShortName"]),
-                                pilotRole = messagepilotRole
-                                )
+                                systemes=dataResponseSystem,
+                                entreesAdressesApprovisionnement=dataResponseadressesApprovisionnement,
+                                entreesTableCorrespondance=dataResponsetableCorrespondance,
+                                integrityCheckComposants=spIntegrityCheckComposants(
+                                    spConfigUrl,
+                                    clientSvcBaseUrl,
+                                    headers,
+                                    newSystemDBRepresentation["systemShortName"]),
+                                pilotRole=messagepilotRole)
                             result = dict(
-                                ansible_facts = fact,
-                                rc = 0,
-                                changed = changed
-                                )
+                                ansible_facts=fact,
+                                rc=0,
+                                changed=changed)
                     except requests.exceptions.RequestException, e:
                         fact = dict(
-                            systemes = newSystemDBRepresentation)
+                            systemes=newSystemDBRepresentation)
                         result = dict(
-                            ansible_facts= fact,
-                            stderr   = 'Update systemes: ' + newSystemDBRepresentation["systemName"] + ' erreur: ' + str(e),
-                            rc       = 1,
-                            changed  = changed
-                            )
+                            ansible_facts=fact,
+                            stderr='Update systemes: ' + newSystemDBRepresentation["systemName"] + ' erreur: ' + str(e),
+                            rc=1,
+                            changed=changed)
                     except ValueError, e:
                         fact = dict(
-                            systemes = newSystemDBRepresentation)
+                            systemes=newSystemDBRepresentation)
                         result = dict(
-                            ansible_facts= fact,
-                            stderr   = 'Update systemes: ' + newSystemDBRepresentation["systemName"] + ' erreur: ' + str(e),
-                            rc       = 1,
-                            changed  = changed
-                            )
+                            ansible_facts=fact,
+                            stderr='Update systemes: ' + newSystemDBRepresentation["systemName"] + ' erreur: ' + str(e),
+                            rc=1,
+                            changed=changed)
             except requests.exceptions.RequestException, e:
                 fact = dict(
-                    systemes = newSystemDBRepresentation)
+                    systemes=newSystemDBRepresentation)
                 result = dict(
-                    ansible_facts= fact,
-                    stderr   = 'Get systeme: ' + newSystemDBRepresentation["systemName"] + ' erreur: ' + str(e),
-                    rc       = 1,
-                    changed  = changed
-                    )
+                    ansible_facts=fact,
+                    stderr='Get systeme: ' + newSystemDBRepresentation["systemName"] + ' erreur: ' + str(e),
+                    rc=1,
+                    changed=changed)
             except ValueError, e:
                 fact = dict(
-                    systemes = newSystemDBRepresentation)
+                    systemes=newSystemDBRepresentation)
                 result = dict(
-                    ansible_facts= fact,
-                    stderr   = 'Get systeme: ' + newSystemDBRepresentation["systemName"] + ' erreur: ' + str(e),
-                    rc       = 1,
-                    changed  = changed
-                    )
-    elif state == 'absent':# Supprimer le systeme
+                    ansible_facts=fact,
+                    stderr='Get systeme: ' + newSystemDBRepresentation["systemName"] + ' erreur: ' + str(e),
+                    rc=1,
+                    changed=changed)
+    elif state == 'absent':  # Supprimer le systeme
         try:
-            getResponse = requests.get(spConfigUrl+"/systemes/"+newSystemDBRepresentation["systemShortName"], headers=headers)
+            getResponse = requests.get(
+                spConfigUrl + "/systemes/" + newSystemDBRepresentation["systemShortName"],
+                headers=headers)
             if getResponse.status_code == 200:
                 dataResponse = getResponse.json()
                 try:
-                    deleteResponse = requests.delete(spConfigUrl+"/systemes/"+newSystemDBRepresentation["systemShortName"])
+                    requests.delete(
+                        spConfigUrl + "/systemes/" + newSystemDBRepresentation["systemShortName"])
                     changed = True
                     result = dict(
-                            stdout   = 'deleted',
-                            rc       = 0,
-                            changed  = changed
-                        )
+                        stdout='deleted',
+                        rc=0,
+                        changed=changed)
                 except requests.exceptions.RequestException, e:
                     fact = dict(
-                        systemes = newSystemDBRepresentation)
+                        systemes=newSystemDBRepresentation)
                     result = dict(
-                        ansible_facts= fact,
-                        stderr   = 'Delete system: ' + newSystemDBRepresentation["systemName"] + ' erreur: ' + str(e),
-                        rc       = 1,
-                        changed  = changed
-                        )
+                        ansible_facts=fact,
+                        stderr='Delete system: ' + newSystemDBRepresentation["systemName"] + ' erreur: ' + str(e),
+                        rc=1,
+                        changed=changed)
                 except ValueError, e:
                     fact = dict(
-                        clientSx5 = dataResponse)
+                        clientSx5=dataResponse)
                     result = dict(
-                        ansible_facts = fact,
-                        stderr   = 'Delete system: ' + newSystemDBRepresentation["systemName"] + ' erreur: ' + str(e),
-                        rc       = 1,
-                        changed  = changed
-                        )
+                        ansible_facts=fact,
+                        stderr='Delete system: ' + newSystemDBRepresentation["systemName"] + ' erreur: ' + str(e),
+                        rc=1,
+                        changed=changed)
             else:
                 result = dict(
-                        stdout   = 'system or realm not fond',
-                        rc       = 0,
-                        changed  = changed
-                    )
+                    stdout='system or realm not fond',
+                    rc=0,
+                    changed=changed)
         except Exception, e:
             result = dict(
-                stderr   = 'Client get in state = absent : ' + str(e),
-                rc       = 1,
-                changed  = changed
-                )
+                stderr='Client get in state = absent : ' + str(e),
+                rc=1,
+                changed=changed)
     return result
+
 
 def createOrUpdateClientRoles(pilotClientRoles, clientSvcBaseUrl, roleSvcBaseUrl, clientRepresentation, headers):
     changed = False
-    
+
     # Manage the roles
     if pilotClientRoles is not None:
         for newClientRole in pilotClientRoles:
@@ -921,11 +1041,15 @@ def createOrUpdateClientRoles(pilotClientRoles, clientSvcBaseUrl, roleSvcBaseUrl
                 newComposites = newClientRole['composites']
                 for newComposite in newComposites:
                     if "id" in newComposite and newComposite["id"] is not None:
-                        getResponse=requests.get(clientSvcBaseUrl, headers=headers)
+                        getResponse = requests.get(
+                            clientSvcBaseUrl,
+                            headers=headers)
                         keycloakClients = getResponse.json()
                         for keycloakClient in keycloakClients:
                             if keycloakClient['clientId'] == newComposite["id"]:
-                                getResponse=requests.get(clientSvcBaseUrl + keycloakClient['id'] + '/roles', headers=headers)
+                                getResponse = requests.get(
+                                    clientSvcBaseUrl + keycloakClient['id'] + '/roles',
+                                    headers=headers)
                                 roles = getResponse.json()
                                 for role in roles:
                                     if role["name"] == newComposite["name"]:
@@ -933,16 +1057,20 @@ def createOrUpdateClientRoles(pilotClientRoles, clientSvcBaseUrl, roleSvcBaseUrl
                                         newComposite['clientRole'] = True
                                         break
                     else:
-                        getResponse=requests.get(roleSvcBaseUrl, headers=headers)
+                        getResponse = requests.get(
+                            roleSvcBaseUrl,
+                            headers=headers)
                         realmRoles = getResponse.json()
                         for realmRole in realmRoles:
                             if realmRole["name"] == newComposite["name"]:
                                 newComposite['id'] = realmRole['id']
                                 newComposite['clientRole'] = False
-                                break;
-                
+                                break
+
             clientRoleFound = False
-            if "clientRoles" in clientRepresentation and clientRepresentation["clientRoles"] is not None and len(clientRepresentation["clientRoles"]) > 0:
+            if ("clientRoles" in clientRepresentation and
+                    clientRepresentation["clientRoles"] is not None and
+                    len(clientRepresentation["clientRoles"]) > 0):
                 clientRoles = clientRepresentation["clientRoles"]
                 # Check if role to be created already exist for the client
                 for clientRole in clientRoles:
@@ -962,7 +1090,7 @@ def createOrUpdateClientRoles(pilotClientRoles, clientSvcBaseUrl, roleSvcBaseUrl
                             for newComposite in newClientRole['composites']:
                                 compositeFound = False
                                 for existingComposite in clientRole['composites']:
-                                    if isDictEquals(newComposite,existingComposite):
+                                    if isDictEquals(newComposite, existingComposite):
                                         compositeFound = True
                                         break
                                 if not compositeFound:
@@ -980,14 +1108,22 @@ def createOrUpdateClientRoles(pilotClientRoles, clientSvcBaseUrl, roleSvcBaseUrl
                 newRoleRepresentation["description"] = newClientRole['description'].decode("utf-8")
                 newRoleRepresentation["composite"] = newClientRole['composite'] if "composite" in newClientRole else False
                 newRoleRepresentation["clientRole"] = newClientRole['clientRole'] if "clientRole" in newClientRole else True
-                data=json.dumps(newRoleRepresentation)
+                data = json.dumps(newRoleRepresentation)
                 if clientRoleFound:
-                    requests.put(clientSvcBaseUrl + clientRepresentation['id'] + '/roles/' + newClientRole['name'], headers=headers, data=data)
+                    requests.put(
+                        clientSvcBaseUrl + clientRepresentation['id'] + '/roles/' + newClientRole['name'],
+                        headers=headers,
+                        data=data)
                 else:
-                    requests.post(clientSvcBaseUrl + clientRepresentation['id'] + '/roles', headers=headers, data=data)
+                    requests.post(
+                        clientSvcBaseUrl + clientRepresentation['id'] + '/roles',
+                        headers=headers,
+                        data=data)
                 changed = True
                 # Composites role
-                if 'composites' in newClientRole and newClientRole['composites'] is not None and len(newClientRole['composites']) > 0:
+                if ('composites' in newClientRole and
+                        newClientRole['composites'] is not None and
+                        len(newClientRole['composites']) > 0):
                     newComposites = newClientRole['composites']
                     if clientRoleFound and "composites" in clientRole:
                         rolesToDelete = []
@@ -995,29 +1131,49 @@ def createOrUpdateClientRoles(pilotClientRoles, clientSvcBaseUrl, roleSvcBaseUrl
                             tmprole = {}
                             tmprole['id'] = roleTodelete['id']
                             rolesToDelete.append(tmprole)
-                        data=json.dumps(rolesToDelete)
-                        requests.delete(clientSvcBaseUrl + clientRepresentation['id'] + '/roles/'+ newClientRole['name'] +'/composites', headers=headers, data=data)
-                    data=json.dumps(newClientRole["composites"])
-                    requests.post(clientSvcBaseUrl + clientRepresentation['id'] + '/roles/'+ newClientRole['name'] +'/composites', headers=headers, data=data)
+                        data = json.dumps(rolesToDelete)
+                        requests.delete(
+                            clientSvcBaseUrl + clientRepresentation['id'] + '/roles/' + newClientRole['name'] + '/composites',
+                            headers=headers,
+                            data=data)
+                    data = json.dumps(newClientRole["composites"])
+                    requests.post(
+                        clientSvcBaseUrl + clientRepresentation['id'] + '/roles/' + newClientRole['name'] + '/composites',
+                        headers=headers,
+                        data=data)
             elif changeNeeded and desiredState == "absent" and clientRoleFound:
-                requests.delete(clientSvcBaseUrl + clientRepresentation['id'] + '/roles/' + newClientRole['name'], headers=headers)
+                requests.delete(
+                    clientSvcBaseUrl + clientRepresentation['id'] + '/roles/' + newClientRole['name'],
+                    headers=headers)
                 changed = True
-    return changed        
-def addpilotRoles(newSystemDBRepresentation,spConfigUrl,clientSvcBaseUrl,roleSvcBaseUrl,headers,params,realm):
+    return changed
+
+
+def addpilotRoles(newSystemDBRepresentation, spConfigUrl, clientSvcBaseUrl, roleSvcBaseUrl, headers, params, realm):
     messagepilotRole = []
     for pilotRole in newSystemDBRepresentation["pilotRoles"]:
-        #set roles in Keycloak
-        getResponseHabilitationclients = requests.get(clientSvcBaseUrl, headers=headers, params={'clientId': pilotRole["habilitationClientId"]})
+        # set roles in Keycloak
+        getResponseHabilitationclients = requests.get(
+            clientSvcBaseUrl,
+            headers=headers,
+            params={'clientId': pilotRole["habilitationClientId"]})
         if getResponseHabilitationclients.status_code == 200 and len(getResponseHabilitationclients.json()) > 0:
             clientRepresentation = getResponseHabilitationclients.json()[0]
             # Create client roles
-            createOrUpdateClientRoles(pilotRole["roles"], clientSvcBaseUrl, roleSvcBaseUrl, clientRepresentation, headers)
+            createOrUpdateClientRoles(
+                pilotRole["roles"],
+                clientSvcBaseUrl,
+                roleSvcBaseUrl,
+                clientRepresentation,
+                headers)
             messageaddpilotRole = "add Systeme pilot roles to " + pilotRole["habilitationClientId"] + " success"
         else:
             messageaddpilotRole = "Client " + pilotRole["habilitationClientId"] + " not found in " + realm
-        
-        #set roles in SP_config_DB
-        getResponseSystemSP = requests.get(spConfigUrl+"/systemes/", headers=headers)
+
+        # set roles in SP_config_DB
+        getResponseSystemSP = requests.get(
+            spConfigUrl + "/systemes/",
+            headers=headers)
         dataResponseSystemSP = getResponseSystemSP.json()
         composantHabilitation = None
         for systemh in dataResponseSystemSP:
@@ -1027,18 +1183,21 @@ def addpilotRoles(newSystemDBRepresentation,spConfigUrl,clientSvcBaseUrl,roleSvc
                     systemHabilitation = systemh
                     composantHabilitation = composant
                     for prole in pilotRole["roles"]:
-                        proleEsiste=False
+                        proleEsiste = False
                         for roleh in composantHabilitation["roles"]:
-                            if prole["name"]==roleh["nom"]:
-                                proleEsiste=True
-                        if not proleEsiste :
-                            newcomposantrolesH.append({"spClientRoleId": prole["name"],"spClientRoleName": prole["name"],"spClientRoleDescription": prole["description"]})
+                            if prole["name"] == roleh["nom"]:
+                                proleEsiste = True
+                        if not proleEsiste:
+                            newcomposantrolesH.append({
+                                "spClientRoleId": prole["name"],
+                                "spClientRoleName": prole["name"],
+                                "spClientRoleDescription": prole["description"]})
                     obj_sp = {}
                     obj_sp["spUrl"] = params['spUrl']
                     obj_sp["spUsername"] = params["spUsername"]
                     obj_sp["spPassword"] = params["spPassword"]
                     obj_sp["spRealm"] = params["spRealm"]
-                    obj_sp["spConfigClient_id"] = params["spConfigClient_id"] 
+                    obj_sp["spConfigClient_id"] = params["spConfigClient_id"]
                     obj_sp["spConfigClient_secret"] = params["spConfigClient_secret"]
                     obj_sp["spConfigUrl"] = params["spConfigUrl"]
                     obj_sp["systemName"] = systemHabilitation["nom"]
@@ -1052,48 +1211,72 @@ def addpilotRoles(newSystemDBRepresentation,spConfigUrl,clientSvcBaseUrl,roleSvc
                     rolesH = {}
                     clientRolesH = []
                     for rolecomposantH in composantHabilitation["roles"]:
-                        rolesH={"spClientRoleId": rolecomposantH["nom"],"spClientRoleName": rolecomposantH["nom"],"spClientRoleDescription": rolecomposantH["description"]}
+                        rolesH = {
+                            "spClientRoleId": rolecomposantH["nom"],
+                            "spClientRoleName": rolecomposantH["nom"],
+                            "spClientRoleDescription": rolecomposantH["description"]}
                         clientRolesH.append(rolesH)
                     for newcomposantroleH in newcomposantrolesH:
                         clientRolesH.append(newcomposantroleH)
                     obj_sp["clientRoles"] = clientRolesH
-                    #if not (obj_sp["systemShortName"] == params["systemShortName"]):# test if is habilitation system
-                    results = system(obj_sp)
-        
-        msspilotRole = {"info": messageaddpilotRole} 
+                    # if not (obj_sp["systemShortName"] == params["systemShortName"]):# test if is habilitation system
+                    system(obj_sp)
+
+        msspilotRole = {"info": messageaddpilotRole}
         messagepilotRole.append(msspilotRole)
     return messagepilotRole
-def spIntegrityCheckComposants(spConfigUrl,clientSvcBaseUrl,headers,cleUnique):
+
+
+def spIntegrityCheckComposants(spConfigUrl, clientSvcBaseUrl, headers, cleUnique):
     updatedComposant = 0
-    spgetResponse = requests.get(spConfigUrl+"/systemes/"+cleUnique, headers=headers)
-    if spgetResponse.status_code == 200:#systeme existe
+    spgetResponse = requests.get(
+        spConfigUrl + "/systemes/" + cleUnique,
+        headers=headers)
+    if spgetResponse.status_code == 200:  # systeme existe
         spdataResponse = spgetResponse.json()
         client = []
         for composant in spdataResponse["composants"]:
-            getResponseKeycloak = requests.get(clientSvcBaseUrl, headers=headers, params={'clientId': composant["clientId"]})
-            clientS={}
+            getResponseKeycloak = requests.get(
+                clientSvcBaseUrl,
+                headers=headers,
+                params={'clientId': composant["clientId"]})
+            clientS = {}
             if getResponseKeycloak.status_code == 200:
                 dataResponseKeycloak = getResponseKeycloak.json()
                 for dataKeycloak in dataResponseKeycloak:
                     if composant["clientId"] == dataKeycloak["clientId"]:
                         updatedComposant = updatedComposant + 1
                         role = []
-                        getResponseKeycloakClientRoles = requests.get(clientSvcBaseUrl+dataKeycloak["id"]+"/roles", headers=headers)
+                        getResponseKeycloakClientRoles = requests.get(
+                            clientSvcBaseUrl + dataKeycloak["id"] + "/roles",
+                            headers=headers)
                         if getResponseKeycloakClientRoles.status_code == 200:
                             dataResponseroles = getResponseKeycloakClientRoles.json()
                             for dataKeycloakrole in dataResponseroles:
                                 for clientRoles in composant["roles"]:
                                     if dataKeycloakrole["name"] == clientRoles["nom"]:
-                                        roleS={"uuidRoleKeycloak": dataKeycloakrole["id"],"nom": dataKeycloakrole["name"],"description": dataKeycloakrole["description"]}
+                                        roleS = {
+                                            "uuidRoleKeycloak": dataKeycloakrole["id"],
+                                            "nom": dataKeycloakrole["name"],
+                                            "description": dataKeycloakrole["description"]}
                                         role.append(roleS)
-                        clientS={"nom": dataKeycloak["name"],"uuidKeycloak": dataKeycloak["id"],"clientId": dataKeycloak["clientId"],"description": dataKeycloak["description"],"roles": role}
+                        clientS = {
+                            "nom": dataKeycloak["name"],
+                            "uuidKeycloak": dataKeycloak["id"],
+                            "clientId": dataKeycloak["clientId"],
+                            "description": dataKeycloak["description"],
+                            "roles": role}
                         client.append(clientS)
-        bodySystem = {"nom": spdataResponse["nom"],"cleUnique": spdataResponse["cleUnique"],"composants": client}
-        requests.put(spConfigUrl+"/systemes/"+cleUnique, headers=headers,json=bodySystem)
+        bodySystem = {
+            "nom": spdataResponse["nom"],
+            "cleUnique": spdataResponse["cleUnique"],
+            "composants": client}
+        requests.put(
+            spConfigUrl + "/systemes/" + cleUnique,
+            headers=headers,
+            json=bodySystem)
     return updatedComposant
 
-# import module snippets
-from ansible.module_utils.basic import *
 
 if __name__ == '__main__':
     main()
