@@ -20,7 +20,8 @@
       ports:
       - "{{ sx5spconfig_external_port }}:{{ sx5spconfig_internal_port }}"
       env:
-        "KEYCLOAK_URL": "{{ keycloak_url }}"        
+        "KEYCLOAK_URL": "{{ keycloak_url }}"
+        "DEBUG_PORT": "{{ sx5spconfig_debug_port | default('0') }}"        
   
   - name: Attendre que le serveur sx5spconfig soit disponible
     uri:

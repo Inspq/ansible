@@ -93,6 +93,7 @@ URL_REALM_EVENT_CONFIG = "{url}/admin/realms/{realm}/events/config"
 
 URL_REALM_ROLES = "{url}/admin/realms/{realm}/roles"
 URL_REALM_ROLE = "{url}/admin/realms/{realm}/roles/{name}"
+URL_REALM_ROLE_BY_ID = "{url}/admin/realms/{realm}/roles-by-id/{id}"
 URL_REALM_ROLE_COMPOSITES = "{url}/admin/realms/{realm}/roles/{name}/composites"
 URL_REALM_ROLE_COMPOSITES_REALM = URL_REALM_ROLE_COMPOSITES + "/realm"
 URL_REALM_ROLE_COMPOSITES_CLIENT = URL_REALM_ROLE_COMPOSITES + "/clients/{client}"
@@ -170,6 +171,7 @@ def isDictEquals(dict1, dict2, exclude=None):
         if type(dict1) is list and type(dict2) is list:
             if len(dict1) == 0 and len(dict2) == 0:
                 return True
+            found = False
             for item1 in dict1:
                 found = False
                 if type(item1) is list:
@@ -270,6 +272,37 @@ class KeycloakAPI(object):
 
         else:
             self.module.fail_json(msg='Could not obtain access token from %s' % auth_url)
+
+    def get_grant_type_password_access_token(self, client_id, client_secret, username, password, realm='master'):
+        """ Obtains access_token using password grant_type
+
+        :param realm: realm to be queried
+        :param client_id: client_id to be queried
+        :param client_secret: client_secret to be queried
+        :param username: username to be queried
+        :param password: password to be queried
+        :return: jwt access_token
+        """
+        self.baseurl = self.module.params.get('auth_keycloak_url')
+        self.validate_certs = self.module.params.get('validate_certs')
+        payload = {'grant_type': 'password',
+                   'client_id': client_id,
+                   'client_secret': client_secret,
+                   'username': username,
+                   'password': password}
+        # Remove empty items, for instance missing client_secret
+        payload = dict((k, v) for k, v in payload.items() if v is not None)
+        auth_url = URL_TOKEN.format(url=self.baseurl, realm=realm)
+        try:
+            r = json.load(open_url(auth_url, method='POST',
+                                   validate_certs=self.validate_certs, data=urlencode(payload)))
+            return r['access_token']
+        except ValueError as e:
+            self.module.fail_json(msg='API returned invalid JSON when trying to obtain access token from %s: %s'
+                                      % (auth_url, str(e)))
+        except Exception as e:
+            self.module.fail_json(msg='Could not obtain access token from %s: %s'
+                                      % (auth_url, str(e)))
 
     def get_clients(self, realm='master', filter=None):
         """ Obtains client representations for clients in a realm
@@ -2395,7 +2428,7 @@ class KeycloakAPI(object):
     def get_realm_role(self, name, realm="master"):
         """
         Get a REALM role.
-        :param name: Name of the realm role to create
+        :param name: Name of the realm role to get
         :param realm: Realm
         :return: Realm roles representation.
         """
@@ -2413,6 +2446,28 @@ class KeycloakAPI(object):
         except Exception as e:
             self.module.fail_json(msg='Could not get role %s in realm %s: %s'
                                       % (name, realm, str(e)))
+
+    def get_role_by_id(self, roleid, realm="master"):
+        """
+        Get a REALM role.
+        :param roleid: ID of the realm role to get
+        :param realm: Realm
+        :return: Realm roles representation.
+        """
+        try:
+            realm_role_url = URL_REALM_ROLE_BY_ID.format(
+                url=self.baseurl,
+                realm=realm,
+                id=roleid)
+            role = json.load(
+                open_url(
+                    realm_role_url,
+                    method='GET',
+                    headers=self.restheaders))
+            return role
+        except Exception as e:
+            self.module.fail_json(msg='Could not get role %s in realm %s: %s'
+                                      % (roleid, realm, str(e)))
 
     def create_realm_role(self, newRoleRepresentation, realm='master'):
         """
@@ -2785,6 +2840,31 @@ class KeycloakAPI(object):
             self.module.fail_json(msg='Could not get role mappings for user %s in realm %s: %s'
                                       % (user_id, realm, str(e)))
 
+    def get_user_realm_roles_with_id(self, user_id, realm='master'):
+        """
+        Get realm roles for a user.
+        :param user_id: User ID
+        :param realm: Realm
+        :return: Representation of the realm roles.
+        """
+        try:
+            role_mappings_url = URL_USER_ROLE_MAPPINGS.format(
+                url=self.baseurl,
+                realm=realm,
+                id=user_id)
+            role_mappings = json.load(
+                open_url(
+                    role_mappings_url,
+                    method='GET',
+                    headers=self.restheaders))
+            realmRoles = []
+            for roleMapping in role_mappings["realmMappings"]:
+                realmRoles.append({"id": roleMapping["id"], "name": roleMapping["name"]})
+            return realmRoles
+        except Exception as e:
+            self.module.fail_json(msg='Could not get role mappings for user %s in realm %s: %s'
+                                      % (user_id, realm, str(e)))
+
     def update_user_realm_roles(self, user_id, realmRolesRepresentation, realm='master'):
         """
         Update realm roles for a user.
@@ -2805,6 +2885,30 @@ class KeycloakAPI(object):
         except Exception as e:
             self.module.fail_json(msg='Could not update realm role mappings for user %s in realm %s: %s'
                                       % (user_id, realm, str(e)))
+
+    def get_user_client_role_mappings(self, user_id, client_id, realm='master'):
+        """
+        Get client roles for a user.
+        :param user_id: User ID
+        :param realm: Realm
+        :return: Representation of the client roles.
+        """
+        try:
+            clientRoles = []
+            role_mappings_url = URL_USER_CLIENT_ROLE_MAPPINGS.format(
+                url=self.baseurl,
+                realm=realm,
+                id=user_id,
+                client_id=client_id)
+            clientRoles = json.load(
+                open_url(
+                    role_mappings_url,
+                    method='GET',
+                    headers=self.restheaders))
+            return clientRoles
+        except Exception as e:
+            self.module.fail_json(msg='Could not get role mappings for user %s, client %s in realm %s: %s'
+                                      % (user_id, client_id, realm, str(e)))
 
     def get_user_client_roles(self, user_id, realm='master'):
         """
@@ -2837,11 +2941,91 @@ class KeycloakAPI(object):
             self.module.fail_json(msg='Could not get role mappings for user %s in realm %s: %s'
                                       % (user_id, realm, str(e)))
 
-    def delete_user_client_roles(self, user_id, client_id, realm='master'):
+    def get_user_client_roles_with_id(self, user_id, realm='master'):
+        """
+        Get client roles for a user.
+        :param user_id: User ID
+        :param realm: Realm
+        :return: Representation of the client roles.
+        """
+        try:
+            clientRoles = []
+            role_mappings_url = URL_USER_ROLE_MAPPINGS.format(
+                url=self.baseurl,
+                realm=realm,
+                id=user_id)
+            userMappings = json.load(
+                open_url(
+                    role_mappings_url,
+                    method='GET',
+                    headers=self.restheaders))
+            for clientMapping in userMappings["clientMappings"].keys():
+                clientRole = {}
+                clientRole["clientId"] = userMappings["clientMappings"][clientMapping]["client"]
+                roles = []
+                for role in userMappings["clientMappings"][clientMapping]["mappings"]:
+                    roles.append({"id": role["id"], "name": role["name"]})
+                clientRole["roles"] = roles
+                clientRoles.append(clientRole)
+            return clientRoles
+        except Exception as e:
+            self.module.fail_json(msg='Could not get role mappings for user %s in realm %s: %s'
+                                      % (user_id, realm, str(e)))
+
+    def delete_user_realm_roles(self, user_id, roles=None, realm='master'):
+        """
+        Delete client roles for a user.
+        :param user_id: User ID
+        :param roles: List of role to delete from mappings. If None, all realm role mappings for the user will be deleted.
+        :param realm: Realm
+        :return: HTTP Response.
+        """
+        try:
+            role_mappings_url = URL_USER_REALM_ROLE_MAPPINGS.format(
+                url=self.baseurl,
+                realm=realm,
+                id=user_id)
+            if roles is not None:
+                return open_url(
+                    role_mappings_url,
+                    method='DELETE',
+                    headers=self.restheaders,
+                    data=json.dumps(roles))
+            else:
+                return open_url(
+                    role_mappings_url,
+                    method='DELETE',
+                    headers=self.restheaders)
+        except Exception as e:
+            self.module.fail_json(msg='Could not delete realm role mappings for user %s in realm %s: %s'
+                                      % (user_id, realm, str(e)))
+
+    def delete_user_realm_role(self, user_id, role, realm='master'):
+        """
+        Delete one client role for a user.
+        :param user_id: User ID
+        :param client_id: Client ID for client roles to delete.
+        :param role: Representation of the role to delete
+        :param realm: Realm
+        :return: HTTP Response.
+        """
+        try:
+            roles = []
+            roles.add(role)
+            return self.delete_user_realm_roles(
+                user_id=user_id,
+                roles=roles,
+                realm=realm)
+        except Exception as e:
+            self.module.fail_json(msg='Could not delete client role mappings for role %s, user %s in realm %s: %s'
+                                      % (role["id"], user_id, realm, str(e)))
+
+    def delete_user_client_roles(self, user_id, client_id, roles=None, realm='master'):
         """
         Delete client roles for a user.
         :param user_id: User ID
         :param client_id: Client ID for client roles to delete.
+        :param roles: List of role to delete from mappings. If None, all role mappings for the client will be deleted.
         :param realm: Realm
         :return: HTTP Response.
         """
@@ -2851,13 +3035,41 @@ class KeycloakAPI(object):
                 realm=realm,
                 id=user_id,
                 client_id=client_id)
-            return open_url(
-                role_mappings_url,
-                method='DELETE',
-                headers=self.restheaders)
+            if roles is not None:
+                return open_url(
+                    role_mappings_url,
+                    method='DELETE',
+                    headers=self.restheaders,
+                    data=json.dumps(roles))
+            else:
+                return open_url(
+                    role_mappings_url,
+                    method='DELETE',
+                    headers=self.restheaders)
         except Exception as e:
-            self.module.fail_json(msg='Could not delete client role mappings for user %s in realm %s: %s'
-                                      % (user_id, realm, str(e)))
+            self.module.fail_json(msg='Could not delete client role mappings for user %s, client %s in realm %s: %s'
+                                      % (user_id, client_id, realm, str(e)))
+
+    def delete_user_client_role(self, user_id, client_id, role, realm='master'):
+        """
+        Delete one client role for a user.
+        :param user_id: User ID
+        :param client_id: Client ID for client roles to delete.
+        :param role: Representation of the role to delete
+        :param realm: Realm
+        :return: HTTP Response.
+        """
+        try:
+            roles = []
+            roles.append(role)
+            return self.delete_user_client_roles(
+                user_id=user_id,
+                client_id=client_id,
+                roles=roles,
+                realm=realm)
+        except Exception as e:
+            self.module.fail_json(msg='Could not delete client role mappings for client %s, role %s, user %s in realm %s: %s'
+                                      % (client_id, role["id"], user_id, realm, str(e)))
 
     def create_user_client_roles(self, user_id, client_id, rolesToAssing, realm='master'):
         """
@@ -3020,12 +3232,12 @@ class KeycloakAPI(object):
                                     newRole["id"] = clientRole["id"]
                                     newRole["name"] = roleToAssing
                                     rolesToAssing.append(newRole)
+                        # Delete exiting client Roles
+                        self.delete_user_client_roles(
+                            user_id=user_id,
+                            client_id=client_id,
+                            realm=realm)
                         if len(rolesToAssing) > 0:
-                            # Delete exiting client Roles
-                            self.delete_user_client_roles(
-                                user_id=user_id,
-                                client_id=client_id,
-                                realm=realm)
                             # Assign Role
                             self.create_user_client_roles(
                                 user_id=user_id,
