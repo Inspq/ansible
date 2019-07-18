@@ -162,7 +162,7 @@ pipeline {
                 sh "ansible-playbook -i sx5-sp-config.hosts -e sx5spconfig_image_version=latest deploy-sx5-sp-config.yml"
                 script {
                     try {
-		                sh "source hacking/env-setup; nosetests --with-xunit --xunit-file=nosetests-sx5-sp-config.xml test/units/modules/identity/sx5/test_sx5_habilitation.py"
+		                sh "source hacking/env-setup; cd test; nosetests --with-xunit --xunit-file=nosetests-sx5-sp-config.xml units/modules/identity/sx5/test_sx5_habilitation.py"
                     }
                     catch (exc){
                         currentBuild.result = 'UNSTABLE'
