@@ -157,8 +157,8 @@ import datetime
 import json
 
 URL_HABILITATION = "{url}/habilitations/utilisateurs/{idUtilisateur}/roles/{idRole}"
-#URL_HABILITATION = "{url}/habilitations/{idUtilisateur}/{idRole}"
 URL_ECHUE = "{url}/habilitations/echue"
+
 
 def getExpiredHabilitations(url, headers):
     urlEchue = URL_ECHUE.format(url=url)
