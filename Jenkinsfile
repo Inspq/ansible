@@ -14,7 +14,7 @@ pipeline {
 	    THREEEIGHTYNINEDS_IMAGE='minkwe/389ds'
 	    THREEEIGHTYNINEDS_VERSION='latest'
 	    SX5SPCONFIG_IMAGE='nexus3.inspq.qc.ca:5000/inspq/sx5-sp-config'
-	    SX5SPCONFIG_VERSION='latest'
+	    SX5SPCONFIG_VERSION='2.3.1-SNAPSHOT'
 	    EMAIL_TO = 'mathieu.couture@inspq.qc.ca,etienne.sadio@inspq.qc.ca,soleman.merchan@inspq.qc.ca,philippe.gauthier@inspq.qc.ca,pierre-olivier.chiasson@inspq.qc.ca,eric.parent@inspq.qc.ca'
 	}
 
