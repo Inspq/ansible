@@ -156,27 +156,33 @@ from ansible.module_utils.urls import open_url
 import datetime
 import json
 
+URL_HABILITATION = "{url}/habilitations/utilisateurs/{idUtilisateur}/roles/{idRole}"
+#URL_HABILITATION = "{url}/habilitations/{idUtilisateur}/{idRole}"
+URL_ECHUE = "{url}/habilitations/echue"
 
 def getExpiredHabilitations(url, headers):
+    urlEchue = URL_ECHUE.format(url=url)
     expiredHabilitations = json.load(
         open_url(
-            url + "/habilitations/echue",
+            urlEchue,
             method='GET',
             headers=headers))
     return expiredHabilitations
 
 
 def deleteHabilitation(url, user_id, role_id, headers):
+    urlHabilitation = URL_HABILITATION.format(url=url, idUtilisateur=user_id, idRole=role_id)
     deleteResponse = open_url(
-        url + "/habilitations/" + user_id + "/" + role_id,
+        urlHabilitation,
         method='DELETE',
         headers=headers)
     return deleteResponse
 
 
 def updateHabilitation(url, user_id, role_id, habilitation, headers):
+    urlHabilitation = URL_HABILITATION.format(url=url, idUtilisateur=user_id, idRole=role_id)
     putResponse = open_url(
-        url + "/habilitations/" + user_id + "/" + role_id,
+        urlHabilitation,
         method='PUT',
         headers=headers,
         data=json.dumps(habilitation)

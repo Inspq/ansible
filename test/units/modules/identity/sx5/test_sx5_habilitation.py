@@ -259,7 +259,7 @@ class Sx5HabilitationTestCase(ModuleTestCase):
         for expiredHabilitation in self.expiredHabilitationsIndex:
             try:
                 headers = loginAndSetHeaders("http://localhost:18081", "master", "admin", "admin", "admin-cli", "")
-                url = "http://localhost:18182/config/habilitations/"+expiredHabilitation["idUtilisateur"]+"/"+expiredHabilitation["idRole"]
+                url = "http://localhost:18182/config/habilitations/utilisateurs/"+expiredHabilitation["idUtilisateur"]+"/roles/"+expiredHabilitation["idRole"]
                 open_url(
                     url=url,
                     headers=headers,
