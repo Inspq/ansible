@@ -78,22 +78,10 @@ options:
 notes:
 - Physical replication slots were introduced to PostgreSQL with version 9.4,
   while logical replication slots were added beginning with version 10.0.
-- The default authentication assumes that you are either logging in as or
-  sudo'ing to the postgres account on the host.
-- To avoid "Peer authentication failed for user postgres" error,
-  use postgres user as a I(become_user).
-- This module uses psycopg2, a Python PostgreSQL database adapter. You must
-  ensure that psycopg2 is installed on the host before using this module.
-- If the remote host is the PostgreSQL server (which is the default case), then
-  PostgreSQL must also be installed on the remote host.
-- For Ubuntu-based systems, install the postgresql, libpq-dev, and python-psycopg2 packages
-
-requirements:
-- psycopg2
 
 author:
 - John Scalia (@jscalia)
-- Andew Klychkov (@Andersson007)
+- Andrew Klychkov (@Andersson007)
 extends_documentation_fragment: postgres
 '''
 
@@ -149,13 +137,12 @@ except ImportError:
     pass
 
 from ansible.module_utils.basic import AnsibleModule
-from ansible.module_utils.database import SQLParseError
 from ansible.module_utils.postgres import (
     connect_to_db,
     exec_sql,
+    get_conn_params,
     postgres_common_argument_spec,
 )
-from ansible.module_utils._text import to_native
 
 
 # ===========================================
@@ -244,7 +231,8 @@ def main():
     if immediately_reserve and slot_type == 'logical':
         module.fail_json(msg="Module parameters immediately_reserve and slot_type=logical are mutually exclusive")
 
-    db_connection = connect_to_db(module, autocommit=True)
+    conn_params = get_conn_params(module, module.params)
+    db_connection = connect_to_db(module, conn_params, autocommit=True)
     cursor = db_connection.cursor(cursor_factory=DictCursor)
 
     ##################################

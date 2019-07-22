@@ -227,13 +227,12 @@ except ImportError:
     pass
 
 from ansible.module_utils.basic import AnsibleModule
-from ansible.module_utils.database import SQLParseError
 from ansible.module_utils.postgres import (
     connect_to_db,
     exec_sql,
+    get_conn_params,
     postgres_common_argument_spec,
 )
-from ansible.module_utils._text import to_native
 
 
 VALID_IDX_TYPES = ('BTREE', 'HASH', 'GIST', 'SPGIST', 'GIN', 'BRIN')
@@ -295,7 +294,6 @@ class Index(object):
 
         Return self.info dict.
         """
-
         self.__exists_in_db()
         return self.info
 
@@ -304,7 +302,6 @@ class Index(object):
 
         Return True if the index exists, otherwise, return False.
         """
-
         query = ("SELECT i.schemaname, i.tablename, i.tablespace, "
                  "pi.indisvalid, c.reloptions "
                  "FROM pg_catalog.pg_indexes AS i "
@@ -347,7 +344,6 @@ class Index(object):
         Kwargs:
             concurrent (bool) -- build index in concurrent mode, default True
         """
-
         if self.exists:
             return False
 
@@ -398,7 +394,6 @@ class Index(object):
                 default False
             concurrent (bool) -- build index in concurrent mode, default True
         """
-
         changed = False
         if not self.exists:
             return False
@@ -480,7 +475,8 @@ def main():
     if cascade and state != 'absent':
         module.fail_json(msg="cascade parameter used only with state=absent")
 
-    db_connection = connect_to_db(module, autocommit=True)
+    conn_params = get_conn_params(module, module.params)
+    db_connection = connect_to_db(module, conn_params, autocommit=True)
     cursor = db_connection.cursor(cursor_factory=DictCursor)
 
     # Set defaults:

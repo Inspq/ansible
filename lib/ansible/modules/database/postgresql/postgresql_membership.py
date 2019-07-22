@@ -74,18 +74,6 @@ options:
     - Permissions checking for SQL commands is carried out as though
       the session_role were the one that had logged in originally.
     type: str
-notes:
-- The default authentication assumes that you are either logging in as or
-  sudo'ing to the postgres account on the host.
-- To avoid "Peer authentication failed for user postgres" error,
-  use postgres user as a I(become_user).
-- This module uses psycopg2, a Python PostgreSQL database adapter. You must
-  ensure that psycopg2 is installed on the host before using this module.
-- If the remote host is the PostgreSQL server (which is the default case), then
-  PostgreSQL must also be installed on the remote host.
-- For Ubuntu-based systems, install the postgresql, libpq-dev, and python-psycopg2 packages
-  on the remote host before using this module.
-requirements: [ psycopg2 ]
 author:
 - Andrew Klychkov (@Andersson007)
 extends_documentation_fragment: postgres
@@ -143,13 +131,13 @@ except ImportError:
     pass
 
 from ansible.module_utils.basic import AnsibleModule
-from ansible.module_utils.database import SQLParseError, pg_quote_identifier
+from ansible.module_utils.database import pg_quote_identifier
 from ansible.module_utils.postgres import (
     connect_to_db,
     exec_sql,
+    get_conn_params,
     postgres_common_argument_spec,
 )
-from ansible.module_utils._text import to_native
 
 
 class PgMembership(object):
@@ -214,8 +202,6 @@ class PgMembership(object):
         membership = []
         if res:
             membership = res[0][0]
-
-        print('MEMBERSHIP ', membership)
 
         if not membership:
             return False
@@ -285,7 +271,8 @@ def main():
     fail_on_role = module.params['fail_on_role']
     state = module.params['state']
 
-    db_connection = connect_to_db(module, autocommit=False)
+    conn_params = get_conn_params(module, module.params)
+    db_connection = connect_to_db(module, conn_params, autocommit=False)
     cursor = db_connection.cursor(cursor_factory=DictCursor)
 
     ##############

@@ -58,10 +58,12 @@ options:
       session (or equivalent). The maximum allowed value for TTL is one day.
     - When the load balancing scheme is INTERNAL, this field is not used.
     required: false
+    type: int
   backends:
     description:
-    - The list of backends that serve this BackendService.
+    - The set of backends that serve this BackendService.
     required: false
+    type: list
     suboptions:
       balancing_mode:
         description:
@@ -71,6 +73,7 @@ options:
         - 'Some valid choices include: "UTILIZATION", "RATE", "CONNECTION"'
         required: false
         default: UTILIZATION
+        type: str
       capacity_scaler:
         description:
         - A multiplier applied to the group's maximum servicing capacity (based on
@@ -81,11 +84,13 @@ options:
           [0.0,1.0].
         required: false
         default: '1.0'
+        type: str
       description:
         description:
         - An optional description of this resource.
         - Provide this property when you create the resource.
         required: false
+        type: str
       group:
         description:
         - The fully-qualified URL of an Instance Group or Network Endpoint Group resource.
@@ -101,13 +106,15 @@ options:
         - Note that you must specify an Instance Group or Network Endpoint Group resource
           using the fully-qualified URL, rather than a partial URL.
         required: false
+        type: str
       max_connections:
         description:
         - The max number of simultaneous connections for the group. Can be used with
           either CONNECTION or UTILIZATION balancing modes.
-        - For CONNECTION mode, either maxConnections or maxConnectionsPerInstance
-          must be set.
+        - For CONNECTION mode, either maxConnections or one of maxConnectionsPerInstance
+          or maxConnectionsPerEndpoint, as appropriate for group type, must be set.
         required: false
+        type: int
       max_connections_per_instance:
         description:
         - The max number of simultaneous connections that a single backend instance
@@ -116,13 +123,25 @@ options:
         - For CONNECTION mode, either maxConnections or maxConnectionsPerInstance
           must be set.
         required: false
+        type: int
+      max_connections_per_endpoint:
+        description:
+        - The max number of simultaneous connections that a single backend network
+          endpoint can handle. This is used to calculate the capacity of the group.
+          Can be used in either CONNECTION or UTILIZATION balancing modes.
+        - For CONNECTION mode, either maxConnections or maxConnectionsPerEndpoint
+          must be set.
+        required: false
+        type: int
+        version_added: 2.9
       max_rate:
         description:
         - The max requests per second (RPS) of the group.
         - Can be used with either RATE or UTILIZATION balancing modes, but required
-          if RATE mode. For RATE mode, either maxRate or maxRatePerInstance must be
-          set.
+          if RATE mode. For RATE mode, either maxRate or one of maxRatePerInstance
+          or maxRatePerEndpoint, as appropriate for group type, must be set.
         required: false
+        type: int
       max_rate_per_instance:
         description:
         - The max requests per second (RPS) that a single backend instance can handle.
@@ -130,21 +149,34 @@ options:
           balancing mode. For RATE mode, either maxRate or maxRatePerInstance must
           be set.
         required: false
+        type: str
+      max_rate_per_endpoint:
+        description:
+        - The max requests per second (RPS) that a single backend network endpoint
+          can handle. This is used to calculate the capacity of the group. Can be
+          used in either balancing mode. For RATE mode, either maxRate or maxRatePerEndpoint
+          must be set.
+        required: false
+        type: str
+        version_added: 2.9
       max_utilization:
         description:
         - Used when balancingMode is UTILIZATION. This ratio defines the CPU utilization
           target for the group. The default is 0.8. Valid range is [0.0, 1.0].
         required: false
         default: '0.8'
+        type: str
   cdn_policy:
     description:
     - Cloud CDN configuration for this BackendService.
     required: false
+    type: dict
     suboptions:
       cache_key_policy:
         description:
         - The CacheKeyPolicy for this CdnPolicy.
         required: false
+        type: dict
         suboptions:
           include_host:
             description:
@@ -171,6 +203,7 @@ options:
               or query_string_blacklist, not both.
             - "'&' and '=' will be percent encoded and not treated as delimiters."
             required: false
+            type: list
           query_string_whitelist:
             description:
             - Names of query string parameters to include in cache keys.
@@ -178,6 +211,7 @@ options:
               or query_string_blacklist, not both.
             - "'&' and '=' will be percent encoded and not treated as delimiters."
             required: false
+            type: list
       signed_url_cache_max_age_sec:
         description:
         - Maximum number of seconds the response to a signed URL request will be considered
@@ -189,11 +223,13 @@ options:
           The actual headers served in responses will not be altered.'
         required: false
         default: '3600'
+        type: int
         version_added: 2.8
   connection_draining:
     description:
     - Settings for connection draining .
     required: false
+    type: dict
     suboptions:
       draining_timeout_sec:
         description:
@@ -201,10 +237,12 @@ options:
           still work to finish started).
         required: false
         default: '300'
+        type: int
   description:
     description:
     - An optional description of this resource.
     required: false
+    type: str
   enable_cdn:
     description:
     - If true, enable Cloud CDN for this BackendService.
@@ -212,16 +250,18 @@ options:
     type: bool
   health_checks:
     description:
-    - The list of URLs to the HttpHealthCheck or HttpsHealthCheck resource for health
+    - The set of URLs to the HttpHealthCheck or HttpsHealthCheck resource for health
       checking this BackendService. Currently at most one health check can be specified,
       and a health check is required.
     - For internal load balancing, a URL to a HealthCheck resource must be specified
       instead.
     required: true
+    type: list
   iap:
     description:
     - Settings for enabling Cloud Identity Aware Proxy.
     required: false
+    type: dict
     version_added: 2.7
     suboptions:
       enabled:
@@ -233,10 +273,12 @@ options:
         description:
         - OAuth2 Client ID for IAP .
         required: true
+        type: str
       oauth2_client_secret:
         description:
         - OAuth2 Client Secret for IAP .
         required: true
+        type: str
   load_balancing_scheme:
     description:
     - Indicates whether the backend service will be used with internal or external
@@ -246,6 +288,7 @@ options:
     - 'Some valid choices include: "EXTERNAL", "INTERNAL_SELF_MANAGED"'
     required: false
     default: EXTERNAL
+    type: str
     version_added: 2.7
   name:
     description:
@@ -256,11 +299,13 @@ options:
       characters must be a dash, lowercase letter, or digit, except the last character,
       which cannot be a dash.
     required: true
+    type: str
   port_name:
     description:
     - Name of backend port. The same name should appear in the instance groups referenced
       by this service. Required when the load balancing scheme is EXTERNAL.
     required: false
+    type: str
   protocol:
     description:
     - The protocol this BackendService uses to communicate with backends.
@@ -269,10 +314,12 @@ options:
       in errors if used with the GA API.'
     - 'Some valid choices include: "HTTP", "HTTPS", "HTTP2", "TCP", "SSL"'
     required: false
+    type: str
   security_policy:
     description:
     - The security policy associated with this backend service.
     required: false
+    type: str
     version_added: 2.8
   session_affinity:
     description:
@@ -281,11 +328,13 @@ options:
     - When the protocol is UDP, this field is not used.
     - 'Some valid choices include: "NONE", "CLIENT_IP", "GENERATED_COOKIE"'
     required: false
+    type: str
   timeout_sec:
     description:
     - How many seconds to wait for the backend before considering it a failed request.
       Default is 30 seconds. Valid range is [1, 86400].
     required: false
+    type: int
     aliases:
     - timeout_seconds
 extends_documentation_fragment: gcp
@@ -322,7 +371,7 @@ EXAMPLES = '''
   gcp_compute_backend_service:
     name: test_object
     backends:
-    - group: "{{ instancegroup }}"
+    - group: "{{ instancegroup.selfLink }}"
     health_checks:
     - "{{ healthcheck.selfLink }}"
     enable_cdn: 'true'
@@ -343,7 +392,7 @@ affinityCookieTtlSec:
   type: int
 backends:
   description:
-  - The list of backends that serve this BackendService.
+  - The set of backends that serve this BackendService.
   returned: success
   type: complex
   contains:
@@ -389,8 +438,8 @@ backends:
       description:
       - The max number of simultaneous connections for the group. Can be used with
         either CONNECTION or UTILIZATION balancing modes.
-      - For CONNECTION mode, either maxConnections or maxConnectionsPerInstance must
-        be set.
+      - For CONNECTION mode, either maxConnections or one of maxConnectionsPerInstance
+        or maxConnectionsPerEndpoint, as appropriate for group type, must be set.
       returned: success
       type: int
     maxConnectionsPerInstance:
@@ -402,12 +451,21 @@ backends:
         be set.
       returned: success
       type: int
+    maxConnectionsPerEndpoint:
+      description:
+      - The max number of simultaneous connections that a single backend network endpoint
+        can handle. This is used to calculate the capacity of the group. Can be used
+        in either CONNECTION or UTILIZATION balancing modes.
+      - For CONNECTION mode, either maxConnections or maxConnectionsPerEndpoint must
+        be set.
+      returned: success
+      type: int
     maxRate:
       description:
       - The max requests per second (RPS) of the group.
       - Can be used with either RATE or UTILIZATION balancing modes, but required
-        if RATE mode. For RATE mode, either maxRate or maxRatePerInstance must be
-        set.
+        if RATE mode. For RATE mode, either maxRate or one of maxRatePerInstance or
+        maxRatePerEndpoint, as appropriate for group type, must be set.
       returned: success
       type: int
     maxRatePerInstance:
@@ -416,6 +474,14 @@ backends:
         This is used to calculate the capacity of the group. Can be used in either
         balancing mode. For RATE mode, either maxRate or maxRatePerInstance must be
         set.
+      returned: success
+      type: str
+    maxRatePerEndpoint:
+      description:
+      - The max requests per second (RPS) that a single backend network endpoint can
+        handle. This is used to calculate the capacity of the group. Can be used in
+        either balancing mode. For RATE mode, either maxRate or maxRatePerEndpoint
+        must be set.
       returned: success
       type: str
     maxUtilization:
@@ -516,7 +582,7 @@ enableCDN:
   type: bool
 healthChecks:
   description:
-  - The list of URLs to the HttpHealthCheck or HttpsHealthCheck resource for health
+  - The set of URLs to the HttpHealthCheck or HttpsHealthCheck resource for health
     checking this BackendService. Currently at most one health check can be specified,
     and a health check is required.
   - For internal load balancing, a URL to a HealthCheck resource must be specified
@@ -636,8 +702,10 @@ def main():
                     group=dict(type='str'),
                     max_connections=dict(type='int'),
                     max_connections_per_instance=dict(type='int'),
+                    max_connections_per_endpoint=dict(type='int'),
                     max_rate=dict(type='int'),
                     max_rate_per_instance=dict(type='str'),
+                    max_rate_per_endpoint=dict(type='str'),
                     max_utilization=dict(default=0.8, type='str'),
                 ),
             ),
@@ -903,8 +971,10 @@ class BackendServiceBackendsArray(object):
                 u'group': item.get('group'),
                 u'maxConnections': item.get('max_connections'),
                 u'maxConnectionsPerInstance': item.get('max_connections_per_instance'),
+                u'maxConnectionsPerEndpoint': item.get('max_connections_per_endpoint'),
                 u'maxRate': item.get('max_rate'),
                 u'maxRatePerInstance': item.get('max_rate_per_instance'),
+                u'maxRatePerEndpoint': item.get('max_rate_per_endpoint'),
                 u'maxUtilization': item.get('max_utilization'),
             }
         )
@@ -918,8 +988,10 @@ class BackendServiceBackendsArray(object):
                 u'group': item.get(u'group'),
                 u'maxConnections': item.get(u'maxConnections'),
                 u'maxConnectionsPerInstance': item.get(u'maxConnectionsPerInstance'),
+                u'maxConnectionsPerEndpoint': item.get(u'maxConnectionsPerEndpoint'),
                 u'maxRate': item.get(u'maxRate'),
                 u'maxRatePerInstance': item.get(u'maxRatePerInstance'),
+                u'maxRatePerEndpoint': item.get(u'maxRatePerEndpoint'),
                 u'maxUtilization': item.get(u'maxUtilization'),
             }
         )

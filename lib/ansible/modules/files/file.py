@@ -144,8 +144,8 @@ EXAMPLES = r'''
   file:
     src: '/tmp/{{ item.src }}'
     dest: '{{ item.dest }}'
-    state: link
-  with_items:
+    state: hard
+  loop:
     - { src: x, dest: y }
     - { src: z, dest: k }
 
@@ -195,6 +195,16 @@ EXAMPLES = r'''
     recurse: yes
     owner: foo
     group: foo
+
+- name: Remove file (delete file)
+  file:
+    path: /etc/foo.txt
+    state: absent
+
+- name: Recursively remove directory
+  file:
+    path: /etc/foo
+    state: absent
 
 '''
 RETURN = r'''

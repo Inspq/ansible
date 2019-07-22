@@ -573,11 +573,11 @@ class PgHbaRule(dict):
             return myweight < hisweight
         try:
             return self['src'] < other['src']
-        except (TypeError, KeyError):
+        except TypeError:
             return self.source_type_weight() < other.source_type_weight()
-        errormessage = 'We have two rules ({1}, {2})'.format(self, other)
-        errormessage += ' with exact same weight. Please file a bug.'
-        raise PgHbaValueError(errormessage)
+        except Exception:
+            # When all else fails, just compare the exact line.
+            return self.line() < other.line()
 
     def source_weight(self):
         """Report the weight of this source net.
@@ -633,7 +633,7 @@ class PgHbaRule(dict):
             return 1
         if isinstance(sourceobj, str):
             return 0
-        raise PgHbaValueError('This source {1} is of an unknown type...'.format(sourceobj))
+        raise PgHbaValueError('This source {0} is of an unknown type...'.format(sourceobj))
 
     def db_weight(self):
         """Report the weight of the database.

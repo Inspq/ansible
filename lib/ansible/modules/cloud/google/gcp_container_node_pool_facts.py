@@ -44,6 +44,7 @@ options:
     description:
     - The location where the node pool is deployed.
     required: true
+    type: str
     aliases:
     - region
     - zone
@@ -57,6 +58,7 @@ options:
       to a gcp_container_cluster task and then set this cluster field to "{{ name-of-resource
       }}"'
     required: true
+    type: dict
 extends_documentation_fragment: gcp
 '''
 
@@ -376,7 +378,7 @@ def main():
 
 def collection(module):
     res = {'project': module.params['project'], 'location': module.params['location'], 'cluster': replace_resource_dict(module.params['cluster'], 'name')}
-    return "https://container.googleapis.com/v1/projects/{project}/zones/{location}/clusters/{cluster}/nodePools".format(**res)
+    return "https://container.googleapis.com/v1/projects/{project}/locations/{location}/clusters/{cluster}/nodePools".format(**res)
 
 
 def fetch_list(module, link):
