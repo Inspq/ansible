@@ -410,6 +410,7 @@ options:
                 description:
                     - backup time of logs in keycloak.
                 required: false
+                type: int
     browserFlow:
         description:
             - Browser Flow.

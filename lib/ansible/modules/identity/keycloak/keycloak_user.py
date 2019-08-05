@@ -72,7 +72,7 @@ options:
         type: str
     realmRoles:
         description:
-            - List of ClientRoles for the user.
+            - List of realm roles for the user.
         required: false
         type: list
     clientRoles:
@@ -80,6 +80,15 @@ options:
             - List of ClientRoles for the user.
         required: false
         type: list
+        suboptions:
+            clientId:
+                description: 
+                    - Client ID for the role
+                type: str
+            roles:
+                description:
+                    - List of roles for this client to grant to the user.
+                type: list
     clientConsents:
         description:
             - client Authenticator Type.

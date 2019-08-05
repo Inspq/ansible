@@ -1,119 +1,9 @@
-import collections
-import os
-
 from ansible.modules.identity.keycloak import keycloak_authentication
-from units.modules.utils import AnsibleExitJson, AnsibleFailJson, ModuleTestCase, set_module_args
+from units.modules.utils import AnsibleExitJson, ModuleTestCase, set_module_args
 
 class KeycloakAuthenticationTestCase(ModuleTestCase):
-    addExecutionToAuthenticationFlowWithoutCopy = {
-        "auth_keycloak_url":  "http://localhost:18081/auth",
-        "auth_username": "admin",
-        "auth_password": "admin",
-        "realm": "master",
-        "alias": "Test add execution to authentication flow without copy",
-        "providerId": "basic-flow",
-        "authenticationExecutions": [
-            {
-                "providerId": "identity-provider-redirector",
-                "requirement": "ALTERNATIVE",
-                "authenticationConfig": {
-                    "alias": "name",
-                    "config": {
-                        "defaultProvider": "value"
-                    }
-                }
-            }
-        ], 
-        "state":"present",
-        "force":False
-    }
-    authenticationFlowNotChanged = {
-        "auth_keycloak_url":  "http://localhost:18081/auth",
-        "auth_username": "admin",
-        "auth_password": "admin",
-        "realm": "master",
-        "alias": "Test authentication flow not changed",
-        "copyFrom": "first broker login",
-        "authenticationExecutions": [
-            {
-                "providerId": "identity-provider-redirector",
-                "requirement": "ALTERNATIVE",
-                "authenticationConfig": {
-                    "alias": "name",
-                    "config": {
-                        "defaultProvider": "value"
-                    }
-                }
-            }
-        ], 
-        "state":"present",
-        "force":False
-    }
-    modifyAuthenticationFlow = {
-        "auth_keycloak_url":  "http://localhost:18081/auth",
-        "auth_username": "admin",
-        "auth_password": "admin",
-        "realm": "master",
-        "alias": "Test modify authentication flow",
-        "copyFrom": "first broker login",
-        "authenticationExecutions": [
-            {
-                "providerId": "identity-provider-redirector",
-                "requirement": "ALTERNATIVE",
-                "authenticationConfig": {
-                    "alias": "name",
-                    "config": {
-                        "defaultProvider": "value"
-                    }
-                }
-            }
-        ],
-        "state":"present",
-        "force":False
-    }
-    deleteAuthenticationFlow = {
-        "auth_keycloak_url":  "http://localhost:18081/auth",
-        "auth_username": "admin",
-        "auth_password": "admin",
-        "realm": "master",
-        "alias": "Test delete authentication flow",
-        "copyFrom": "first broker login",
-        "authenticationExecutions": [
-            {
-                "providerId": "identity-provider-redirector",
-                "requirement": "ALTERNATIVE",
-                "authenticationConfig": {
-                    "alias": "name",
-                    "config": {
-                        "defaultProvider": "value"
-                    }
-                }
-            }
-        ], 
-        "state":"present",
-        "force":False
-    }
-    def setUp(self):
-        super(KeycloakAuthenticationTestCase, self).setUp()
-        self.module = keycloak_authentication
-        set_module_args(self.addExecutionToAuthenticationFlowWithoutCopy)
-        with self.assertRaises(AnsibleExitJson) as results:
-            self.module.main()
-        set_module_args(self.authenticationFlowNotChanged)
-        with self.assertRaises(AnsibleExitJson) as results:
-            self.module.main()
-        set_module_args(self.modifyAuthenticationFlow)
-        with self.assertRaises(AnsibleExitJson) as results:
-            self.module.main()
-        set_module_args(self.deleteAuthenticationFlow)
-        with self.assertRaises(AnsibleExitJson) as results:
-            self.module.main()
- 
-    def tearDown(self):
-        super(KeycloakAuthenticationTestCase, self).tearDown()
-                
-    def test_create_authentication_flow_copy(self):
-        toCreate = {
+    authenticationTestFlows = [
+        {
             "auth_keycloak_url":  "http://localhost:18081/auth",
             "auth_username": "admin",
             "auth_password": "admin",
@@ -132,28 +22,10 @@ class KeycloakAuthenticationTestCase(ModuleTestCase):
                     }
                 },
             ], 
-            "state":"present",
+            "state":"absent",
             "force":False
-        }
-
-        set_module_args(toCreate)
-        with self.assertRaises(AnsibleExitJson) as results:
-            self.module.main()
-        self.assertTrue(results.exception.args[0]['changed'])
-        self.assertEquals(results.exception.args[0]["flow"]["alias"], toCreate["alias"], results.exception.args[0]["flow"]["alias"] + "is not" + toCreate["alias"] )
-        for expectedExecutions in toCreate["authenticationExecutions"]:
-            executionFound = False
-            for execution in results.exception.args[0]["flow"]["authenticationExecutions"]:
-                if "providerId" in execution and execution["providerId"] == expectedExecutions["providerId"]:
-                    executionFound = True
-                    break
-            self.assertTrue(executionFound, "Execution " + expectedExecutions["providerId"] + " not found")
-            self.assertEquals(execution["requirement"], expectedExecutions["requirement"], execution["requirement"] + " is not equals to " + expectedExecutions["requirement"])
-            for key in expectedExecutions["authenticationConfig"]["config"]:
-                self.assertEquals(expectedExecutions["authenticationConfig"]["config"][key], execution["authenticationConfig"]["config"][key], execution["authenticationConfig"]["config"][key] + " is not equals to " + expectedExecutions["authenticationConfig"]["config"][key])
-
-    def test_create_authentication_flow_set_update_profile_on_first_login_to_on(self):
-        toCreate = {
+        },
+        {
             "auth_keycloak_url":  "http://localhost:18081/auth",
             "auth_username": "admin",
             "auth_password": "admin",
@@ -172,28 +44,10 @@ class KeycloakAuthenticationTestCase(ModuleTestCase):
                     } 
                 },
             ], 
-            "state":"present",
+            "state":"absent",
             "force":False
-        }
-
-        set_module_args(toCreate)
-        with self.assertRaises(AnsibleExitJson) as results:
-            self.module.main()
-        self.assertTrue(results.exception.args[0]['changed'])
-        self.assertEquals(results.exception.args[0]["flow"]["alias"], toCreate["alias"], results.exception.args[0]["flow"]["alias"] + "is not" + toCreate["alias"] )
-        for expectedExecutions in toCreate["authenticationExecutions"]:
-            executionFound = False
-            for execution in results.exception.args[0]["flow"]["authenticationExecutions"]:
-                if "providerId" in execution and execution["providerId"] == expectedExecutions["providerId"]:
-                    executionFound = True
-                    break
-            self.assertTrue(executionFound, "Execution " + expectedExecutions["providerId"] + " not found")
-            self.assertEquals(execution["requirement"], expectedExecutions["requirement"], execution["requirement"] + " is not equals to " + expectedExecutions["requirement"])
-            for key in expectedExecutions["authenticationConfig"]["config"]:
-                self.assertEquals(expectedExecutions["authenticationConfig"]["config"][key], execution["authenticationConfig"]["config"][key], execution["authenticationConfig"]["config"][key] + " is not equals to " + expectedExecutions["authenticationConfig"]["config"][key])
-        
-    def test_create_authentication_flow_without_copy(self):
-        toCreate = {
+        },
+        {
             "auth_keycloak_url":  "http://localhost:18081/auth",
             "auth_username": "admin",
             "auth_password": "admin",
@@ -212,28 +66,10 @@ class KeycloakAuthenticationTestCase(ModuleTestCase):
                     }
                 }
             ], 
-            "state":"present",
+            "state":"absent",
             "force":False
-        }
-
-        set_module_args(toCreate)
-        with self.assertRaises(AnsibleExitJson) as results:
-            self.module.main()
-        self.assertTrue(results.exception.args[0]['changed'])
-        self.assertEquals(results.exception.args[0]["flow"]["alias"], toCreate["alias"], results.exception.args[0]["flow"]["alias"] + "is not" + toCreate["alias"] )
-        for expectedExecutions in toCreate["authenticationExecutions"]:
-            executionFound = False
-            for execution in results.exception.args[0]["flow"]["authenticationExecutions"]:
-                if "providerId" in execution and execution["providerId"] == expectedExecutions["providerId"]:
-                    executionFound = True
-                    break
-            self.assertTrue(executionFound, "Execution " + expectedExecutions["providerId"] + " not found")
-            self.assertEquals(execution["requirement"], expectedExecutions["requirement"], execution["requirement"] + " is not equals to " + expectedExecutions["requirement"])
-            for key in expectedExecutions["authenticationConfig"]["config"]:
-                self.assertEquals(expectedExecutions["authenticationConfig"]["config"][key], execution["authenticationConfig"]["config"][key], execution["authenticationConfig"]["config"][key] + " is not equals to " + expectedExecutions["authenticationConfig"]["config"][key])
-
-    def test_create_authentication_flow_with_two_executions_without_copy(self):
-        toCreate = {
+        },
+        {
             "auth_keycloak_url":  "http://localhost:18081/auth",
             "auth_username": "admin",
             "auth_password": "admin",
@@ -264,9 +100,220 @@ class KeycloakAuthenticationTestCase(ModuleTestCase):
                     }
                 }
             ], 
+            "state":"absent",
+            "force":False
+        },
+        {
+            "auth_keycloak_url":  "http://localhost:18081/auth",
+            "auth_username": "admin",
+            "auth_password": "admin",
+            "realm": "master",
+            "alias": "Test add execution to authentication flow without copy",
+            "providerId": "basic-flow",
+            "authenticationExecutions": [
+                {
+                    "providerId": "identity-provider-redirector",
+                    "requirement": "ALTERNATIVE",
+                    "authenticationConfig": {
+                        "alias": "name",
+                        "config": {
+                            "defaultProvider": "value"
+                        }
+                    }
+                }
+            ], 
             "state":"present",
             "force":False
-        }
+        },
+        {
+            "auth_keycloak_url":  "http://localhost:18081/auth",
+            "auth_username": "admin",
+            "auth_password": "admin",
+            "realm": "master",
+            "alias": "Test authentication flow not changed",
+            "providerId": "basic-flow",
+            "authenticationExecutions": [
+                {
+                    "providerId": "identity-provider-redirector",
+                    "requirement": "ALTERNATIVE",
+                    "authenticationConfig": {
+                        "alias": "name",
+                        "config": {
+                            "defaultProvider": "value"
+                        }
+                    }
+                }
+            ], 
+            "state":"present",
+            "force":False
+        },
+        {
+            "auth_keycloak_url":  "http://localhost:18081/auth",
+            "auth_username": "admin",
+            "auth_password": "admin",
+            "realm": "master",
+            "alias": "Test modify authentication flow",
+            "copyFrom": "first broker login",
+            "authenticationExecutions": [
+                {
+                    "providerId": "identity-provider-redirector",
+                    "requirement": "ALTERNATIVE",
+                    "authenticationConfig": {
+                        "alias": "name",
+                        "config": {
+                            "defaultProvider": "value"
+                        }
+                    }
+                }
+            ],
+            "state":"present",
+            "force":False
+        },
+        {
+            "auth_keycloak_url":  "http://localhost:18081/auth",
+            "auth_username": "admin",
+            "auth_password": "admin",
+            "realm": "master",
+            "alias": "Test delete authentication flow",
+            "copyFrom": "first broker login",
+            "authenticationExecutions": [
+                {
+                    "providerId": "identity-provider-redirector",
+                    "requirement": "ALTERNATIVE",
+                    "authenticationConfig": {
+                        "alias": "name",
+                        "config": {
+                            "defaultProvider": "value"
+                        }
+                    }
+                }
+            ], 
+            "state":"present",
+            "force":False
+        },
+        {
+            "auth_keycloak_url":  "http://localhost:18081/auth",
+            "auth_username": "admin",
+            "auth_password": "admin",
+            "realm": "master",
+            "alias": "Test delete inexisting authentication flow",
+            "state":"absent",
+            "force":False
+        },
+        {
+            "auth_keycloak_url":  "http://localhost:18081/auth",
+            "auth_username": "admin",
+            "auth_password": "admin",
+            "realm": "master",
+            "alias": "Reorder executions",
+            "providerId": "basic-flow",
+            "authenticationExecutions": [
+                {
+                    "providerId": "identity-provider-redirector",
+                    "requirement": "ALTERNATIVE",
+                    "authenticationConfig": {
+                        "alias": "name",
+                        "config": {
+                            "defaultProvider": "value"
+                        }
+                    }
+                },
+                {
+                    "providerId": "auth-conditional-otp-form",
+                    "requirement": "REQUIRED",
+                    "authenticationConfig": {
+                        "alias": "test-conditional-otp",
+                        "config": {
+                            "skipOtpRole": "admin",
+                            "forceOtpRole": "broker.read-token",
+                            "defaultOtpOutcome": "skip"
+                        }
+                    }
+                }
+            ], 
+            "state":"present",
+            "force":False
+        },
+        
+    ]
+    def setUp(self):
+        super(KeycloakAuthenticationTestCase, self).setUp()
+        self.module = keycloak_authentication
+        for flow in self.authenticationTestFlows:
+            set_module_args(flow)
+            with self.assertRaises(AnsibleExitJson) as results:
+                self.module.main()
+ 
+    def tearDown(self):
+        self.module = keycloak_authentication
+        for flow in self.authenticationTestFlows:
+            flowToDelete = flow.copy()
+            flowToDelete["state"] = "absent"
+            set_module_args(flowToDelete)
+            with self.assertRaises(AnsibleExitJson) as results:
+                self.module.main()
+        super(KeycloakAuthenticationTestCase, self).tearDown()
+                
+    def test_create_authentication_flow_copy(self):
+        toCreate = self.authenticationTestFlows[0].copy()
+        toCreate["state"] = "present"
+        set_module_args(toCreate)
+        with self.assertRaises(AnsibleExitJson) as results:
+            self.module.main()
+        self.assertTrue(results.exception.args[0]['changed'])
+        self.assertEquals(results.exception.args[0]["flow"]["alias"], toCreate["alias"], results.exception.args[0]["flow"]["alias"] + "is not" + toCreate["alias"] )
+        for expectedExecutions in toCreate["authenticationExecutions"]:
+            executionFound = False
+            for execution in results.exception.args[0]["flow"]["authenticationExecutions"]:
+                if "providerId" in execution and execution["providerId"] == expectedExecutions["providerId"]:
+                    executionFound = True
+                    break
+            self.assertTrue(executionFound, "Execution " + expectedExecutions["providerId"] + " not found")
+            self.assertEquals(execution["requirement"], expectedExecutions["requirement"], execution["requirement"] + " is not equals to " + expectedExecutions["requirement"])
+            for key in expectedExecutions["authenticationConfig"]["config"]:
+                self.assertEquals(expectedExecutions["authenticationConfig"]["config"][key], execution["authenticationConfig"]["config"][key], execution["authenticationConfig"]["config"][key] + " is not equals to " + expectedExecutions["authenticationConfig"]["config"][key])
+
+    def test_create_authentication_flow_set_update_profile_on_first_login_to_on(self):
+        toCreate = self.authenticationTestFlows[1].copy()
+        toCreate["state"] = "present"        
+        set_module_args(toCreate)
+        with self.assertRaises(AnsibleExitJson) as results:
+            self.module.main()
+        self.assertTrue(results.exception.args[0]['changed'])
+        self.assertEquals(results.exception.args[0]["flow"]["alias"], toCreate["alias"], results.exception.args[0]["flow"]["alias"] + "is not" + toCreate["alias"] )
+        for expectedExecutions in toCreate["authenticationExecutions"]:
+            executionFound = False
+            for execution in results.exception.args[0]["flow"]["authenticationExecutions"]:
+                if "providerId" in execution and execution["providerId"] == expectedExecutions["providerId"]:
+                    executionFound = True
+                    break
+            self.assertTrue(executionFound, "Execution " + expectedExecutions["providerId"] + " not found")
+            self.assertEquals(execution["requirement"], expectedExecutions["requirement"], execution["requirement"] + " is not equals to " + expectedExecutions["requirement"])
+            for key in expectedExecutions["authenticationConfig"]["config"]:
+                self.assertEquals(expectedExecutions["authenticationConfig"]["config"][key], execution["authenticationConfig"]["config"][key], execution["authenticationConfig"]["config"][key] + " is not equals to " + expectedExecutions["authenticationConfig"]["config"][key])
+        
+    def test_create_authentication_flow_without_copy(self):
+        toCreate = self.authenticationTestFlows[2].copy()
+        toCreate["state"] = "present"
+        set_module_args(toCreate)
+        with self.assertRaises(AnsibleExitJson) as results:
+            self.module.main()
+        self.assertTrue(results.exception.args[0]['changed'])
+        self.assertEquals(results.exception.args[0]["flow"]["alias"], toCreate["alias"], results.exception.args[0]["flow"]["alias"] + "is not" + toCreate["alias"] )
+        for expectedExecutions in toCreate["authenticationExecutions"]:
+            executionFound = False
+            for execution in results.exception.args[0]["flow"]["authenticationExecutions"]:
+                if "providerId" in execution and execution["providerId"] == expectedExecutions["providerId"]:
+                    executionFound = True
+                    break
+            self.assertTrue(executionFound, "Execution " + expectedExecutions["providerId"] + " not found")
+            self.assertEquals(execution["requirement"], expectedExecutions["requirement"], execution["requirement"] + " is not equals to " + expectedExecutions["requirement"])
+            for key in expectedExecutions["authenticationConfig"]["config"]:
+                self.assertEquals(expectedExecutions["authenticationConfig"]["config"][key], execution["authenticationConfig"]["config"][key], execution["authenticationConfig"]["config"][key] + " is not equals to " + expectedExecutions["authenticationConfig"]["config"][key])
+
+    def test_create_authentication_flow_with_two_executions_without_copy(self):
+        toCreate = self.authenticationTestFlows[3].copy()
+        toCreate["state"] = "present" 
 
         set_module_args(toCreate)
         with self.assertRaises(AnsibleExitJson) as results:
@@ -297,13 +344,14 @@ class KeycloakAuthenticationTestCase(ModuleTestCase):
                 }
             }
         }
-        self.addExecutionToAuthenticationFlowWithoutCopy["authenticationExecutions"].append(executionToAdd)
-        set_module_args(self.addExecutionToAuthenticationFlowWithoutCopy)
+        toModify = self.authenticationTestFlows[4].copy()
+        toModify["authenticationExecutions"].append(executionToAdd)
+        set_module_args(toModify)
         with self.assertRaises(AnsibleExitJson) as results:
             self.module.main()
         self.assertTrue(results.exception.args[0]['changed'])
-        self.assertEquals(results.exception.args[0]["flow"]["alias"], self.addExecutionToAuthenticationFlowWithoutCopy["alias"], results.exception.args[0]["flow"]["alias"] + "is not" + self.addExecutionToAuthenticationFlowWithoutCopy["alias"] )
-        for expectedExecutions in self.addExecutionToAuthenticationFlowWithoutCopy["authenticationExecutions"]:
+        self.assertEquals(results.exception.args[0]["flow"]["alias"], toModify["alias"], results.exception.args[0]["flow"]["alias"] + "is not" + toModify["alias"] )
+        for expectedExecutions in toModify["authenticationExecutions"]:
             executionFound = False
             for execution in results.exception.args[0]["flow"]["authenticationExecutions"]:
                 if "providerId" in execution and execution["providerId"] == expectedExecutions["providerId"]:
@@ -315,19 +363,21 @@ class KeycloakAuthenticationTestCase(ModuleTestCase):
                 self.assertEquals(expectedExecutions["authenticationConfig"]["config"][key], execution["authenticationConfig"]["config"][key], execution["authenticationConfig"]["config"][key] + " is not equals to " + expectedExecutions["authenticationConfig"]["config"][key])
 
     def test_authentication_flow_not_changed(self):
-        set_module_args(self.authenticationFlowNotChanged)
+        toModify = self.authenticationTestFlows[5].copy()
+        set_module_args(toModify)
         with self.assertRaises(AnsibleExitJson) as results:
             self.module.main()
         self.assertFalse(results.exception.args[0]['changed'])
 
     def test_modify_authentication_flow(self):
-        self.modifyAuthenticationFlow["authenticationExecutions"][0]["authenticationConfig"]["config"]["defaultProvider"] = "modified value"
-        set_module_args(self.modifyAuthenticationFlow)
+        toModify = self.authenticationTestFlows[6].copy()
+        toModify["authenticationExecutions"][0]["authenticationConfig"]["config"]["defaultProvider"] = "modified value"
+        set_module_args(toModify)
         with self.assertRaises(AnsibleExitJson) as results:
             self.module.main()
         self.assertTrue(results.exception.args[0]['changed'])
-        self.assertEquals(results.exception.args[0]["flow"]["alias"], self.modifyAuthenticationFlow["alias"], results.exception.args[0]["flow"]["alias"] + "is not" + self.modifyAuthenticationFlow["alias"] )
-        for expectedExecutions in self.modifyAuthenticationFlow["authenticationExecutions"]:
+        self.assertEquals(results.exception.args[0]["flow"]["alias"], toModify["alias"], results.exception.args[0]["flow"]["alias"] + "is not" + toModify["alias"] )
+        for expectedExecutions in toModify["authenticationExecutions"]:
             executionFound = False
             for execution in results.exception.args[0]["flow"]["authenticationExecutions"]:
                 if "providerId" in execution and execution["providerId"] == expectedExecutions["providerId"]:
@@ -339,25 +389,58 @@ class KeycloakAuthenticationTestCase(ModuleTestCase):
                 self.assertEquals(expectedExecutions["authenticationConfig"]["config"][key], execution["authenticationConfig"]["config"][key], execution["authenticationConfig"]["config"][key] + " is not equals to " + expectedExecutions["authenticationConfig"]["config"][key])
         
     def test_delete_authentication_flow(self):
-        self.deleteAuthenticationFlow['state'] = 'absent'
-        set_module_args(self.deleteAuthenticationFlow)
+        toDelete = self.authenticationTestFlows[7].copy()
+        toDelete['state'] = 'absent'
+        set_module_args(toDelete)
         with self.assertRaises(AnsibleExitJson) as results:
             self.module.main()
         self.assertTrue(results.exception.args[0]['changed'])
         self.assertRegexpMatches(results.exception.args[0]['msg'], 'deleted', 'authentication flow not deleted')
 
     def test_delete_inexisting_authentication_flow(self):
-        toDelete = {
-            "auth_keycloak_url":  "http://localhost:18081/auth",
-            "auth_username": "admin",
-            "auth_password": "admin",
-            "realm": "master",
-            "alias": "Test delete inexisting authentication flow",
-            "state":"absent",
-            "force":False
-        }
+        toDelete = self.authenticationTestFlows[8].copy()
         set_module_args(toDelete)
         with self.assertRaises(AnsibleExitJson) as results:
             self.module.main()
         self.assertFalse(results.exception.args[0]['changed'])
         self.assertRegexpMatches(results.exception.args[0]['msg'], 'absent', 'authentication flow is not absent')
+        
+    def test_reorder_executions_in_existing_authentication_flow(self):
+        newOrder = [
+            {
+                "providerId": "auth-conditional-otp-form",
+                "requirement": "REQUIRED",
+                "authenticationConfig": {
+                    "alias": "test-conditional-otp",
+                    "config": {
+                        "skipOtpRole": "admin",
+                        "forceOtpRole": "broker.read-token",
+                        "defaultOtpOutcome": "skip"
+                    }
+                }
+            },
+            {
+                "providerId": "identity-provider-redirector",
+                "requirement": "ALTERNATIVE",
+                "authenticationConfig": {
+                    "alias": "name",
+                    "config": {
+                        "defaultProvider": "value"
+                    }
+                }
+            }
+        ]
+        toModify = self.authenticationTestFlows[9].copy()
+        toModify["authenticationExecutions"] = newOrder
+        set_module_args(toModify)
+        with self.assertRaises(AnsibleExitJson) as results:
+            self.module.main()
+        self.assertTrue(results.exception.args[0]['changed'])
+        executionsInSameOrder = True
+        for i, expectedExecution in enumerate(toModify["authenticationExecutions"], start=0):
+            if expectedExecution["providerId"] != results.exception.args[0]["flow"]["authenticationExecutions"][i]["providerId"]:
+                executionsInSameOrder = False
+                break
+        self.assertTrue(executionsInSameOrder, "Execution have not been reordered")
+
+            

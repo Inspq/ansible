@@ -292,7 +292,7 @@ options:
             consentRequired:
                 description:
                     - Specifies whether a user needs to provide consent to a client for this mapper to be active.
-                type: str
+                type: bool
             consentText:
                 description:
                     - The human-readable name of the consent the user is presented to accept.
@@ -483,8 +483,8 @@ options:
             composite:
                 description:
                     - Is the role is a composite or not.
+                    - default value is False if no composites are includes, True if composites are included
                 type: bool
-                default: False if no composites are includes, True if compistes are included
             composites:
                 description:
                     - List of composite roles
@@ -498,6 +498,12 @@ options:
                         description:
                             - Name of the role. It can be a realm role name or a client role name.
                         type: str
+            state:
+                description: 
+                    - Desired state for the client role
+                type: str
+                choices: ["present","absent"]
+                default: "present"
         version_added: "2.9"
     scope_mappings:
         description:

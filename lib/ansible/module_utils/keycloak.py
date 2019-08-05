@@ -79,7 +79,9 @@ URL_AUTHENTICATION_FLOW = "{url}/admin/realms/{realm}/authentication/flows/{id}"
 URL_AUTHENTICATION_FLOW_COPY = "{url}/admin/realms/{realm}/authentication/flows/{copyfrom}/copy"
 URL_AUTHENTICATION_FLOW_EXECUTIONS = "{url}/admin/realms/{realm}/authentication/flows/{flowalias}/executions"
 URL_AUTHENTICATION_FLOW_EXECUTIONS_EXECUTION = "{url}/admin/realms/{realm}/authentication/flows/{flowalias}/executions/execution"
-URL_AUTHENTICATION_EXECUTIONS_CONFIG = "{url}/admin/realms/{realm}/authentication/executions/{id}/config"
+URL_AUTHENTICATION_EXECUTION_CONFIG = "{url}/admin/realms/{realm}/authentication/executions/{id}/config"
+URL_AUTHENTICATION_EXECUTION_RAISE_PRIORITY = "{url}/admin/realms/{realm}/authentication/executions/{id}/raise-priority"
+URL_AUTHENTICATION_EXECUTION_LOWER_PRIORITY = "{url}/admin/realms/{realm}/authentication/executions/{id}/lower-priority"
 URL_AUTHENTICATION_CONFIG = "{url}/admin/realms/{realm}/authentication/config/{id}"
 
 URL_IDPS = "{url}/admin/realms/{realm}/identity-provider/instances"
@@ -1518,7 +1520,7 @@ class KeycloakAPI(object):
         try:
             changed = False
             if "authenticationExecutions" in config:
-                for newExecution in config["authenticationExecutions"]:
+                for newExecutionIndex, newExecution in enumerate(config["authenticationExecutions"], start=0):
                     # Get existing executions on the Keycloak server for this alias
                     existingExecutions = json.load(
                         open_url(
@@ -1529,9 +1531,10 @@ class KeycloakAPI(object):
                             method='GET',
                             headers=self.restheaders))
                     executionFound = False
-                    for existingExecution in existingExecutions:
+                    for i, existingExecution in enumerate(existingExecutions, start=0):
                         if "providerId" in existingExecution and existingExecution["providerId"] == newExecution["providerId"]:
                             executionFound = True
+                            existingExecutionIndex = i
                             break
                     if executionFound:
                         # Replace config id of the execution config by it's complete representation
@@ -1547,7 +1550,7 @@ class KeycloakAPI(object):
                                     headers=self.restheaders))
                             existingExecution["authenticationConfig"] = execConfig
                         # Compare the executions to see if it need changes
-                        if not isDictEquals(newExecution, existingExecution):
+                        if not isDictEquals(newExecution, existingExecution) or existingExecutionIndex != newExecutionIndex:
                             changed = True
                     else:
                         # Create the new execution
@@ -1574,9 +1577,10 @@ class KeycloakAPI(object):
                                 method='GET',
                                 headers=self.restheaders))
                         executionFound = False
-                        for existingExecution in existingExecutions:
+                        for i, existingExecution in enumerate(existingExecutions, start=0):
                             if "providerId" in existingExecution and existingExecution["providerId"] == newExecution["providerId"]:
                                 executionFound = True
+                                existingExecutionIndex = i
                                 break
                         if executionFound:
                             # Update the existing execution
@@ -1587,7 +1591,7 @@ class KeycloakAPI(object):
                                 if key == "authenticationConfig":
                                     # Add the autenticatorConfig to the execution
                                     open_url(
-                                        URL_AUTHENTICATION_EXECUTIONS_CONFIG.format(
+                                        URL_AUTHENTICATION_EXECUTION_CONFIG.format(
                                             url=self.baseurl,
                                             realm=realm,
                                             id=existingExecution["id"]),
@@ -1604,6 +1608,27 @@ class KeycloakAPI(object):
                                 method='PUT',
                                 headers=self.restheaders,
                                 data=json.dumps(updatedExec))
+                            if existingExecutionIndex < newExecutionIndex:
+                                diff = newExecutionIndex - existingExecutionIndex
+                                for i in range(diff):
+                                    open_url(
+                                        URL_AUTHENTICATION_EXECUTION_LOWER_PRIORITY.format(
+                                            url=self.baseurl,
+                                            realm=realm,
+                                            id=existingExecution["id"]),
+                                        method='POST',
+                                        headers=self.restheaders)
+                            elif existingExecutionIndex > newExecutionIndex:
+                                diff = existingExecutionIndex - newExecutionIndex
+                                for i in range(diff):
+                                    open_url(
+                                        URL_AUTHENTICATION_EXECUTION_RAISE_PRIORITY.format(
+                                            url=self.baseurl,
+                                            realm=realm,
+                                            id=existingExecution["id"]),
+                                        method='POST',
+                                        headers=self.restheaders)
+
             return changed
         except Exception as e:
             self.module.fail_json(msg='Could not create or update executions for authentication flow %s in realm %s: %s'
