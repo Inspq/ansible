@@ -499,7 +499,7 @@ options:
                             - Name of the role. It can be a realm role name or a client role name.
                         type: str
             state:
-                description: 
+                description:
                     - Desired state for the client role
                 type: str
                 choices: ["present","absent"]

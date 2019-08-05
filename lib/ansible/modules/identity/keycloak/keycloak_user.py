@@ -82,7 +82,7 @@ options:
         type: list
         suboptions:
             clientId:
-                description: 
+                description:
                     - Client ID for the role
                 type: str
             roles:
