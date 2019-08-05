@@ -332,7 +332,7 @@ options:
                 description:
                     - Custom MAC address of the network interface, by default it's obtained from MAC pool.
                     - "NOTE - This parameter is used only when C(state) is I(running) or I(present) and is able to only create NICs.
-                    To manage NICs of the VM in more depth please use M(ovirt_nics) module instead."
+                    To manage NICs of the VM in more depth please use M(ovirt_nic) module instead."
     disks:
         description:
             - List of disks, which should be attached to Virtual Machine. Disk is described by following dictionary.
@@ -356,7 +356,7 @@ options:
                 description:
                     - I(True) if the disk should be activated, default is activated.
                     - "NOTE - This parameter is used only when C(state) is I(running) or I(present) and is able to only attach disks.
-                    To manage disks of the VM in more depth please use M(ovirt_disks) module instead."
+                    To manage disks of the VM in more depth please use M(ovirt_disk) module instead."
                 type: bool
     sysprep:
         description:
@@ -831,6 +831,11 @@ options:
             - "VM should have snapshot specified by C(snapshot)."
             - "If C(snapshot_name) specified C(snapshot_vm) is required."
         version_added: "2.9"
+    template_cluster:
+        description:
+            - "Template cluster name. When not defined C(cluster) is used."
+            - "Allows you to create virtual machine in diffrent cluster than template cluster name."
+        version_added: "2.9"
 
 notes:
     - If VM is in I(UNASSIGNED) or I(UNKNOWN) state before any operation, the module will fail.
@@ -1162,7 +1167,7 @@ EXAMPLES = '''
 # Execute remote viever to VM
 - block:
   - name: Create a ticket for console for a running VM
-    ovirt_vms:
+    ovirt_vm:
       name: myvm
       ticket: true
       state: running
@@ -1265,9 +1270,14 @@ class VmsModule(BaseModule):
         template = None
         templates_service = self._connection.system_service().templates_service()
         if self.param('template'):
+            cluster = self.param('template_cluster') if self.param('template_cluster') else self.param('cluster')
             templates = templates_service.list(
-                search='name=%s and cluster=%s' % (self.param('template'), self.param('cluster'))
+                search='name=%s and cluster=%s' % (self.param('template'), cluster)
             )
+            if not templates:
+                templates = templates_service.list(
+                    search='name=%s' % self.param('template')
+                )
             if self.param('template_version'):
                 templates = [
                     t for t in templates
@@ -1278,7 +1288,7 @@ class VmsModule(BaseModule):
                     "Template with name '%s' and version '%s' in cluster '%s' was not found'" % (
                         self.param('template'),
                         self.param('template_version'),
-                        self.param('cluster')
+                        cluster
                     )
                 )
             template = sorted(templates, key=lambda t: t.version.version_number, reverse=True)[0]
@@ -2298,6 +2308,7 @@ def main():
         cluster=dict(type='str'),
         allow_partial_import=dict(type='bool'),
         template=dict(type='str'),
+        template_cluster=dict(type='str'),
         template_version=dict(type='int'),
         use_latest_template_version=dict(type='bool'),
         storage_domain=dict(type='str'),
@@ -2404,6 +2415,8 @@ def main():
         )
         vm = vms_module.search_entity(list_params={'all_content': True})
 
+        # Boolean variable to mark if vm existed before module was executed
+        vm_existed = True if vm else False
         control_state(vm, vms_service, module)
         if state in ('present', 'running', 'next_run'):
             if module.params['xen'] or module.params['kvm'] or module.params['vmware']:
@@ -2488,7 +2501,8 @@ def main():
                         wait_condition=lambda vm: vm.status == otypes.VmStatus.UP,
                     )
             # Allow migrate vm when state present.
-            vms_module._migrate_vm(vm)
+            if vm_existed:
+                vms_module._migrate_vm(vm)
             ret['changed'] = vms_module.changed
         elif state == 'stopped':
             if module.params['xen'] or module.params['kvm'] or module.params['vmware']:

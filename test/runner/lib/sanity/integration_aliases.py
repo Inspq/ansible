@@ -10,7 +10,7 @@ import os
 import lib.types as t
 
 from lib.sanity import (
-    SanitySingleVersion,
+    SanityVersionNeutral,
     SanityMessage,
     SanityFailure,
     SanitySuccess,
@@ -38,7 +38,7 @@ from lib.util import (
 )
 
 
-class IntegrationAliasesTest(SanitySingleVersion):
+class IntegrationAliasesTest(SanityVersionNeutral):
     """Sanity test to evaluate integration test aliases."""
     SHIPPABLE_YML = 'shippable.yml'
 
@@ -80,11 +80,23 @@ class IntegrationAliasesTest(SanitySingleVersion):
     Consider adding integration tests before or alongside changes.
     """
 
+    ansible_only = True
+
     def __init__(self):
         super(IntegrationAliasesTest, self).__init__()
 
         self._shippable_yml_lines = []  # type: t.List[str]
         self._shippable_test_groups = {}  # type: t.Dict[str, t.Set[int]]
+
+    @property
+    def can_ignore(self):  # type: () -> bool
+        """True if the test supports ignore entries."""
+        return False
+
+    @property
+    def no_targets(self):  # type: () -> bool
+        """True if the test does not use test targets. Mutually exclusive with all_targets."""
+        return True
 
     @property
     def shippable_yml_lines(self):

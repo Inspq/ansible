@@ -312,6 +312,7 @@ files:
   $modules/network/edgeswitch/: f-bor
   $modules/network/enos/: amuraleedhar
   $modules/network/eos/: trishnaguha
+  $modules/network/eric_eccli/: itercheng
   $modules/network/exos/: rdvencioneck
   $modules/network/f5/:
     ignored: Etienne-Carriere mhite mryanlam perzizzle srvg JoeReifel $team_networking
@@ -334,6 +335,7 @@ files:
     maintainers: $team_iosxr
   $modules/network/ironware/: paulquack
   $modules/network/junos/: Qalthos ganeshrn
+  $modules/network/icx/: sushma-alethea
   $modules/network/layer2/: $team_networking
   $modules/network/layer3/: $team_networking
   $modules/network/meraki/: &meraki
@@ -366,7 +368,7 @@ files:
   $modules/network/sros/: privateip
   $modules/network/system/: $team_networking
   $modules/network/voss/: $team_extreme
-  $modules/network/vyos/: Qalthos samdoran NilashishC
+  $modules/network/vyos/: Qalthos NilashishC
   $modules/notification/_osx_say.py: $team_ansible
   $modules/notification/rocketchat.py:
     ignored: ramondelafuente
@@ -455,7 +457,9 @@ files:
     notified: jlozadad
   $modules/storage/hpe3par/: farhan7500 gautamphegde
   $modules/storage/infinidat/: GR360RY vmalloc
-  $modules/storage/netapp/: $team_netapp
+  $modules/storage/netapp/: 
+    maintainers: $team_netapp
+    support: community
   $modules/storage/purestorage/:
     maintainers: $team_purestorage
     labels: pure_storage
@@ -529,10 +533,6 @@ files:
   $modules/windows/win_security_policy.py:
     <<: *windows
     maintainers: defionscode
-  bin/ansible-connection:
-    keywords:
-      - persistent connection
-    labels: networking
   contrib/:
     support: community
   contrib/inventory:
@@ -726,6 +726,7 @@ files:
     maintainers: $team_networking sganesh-infoblox
   $module_utils/netapp:
     maintainers: $team_netapp
+    support: community
   $module_utils/network:
     labels: networking
   $module_utils/network/a10:
@@ -761,6 +762,10 @@ files:
   $module_utils/network/eos:
     support: network
     maintainers: $team_networking
+  $module_utils/network/eric_eccli:
+    support: network
+    maintainers: $team_networking
+                 itercheng
   $module_utils/network/exos:
     maintainers: rdvencioneck
   $module_utils/network/f5:
@@ -1052,6 +1057,10 @@ files:
   $plugins/cliconf/eos.py:
     support: network
     maintainers: $team_networking
+  $plugins/cliconf/eric_eccli.py:
+    support: network
+    maintainers: $team_networking
+                 itercheng
   $plugins/cliconf/exos.py:
     maintainers: rdvencioneck
   $plugins/cliconf/ios.py:
@@ -1191,6 +1200,8 @@ files:
 # plugins/inventory
   $plugins/inventory/__init__.py:
     support: core
+  $plugins/inventory/aws_ec2.py:
+    maintainers: s-hertel
   $plugins/inventory/docker: *docker
   $plugins/inventory/docker_swarm.py:
     <<: *docker
@@ -1355,6 +1366,9 @@ files:
   $plugins/terminal/eos.py:
     support: network
     maintainers: $team_networking
+  $plugins/terminal/eric_eccli.py:
+    support: community
+    maintainers: itercheng
   $plugins/terminal/exos.py:
     maintainers: rdvencioneck
   $plugins/terminal/ios.py:
@@ -1388,7 +1402,7 @@ files:
     maintainers: $team_extreme
   $plugins/terminal/vyos.py:
     support: network
-    maintainers: $team_networking samdoran
+    maintainers: $team_networking
 ###############################
 # plugins/test
   $plugins/test:
@@ -1403,6 +1417,10 @@ files:
 
 ##############################
 # other lib
+  lib/ansible/cli/scripts/ansible_connection_cli_stub.py:
+    keywords:
+      - persistent connection
+    labels: networking
   lib/ansible/executor/powershell: *windows_core
   lib/ansible/template:
     keywords:
@@ -1486,6 +1504,9 @@ files:
   test/integration/targets/mso_: *aci
   test/integration/targets/mysql: *mysql
   test/integration/targets/nxos_: *nxos
+  test/integration/targets/netapp:
+    maintainers: $team_netapp
+    support: community
   test/integration/targets/openssl: *crypto
   test/integration/targets/postgresql: *postgresql
   test/integration/targets/scaleway_: *scaleway
@@ -1508,6 +1529,9 @@ files:
     <<: *docker
     support: community
   test/units/module_utils/facts/network/test_generic_bsd.py: *bsd
+  test/units/module_utils/test_netapp.py:
+    maintainers: $team_netapp
+    support: community
   test/units/module_utils/hwc:
     maintainers: $team_huawei
   test/units/module_utils/acme: *crypto
@@ -1535,8 +1559,6 @@ files:
   hacking/report.py:
     notified: mattclay
   shippable.yml:
-    notified: mattclay
-  tox.ini:
     notified: mattclay
 macros:
   module_utils: lib/ansible/module_utils
@@ -1578,7 +1600,7 @@ macros:
   team_macos: akasurde dagwieers kyleabenson martinm82
   team_manageiq: gtanzillo abellotti zgalor yaacov cben
   team_meraki: kbreit
-  team_mysql: Alexander198961 bmalynovytch bmildren michaelcoburn oneiroi tolland Xyon Andersson007
+  team_mysql: Alexander198961 bmalynovytch bmildren michaelcoburn oneiroi tolland Xyon Andersson007 kurtdavis
   team_netapp: hulquest lmprice ndswartz amit0701 schmots1 carchi8py lonico
   team_netbox: sieben anthony25 FragmentedPacket nikkytub pilou-
   team_netscaler: chiradeep giorgos-nikolopoulos

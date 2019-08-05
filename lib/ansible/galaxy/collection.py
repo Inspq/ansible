@@ -23,6 +23,7 @@ from yaml.error import YAMLError
 
 import ansible.constants as C
 from ansible.errors import AnsibleError
+from ansible.galaxy import get_collections_galaxy_meta_info
 from ansible.module_utils._text import to_bytes, to_native, to_text
 from ansible.module_utils import six
 from ansible.utils.display import Display
@@ -38,7 +39,6 @@ display = Display()
 MANIFEST_FORMAT = 1
 
 
-@six.python_2_unicode_compatible
 class CollectionRequirement:
 
     _FILE_MAPPING = [(b'MANIFEST.json', 'manifest_file'), (b'FILES.json', 'files_file')]
@@ -81,7 +81,10 @@ class CollectionRequirement:
         self.add_requirement(parent, requirement)
 
     def __str__(self):
-        return to_text("%s.%s" % (self.namespace, self.name))
+        return to_native("%s.%s" % (self.namespace, self.name))
+
+    def __unicode__(self):
+        return u"%s.%s" % (self.namespace, self.name)
 
     @property
     def latest_version(self):
@@ -108,16 +111,17 @@ class CollectionRequirement:
                 force_flag = '--force-with-deps' if parent else '--force'
                 version = self.latest_version if self.latest_version != '*' else 'unknown'
                 msg = "Cannot meet requirement %s:%s as it is already installed at version '%s'. Use %s to overwrite" \
-                      % (str(self), requirement, version, force_flag)
+                      % (to_text(self), requirement, version, force_flag)
                 raise AnsibleError(msg)
             elif parent is None:
-                msg = "Cannot meet requirement %s for dependency %s" % (requirement, str(self))
+                msg = "Cannot meet requirement %s for dependency %s" % (requirement, to_text(self))
             else:
-                msg = "Cannot meet dependency requirement '%s:%s' for collection %s" % (str(self), requirement, parent)
+                msg = "Cannot meet dependency requirement '%s:%s' for collection %s" \
+                      % (to_text(self), requirement, parent)
 
             collection_source = to_text(self.b_path, nonstring='passthru') or self.source
             req_by = "\n".join(
-                "\t%s - '%s:%s'" % (to_text(p) if p else 'base', str(self), r)
+                "\t%s - '%s:%s'" % (to_text(p) if p else 'base', to_text(self), r)
                 for p, r in self.required_by
             )
 
@@ -131,14 +135,13 @@ class CollectionRequirement:
 
     def install(self, path, b_temp_path):
         if self.skip:
-            display.display("Skipping '%s' as it is already installed" % str(self))
+            display.display("Skipping '%s' as it is already installed" % to_text(self))
             return
 
         # Install if it is not
         collection_path = os.path.join(path, self.namespace, self.name)
         b_collection_path = to_bytes(collection_path, errors='surrogate_or_strict')
-        display.display("Installing '%s:%s' to '%s'" % (str(self), self.latest_version,
-                                                        collection_path))
+        display.display("Installing '%s:%s' to '%s'" % (to_text(self), self.latest_version, collection_path))
 
         if self.b_path is None:
             download_url = self._galaxy_info['download_url']
@@ -357,7 +360,7 @@ def build_collection(collection_path, output_path, force):
         raise AnsibleError("The collection galaxy.yml path '%s' does not exist." % to_native(b_galaxy_path))
 
     collection_meta = _get_galaxy_yml(b_galaxy_path)
-    file_manifest = _build_files_manifest(b_collection_path)
+    file_manifest = _build_files_manifest(b_collection_path, collection_meta['namespace'], collection_meta['name'])
     collection_manifest = _build_manifest(**collection_meta)
 
     collection_output = os.path.join(output_path, "%s-%s-%s.tar.gz" % (collection_meta['namespace'],
@@ -454,7 +457,7 @@ def install_collections(collections, output_path, servers, validate_certs, ignor
             except AnsibleError as err:
                 if ignore_errors:
                     display.warning("Failed to install collection %s but skipping due to --ignore-errors being set. "
-                                    "Error: %s" % (str(collection), to_text(err)))
+                                    "Error: %s" % (to_text(collection), to_text(err)))
                 else:
                     raise
 
@@ -524,11 +527,25 @@ def _tarfile_extract(tar, member):
 
 
 def _get_galaxy_yml(b_galaxy_yml_path):
-    mandatory_keys = frozenset(['namespace', 'name', 'version', 'authors', 'readme'])
-    optional_strings = ('description', 'repository', 'documentation', 'homepage', 'issues', 'license_file')
-    optional_lists = ('license', 'tags', 'authors')  # authors isn't optional but this will ensure it is list
-    optional_dicts = ('dependencies',)
-    all_keys = frozenset(list(mandatory_keys) + list(optional_strings) + list(optional_lists) + list(optional_dicts))
+    meta_info = get_collections_galaxy_meta_info()
+
+    mandatory_keys = set()
+    string_keys = set()
+    list_keys = set()
+    dict_keys = set()
+
+    for info in meta_info:
+        if info.get('required', False):
+            mandatory_keys.add(info['key'])
+
+        key_list_type = {
+            'str': string_keys,
+            'list': list_keys,
+            'dict': dict_keys,
+        }[info.get('type', 'str')]
+        key_list_type.add(info['key'])
+
+    all_keys = frozenset(list(mandatory_keys) + list(string_keys) + list(list_keys) + list(dict_keys))
 
     try:
         with open(b_galaxy_yml_path, 'rb') as g_yaml:
@@ -549,11 +566,11 @@ def _get_galaxy_yml(b_galaxy_yml_path):
                         % (to_text(b_galaxy_yml_path), ", ".join(extra_keys)))
 
     # Add the defaults if they have not been set
-    for optional_string in optional_strings:
+    for optional_string in string_keys:
         if optional_string not in galaxy_yml:
             galaxy_yml[optional_string] = None
 
-    for optional_list in optional_lists:
+    for optional_list in list_keys:
         list_val = galaxy_yml.get(optional_list, None)
 
         if list_val is None:
@@ -561,7 +578,7 @@ def _get_galaxy_yml(b_galaxy_yml_path):
         elif not isinstance(list_val, list):
             galaxy_yml[optional_list] = [list_val]
 
-    for optional_dict in optional_dicts:
+    for optional_dict in dict_keys:
         if optional_dict not in galaxy_yml:
             galaxy_yml[optional_dict] = {}
 
@@ -572,9 +589,12 @@ def _get_galaxy_yml(b_galaxy_yml_path):
     return galaxy_yml
 
 
-def _build_files_manifest(b_collection_path):
-    b_ignore_files = frozenset([b'*.pyc', b'*.retry'])
-    b_ignore_dirs = frozenset([b'CVS', b'.bzr', b'.hg', b'.git', b'.svn', b'__pycache__', b'.tox'])
+def _build_files_manifest(b_collection_path, namespace, name):
+    # Contains tuple of (b_filename, only root) where 'only root' means to only ignore the file in the root dir
+    b_ignore_files = frozenset([(b'*.pyc', False), (b'*.retry', False),
+                                (to_bytes('{0}-{1}-*.tar.gz'.format(namespace, name)), True)])
+    b_ignore_dirs = frozenset([(b'CVS', False), (b'.bzr', False), (b'.hg', False), (b'.git', False), (b'.svn', False),
+                               (b'__pycache__', False), (b'.tox', False)])
 
     entry_template = {
         'name': None,
@@ -597,13 +617,16 @@ def _build_files_manifest(b_collection_path):
     }
 
     def _walk(b_path, b_top_level_dir):
+        is_root = b_path == b_top_level_dir
+
         for b_item in os.listdir(b_path):
             b_abs_path = os.path.join(b_path, b_item)
             b_rel_base_dir = b'' if b_path == b_top_level_dir else b_path[len(b_top_level_dir) + 1:]
             rel_path = to_text(os.path.join(b_rel_base_dir, b_item), errors='surrogate_or_strict')
 
             if os.path.isdir(b_abs_path):
-                if b_item in b_ignore_dirs:
+                if any(b_item == b_path for b_path, root_only in b_ignore_dirs
+                       if not root_only or root_only == is_root):
                     display.vvv("Skipping '%s' for collection build" % to_text(b_abs_path))
                     continue
 
@@ -625,7 +648,8 @@ def _build_files_manifest(b_collection_path):
             else:
                 if b_item == b'galaxy.yml':
                     continue
-                elif any(fnmatch.fnmatch(b_item, b_pattern) for b_pattern in b_ignore_files):
+                elif any(fnmatch.fnmatch(b_item, b_pattern) for b_pattern, root_only in b_ignore_files
+                         if not root_only or root_only == is_root):
                     display.vvv("Skipping '%s' for collection build" % to_text(b_abs_path))
                     continue
 
@@ -655,7 +679,7 @@ def _build_manifest(namespace, name, version, authors, readme, tags, description
             'tags': tags,
             'description': description,
             'license': license_ids,
-            'license_file': license_file,
+            'license_file': license_file if license_file else None,  # Handle galaxy.yml having an empty string (None)
             'dependencies': dependencies,
             'repository': repository,
             'documentation': documentation,
@@ -792,7 +816,7 @@ def _find_existing_collections(path):
             b_collection_path = os.path.join(b_namespace_path, b_collection)
             if os.path.isdir(b_collection_path):
                 req = CollectionRequirement.from_path(b_collection_path, True, False)
-                display.vvv("Found installed collection %s:%s at '%s'" % (str(req), req.latest_version,
+                display.vvv("Found installed collection %s:%s at '%s'" % (to_text(req), req.latest_version,
                                                                           to_text(b_collection_path)))
                 collections.append(req)
 
@@ -808,7 +832,7 @@ def _build_dependency_map(collections, existing_collections, b_temp_path, server
         _get_collection_info(dependency_map, existing_collections, name, version, source, b_temp_path, servers,
                              validate_certs, (force or force_deps))
 
-    checked_parents = set([str(c) for c in dependency_map.values() if c.skip])
+    checked_parents = set([to_text(c) for c in dependency_map.values() if c.skip])
     while len(dependency_map) != len(checked_parents):
         while not no_deps:  # Only parse dependencies if no_deps was not set
             parents_to_check = set(dependency_map.keys()).difference(checked_parents)
@@ -859,7 +883,7 @@ def _get_collection_info(dep_map, existing_collections, collection, requirement,
     if b_tar_path:
         req = CollectionRequirement.from_tar(b_tar_path, validate_certs, force, parent=parent)
 
-        collection_name = str(req)
+        collection_name = to_text(req)
         if collection_name in dep_map:
             collection_info = dep_map[collection_name]
             collection_info.add_requirement(None, req.latest_version)
@@ -875,13 +899,13 @@ def _get_collection_info(dep_map, existing_collections, collection, requirement,
             collection_info = CollectionRequirement.from_name(collection, servers, requirement, validate_certs, force,
                                                               parent=parent)
 
-    existing = [c for c in existing_collections if str(c) == str(collection_info)]
+    existing = [c for c in existing_collections if to_text(c) == to_text(collection_info)]
     if existing and not collection_info.force:
         # Test that the installed collection fits the requirement
-        existing[0].add_requirement(str(collection_info), requirement)
+        existing[0].add_requirement(to_text(collection_info), requirement)
         collection_info = existing[0]
 
-    dep_map[str(collection_info)] = collection_info
+    dep_map[to_text(collection_info)] = collection_info
 
 
 def _urljoin(*args):

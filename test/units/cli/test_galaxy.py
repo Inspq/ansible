@@ -31,13 +31,12 @@ import yaml
 
 import ansible.constants as C
 from ansible import context
-from ansible.cli.arguments import option_helpers as opt_help
 from ansible.cli.galaxy import GalaxyCLI
 from ansible.errors import AnsibleError
 from ansible.module_utils._text import to_text
 from ansible.utils import context_objects as co
 from units.compat import unittest
-from units.compat.mock import call, patch, MagicMock
+from units.compat.mock import patch, MagicMock
 
 
 @pytest.fixture(autouse='function')
@@ -495,15 +494,14 @@ def test_collection_default(collection_skeleton):
     assert metadata['authors'] == ['your name <example@domain.com>']
     assert metadata['readme'] == 'README.md'
     assert metadata['version'] == '1.0.0'
-    assert metadata['description'] == 'your description'
-    assert metadata['license'] == 'GPL-2.0-or-later'
+    assert metadata['description'] == 'your collection description'
+    assert metadata['license'] == ['GPL-2.0-or-later']
     assert metadata['tags'] == []
     assert metadata['dependencies'] == {}
     assert metadata['documentation'] == 'http://docs.example.com'
     assert metadata['repository'] == 'http://example.com/repository'
     assert metadata['homepage'] == 'http://example.com'
     assert metadata['issues'] == 'http://example.com/issue/tracker'
-    assert len(metadata) == 13
 
     for d in ['docs', 'plugins', 'roles']:
         assert os.path.isdir(os.path.join(collection_skeleton, d)), \
@@ -639,7 +637,7 @@ def test_collection_build(collection_artifact):
         assert coll_info['authors'] == ['your name <example@domain.com>']
         assert coll_info['readme'] == 'README.md'
         assert coll_info['tags'] == []
-        assert coll_info['description'] == 'your description'
+        assert coll_info['description'] == 'your collection description'
         assert coll_info['license'] == ['GPL-2.0-or-later']
         assert coll_info['license_file'] is None
         assert coll_info['dependencies'] == {}

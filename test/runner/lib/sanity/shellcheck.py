@@ -9,17 +9,25 @@ from xml.etree.ElementTree import (
     Element,
 )
 
+import lib.types as t
+
 from lib.sanity import (
-    SanitySingleVersion,
+    SanityVersionNeutral,
     SanityMessage,
     SanityFailure,
     SanitySuccess,
     SanitySkipped,
 )
 
+from lib.target import (
+    TestTarget,
+)
+
 from lib.util import (
     SubprocessError,
     read_lines_without_comments,
+    ANSIBLE_ROOT,
+    find_executable,
 )
 
 from lib.util_common import (
@@ -31,23 +39,31 @@ from lib.config import (
 )
 
 
-class ShellcheckTest(SanitySingleVersion):
+class ShellcheckTest(SanityVersionNeutral):
     """Sanity test using shellcheck."""
+    @property
+    def error_code(self):  # type: () -> t.Optional[str]
+        """Error code for ansible-test matching the format used by the underlying test program, or None if the program does not use error codes."""
+        return 'AT1000'
+
+    def filter_targets(self, targets):  # type: (t.List[TestTarget]) -> t.List[TestTarget]
+        """Return the given list of test targets, filtered to include only those relevant for the test."""
+        return [target for target in targets if os.path.splitext(target.path)[1] == '.sh']
+
     def test(self, args, targets):
         """
         :type args: SanityConfig
         :type targets: SanityTargets
         :rtype: TestResult
         """
-        skip_file = 'test/sanity/shellcheck/skip.txt'
-        skip_paths = set(read_lines_without_comments(skip_file, remove_blank_lines=True, optional=True))
-
-        exclude_file = 'test/sanity/shellcheck/exclude.txt'
+        exclude_file = os.path.join(ANSIBLE_ROOT, 'test/sanity/shellcheck/exclude.txt')
         exclude = set(read_lines_without_comments(exclude_file, remove_blank_lines=True, optional=True))
 
-        paths = sorted(i.path for i in targets.include if os.path.splitext(i.path)[1] == '.sh' and i.path not in skip_paths)
+        settings = self.load_processor(args)
 
-        if not paths:
+        paths = [target.path for target in targets.include]
+
+        if not find_executable('shellcheck', required='warning'):
             return SanitySkipped(self.name)
 
         cmd = [
@@ -85,6 +101,8 @@ class ShellcheckTest(SanitySingleVersion):
                     level=entry.attrib['severity'],
                     code=entry.attrib['source'].replace('ShellCheck.', ''),
                 ))
+
+        results = settings.process_errors(results, paths)
 
         if results:
             return SanityFailure(self.name, messages=results)
