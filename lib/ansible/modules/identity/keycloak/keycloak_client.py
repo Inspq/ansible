@@ -292,7 +292,7 @@ options:
             consentRequired:
                 description:
                     - Specifies whether a user needs to provide consent to a client for this mapper to be active.
-                type: str
+                type: bool
             consentText:
                 description:
                     - The human-readable name of the consent the user is presented to accept.

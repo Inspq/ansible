@@ -80,7 +80,7 @@ options:
             consentRequired:
                 description:
                     - Specifies whether a user needs to provide consent to a client for this mapper to be active.
-                type: str
+                type: bool
             consentText:
                 description:
                     - The human-readable name of the consent the user is presented to accept.
@@ -98,7 +98,7 @@ options:
                     - is either 'openid-connect' or 'saml', this specifies for which protocol this protocol mapper
                       is active.
                 choices: ['openid-connect', 'saml']
-
+                type: str
             protocolMapper:
                 description:
                     - The Keycloak-internal name of the type of this protocol-mapper. While an exhaustive list is
