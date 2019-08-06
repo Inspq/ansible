@@ -440,6 +440,28 @@ class KeycloakComponentTestCase(ModuleTestCase):
                         "groups.dn": ["cn=groups,OU=SEC,DC=SANTEPUBLIQUE,DC=RTSS,DC=QC,DC=CA"],
                         "drop.non.existing.groups.during.sync": ["false"]
                     }
+                },
+                {
+                    "name": "attributeMapper1",
+                    "providerId": "user-attribute-ldap-mapper",
+                    "config": {
+                        "user.model.attribute": ["mobilePhoneNumber"],
+                        "ldap.attribute": ["mobile"],
+                        "is.mandatory.in.ldap": ["false"],
+                        "always.read.value.from.ldap": ["false"],
+                        "read.only": ["false"]
+                    }
+                },
+                {
+                    "name": "attributeMapper2",
+                    "providerId": "user-attribute-ldap-mapper",
+                    "config": {
+                        "user.model.attribute": ["phoneNumber"],
+                        "ldap.attribute": ["telephoneNumber"],
+                        "is.mandatory.in.ldap": ["false"],
+                        "always.read.value.from.ldap": ["false"],
+                        "read.only": ["false"]
+                    }
                 }
             ]
         }
