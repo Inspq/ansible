@@ -491,6 +491,22 @@ class KeycloakComponentTestCase(ModuleTestCase):
         self.assertEquals(subComponent["config"]["groups.dn"][0], 
                      self.modifyComponentLdapUserStorageProvider["subComponents"]["org.keycloak.storage.ldap.mappers.LDAPStorageMapper"][1]["config"]["groups.dn"][0],
                      "groups.dn: " + subComponent["config"]["groups.dn"][0] + ": " + self.modifyComponentLdapUserStorageProvider["subComponents"]["org.keycloak.storage.ldap.mappers.LDAPStorageMapper"][1]["config"]["groups.dn"][0])
+        for subComponent in results.exception.args[0]['subComponents']:
+            if subComponent["name"] == self.modifyComponentLdapUserStorageProvider["subComponents"]["org.keycloak.storage.ldap.mappers.LDAPStorageMapper"][2]["name"]:
+                subComponentFound = True
+                break
+        self.assertTrue(subComponentFound,"Sub component not found in the sub components")
+        self.assertEquals(subComponent["config"]["user.model.attribute"][0], 
+                     self.modifyComponentLdapUserStorageProvider["subComponents"]["org.keycloak.storage.ldap.mappers.LDAPStorageMapper"][2]["config"]["user.model.attribute"][0],
+                     "user.model.attribute: " + subComponent["config"]["user.model.attribute"][0] + ": " + self.modifyComponentLdapUserStorageProvider["subComponents"]["org.keycloak.storage.ldap.mappers.LDAPStorageMapper"][2]["config"]["user.model.attribute"][0])
+        for subComponent in results.exception.args[0]['subComponents']:
+            if subComponent["name"] == self.modifyComponentLdapUserStorageProvider["subComponents"]["org.keycloak.storage.ldap.mappers.LDAPStorageMapper"][3]["name"]:
+                subComponentFound = True
+                break
+        self.assertTrue(subComponentFound,"Sub component not found in the sub components")
+        self.assertEquals(subComponent["config"]["user.model.attribute"][0], 
+                     self.modifyComponentLdapUserStorageProvider["subComponents"]["org.keycloak.storage.ldap.mappers.LDAPStorageMapper"][3]["config"]["user.model.attribute"][0],
+                     "user.model.attribute: " + subComponent["config"]["user.model.attribute"][0] + ": " + self.modifyComponentLdapUserStorageProvider["subComponents"]["org.keycloak.storage.ldap.mappers.LDAPStorageMapper"][3]["config"]["user.model.attribute"][0])
 
     def test_do_not_modify_component_ldap_user_storage_provider(self):
         set_module_args(self.doNotModifyComponentLdapUserStorageProvider)
