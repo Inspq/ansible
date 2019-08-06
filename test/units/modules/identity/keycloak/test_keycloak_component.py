@@ -340,6 +340,52 @@ class KeycloakComponentTestCase(ModuleTestCase):
             },
             "force": False,
             "state": "absent"
+        },
+        {
+            "auth_keycloak_url": "http://localhost:18081/auth",
+            "auth_username": "admin",
+            "auth_password": "admin",
+            "realm": "master",
+            "state": "present",
+            "name": "test_modify_component_add_two_mappers_same_providerId",
+            "providerId": "ldap",
+            "providerType": "org.keycloak.storage.UserStorageProvider",
+            "config": {
+                "vendor": ["rhds"],
+                "usernameLDAPAttribute": ["uid"],
+                "rdnLDAPAttribute": ["uid"],
+                "uuidLDAPAttribute": ["nsuniqueid"],
+                "userObjectClasses": [
+                    "inetOrgPerson",
+                    "organizationalPerson"
+                    ],
+                "connectionUrl": ["ldap://testldap:389"],
+                "usersDn": ["ou=People,dc=example,dc=com"],
+                "authType": ["simple"],
+                "bindDn": ["cn=Directory Manager"],
+                "bindCredential": ["Admin123"]
+            },
+            "subComponents": {
+                "org.keycloak.storage.ldap.mappers.LDAPStorageMapper": [
+                    {
+                        "name": "groupMapper",
+                        "providerId": "group-ldap-mapper",
+                        "config": {
+                            "mode": ["LDAP_ONLY"],
+                            "membership.attribute.type": ["DN"],
+                            "user.roles.retrieve.strategy": ["LOAD_GROUPS_BY_MEMBER_ATTRIBUTE"],
+                            "group.name.ldap.attribute": ["cn"],
+                            "membership.ldap.attribute": ["member"],
+                            "preserve.group.inheritance": ["true"],
+                            "membership.user.ldap.attribute": ["cn"],
+                            "group.object.classes": ["groupOfNames"],
+                            "groups.dn": ["ou=Groups,dc=example,dc=com"],
+                            "drop.non.existing.groups.during.sync": ["false"]
+                        }
+                    }
+                ]
+            },
+            "force": False
         }
     ]
 
@@ -573,3 +619,99 @@ class KeycloakComponentTestCase(ModuleTestCase):
         with self.assertRaises(AnsibleExitJson) as results:
             self.module.main()
         self.assertTrue(results.exception.args[0]['changed'])
+
+    def test_modify_component_add_two_mappers_same_provider_id(self):
+        toModify = self.testComponents[6].copy()
+        toModify["subComponents"] = {
+            "org.keycloak.storage.ldap.mappers.LDAPStorageMapper": [{
+                    "name": "groupMapper",
+                    "providerId": "group-ldap-mapper",
+                    "config": {
+                        "mode": ["LDAP_ONLY"],
+                        "membership.attribute.type": ["DN"],
+                        "user.roles.retrieve.strategy": ["LOAD_GROUPS_BY_MEMBER_ATTRIBUTE"],
+                        "group.name.ldap.attribute": ["cn"],
+                        "membership.ldap.attribute": ["member"],
+                        "preserve.group.inheritance": ["true"],
+                        "membership.user.ldap.attribute": ["cn"],
+                        "group.object.classes": ["groupOfNames"],
+                        "groups.dn": ["ou=Groups,dc=example,dc=com"],
+                        "drop.non.existing.groups.during.sync": ["false"]
+                    }
+                },
+                {
+                    "name": "mobilePhoneMapper",
+                    "providerId": "user-attribute-ldap-mapper",
+                    "config": {
+                        "user.model.attribute": ["mobilePhoneNumber"],
+                        "ldap.attribute": ["mobile"],
+                        "is.mandatory.in.ldap": ["false"],
+                        "always.read.value.from.ldap": ["false"],
+                        "read.only": ["false"]
+                    }
+                },
+                {
+                    "name": "phoneMapper",
+                    "providerId": "user-attribute-ldap-mapper",
+                    "config": {
+                        "user.model.attribute": ["phoneNumber"],
+                        "ldap.attribute": ["telephoneNumber"],
+                        "is.mandatory.in.ldap": ["false"],
+                        "always.read.value.from.ldap": ["false"],
+                        "read.only": ["false"]
+                    }
+                },
+                {
+                    "name": "organisation",
+                    "providerId": "user-attribute-ldap-mapper",
+                    "config": { 
+                        "user.model.attribute": ["company"],
+                        "ldap.attribute": ["o"],
+                        "is.mandatory.in.ldap": ["false"],
+                        "always.read.value.from.ldap": ["false"],
+                        "read.only": ["false"]
+                    }
+                }
+            ]
+        }
+        toModify["syncUserStorage"] = "triggerFullSync"
+        toModify["syncLdapMappers"] = "fedToKeycloak"
+        set_module_args(toModify)
+        with self.assertRaises(AnsibleExitJson) as results:
+            self.module.main()
+        self.assertTrue(results.exception.args[0]['changed'])
+    
+        self.assertEquals(results.exception.args[0]['component']['name'], toModify["name"] ,"name: " + results.exception.args[0]['component']['name'])
+        self.assertEquals(results.exception.args[0]['component']['config']['vendor'][0], toModify['config']['vendor'][0] ,"vendor: " + results.exception.args[0]['component']['config']['vendor'][0])
+        self.assertEquals(results.exception.args[0]['component']['config']['connectionUrl'][0],toModify['config']['connectionUrl'][0], "connectionUrl: " + results.exception.args[0]['component']['config']['connectionUrl'][0])
+        subComponentFound = False
+        for subComponent in results.exception.args[0]['subComponents']:
+            if subComponent["name"] == toModify["subComponents"]["org.keycloak.storage.ldap.mappers.LDAPStorageMapper"][0]["name"]:
+                subComponentFound = True
+                break
+        self.assertTrue(subComponentFound,"Sub component not found in the sub components")
+        self.assertEquals(subComponent["config"]["groups.dn"][0], 
+                     toModify["subComponents"]["org.keycloak.storage.ldap.mappers.LDAPStorageMapper"][0]["config"]["groups.dn"][0],
+                     "groups.dn: " + subComponent["config"]["groups.dn"][0] + ": " + toModify["subComponents"]["org.keycloak.storage.ldap.mappers.LDAPStorageMapper"][0]["config"]["groups.dn"][0])
+        subComponentFound = False
+        for subComponent in results.exception.args[0]['subComponents']:
+            if subComponent["name"] == toModify["subComponents"]["org.keycloak.storage.ldap.mappers.LDAPStorageMapper"][1]["name"]:
+                subComponentFound = True
+                break
+        self.assertTrue(subComponentFound,"Sub component not found in the sub components")
+        for subComponent in results.exception.args[0]['subComponents']:
+            if subComponent["name"] == toModify["subComponents"]["org.keycloak.storage.ldap.mappers.LDAPStorageMapper"][2]["name"]:
+                subComponentFound = True
+                break
+        self.assertTrue(subComponentFound,"Sub component not found in the sub components")
+        self.assertEquals(subComponent["config"]["user.model.attribute"][0], 
+                     toModify["subComponents"]["org.keycloak.storage.ldap.mappers.LDAPStorageMapper"][2]["config"]["user.model.attribute"][0],
+                     "user.model.attribute: " + subComponent["config"]["user.model.attribute"][0] + ": " + toModify["subComponents"]["org.keycloak.storage.ldap.mappers.LDAPStorageMapper"][2]["config"]["user.model.attribute"][0])
+        for subComponent in results.exception.args[0]['subComponents']:
+            if subComponent["name"] == toModify["subComponents"]["org.keycloak.storage.ldap.mappers.LDAPStorageMapper"][3]["name"]:
+                subComponentFound = True
+                break
+        self.assertTrue(subComponentFound,"Sub component not found in the sub components")
+        self.assertEquals(subComponent["config"]["user.model.attribute"][0], 
+                     toModify["subComponents"]["org.keycloak.storage.ldap.mappers.LDAPStorageMapper"][3]["config"]["user.model.attribute"][0],
+                     "user.model.attribute: " + subComponent["config"]["user.model.attribute"][0] + ": " + toModify["subComponents"]["org.keycloak.storage.ldap.mappers.LDAPStorageMapper"][3]["config"]["user.model.attribute"][0])
