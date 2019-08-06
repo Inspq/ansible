@@ -1885,22 +1885,22 @@ class KeycloakAPI(object):
                         changed = True
                         # Sync LDAP for group mappers
                         if component["providerType"] == "org.keycloak.storage.UserStorageProvider" and syncLdapMappers != "no":
-                            # Get subcomponents
-                            subComponents = self.get_component_by_name_provider_and_parent(
+                            # Get subcomponent
+                            subComponent = self.get_component_by_name_provider_and_parent(
                                 name=newSubComponent["name"],
                                 provider_type=newSubComponent["providerType"],
+                                provider_id=newSubComponent["providerId"],
                                 parent_id=component["id"],
                                 realm=realm)
-                            for subComponent in subComponents:
-                                sync_url = URL_USER_STORAGE_MAPPER_SYNC.format(
-                                    url=self.baseurl,
-                                    realm=realm,
-                                    parentid=subComponent["parentId"],
-                                    id=subComponent["id"],
-                                    direction=syncLdapMappers)
-                                open_url(sync_url,
-                                         method='POST',
-                                         headers=self.restheaders)
+                            sync_url = URL_USER_STORAGE_MAPPER_SYNC.format(
+                                url=self.baseurl,
+                                realm=realm,
+                                parentid=subComponent["parentId"],
+                                id=subComponent["id"],
+                                direction=syncLdapMappers)
+                            open_url(sync_url,
+                                     method='POST',
+                                     headers=self.restheaders)
             return changed
         except Exception as e:
             self.module.fail_json(msg='Could not update component %s in realm %s: %s'
