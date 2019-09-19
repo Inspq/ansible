@@ -660,7 +660,7 @@ def main():
     subcomponents_config_spec = {
         "name": {"type": "str"},
         "providerId": {"type": "str", "choices": ['user-attribute-ldap-mapper', 'group-ldap-mapper']},
-        "config":{"type": "dict", "options": ldapstoragemapper_spec}
+        "config": {"type": "dict", "options": ldapstoragemapper_spec}
     }
     subcomponents_spec = {
         "org.keycloak.storage.ldap.mappers.LDAPStorageMapper": {'type': 'list', 'options': subcomponents_config_spec}
