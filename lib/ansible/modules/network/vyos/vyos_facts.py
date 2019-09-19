@@ -27,9 +27,11 @@ description:
 author:
   - Nathaniel Case (@qalthos)
   - Nilashish Chakraborty (@Nilashishc)
+  - Rohit Thakur (@rohitthakur2590)
 extends_documentation_fragment: vyos
 notes:
-  - Tested against VyOS 1.1.8
+  - Tested against VyOS 1.1.8 (helium).
+  - This module works with connection C(network_cli). See L(the VyOS OS Platform Options,../network/user_guide/platform_vyos.html).
 options:
   gather_subset:
     description:
@@ -49,9 +51,10 @@ options:
         Can specify a list of values to include a larger subset. Values
         can also be used with an initial C(M(!)) to specify that a
         specific subset should not be collected.
+        Valid subsets are 'all', 'interfaces', 'l3_interfaces', 'lag_interfaces',
+        'lldp_global', 'lldp_interfaces'.
     required: false
     version_added: "2.9"
-    choices: ['all', 'interfaces', '!interfaces']
 """
 
 EXAMPLES = """

@@ -110,9 +110,9 @@ options:
                 - Must be set to true when IdP is Microsoft ADFS.
             type: str
             choices:
-                - true
-                - false
-            default: false
+                - 'true'
+                - 'false'
+            default: 'false'
         defaultScope:
             description:
                 - Default scope supported with this IdP
@@ -126,9 +126,9 @@ options:
                 - Is back channel logout is supported by the IdP.
             type: str
             choices:
-                - true
-                - false
-            default: true
+                - 'true'
+                - 'false'
+            default: 'true'
   mappers:
     description:
     - List of mappers for the Identity provider.

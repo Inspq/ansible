@@ -86,10 +86,10 @@ module_utils
 
 When coding with ``module_utils`` in a collection, the Python ``import`` statement needs to take into account the FQCN along with the ``ansible_collections`` convention. The resulting Python import will look like ``from ansible_collections.{namespace}.{collection}.plugins.module_utils.{util} import {something}``
 
-The following example snippet shows a module using both default Ansible ``module_utils`` and
-those provided by a collection. In this example the namespace is
-``ansible_example``, the collection is ``community``, and the ``module_util`` in
-question is called ``qradar`` such that the FQCN is ``ansible_example.community.plugins.module_utils.qradar``:
+The following example snippets show a Python and PowerShell module using both default Ansible ``module_utils`` and
+those provided by a collection. In this example the namespace is ``ansible_example``, the collection is ``community``.
+In the Python example the ``module_util`` in question is called ``qradar`` such that the FQCN is
+``ansible_example.community.plugins.module_utils.qradar``:
 
 .. code-block:: python
 
@@ -115,6 +115,26 @@ question is called ``qradar`` such that the FQCN is ``ansible_example.community.
         headers={"Content-Type": "application/json"},
         not_rest_data_keys=['state']
     )
+
+
+In the PowerShell example the ``module_util`` in question is called ``hyperv`` such that the FCQN is
+``ansible_example.community.plugins.module_utils.hyperv``:
+
+.. code-block:: powershell
+
+    #!powershell
+    #AnsibleRequires -CSharpUtil Ansible.Basic
+    #AnsibleRequires -PowerShell ansible_collections.ansible_example.community.plugins.module_utils.hyperv
+
+    $spec = @{
+        name = @{ required = $true; type = "str" }
+        state = @{ required = $true; choices = @("present", "absent") }
+    }
+    $module = [Ansible.Basic.AnsibleModule]::Create($args, $spec)
+
+    Invoke-HyperVFunction -Name $module.Params.name
+
+    $module.ExitJson()
 
 
 roles directory
@@ -199,7 +219,7 @@ To build a collection, run ``ansible-galaxy collection build`` from inside the r
 
 .. code-block:: bash
 
-    collection_dir#> ansible-galaxy collection build my_namespace.my_collection
+    collection_dir#> ansible-galaxy collection build
 
 This creates
 a tarball of the built collection in the current directory which can be uploaded to Galaxy.::
@@ -217,6 +237,21 @@ a tarball of the built collection in the current directory which can be uploaded
 
 This tarball is mainly intended to upload to Galaxy
 as a distribution method, but you can use it directly to install the collection on target systems.
+
+.. _trying_collection_locally:
+
+Trying collection locally
+-------------------------
+
+You can try your collection locally by installing it from the tarball.
+
+.. code-block:: bash
+
+   ansible-galaxy collection install my_namespace-my_collection-1.0.0.tar.gz -p ./collections/ansible_collections
+
+You should use one of the values configured in :ref:`COLLECTIONS_PATHS` for your path. This is also where Ansible itself will expect to find collections when attempting to use them.
+
+Then try to use the local collection inside a playbook, for more details see :ref:`Using collections <using_collections>`
 
 .. _publishing_collections:
 
@@ -267,24 +302,40 @@ Once you upload a version of a collection, you cannot delete or modify that vers
 uploading. The only way to change a collection is to release a new version. The latest version of a collection (by highest version number)
 will be the version displayed everywhere in Galaxy; however, users will still be able to download older versions.
 
+Collection versions use `Sematic Versioning <https://semver.org/>` for version numbers. Please read the official documentation for details and examples. In summary:
+
+* Increment major (for example: x in `x.y.z`) version number for an incompatible API change.
+* Increment minor (for example: y in `x.y.z`) version number for new functionality in a backwards compatible manner.
+* Increment patch (for example: z in `x.y.z`) version number for backwards compatible bug fixes.
+
+Migrating Ansible content to a collection
+=========================================
+
+You can experiment with migrating existing modules into a collection using the `content_collector tool <https://github.com/ansible/content_collector>`_. The ``content_collector`` is a playbook that helps you migrate content from an Ansible distribution into a collection.
+
+.. warning::
+
+	This tool is in active development and is provided only for experimentation and feedback at this point.
+
+See the `content_collector README <https://github.com/ansible/content_collector>`_ for full details and usage guidelines.
 
 Installing collections
-----------------------
+======================
 
-You can use the ``ansible-galaxy collection install`` command to install a collection on your system. The collection by default is installed at ``/path/ansible_collections/my_namespace/my_collection``. You can optionally add the ``-p`` option to specify an alternate location.
+You can use the ``ansible-galaxy collection install`` command to install a collection on your system. You must specify an installation location using the ``-p`` option.
 
 To install a collection hosted in Galaxy:
 
 .. code-block:: bash
 
-   ansible-galaxy collection install my_namespace.my_collection -p /path
+   ansible-galaxy collection install my_namespace.my_collection -p /collections
 
 
 You can also directly use the tarball from your build:
 
 .. code-block:: bash
 
-   ansible-galaxy collection install my_namespace-my_collection-1.0.0.tar.gz -p ./collections/ansible_collections
+   ansible-galaxy collection install my_namespace-my_collection-1.0.0.tar.gz -p ./collections
 
 .. note::
     The install command automatically appends the path ``ansible_collections`` to the one specified  with the ``-p`` option unless the
@@ -365,7 +416,77 @@ You can also setup a ``requirements.yml`` file to install multiple collections i
 
 The ``version`` key can take in the same range identifier format documented above.
 
+Roles can also be specified and placed under the ``roles`` key. The values follow the same format as a requirements
+file used in older Ansible releases.
 
+.. note::
+    While both roles and collections can be specified in one requirements file, they need to be installed separately.
+    The ``ansible-galaxy role install -r requirements.yml`` will only install roles and
+    ``ansible-galaxy collection install -r requirements.yml -p ./`` will only install collections.
+
+.. _galaxy_server_config:
+
+Galaxy server configuration list
+--------------------------------
+
+By default running ``ansible-galaxy`` will use the :ref:`galaxy_server` config value or the ``--server`` command line
+argument when it performs an action against a Galaxy server. The ``ansible-galaxy collection install`` supports
+installing collections from multiple servers as defined in the :ref:`ansible_configuration_settings_locations` file
+using the :ref:`galaxy_server_list` configuration option. To define multiple Galaxy servers you have to create the
+following entries like so:
+
+.. code-block:: ini
+
+    [galaxy]
+    server_list = my_org_hub, release_galaxy, test_galaxy
+
+    [galaxy_server.my_org_hub]
+    url=https://automation.my_org/
+    username=my_user
+    password=my_pass
+
+    [galaxy_server.release_galaxy]
+    url=https://galaxy.ansible.com/
+    token=my_token
+
+    [galaxy_server.test_galaxy]
+    url=https://galaxy-dev.ansible.com/
+    token=my_token
+
+.. note::
+    You can use the ``--server`` command line argument to select an explicit Galaxy server in the ``server_list`` and
+    the value of this arg should match the name of the server. If the value of ``--server`` is not a pre-defined server
+    in ``ansible.cfg`` then the value specified will be the URL used to access that server and all pre-defined servers
+    are ignored. Also the ``--api-key`` argument is not applied to any of the pre-defined servers, it is only applied
+    if no server list is defined or a URL was specified by ``--server``.
+
+
+The :ref:`galaxy_server_list` option is a list of server identifiers in a prioritized order. When searching for a
+collection, the install process will search in that order, e.g. ``my_org_hub`` first, then ``release_galaxy``, and
+finally ``test_galaxy`` until the collection is found. The actual Galaxy instance is then defined under the section
+``[galaxy_server.{{ id }}]`` where ``{{ id }}`` is the server identifier defined in the list. This section can then
+define the following keys:
+
+* ``url``: The URL of the galaxy instance to connect to, this is required.
+* ``token``: A token key to use for authentication against the Galaxy instance, this is mutually exclusive with ``username``
+* ``username``: The username to use for basic authentication against the Galaxy instance, this is mutually exclusive with ``token``
+* ``password``: The password to use for basic authentication
+
+As well as being defined in the ``ansible.cfg`` file, these server options can be defined as an environment variable.
+The environment variable is in the form ``ANSIBLE_GALAXY_SERVER_{{ id }}_{{ key }}`` where ``{{ id }}`` is the upper
+case form of the server identifier and ``{{ key }}`` is the key to define. For example I can define ``token`` for
+``release_galaxy`` by setting ``ANSIBLE_GALAXY_SERVER_RELEASE_GALAXY_TOKEN=secret_token``.
+
+For operations where only one Galaxy server is used, i.e. ``publish``, ``info``, ``login`` then the first entry in the
+``server_list`` is used unless an explicit server was passed in as a command line argument.
+
+.. note::
+    Once a collection is found, any of its requirements are only searched within the same Galaxy instance as the parent
+    collection. The install process will not search for a collection requirement in a different Galaxy instance.
+
+
+.. _using_collections:
+ 
 Using collections
 =================
 
@@ -384,8 +505,9 @@ This works for roles or any type of plugin distributed within the collection:
 
      - hosts: all
        tasks:
-         - include_role:
-             name : my_namespace.my_collection.role1
+         - import_role:
+             name: my_namespace.my_collection.role1
+
          - my_namespace.mycollection.mymodule:
              option1: value
 
@@ -393,7 +515,7 @@ This works for roles or any type of plugin distributed within the collection:
              msg: '{{ lookup("my_namespace.my_collection.lookup1", 'param1')| my_namespace.my_collection.filter1 }}'
 
 
-To avoid a lot of typing, you can use the ``collections`` keyword added in Ansbile 2.8:
+To avoid a lot of typing, you can use the ``collections`` keyword added in Ansible 2.8:
 
 
 .. code-block:: yaml
@@ -402,8 +524,9 @@ To avoid a lot of typing, you can use the ``collections`` keyword added in Ansbi
        collections:
         - my_namespace.my_collection
        tasks:
-         - include_role:
+         - import_role:
              name: role1
+
          - mymodule:
              option1: value
 

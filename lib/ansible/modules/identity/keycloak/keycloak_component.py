@@ -158,8 +158,8 @@ options:
                     - Value must be a list of one string item.
                 type: list
                 choices:
-                    - true
-                    - false
+                    - ['true']
+                    - ['false']
             connectionPooling:
                 description:
                     - Does the Keycloak should use connection pooling for accessing the LDAP server?
@@ -167,8 +167,8 @@ options:
                     - Value must be a list of one string item.
                 type: list
                 choices:
-                    - true
-                    - false
+                    - ['true']
+                    - ['false']
             cachePolicy:
                 description:
                     - Cache policy for this user storage provider.
@@ -189,8 +189,8 @@ options:
                     - Value must be a list of one string item.
                 type: list
                 choices:
-                    - true
-                    - false
+                    - ['true']
+                    - ['false']
             allowKerberosAuthentication:
                 description:
                     - Enable or disable HTTP authentication of users with SPNEGO/Kerberos tokens.
@@ -198,8 +198,8 @@ options:
                     - Value must be a list of one string item.
                 type: list
                 choices:
-                    - true
-                    - false
+                    - ['true']
+                    - ['false']
             importEnabled:
                 description:
                     - If true, LDAP users are imported into the Keycloak database and synchronized.
@@ -207,8 +207,8 @@ options:
                     - Value must be a list of one string item.
                 type: list
                 choices:
-                    - true
-                    - false
+                    - ['true']
+                    - ['false']
             syncRegistrations:
                 description:
                     - If true, user created in the Keycloak server will be synchronized to LDAP.
@@ -216,8 +216,8 @@ options:
                     - Value must be a list of one string item.
                 type: list
                 choices:
-                    - true
-                    - false
+                    - ['true']
+                    - ['false']
             searchScope:
                 description:
                     - For one level, users will be searched in only the usersDn. If subtree,
@@ -243,8 +243,8 @@ options:
                     - Value must be a list of one string item.
                 type: list
                 choices:
-                    - true
-                    - false
+                    - ['true']
+                    - ['false']
             batchSizeForSync:
                 description:
                     - Count of LDAP users to be imported in a single transaction.
@@ -256,7 +256,7 @@ options:
             - It can be use to configure group-ldap-mapper for a User Federation.
         type: dict
         suboptions:
-            org.keycloak.storage.ldap.mappers.LDAPStorageMapper:
+            "org.keycloak.storage.ldap.mappers.LDAPStorageMapper":
                 description:
                     - LDAP storage mappers
                 type: list
@@ -277,7 +277,7 @@ options:
                             - Configuration for the sub component. Structure depends on the component's type.
                         type: dict
                         suboptions:
-                            ldap.attribute:
+                            "ldap.attribute":
                                 description:
                                     - This is for user-attribute-ldap-mapper type.
                                     - LDAP attrribute to map from.
@@ -291,8 +291,8 @@ options:
                                     - Value must be a list of one string item.
                                 type: list
                                 choices:
-                                    - true
-                                    - false
+                                    - ['true']
+                                    - ['false']
                             read.only:
                                 description:
                                     - This is for user-attribute-ldap-mapper type.
@@ -301,8 +301,8 @@ options:
                                     - Value must be a list of one string item.
                                 type: list
                                 choices:
-                                    - true
-                                    - false
+                                    - ['true']
+                                    - ['false']
                             user.model.attribute:
                                 description:
                                     - This is for user-attribute-ldap-mapper type.
@@ -317,8 +317,8 @@ options:
                                     - Value must be a list of one string item.
                                 type: list
                                 choices:
-                                    - true
-                                    - false
+                                    - ['true']
+                                    - ['false']
                             mode:
                                 description:
                                     - This option is for group-ldap-mapper.
@@ -382,8 +382,8 @@ options:
                                     - Value must be a list of one string item.
                                 type: list
                                 choices:
-                                    - true
-                                    - false
+                                    - ['true']
+                                    - ['false']
                             groups.dn:
                                 description:
                                     - This option is for group-ldap-mapper.
@@ -404,8 +404,8 @@ options:
                                     - Value must be a list of one string item.
                                 type: list
                                 choices:
-                                    - true
-                                    - false
+                                    - ['true']
+                                    - ['false']
     syncUserStorage:
         description:
             - Type of user storage synchronization must be triggerd for
@@ -627,7 +627,7 @@ def main():
         connectionPooling=dict(type='list', choices=['true', 'false']),
         cachePolicy=dict(type='list', choices=['DEFAULT', 'EVICT_DAILY', 'EVICT_WEEKLY', 'MAX_LIFESPAN', 'NO_CACHE']),
         useKerberosForPasswordAuthentication=dict(type='list', choices=['true', 'false']),
-        allowKerberosAuthentication=dict(type='list', choices=['true', 'false']),
+        allowKerberosAuthentication=dict(type='list', choices=[['true'], ['false']]),
         importEnabled=dict(type='list', choices=['true', 'false']),
         syncRegistrations=dict(type='list', choices=['true', 'false']),
         searchScope=dict(type='list', choices=['1', '2']),
@@ -636,14 +636,14 @@ def main():
         batchSizeForSync=dict(type='list')
     )
     ldapstoragemapper_spec = {
-        'ldap.attribute': {'type': 'list'},
-        'is.mandatory.in.ldap': {'type': 'list', 'choices': ['true', 'false']},
-        'read.only': {'type': 'list', 'choices': ['true', 'false']},
-        'user.model.attribute': {'type': 'list'},
-        'always.read.value.from.ldap': {'type': 'list', 'choices': ['true', 'false']},
+        "ldap.attribute": {'type': 'list'},
+        "is.mandatory.in.ldap": {'type': 'list', 'choices': ['true', 'false']},
+        "read.only": {'type': 'list', 'choices': ['true', 'false']},
+        "user.model.attribute": {'type': 'list'},
+        "always.read.value.from.ldap": {'type': 'list', 'choices': [['true'], ['false']]},
         'mode': {'type': 'list', 'choices': ['LDAP_ONLY', 'READ_ONLY', 'IMPORT']},
-        'membership.attribute.type': {'type': 'list', 'choices': ['DN', 'UID']},
-        'user.roles.retrieve.strategy': {'type': 'list', 'choices': [
+        "membership.attribute.type": {'type': 'list', 'choices': ['DN', 'UID']},
+        "user.roles.retrieve.strategy": {'type': 'list', 'choices': [
             'LOAD_GROUPS_BY_MEMBER_ATTRIBUTE',
             'GET_GROUPS_FROM_USER_MEMBEROF_ATTRIBUTE',
             'LOAD_GROUPS_BY_MEMBER_ATTRIBUTE_RECURSIVELY'
@@ -657,13 +657,13 @@ def main():
         'group.object.classes': {'type': 'list'},
         'drop.non.existing.groups.during.sync': {'type': 'list', 'choices': ['true', 'false']}
     }
-    subcomponents_config_spec = dict(
-        name=dict(type='str'),
-        providerId=dict(type='str'),
-        config=dict(type='dict', options=ldapstoragemapper_spec)
-    )
+    subcomponents_config_spec = {
+        "name": {"type": "str"},
+        "providerId": {"type": "str", "choices": ['user-attribute-ldap-mapper', 'group-ldap-mapper']},
+        "config":{"type": "dict", "options": ldapstoragemapper_spec}
+    }
     subcomponents_spec = {
-        'org.keycloak.storage.ldap.mappers.LDAPStorageMapper': {'type': 'list', 'options': subcomponents_config_spec}
+        "org.keycloak.storage.ldap.mappers.LDAPStorageMapper": {'type': 'list', 'options': subcomponents_config_spec}
     }
     meta_args = dict(
         id=dict(type='str'),

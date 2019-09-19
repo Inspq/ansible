@@ -13,6 +13,8 @@ Become
 
 Ansible allows you to 'become' another user, different from the user that logged into the machine (remote user). This is done using existing privilege escalation tools such as `sudo`, `su`, `pfexec`, `doas`, `pbrun`, `dzdo`, `ksu`, `runas`, `machinectl` and others.
 
+A full list of all become plugins that are included in Ansible can be found in the :ref:`become_plugin_list`.
+
 
 .. note:: Prior to version 1.9, Ansible mostly allowed the use of `sudo` and a limited use of `su` to allow a login/remote user to become a different user and execute tasks and create resources with the second user's permissions. As of Ansible version 1.9,  `become` supersedes the old sudo/su, while still being backwards compatible. This new implementation also makes it easier to add other privilege escalation tools, including `pbrun` (Powerbroker), `pfexec`, `dzdo` (Centrify), and others.
 
@@ -79,6 +81,11 @@ ansible_become_password
 For example, if you want to run all tasks as ``root`` on a server named ``webserver``, but you can only connect as the ``manager`` user, you could use an inventory entry like this::
 
     webserver ansible_user=manager ansible_become=yes
+
+.. note::
+    The variables defined above are generic for all become plugins but plugin specific ones can also be set instead.
+    Please see the documentation for each plugin for a list of all options the plugin has and how they can be defined.
+    A full list of become plugins in Ansible can be found at :ref:`become_plugins`.
 
 Command line options
 --------------------
@@ -656,7 +663,7 @@ Here are some examples of how to use ``become_flags`` with Windows tasks:
     win_copy:
       src: \\server\share\data\file.txt
       dest: C:\temp\file.txt
-      remote_src: yex
+      remote_src: yes
     vars:
       ansible_become: yes
       ansible_become_method: runas
@@ -693,6 +700,8 @@ Be aware of the following limitations with ``become`` on Windows:
   ``ansible_winrm_transport`` was either ``basic`` or ``credssp``. This
   restriction has been lifted since the 2.4 release of Ansible for all hosts
   except Windows Server 2008 (non R2 version).
+  
+* The Secondary Logon service ``seclogon`` must be running to use ``ansible_become_method: runas``
 
 .. seealso::
 

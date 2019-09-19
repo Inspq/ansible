@@ -43,7 +43,7 @@ options:
       - When supplied, this argument restricts the facts collected
          to a given subset.
       - Possible values for this argument include
-         C(all), C(hardware), C(config), and C(interfaces).
+         C(all), C(min), C(hardware), C(config), and C(interfaces).
       - Specify a list of values to include a larger subset.
       - Use a value with an initial C(!) to collect all facts except that subset.
     required: false
@@ -54,7 +54,11 @@ options:
         to a given subset. Possible values for this argument include
         all and the resources like interfaces, vlans etc.
         Can specify a list of values to include a larger subset.
-    choices: ['all', '!all', 'interfaces', '!interfaces']
+        Values can also be used with an initial C(M(!)) to specify that
+        a specific subset should not be collected.
+        Valid subsets are 'all', 'interfaces', 'l2_interfaces', 'vlans',
+        'lag_interfaces', 'lacp', 'lacp_interfaces', 'lldp_global',
+        'lldp_interfaces', 'l3_interfaces'.
     version_added: "2.9"
 """
 
@@ -90,6 +94,17 @@ EXAMPLES = """
   ios_facts:
     gather_subset: min
     gather_network_resources: interfaces
+
+- name: Gather L2 interfaces resource and minimal legacy facts
+  ios_facts:
+    gather_subset: min
+    gather_network_resources: l2_interfaces
+
+- name: Gather L3 interfaces resource and minimal legacy facts
+  ios_facts:
+    gather_subset: min
+    gather_network_resources: l3_interfaces
+
 """
 
 RETURN = """

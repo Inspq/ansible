@@ -163,7 +163,7 @@ extends_documentation_fragment:
 EXAMPLES = '''
 # Note: These examples do not set authentication details, see the AWS Guide for details.
 
-- code_build:
+- aws_codebuild:
     name: my_project
     description: My nice little project
     service_role: "arn:aws:iam::123123:role/service-role/code-build-service-role"
@@ -190,7 +190,7 @@ EXAMPLES = '''
 
 RETURN = '''
 project:
-  description: Returns the dictionary desribing the code project configuration.
+  description: Returns the dictionary describing the code project configuration.
   returned: success
   type: complex
   contains:
@@ -208,7 +208,7 @@ project:
       description: A description of the build project
       returned: always
       type: string
-      sample: My nice little proejct
+      sample: My nice little project
     source:
       description: Information about the build input source code.
       returned: always
@@ -304,7 +304,7 @@ def create_or_update_project(client, params, module):
     formatted_create_params = dict((k, v) for k, v in formatted_params.items() if k in permitted_create_params)
     formatted_update_params = dict((k, v) for k, v in formatted_params.items() if k in permitted_update_params)
 
-    # Check if project with that name aleady exists and if so update existing:
+    # Check if project with that name already exists and if so update existing:
     found = describe_project(client=client, name=name, module=module)
     changed = False
 

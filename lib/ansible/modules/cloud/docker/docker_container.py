@@ -476,7 +476,7 @@ options:
       - For examples of the data structure and usage see EXAMPLES below.
       - To remove a container from one or more networks, use the C(purge_networks) option.
       - Note that as opposed to C(docker run ...), M(docker_container) does not remove the default
-        network if C(networks) is specified. You need to explicity use C(purge_networks) to enforce
+        network if C(networks) is specified. You need to explicitly use C(purge_networks) to enforce
         the removal of the default network (and all other networks not explicitly mentioned in C(networks)).
     type: list
     suboptions:
@@ -1064,8 +1064,8 @@ REQUIRES_CONVERSION_TO_BYTES = [
 ]
 
 
-def is_volume_permissions(input):
-    for part in input.split(','):
+def is_volume_permissions(mode):
+    for part in mode.split(','):
         if part not in ('rw', 'ro', 'z', 'Z', 'consistent', 'delegated', 'cached', 'rprivate', 'private', 'rshared', 'shared', 'rslave', 'slave', 'nocopy'):
             return False
     return True
@@ -1078,38 +1078,44 @@ def parse_port_range(range_or_port, client):
     Returns a list of integers for each port in the list.
     '''
     if '-' in range_or_port:
-        start, end = [int(port) for port in range_or_port.split('-')]
+        try:
+            start, end = [int(port) for port in range_or_port.split('-')]
+        except Exception:
+            client.fail('Invalid port range: "{0}"'.format(range_or_port))
         if end < start:
-            client.fail('Invalid port range: {0}'.format(range_or_port))
+            client.fail('Invalid port range: "{0}"'.format(range_or_port))
         return list(range(start, end + 1))
     else:
-        return [int(range_or_port)]
+        try:
+            return [int(range_or_port)]
+        except Exception:
+            client.fail('Invalid port: "{0}"'.format(range_or_port))
 
 
-def split_colon_ipv6(input, client):
+def split_colon_ipv6(text, client):
     '''
     Split string by ':', while keeping IPv6 addresses in square brackets in one component.
     '''
-    if '[' not in input:
-        return input.split(':')
+    if '[' not in text:
+        return text.split(':')
     start = 0
     result = []
-    while start < len(input):
-        i = input.find('[', start)
+    while start < len(text):
+        i = text.find('[', start)
         if i < 0:
-            result.extend(input[start:].split(':'))
+            result.extend(text[start:].split(':'))
             break
-        j = input.find(']', i)
+        j = text.find(']', i)
         if j < 0:
-            client.fail('Cannot find closing "]" in input "{0}" for opening "[" at index {1}!'.format(input, i + 1))
-        result.extend(input[start:i].split(':'))
-        k = input.find(':', j)
+            client.fail('Cannot find closing "]" in input "{0}" for opening "[" at index {1}!'.format(text, i + 1))
+        result.extend(text[start:i].split(':'))
+        k = text.find(':', j)
         if k < 0:
-            result[-1] += input[i:]
-            start = len(input)
+            result[-1] += text[i:]
+            start = len(text)
         else:
-            result[-1] += input[i:k]
-            if k == len(input):
+            result[-1] += text[i:k]
+            if k == len(text):
                 result.append('')
                 break
             start = k + 1
@@ -1290,6 +1296,8 @@ class TaskParameters(DockerBaseClass):
 
         self.mounts_opt, self.expected_mounts = self._process_mounts()
 
+        self._check_mount_target_collisions()
+
         for param_name in ["device_read_bps", "device_write_bps"]:
             if client.module.params.get(param_name):
                 self._process_rate_bps(option=param_name)
@@ -1409,7 +1417,7 @@ class TaskParameters(DockerBaseClass):
             for vol in self.volumes:
                 if ':' in vol:
                     if len(vol.split(':')) == 3:
-                        host, container, dummy = vol.split(':')
+                        dummy, container, dummy = vol.split(':')
                         result.append(container)
                         continue
                     if len(vol.split(':')) == 2:
@@ -1756,11 +1764,11 @@ class TaskParameters(DockerBaseClass):
         mounts_expected = []
         for mount in self.mounts:
             target = mount['target']
-            type = mount['type']
+            datatype = mount['type']
             mount_dict = dict(mount)
             # Sanity checks (so we don't wait for docker-py to barf on input)
-            if mount_dict.get('source') is None and type != 'tmpfs':
-                self.client.fail('source must be specified for mount "{0}" of type "{1}"'.format(target, type))
+            if mount_dict.get('source') is None and datatype != 'tmpfs':
+                self.client.fail('source must be specified for mount "{0}" of type "{1}"'.format(target, datatype))
             mount_option_types = dict(
                 volume_driver='volume',
                 volume_options='volume',
@@ -1770,9 +1778,9 @@ class TaskParameters(DockerBaseClass):
                 tmpfs_size='tmpfs',
                 tmpfs_mode='tmpfs',
             )
-            for option, req_type in mount_option_types.items():
-                if mount_dict.get(option) is not None and type != req_type:
-                    self.client.fail('{0} cannot be specified for mount "{1}" of type "{2}" (needs type "{3}")'.format(option, target, type, req_type))
+            for option, req_datatype in mount_option_types.items():
+                if mount_dict.get(option) is not None and datatype != req_datatype:
+                    self.client.fail('{0} cannot be specified for mount "{1}" of type "{2}" (needs type "{3}")'.format(option, target, datatype, req_datatype))
             # Handle volume_driver and volume_options
             volume_driver = mount_dict.pop('volume_driver')
             volume_options = mount_dict.pop('volume_options')
@@ -1841,6 +1849,25 @@ class TaskParameters(DockerBaseClass):
             self.client.module.warn('Cannot find a container with name or ID "{0}"'.format(container_name))
             return mode
         return 'container:{0}'.format(container['Id'])
+
+    def _check_mount_target_collisions(self):
+        last = dict()
+
+        def f(t, name):
+            if t in last:
+                if name == last[t]:
+                    self.client.fail('The mount point "{0}" appears twice in the {1} option'.format(t, name))
+                else:
+                    self.client.fail('The mount point "{0}" appears both in the {1} and {2} option'.format(t, name, last[t]))
+            last[t] = name
+
+        if self.expected_mounts:
+            for t in [m['target'] for m in self.expected_mounts]:
+                f(t, 'mounts')
+        if self.volumes:
+            for v in self.volumes:
+                vs = v.split(':')
+                f(vs[0 if len(vs) == 1 else 1], 'volumes')
 
 
 class Container(DockerBaseClass):
@@ -2090,12 +2117,14 @@ class Container(DockerBaseClass):
                             c = sorted(c)
                     elif compare['type'] == 'set(dict)':
                         # Since the order does not matter, sort so that the diff output is better.
-                        def sort_key_fn(x):
+                        if key == 'expected_mounts':
                             # For selected values, use one entry as key
-                            if key == 'expected_mounts':
+                            def sort_key_fn(x):
                                 return x['target']
+                        else:
                             # We sort the list of dictionaries by using the sorted items of a dict as its key.
-                            return sorted((a, str(b)) for a, b in x.items())
+                            def sort_key_fn(x):
+                                return sorted((a, str(b)) for a, b in x.items())
                         if p is not None:
                             p = sorted(p, key=sort_key_fn)
                         if c is not None:
@@ -2343,13 +2372,13 @@ class Container(DockerBaseClass):
                 container = None
                 if ':' in vol:
                     if len(vol.split(':')) == 3:
-                        host, container, mode = vol.split(':')
+                        dummy, container, mode = vol.split(':')
                         if not is_volume_permissions(mode):
                             self.fail('Found invalid volumes mode: {0}'.format(mode))
                     if len(vol.split(':')) == 2:
                         parts = vol.split(':')
                         if not is_volume_permissions(parts[1]):
-                            host, container, mode = vol.split(':') + ['rw']
+                            dummy, container, mode = vol.split(':') + ['rw']
                 new_vol = dict()
                 if container:
                     new_vol[container] = dict()
@@ -2740,7 +2769,7 @@ class ContainerManager(DockerBaseClass):
                     config = self.client.inspect_container(container_id)
                     logging_driver = config['HostConfig']['LogConfig']['Type']
 
-                    if logging_driver == 'json-file' or logging_driver == 'journald':
+                    if logging_driver in ('json-file', 'journald'):
                         output = self.client.logs(container_id, stdout=True, stderr=True, stream=False, timestamps=False)
                         if self.parameters.output_logs:
                             self._output_logs(msg=output)
@@ -2925,21 +2954,21 @@ class AnsibleDockerClientContainer(AnsibleDockerClient):
                 continue
             # Determine option type
             if option in explicit_types:
-                type = explicit_types[option]
+                datatype = explicit_types[option]
             elif data['type'] == 'list':
-                type = 'set'
+                datatype = 'set'
             elif data['type'] == 'dict':
-                type = 'dict'
+                datatype = 'dict'
             else:
-                type = 'value'
+                datatype = 'value'
             # Determine comparison type
             if option in default_values:
                 comparison = default_values[option]
-            elif type in ('list', 'value'):
+            elif datatype in ('list', 'value'):
                 comparison = 'strict'
             else:
                 comparison = 'allow_more_present'
-            comparisons[option] = dict(type=type, comparison=comparison, name=option)
+            comparisons[option] = dict(type=datatype, comparison=comparison, name=option)
             # Keep track of aliases
             comp_aliases[option] = option
             for alias in data.get('aliases', []):

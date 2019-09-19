@@ -274,23 +274,23 @@ options:
                     - Default is false if not defined.
                 type: str
                 choices:
-                    - true
-                    - false
-                default: false
+                    - 'true'
+                    - 'false'
+                default: 'false'
             auth:
                 description:
                     - Is authentication enabled on the SMTP server.
                     - Default is false if not defined.
                 type: str
                 choices:
-                    - true
-                    - false
-                default: false
+                    - 'true'
+                    - 'false'
+                default: 'false'
             port:
                 description:
                     - SMTP server port.
                 type: str
-                default: 25
+                default: '25'
             host:
                 description:
                     - SMTP server host name or ip address.
@@ -316,9 +316,9 @@ options:
                     - If true, SSL will be used to connect to SMTP server
                 type: str
                 choices:
-                    - true
-                    - false
-                default: false
+                    - 'true'
+                    - 'false'
+                default: 'false'
             user:
                 description:
                     - User name to authenticate on SMTP server if authentication is enabled.
