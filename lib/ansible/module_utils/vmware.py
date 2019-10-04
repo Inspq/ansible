@@ -513,12 +513,17 @@ def connect_to_api(module, disconnect_atexit=True):
     if validate_certs and not hasattr(ssl, 'SSLContext'):
         module.fail_json(msg='pyVim does not support changing verification mode with python < 2.7.9. Either update '
                              'python or use validate_certs=false.')
-
-    ssl_context = ssl.SSLContext(ssl.PROTOCOL_SSLv23)
-    if validate_certs:
+    elif validate_certs:
+        ssl_context = ssl.SSLContext(ssl.PROTOCOL_SSLv23)
         ssl_context.verify_mode = ssl.CERT_REQUIRED
         ssl_context.check_hostname = True
         ssl_context.load_default_certs()
+    elif hasattr(ssl, 'SSLContext'):
+        ssl_context = ssl.SSLContext(ssl.PROTOCOL_SSLv23)
+        ssl_context.verify_mode = ssl.CERT_NONE
+        ssl_context.check_hostname = False
+    else:  # Python < 2.7.9 or RHEL/Centos < 7.4
+        ssl_context = None
 
     service_instance = None
     try:
@@ -805,6 +810,9 @@ class PyVmomi(object):
         self.si = None
         self.current_vm_obj = None
         self.content = connect_to_api(self.module)
+        self.custom_field_mgr = []
+        if self.content.customFieldsManager:  # not an ESXi
+            self.custom_field_mgr = self.content.customFieldsManager.field
 
     def is_vcenter(self):
         """
@@ -880,10 +888,10 @@ class PyVmomi(object):
         """
         vm_obj = None
         user_desired_path = None
-
-        if self.params['uuid'] and not self.params['use_instance_uuid']:
+        use_instance_uuid = self.params.get('use_instance_uuid') or False
+        if self.params['uuid'] and not use_instance_uuid:
             vm_obj = find_vm_by_id(self.content, vm_id=self.params['uuid'], vm_id_type="uuid")
-        elif self.params['uuid'] and self.params['use_instance_uuid']:
+        elif self.params['uuid'] and use_instance_uuid:
             vm_obj = find_vm_by_id(self.content,
                                    vm_id=self.params['uuid'],
                                    vm_id_type="instance_uuid")

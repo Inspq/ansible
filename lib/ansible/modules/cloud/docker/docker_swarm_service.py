@@ -1046,6 +1046,7 @@ EXAMPLES = '''
 import shlex
 import time
 import operator
+import traceback
 
 from distutils.version import LooseVersion
 
@@ -1054,9 +1055,10 @@ from ansible.module_utils.docker.common import (
     DifferenceTracker,
     DockerBaseClass,
     convert_duration_to_nanosecond,
-    parse_healthcheck
-
+    parse_healthcheck,
+    RequestException,
 )
+
 from ansible.module_utils.basic import human_to_bytes
 from ansible.module_utils.six import string_types
 from ansible.module_utils._text import to_text
@@ -2030,19 +2032,16 @@ class DockerService(DockerBaseClass):
     def build_endpoint_spec(self):
         endpoint_spec_args = {}
         if self.publish is not None:
-            ports = {}
+            ports = []
             for port in self.publish:
+                port_spec = {
+                    'Protocol': port['protocol'],
+                    'PublishedPort': port['published_port'],
+                    'TargetPort': port['target_port']
+                }
                 if port.get('mode'):
-                    ports[port['published_port']] = (
-                        port['target_port'],
-                        port['protocol'],
-                        port['mode'],
-                    )
-                else:
-                    ports[port['published_port']] = (
-                        port['target_port'],
-                        port['protocol'],
-                    )
+                    port_spec['PublishMode'] = port['mode']
+                ports.append(port_spec)
             endpoint_spec_args['ports'] = ports
         if self.endpoint_mode is not None:
             endpoint_spec_args['mode'] = self.endpoint_mode
@@ -2230,7 +2229,7 @@ class DockerServiceManager(object):
                     (key.lower(), value) for key, value in driver_config.items()
                 ) or None
                 ds.mounts.append({
-                    'source': mount_data['Source'],
+                    'source': mount_data.get('Source', ''),
                     'type': mount_data['Type'],
                     'target': mount_data['Target'],
                     'readonly': mount_data.get('ReadOnly'),
@@ -2740,21 +2739,26 @@ def main():
         option_minimal_versions=option_minimal_versions,
     )
 
-    dsm = DockerServiceManager(client)
-    msg, changed, rebuilt, changes, facts = dsm.run_safe()
+    try:
+        dsm = DockerServiceManager(client)
+        msg, changed, rebuilt, changes, facts = dsm.run_safe()
 
-    results = dict(
-        msg=msg,
-        changed=changed,
-        rebuilt=rebuilt,
-        changes=changes,
-        swarm_service=facts,
-    )
-    if client.module._diff:
-        before, after = dsm.diff_tracker.get_before_after()
-        results['diff'] = dict(before=before, after=after)
+        results = dict(
+            msg=msg,
+            changed=changed,
+            rebuilt=rebuilt,
+            changes=changes,
+            swarm_service=facts,
+        )
+        if client.module._diff:
+            before, after = dsm.diff_tracker.get_before_after()
+            results['diff'] = dict(before=before, after=after)
 
-    client.module.exit_json(**results)
+        client.module.exit_json(**results)
+    except DockerException as e:
+        client.fail('An unexpected docker error occurred: {0}'.format(e), exception=traceback.format_exc())
+    except RequestException as e:
+        client.fail('An unexpected requests error occurred when docker-py tried to talk to the docker daemon: {0}'.format(e), exception=traceback.format_exc())
 
 
 if __name__ == '__main__':

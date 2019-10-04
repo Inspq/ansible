@@ -143,15 +143,20 @@ EXAMPLES = r'''
     - fillfactor=10
     - autovacuum_analyze_threshold=1
 
-- name: Create an unlogged table
+- name: Create an unlogged table in schema acme
   postgresql_table:
-    name: useless_data
+    name: acme.useless_data
     columns: waste_id int
     unlogged: true
 
 - name: Rename table foo to bar
   postgresql_table:
     table: foo
+    rename: bar
+
+- name: Rename table foo from schema acme to bar
+  postgresql_table:
+    name: acme.foo
     rename: bar
 
 - name: Set owner to someuser
@@ -170,9 +175,9 @@ EXAMPLES = r'''
     name: foo
     truncate: yes
 
-- name: Drop table foo
+- name: Drop table foo from schema acme
   postgresql_table:
-    name: foo
+    name: acme.foo
     state: absent
 '''
 
@@ -209,18 +214,17 @@ storage_params:
   sample: [ "fillfactor=100", "autovacuum_analyze_threshold=1" ]
 '''
 
-
 try:
-    import psycopg2
-    HAS_PSYCOPG2 = True
+    from psycopg2.extras import DictCursor
 except ImportError:
-    HAS_PSYCOPG2 = False
+    # psycopg2 is checked by connect_to_db()
+    # from ansible.module_utils.postgres
+    pass
 
-from ansible.module_utils.basic import AnsibleModule, missing_required_lib
+from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils.database import SQLParseError, pg_quote_identifier
-from ansible.module_utils.postgres import postgres_common_argument_spec
+from ansible.module_utils.postgres import connect_to_db, get_conn_params, postgres_common_argument_spec
 from ansible.module_utils._text import to_native
-from ansible.module_utils.six import iteritems
 
 
 # ===========================================
@@ -247,12 +251,19 @@ class Table(object):
 
     def __exists_in_db(self):
         """Check table exists and refresh info"""
+        if "." in self.name:
+            schema = self.name.split('.')[-2]
+            tblname = self.name.split('.')[-1]
+        else:
+            schema = 'public'
+            tblname = self.name
+
         query = ("SELECT t.tableowner, t.tablespace, c.reloptions "
                  "FROM pg_tables AS t "
                  "INNER JOIN pg_class AS c ON  c.relname = t.tablename "
                  "INNER JOIN pg_namespace AS n ON c.relnamespace = n.oid "
                  "WHERE t.tablename = '%s' "
-                 "AND n.nspname = 'public'" % self.name)
+                 "AND n.nspname = '%s'" % (tblname, schema))
         res = self.__exec_sql(query)
         if res:
             self.exists = True
@@ -403,7 +414,10 @@ class Table(object):
         self.executed_queries.append(query)
         return self.__exec_sql(query, ddl=True)
 
-    def drop(self):
+    def drop(self, cascade=False):
+        if not self.exists:
+            return False
+
         query = "DROP TABLE %s" % pg_quote_identifier(self.name, 'table')
         self.executed_queries.append(query)
         return self.__exec_sql(query, ddl=True)
@@ -426,9 +440,7 @@ class Table(object):
                 res = self.cursor.fetchall()
                 return res
             return True
-        except SQLParseError as e:
-            self.module.fail_json(msg=to_native(e))
-        except psycopg2.ProgrammingError as e:
+        except Exception as e:
             self.module.fail_json(msg="Cannot execute SQL '%s': %s" % (query, to_native(e)))
         return False
 
@@ -444,16 +456,13 @@ def main():
         table=dict(type='str', required=True, aliases=['name']),
         state=dict(type='str', default="present", choices=["absent", "present"]),
         db=dict(type='str', default='', aliases=['login_db']),
-        port=dict(type='int', default=5432, aliases=['login_port']),
-        ssl_mode=dict(type='str', default='prefer', choices=['allow', 'disable', 'prefer', 'require', 'verify-ca', 'verify-full']),
-        ca_cert=dict(type='str', aliases=['ssl_rootcert']),
         tablespace=dict(type='str'),
         owner=dict(type='str'),
-        unlogged=dict(type='bool'),
+        unlogged=dict(type='bool', default=False),
         like=dict(type='str'),
         including=dict(type='str'),
         rename=dict(type='str'),
-        truncate=dict(type='bool'),
+        truncate=dict(type='bool', default=False),
         columns=dict(type='list'),
         storage_params=dict(type='list'),
         session_role=dict(type='str'),
@@ -474,25 +483,19 @@ def main():
     storage_params = module.params["storage_params"]
     truncate = module.params["truncate"]
     columns = module.params["columns"]
-    sslrootcert = module.params["ca_cert"]
-    session_role = module.params["session_role"]
 
     # Check mutual exclusive parameters:
-    if state == 'absent' and (truncate or newname or columns or tablespace or
-                              like or storage_params or unlogged or
-                              owner or including):
+    if state == 'absent' and (truncate or newname or columns or tablespace or like or storage_params or unlogged or owner or including):
         module.fail_json(msg="%s: state=absent is mutually exclusive with: "
                              "truncate, rename, columns, tablespace, "
                              "including, like, storage_params, unlogged, owner" % table)
 
-    if truncate and (newname or columns or like or unlogged or
-                     storage_params or owner or tablespace or including):
+    if truncate and (newname or columns or like or unlogged or storage_params or owner or tablespace or including):
         module.fail_json(msg="%s: truncate is mutually exclusive with: "
                              "rename, columns, like, unlogged, including, "
                              "storage_params, owner, tablespace" % table)
 
-    if newname and (columns or like or unlogged or
-                    storage_params or owner or tablespace or including):
+    if newname and (columns or like or unlogged or storage_params or owner or tablespace or including):
         module.fail_json(msg="%s: rename is mutually exclusive with: "
                              "columns, like, unlogged, including, "
                              "storage_params, owner, tablespace" % table)
@@ -502,47 +505,9 @@ def main():
     if including and not like:
         module.fail_json(msg="%s: including param needs like param specified" % table)
 
-    # To use defaults values, keyword arguments must be absent, so
-    # check which values are empty and don't include in the **kw
-    # dictionary
-    params_map = {
-        "login_host": "host",
-        "login_user": "user",
-        "login_password": "password",
-        "port": "port",
-        "db": "database",
-        "ssl_mode": "sslmode",
-        "ca_cert": "sslrootcert"
-    }
-    kw = dict((params_map[k], v) for (k, v) in iteritems(module.params)
-              if k in params_map and v != "" and v is not None)
-
-    if not HAS_PSYCOPG2:
-        module.fail_json(msg=missing_required_lib("psycopg2"))
-
-    # If a login_unix_socket is specified, incorporate it here.
-    is_localhost = "host" not in kw or kw["host"] is None or kw["host"] == "localhost"
-    if is_localhost and module.params["login_unix_socket"] != "":
-        kw["host"] = module.params["login_unix_socket"]
-
-    if psycopg2.__version__ < '2.4.3' and sslrootcert is not None:
-        module.fail_json(msg='psycopg2 must be at least 2.4.3 in order to user the ca_cert parameter')
-
-    try:
-        db_connection = psycopg2.connect(**kw)
-        cursor = db_connection.cursor(cursor_factory=psycopg2.extras.DictCursor)
-    except TypeError as e:
-        if 'sslrootcert' in e.args[0]:
-            module.fail_json(msg='Postgresql server must be at least version 8.4 to support sslrootcert')
-        module.fail_json(msg="unable to connect to database: %s" % to_native(e))
-    except Exception as e:
-        module.fail_json(msg="unable to connect to database: %s" % to_native(e))
-
-    if session_role:
-        try:
-            cursor.execute('SET ROLE %s' % session_role)
-        except Exception as e:
-            module.fail_json(msg="Could not switch role: %s" % to_native(e))
+    conn_params = get_conn_params(module, module.params)
+    db_connection = connect_to_db(module, conn_params, autocommit=False)
+    cursor = db_connection.cursor(cursor_factory=DictCursor)
 
     if storage_params:
         storage_params = ','.join(storage_params)
@@ -556,6 +521,7 @@ def main():
 
     # Set default returned values:
     changed = False
+    kw = {}
     kw['table'] = table
     kw['state'] = ''
     if table_obj.exists:

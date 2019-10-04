@@ -45,7 +45,7 @@ options:
   type:
     description:
     - Type of database object to set privileges on.
-    - The `default_prives` choice is available starting at version 2.7.
+    - The `default_privs` choice is available starting at version 2.7.
     - The 'foreign_data_wrapper' and 'foreign_server' object types are available from Ansible version '2.8'.
     type: str
     default: table
@@ -541,7 +541,7 @@ class Connection(object):
         query = """SELECT relacl
                    FROM pg_catalog.pg_class c
                    JOIN pg_catalog.pg_namespace n ON n.oid = c.relnamespace
-                   WHERE nspname = %s AND relkind in ('r','p') AND relname = ANY (%s)
+                   WHERE nspname = %s AND relkind in ('r','p','v','m') AND relname = ANY (%s)
                    ORDER BY relname"""
         self.cursor.execute(query, (schema, tables))
         return [t[0] for t in self.cursor.fetchall()]

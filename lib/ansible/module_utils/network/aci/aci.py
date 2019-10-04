@@ -37,7 +37,6 @@ import os
 from copy import deepcopy
 
 from ansible.module_utils.parsing.convert_bool import boolean
-from ansible.module_utils.six.moves.urllib.parse import urlencode
 from ansible.module_utils.urls import fetch_url
 from ansible.module_utils._text import to_bytes, to_native
 
@@ -335,7 +334,7 @@ class ACIModule(object):
             self.url = '%(protocol)s://%(host)s/' % self.params + path.lstrip('/')
 
         # Sign and encode request as to APIC's wishes
-        if not self.params['private_key']:
+        if self.params['private_key']:
             self.cert_auth(path=path, payload=payload)
 
         # Perform request
@@ -372,7 +371,7 @@ class ACIModule(object):
             self.url = '%(protocol)s://%(host)s/' % self.params + path.lstrip('/')
 
         # Sign and encode request as to APIC's wishes
-        if not self.params['private_key']:
+        if self.params['private_key']:
             self.cert_auth(path=path, method='GET')
 
         # Perform request
@@ -419,7 +418,7 @@ class ACIModule(object):
                 self.filter_string += '&'
             else:
                 self.filter_string = '?'
-            self.filter_string += urlencode(accepted_params)
+            self.filter_string += '&'.join(['%s=%s' % (k, v) for (k, v) in accepted_params.items()])
 
     # TODO: This could be designed to accept multiple obj_classes and keys
     def build_filter(self, obj_class, params):
@@ -659,7 +658,7 @@ class ACIModule(object):
 
         elif not self.module.check_mode:
             # Sign and encode request as to APIC's wishes
-            if not self.params['private_key']:
+            if self.params['private_key']:
                 self.cert_auth(method='DELETE')
 
             resp, info = fetch_url(self.module, self.url,
@@ -795,7 +794,7 @@ class ACIModule(object):
         uri = self.url + self.filter_string
 
         # Sign and encode request as to APIC's wishes
-        if not self.params['private_key']:
+        if self.params['private_key']:
             self.cert_auth(path=self.path + self.filter_string, method='GET')
 
         resp, info = fetch_url(self.module, uri,
@@ -896,7 +895,7 @@ class ACIModule(object):
             return
         elif not self.module.check_mode:
             # Sign and encode request as to APIC's wishes
-            if not self.params['private_key']:
+            if self.params['private_key']:
                 self.cert_auth(method='POST', payload=json.dumps(self.config))
 
             resp, info = fetch_url(self.module, self.url,

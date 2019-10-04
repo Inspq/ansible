@@ -57,15 +57,16 @@ options:
     groups:
         description:
             - List of groups user will be added to. When set to an empty string C(''),
-              C(null), or C(~), the user is removed from all groups except the
-              primary group. (C(~) means C(null) in YAML)
+              the user is removed from all groups except the primary group.
             - Before Ansible 2.3, the only input format allowed was a comma separated string.
+            - Mutually exclusive with C(local)
         type: list
     append:
         description:
             - If C(yes), add the user to the groups specified in C(groups).
             - If C(no), user will only be added to the groups specified in C(groups),
               removing them from all other groups.
+            - Mutually exclusive with C(local)
         type: bool
         default: no
     shell:
@@ -91,7 +92,8 @@ options:
             - Optionally set the user's password to this crypted value.
             - On macOS systems, this value has to be cleartext. Beware of security issues.
             - To create a disabled account on Linux systems, set this to C('!') or C('*').
-            - See U(https://docs.ansible.com/ansible/faq.html#how-do-i-generate-crypted-passwords-for-the-user-module)
+            - To create a disabled account on OpenBSD, set this to C('*************').
+            - See U(https://docs.ansible.com/ansible/faq.html#how-do-i-generate-encrypted-passwords-for-the-user-module)
               for details on various ways to generate these password values.
         type: str
     state:
@@ -209,6 +211,7 @@ options:
             - This will check C(/etc/passwd) for an existing account before invoking commands. If the local account database
               exists somewhere other than C(/etc/passwd), this setting will not work properly.
             - This requires that the above commands as well as C(/etc/passwd) must exist on the target host, otherwise it will be a fatal error.
+            - Mutually exclusive with C(groups) and C(append)
         type: bool
         default: no
         version_added: "2.4"
@@ -511,8 +514,8 @@ class User(object):
         if self.module.params['password'] and self.platform != 'Darwin':
             maybe_invalid = False
 
-            # Allow setting the password to * or ! in order to disable the account
-            if self.module.params['password'] in set(['*', '!']):
+            # Allow setting certain passwords in order to disable the account
+            if self.module.params['password'] in set(['*', '!', '*************']):
                 maybe_invalid = False
             else:
                 # : for delimiter, * for disable user, ! for lock user
@@ -616,7 +619,7 @@ class User(object):
             else:
                 cmd.append('-N')
 
-        if self.groups is not None and len(self.groups):
+        if self.groups is not None and not self.local and len(self.groups):
             groups = self.get_groups_set()
             cmd.append('-G')
             cmd.append(','.join(groups))
@@ -737,7 +740,7 @@ class User(object):
                     else:
                         groups_need_mod = True
 
-            if groups_need_mod:
+            if groups_need_mod and not self.local:
                 if self.append and not has_append:
                     cmd.append('-A')
                     cmd.append(','.join(group_diff))
@@ -860,9 +863,11 @@ class User(object):
                         exists = True
                         break
 
-            self.module.warn(
-                "'local: true' specified and user was not found in {file}. "
-                "The local user account may already exist if the local account database exists somewhere other than {file}.".format(file=self.PASSWORDFILE))
+            if not exists:
+                self.module.warn(
+                    "'local: true' specified and user '{name}' was not found in {file}. "
+                    "The local user account may already exist if the local account database exists "
+                    "somewhere other than {file}.".format(file=self.PASSWORDFILE, name=self.name))
 
             return exists
 
@@ -2852,7 +2857,11 @@ def main():
             authorization=dict(type='str'),
             role=dict(type='str'),
         ),
-        supports_check_mode=True
+        supports_check_mode=True,
+        mutually_exclusive=[
+            ('local', 'groups'),
+            ('local', 'append')
+        ]
     )
 
     user = User(module)

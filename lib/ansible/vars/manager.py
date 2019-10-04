@@ -35,7 +35,7 @@ from ansible import constants as C
 from ansible.errors import AnsibleError, AnsibleParserError, AnsibleUndefinedVariable, AnsibleFileNotFound, AnsibleAssertionError, AnsibleTemplateError
 from ansible.inventory.host import Host
 from ansible.inventory.helpers import sort_groups, get_group_vars
-from ansible.module_utils._text import to_bytes, to_native
+from ansible.module_utils._text import to_bytes, to_text
 from ansible.module_utils.common._collections_compat import Mapping, MutableMapping, Sequence
 from ansible.module_utils.six import iteritems, text_type, string_types
 from ansible.plugins.loader import lookup_loader, vars_loader
@@ -86,7 +86,6 @@ class VariableManager:
         self._loader = loader
         self._hostvars = None
         self._omit_token = '__omit_place_holder__%s' % sha1(os.urandom(64)).hexdigest()
-        self._templar = Templar(loader=self._loader)
 
         self._options_vars = load_options_vars(version_info)
 
@@ -104,7 +103,7 @@ class VariableManager:
         except AnsibleError as e:
             # bad cache plugin is not fatal error
             # fallback to a dict as in memory cache
-            display.warning(to_native(e))
+            display.warning(to_text(e))
             self._fact_cache = {}
 
     def __getstate__(self):
@@ -318,7 +317,7 @@ class VariableManager:
                     # and magic vars so we can properly template the vars_files entries
                     temp_vars = combine_vars(all_vars, self._extra_vars)
                     temp_vars = combine_vars(temp_vars, magic_variables)
-                    self._templar.set_available_variables(temp_vars)
+                    templar = Templar(loader=self._loader, variables=temp_vars)
 
                     # we assume each item in the list is itself a list, as we
                     # support "conditional includes" for vars_files, which mimics
@@ -332,7 +331,7 @@ class VariableManager:
                     # raise an error, which is silently ignored at this point.
                     try:
                         for vars_file in vars_file_list:
-                            vars_file = self._templar.template(vars_file)
+                            vars_file = templar.template(vars_file)
                             if not (isinstance(vars_file, Sequence)):
                                 raise AnsibleError(
                                     "Invalid vars_files entry found: %r\n"
@@ -465,7 +464,8 @@ class VariableManager:
         if self._inventory is not None:
             variables['groups'] = self._inventory.get_groups_dict()
             if play:
-                if self._templar.is_template(play.hosts):
+                templar = Templar(loader=self._loader)
+                if templar.is_template(play.hosts):
                     pattern = 'all'
                 else:
                     pattern = play.hosts or 'all'
@@ -498,16 +498,16 @@ class VariableManager:
         # as we're fetching vars before post_validate has been called on
         # the task that has been passed in
         vars_copy = existing_variables.copy()
-        self._templar.set_available_variables(vars_copy)
+        templar = Templar(loader=self._loader, variables=vars_copy)
 
         items = []
         has_loop = True
         if task.loop_with is not None:
             if task.loop_with in lookup_loader:
                 try:
-                    loop_terms = listify_lookup_plugin_terms(terms=task.loop, templar=self._templar,
+                    loop_terms = listify_lookup_plugin_terms(terms=task.loop, templar=templar,
                                                              loader=self._loader, fail_on_undefined=True, convert_bare=False)
-                    items = lookup_loader.get(task.loop_with, loader=self._loader, templar=self._templar).run(terms=loop_terms, variables=vars_copy)
+                    items = lookup_loader.get(task.loop_with, loader=self._loader, templar=templar).run(terms=loop_terms, variables=vars_copy)
                 except AnsibleTemplateError:
                     # This task will be skipped later due to this, so we just setup
                     # a dummy array for the later code so it doesn't fail
@@ -516,7 +516,7 @@ class VariableManager:
                 raise AnsibleError("Failed to find the lookup named '%s' in the available lookup plugins" % task.loop_with)
         elif task.loop is not None:
             try:
-                items = self._templar.template(task.loop)
+                items = templar.template(task.loop)
             except AnsibleTemplateError:
                 # This task will be skipped later due to this, so we just setup
                 # a dummy array for the later code so it doesn't fail
@@ -533,8 +533,8 @@ class VariableManager:
             if item is not None:
                 vars_copy[item_var] = item
 
-            self._templar.set_available_variables(vars_copy)
-            delegated_host_name = self._templar.template(task.delegate_to, fail_on_undefined=False)
+            templar.set_available_variables(vars_copy)
+            delegated_host_name = templar.template(task.delegate_to, fail_on_undefined=False)
             if delegated_host_name != task.delegate_to:
                 cache_items = True
             if delegated_host_name is None:

@@ -65,6 +65,10 @@ options:
     - C(present) implies that the database should be created if necessary.
     - C(absent) implies that the database should be removed if present.
     - C(dump) requires a target definition to which the database will be backed up. (Added in Ansible 2.4)
+      Note that in some PostgreSQL versions of pg_dump, which is an embedded PostgreSQL utility and is used by the module,
+      returns rc 0 even when errors occurred (e.g. the connection is forbidden by pg_hba.conf, etc.),
+      so the module returns changed=True but the dump has not actually been done. Please, be sure that your version of
+      pg_dump returns rc 1 in this case.
     - C(restore) also requires a target definition from which the database will be restored. (Added in Ansible 2.4)
     - The format of the backup will be detected based on the target name.
     - Supported compression formats for dump and restore include C(.bz2), C(.gz) and C(.xz)
@@ -242,8 +246,7 @@ def db_create(cursor, db, owner, template, encoding, lc_collate, lc_ctype, conn_
         return True
     else:
         db_info = get_db_info(cursor, db)
-        if (encoding and
-                get_encoding_id(cursor, encoding) != db_info['encoding_id']):
+        if (encoding and get_encoding_id(cursor, encoding) != db_info['encoding_id']):
             raise NotSupportedError(
                 'Changing database encoding is not supported. '
                 'Current encoding: %s' % db_info['encoding']
@@ -275,8 +278,7 @@ def db_matches(cursor, db, owner, template, encoding, lc_collate, lc_ctype, conn
         return False
     else:
         db_info = get_db_info(cursor, db)
-        if (encoding and
-                get_encoding_id(cursor, encoding) != db_info['encoding_id']):
+        if (encoding and get_encoding_id(cursor, encoding) != db_info['encoding_id']):
             return False
         elif lc_collate and lc_collate != db_info['lc_collate']:
             return False
@@ -539,16 +541,9 @@ def main():
             try:
                 rc, stdout, stderr, cmd = method(module, target, target_opts, db, **kw)
                 if rc != 0:
-                    module.fail_json(msg='Dump of database %s failed' % db,
-                                     stdout=stdout, stderr=stderr, rc=rc, cmd=cmd)
-
-                elif stderr and 'warning' not in str(stderr):
-                    module.fail_json(msg='Dump of database %s failed' % db,
-                                     stdout=stdout, stderr=stderr, rc=1, cmd=cmd)
-
+                    module.fail_json(msg=stderr, stdout=stdout, rc=rc, cmd=cmd)
                 else:
-                    module.exit_json(changed=True, msg='Dump of database %s has been done' % db,
-                                     stdout=stdout, stderr=stderr, rc=rc, cmd=cmd)
+                    module.exit_json(changed=True, msg=stdout, stderr=stderr, rc=rc, cmd=cmd)
             except SQLParseError as e:
                 module.fail_json(msg=to_native(e), exception=traceback.format_exc())
 

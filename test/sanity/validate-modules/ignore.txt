@@ -313,7 +313,6 @@ lib/ansible/modules/clustering/consul.py E322
 lib/ansible/modules/clustering/consul.py E324
 lib/ansible/modules/clustering/consul_kv.py E322
 lib/ansible/modules/clustering/consul_kv.py E324
-lib/ansible/modules/clustering/consul_session.py E322
 lib/ansible/modules/clustering/etcd3.py E326
 lib/ansible/modules/clustering/k8s/_kubernetes.py E322
 lib/ansible/modules/clustering/k8s/_kubernetes.py E323
@@ -377,7 +376,6 @@ lib/ansible/modules/monitoring/circonus_annotation.py E327
 lib/ansible/modules/monitoring/datadog_event.py E324
 lib/ansible/modules/monitoring/datadog_event.py E327
 lib/ansible/modules/monitoring/datadog_monitor.py E324
-lib/ansible/modules/monitoring/datadog_monitor.py E326
 lib/ansible/modules/monitoring/grafana_datasource.py E324
 lib/ansible/modules/monitoring/icinga2_host.py E322
 lib/ansible/modules/monitoring/icinga2_host.py E324
@@ -462,7 +460,6 @@ lib/ansible/modules/network/cloudengine/ce_ntp.py E322
 lib/ansible/modules/network/cloudengine/ce_ntp_auth.py E322
 lib/ansible/modules/network/cloudengine/ce_ospf.py E322
 lib/ansible/modules/network/cloudengine/ce_ospf_vrf.py E322
-lib/ansible/modules/network/cloudengine/ce_reboot.py E317
 lib/ansible/modules/network/cloudengine/ce_reboot.py E322
 lib/ansible/modules/network/cloudengine/ce_rollback.py E322
 lib/ansible/modules/network/cloudengine/ce_sflow.py E322
@@ -816,5 +813,4 @@ lib/ansible/modules/web_infrastructure/django_manage.py E326
 lib/ansible/modules/web_infrastructure/gunicorn.py E322
 lib/ansible/modules/web_infrastructure/htpasswd.py E326
 lib/ansible/modules/web_infrastructure/jenkins_plugin.py E322
-lib/ansible/modules/web_infrastructure/jenkins_plugin.py E324
 lib/ansible/modules/web_infrastructure/jira.py E322

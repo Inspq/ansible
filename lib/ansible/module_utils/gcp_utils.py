@@ -76,13 +76,18 @@ class GcpSession(object):
     def get(self, url, body=None, **kwargs):
         kwargs.update({'json': body, 'headers': self._headers()})
         try:
-            return self.session().get(url, **kwargs)
+            # Ignore the google-auth library warning for user credentials. More
+            # details: https://github.com/googleapis/google-auth-library-python/issues/271
+            import warnings
+            with warnings.catch_warnings():
+                warnings.filterwarnings("ignore", "Your application has authenticated using end user credentials")
+                return self.session().get(url, **kwargs)
         except getattr(requests.exceptions, 'RequestException') as inst:
             self.module.fail_json(msg=inst.message)
 
     def post(self, url, body=None, headers=None, **kwargs):
         if headers:
-            headers = self.merge_dictionaries(headers, self._headers())
+            headers = self._merge_dictionaries(headers, self._headers())
         else:
             headers = self._headers()
 
@@ -93,7 +98,7 @@ class GcpSession(object):
 
     def post_contents(self, url, file_contents=None, headers=None, **kwargs):
         if headers:
-            headers = self.merge_dictionaries(headers, self._headers())
+            headers = self._merge_dictionaries(headers, self._headers())
         else:
             headers = self._headers()
 
@@ -200,7 +205,8 @@ class GcpModule(AnsibleModule):
                 service_account_contents=dict(
                     required=False,
                     fallback=(env_fallback, ['GCP_SERVICE_ACCOUNT_CONTENTS']),
-                    type='str'),
+                    type='str',
+                    no_log=True),
                 scopes=dict(
                     required=False,
                     fallback=(env_fallback, ['GCP_SCOPES']),

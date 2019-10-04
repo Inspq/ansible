@@ -262,7 +262,7 @@ options:
         version_added: "2.5"
     lease:
         description:
-            - Name of the storage domain this virtual machine lease reside on.
+            - Name of the storage domain this virtual machine lease reside on. Pass an empty string to remove the lease.
             - NOTE - Supported since oVirt 4.1.
         version_added: "2.4"
     custom_compatibility_version:
@@ -487,21 +487,25 @@ options:
         description:
             - "If I(true) C(kernel_params), C(initrd_path) and C(kernel_path) will persist in virtual machine configuration,
                if I(False) it will be used for run once."
+            - Usable with oVirt 4.3 and lower; removed in oVirt 4.4.
         type: bool
         version_added: "2.8"
     kernel_path:
         description:
             - Path to a kernel image used to boot the virtual machine.
             - Kernel image must be stored on either the ISO domain or on the host's storage.
+            - Usable with oVirt 4.3 and lower; removed in oVirt 4.4.
         version_added: "2.3"
     initrd_path:
         description:
             - Path to an initial ramdisk to be used with the kernel specified by C(kernel_path) option.
             - Ramdisk image must be stored on either the ISO domain or on the host's storage.
+            - Usable with oVirt 4.3 and lower; removed in oVirt 4.4.
         version_added: "2.3"
     kernel_params:
         description:
             - Kernel command line parameters (formatted as string) to be used with the kernel specified by C(kernel_path) option.
+            - Usable with oVirt 4.3 and lower; removed in oVirt 4.4.
         version_added: "2.3"
     instance_type:
         description:
@@ -770,7 +774,7 @@ options:
         version_added: "2.8"
     force_migrate:
         description:
-            - "If I(true), the VM will migrate even if it is defined as non-migratable."
+            - If I(true), the VM will migrate when I(placement_policy=user-migratable) but not when I(placement_policy=pinned).
         version_added: "2.8"
         type: bool
     migrate:
@@ -1182,6 +1186,7 @@ from ansible.module_utils.ovirt import (
     search_by_attributes,
     search_by_name,
     wait,
+    engine_supported,
 )
 
 
@@ -1201,8 +1206,11 @@ class VmsModule(BaseModule):
         template = None
         templates_service = self._connection.system_service().templates_service()
         if self.param('template'):
+            clusters_service = self._connection.system_service().clusters_service()
+            cluster = search_by_name(clusters_service, self.param('cluster'))
+            data_center = self._connection.follow_link(cluster.data_center)
             templates = templates_service.list(
-                search='name=%s and cluster=%s' % (self.param('template'), self.param('cluster'))
+                search='name=%s and datacenter=%s' % (self.param('template'), data_center.name)
             )
             if self.param('template_version'):
                 templates = [
@@ -1211,10 +1219,10 @@ class VmsModule(BaseModule):
                 ]
             if not templates:
                 raise ValueError(
-                    "Template with name '%s' and version '%s' in cluster '%s' was not found'" % (
+                    "Template with name '%s' and version '%s' in data center '%s' was not found'" % (
                         self.param('template'),
                         self.param('template_version'),
-                        self.param('cluster')
+                        data_center.name
                     )
                 )
             template = sorted(templates, key=lambda t: t.version.version_number, reverse=True)[0]
@@ -1296,7 +1304,7 @@ class VmsModule(BaseModule):
                     id=get_id_by_name(
                         service=self._connection.system_service().storage_domains_service(),
                         name=self.param('lease')
-                    )
+                    ) if self.param('lease') else None
                 )
             ) if self.param('lease') is not None else None,
             cpu=otypes.Cpu(
@@ -1555,7 +1563,6 @@ class VmsModule(BaseModule):
         vm_service = self._service.service(entity.id)
         self._wait_for_UP(vm_service)
         self._attach_cd(vm_service.get())
-        self._migrate_vm(vm_service.get())
 
     def _attach_cd(self, entity):
         cd_iso = self.param('cd_iso')
@@ -2136,6 +2143,15 @@ def import_vm(module, connection):
     return True
 
 
+def check_deprecated_params(module, connection):
+    if engine_supported(connection, '4.4') and \
+            (module.params.get('kernel_params_persist') is not None or
+             module.params.get('kernel_path') is not None or
+             module.params.get('initrd_path') is not None or
+             module.params.get('kernel_params') is not None):
+        module.warn("Parameters 'kernel_params_persist', 'kernel_path', 'initrd_path', 'kernel_params' are not supported since oVirt 4.4.")
+
+
 def control_state(vm, vms_service, module):
     if vm is None:
         return
@@ -2281,6 +2297,7 @@ def main():
         state = module.params['state']
         auth = module.params.pop('auth')
         connection = create_connection(auth)
+        check_deprecated_params(module, connection)
         vms_service = connection.system_service().vms_service()
         vms_module = VmsModule(
             connection=connection,
@@ -2289,6 +2306,8 @@ def main():
         )
         vm = vms_module.search_entity(list_params={'all_content': True})
 
+        # Boolean variable to mark if vm existed before module was executed
+        vm_existed = True if vm else False
         control_state(vm, vms_service, module)
         if state in ('present', 'running', 'next_run'):
             if module.params['xen'] or module.params['kvm'] or module.params['vmware']:
@@ -2333,8 +2352,8 @@ def main():
                     ),
                     wait_condition=lambda vm: vm.status == otypes.VmStatus.UP,
                     # Start action kwargs:
-                    use_cloud_init=True if not module.params.get('cloud_init_persist') and module.params.get('cloud_init') is not None else None,
-                    use_sysprep=True if not module.params.get('cloud_init_persist') and module.params.get('sysprep') is not None else None,
+                    use_cloud_init=True if not module.params.get('cloud_init_persist') and module.params.get('cloud_init') else None,
+                    use_sysprep=True if not module.params.get('cloud_init_persist') and module.params.get('sysprep') else None,
                     vm=otypes.Vm(
                         placement_policy=otypes.VmPlacementPolicy(
                             hosts=[otypes.Host(name=module.params['host'])]
@@ -2372,6 +2391,9 @@ def main():
                         action_condition=lambda vm: vm.status == otypes.VmStatus.UP,
                         wait_condition=lambda vm: vm.status == otypes.VmStatus.UP,
                     )
+            # Allow migrate vm when state present.
+            if vm_existed:
+                vms_module._migrate_vm(vm)
             ret['changed'] = vms_module.changed
         elif state == 'stopped':
             if module.params['xen'] or module.params['kvm'] or module.params['vmware']:

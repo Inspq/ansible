@@ -105,11 +105,18 @@
         password: '*'
       register: test_user_encrypt4
 
-    - name: there should be no warnings when setting the password to '!' and '*'
+    - name: change password to '*************'
+      user:
+        name: ansibulluser
+        password: '*************'
+      register: test_user_encrypt5
+
+    - name: there should be no warnings when setting the password to '!',  '*' or '*************'
       assert:
         that:
           - "'warnings' not in test_user_encrypt3"
           - "'warnings' not in test_user_encrypt4"
+          - "'warnings' not in test_user_encrypt5"
   when: ansible_facts.system != 'Darwin'
 
 
@@ -829,6 +836,14 @@
   tags:
     - user_test_local_mode
 
+- name: Create local account that already exists to check for warning
+  user:
+    name: root
+    local: yes
+  register: local_existing
+  tags:
+    - user_test_local_mode
+
 - name: Create local_ansibulluser
   user:
     name: local_ansibulluser
@@ -853,7 +868,7 @@
     state: absent
     remove: yes
     local: yes
-  register: local_user_test_3
+  register: local_user_test_remove_1
   tags:
     - user_test_local_mode
 
@@ -863,16 +878,58 @@
     state: absent
     remove: yes
     local: yes
-  register: local_user_test_4
+  register: local_user_test_remove_2
   tags:
     - user_test_local_mode
 
-- name: Ensure local user accounts were created
+- name: Create test group
+  group:
+    name: testgroup
+  tags:
+    - user_test_local_mode
+
+- name: Create local_ansibulluser with groups
+  user:
+    name: local_ansibulluser
+    state: present
+    local: yes
+    groups: testgroup
+  register: local_user_test_3
+  ignore_errors: yes
+  tags:
+    - user_test_local_mode
+
+- name: Append groups for local_ansibulluser
+  user:
+    name: local_ansibulluser
+    state: present
+    local: yes
+    append: yes
+  register: local_user_test_4
+  ignore_errors: yes
+  tags:
+    - user_test_local_mode
+
+- name: Ensure local user accounts were created and removed properly
   assert:
     that:
       - local_user_test_1 is changed
       - local_user_test_2 is not changed
-      - local_user_test_3 is changed
-      - local_user_test_4 is not changed
+      - local_user_test_3 is failed
+      - "local_user_test_3['msg'] is search('parameters are mutually exclusive: groups|local')"
+      - local_user_test_4 is failed
+      - "local_user_test_4['msg'] is search('parameters are mutually exclusive: groups|append')"
+      - local_user_test_remove_1 is changed
+      - local_user_test_remove_2 is not changed
+  tags:
+    - user_test_local_mode
+
+- name: Ensure warnings were displayed properly
+  assert:
+    that:
+      - local_user_test_1['warnings'] | length > 0
+      - local_user_test_1['warnings'] | first is search('The local user account may already exist')
+      - local_existing['warnings'] is not defined
+  when: ansible_facts.system in ['Linux']
   tags:
     - user_test_local_mode
