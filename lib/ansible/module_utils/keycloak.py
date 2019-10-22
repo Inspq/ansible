@@ -1801,7 +1801,10 @@ class KeycloakAPI(object):
                                     direction=syncLdapMappers)
                                 open_url(sync_url,
                                          method='POST',
-                                         headers=self.restheaders)
+                                         headers=self.restheaders,
+                                         timeout=300)
+                                # Get a new access token, actual might be expired
+                                self._connect()
         except Exception as e:
             self.module.fail_json(msg='Could not create sub components for parent %s in realm %s: %s'
                                       % (component["name"], realm, str(e)))
@@ -1962,9 +1965,14 @@ class KeycloakAPI(object):
                 realm=realm,
                 id=component_id,
                 action=action)
-            return open_url(sync_url,
+            response = open_url(sync_url,
                             method='POST',
-                            headers=self.restheaders)
+                            headers=self.restheaders,
+                            timeout=300)
+            # Get a new access token, actual might be expired
+            self._connect()
+
+            return response
         except Exception as e:
             self.module.fail_json(msg='Could not synchronize component %s action %s in realm %s: %s'
                                       % (component_id, action, realm, str(e)))
