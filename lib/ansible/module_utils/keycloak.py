@@ -1966,9 +1966,9 @@ class KeycloakAPI(object):
                 id=component_id,
                 action=action)
             response = open_url(sync_url,
-                            method='POST',
-                            headers=self.restheaders,
-                            timeout=300)
+                                method='POST',
+                                headers=self.restheaders,
+                                timeout=300)
             # Get a new access token, actual might be expired
             self._connect()
 
