@@ -25,7 +25,7 @@
   
   - name: Attendre que le serveur sx5spconfig soit disponible
     uri:
-      url: "{{ sx5spconfig_url }}/config"
+      url: "{{ sx5spconfig_url }}"
       status_code: 200
       validate_certs: no
     register: result
