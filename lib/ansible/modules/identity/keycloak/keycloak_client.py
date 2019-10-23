@@ -16,20 +16,26 @@ ANSIBLE_METADATA = {
 DOCUMENTATION = '''
 ---
 module: keycloak_client
+
 short_description: Allows administration of Keycloak clients via Keycloak API
+
 version_added: "2.5"
+
 description:
     - This module allows the administration of Keycloak clients via the Keycloak REST API. It
       requires access to the REST API via OpenID Connect; the user connecting and the client being
       used must have the requisite access rights. In a default Keycloak installation, admin-cli
       and an admin user would work, as would a separate client definition with the scope tailored
       to your needs and a user having the expected roles.
+
     - The names of module options are snake_cased versions of the camelCase ones found in the
       Keycloak API and its documentation at U(http://www.keycloak.org/docs-api/3.3/rest-api/).
       Aliases are provided so camelCased versions can be used as well.
+
     - The Keycloak API does not always sanity check inputs e.g. you can set
       SAML-specific settings on an OpenID Connect client for instance and vice versa. Be careful.
       If you do not specify a setting, usually a sensible default is chosen.
+
 options:
     state:
         description:
@@ -763,12 +769,15 @@ end_state:
         }
     }
 '''
-from ansible.module_utils.keycloak import KeycloakAPI, camel, keycloak_argument_spec
+
+from ansible.module_utils.identity.keycloak.keycloak import KeycloakAPI, camel, \
+    keycloak_argument_spec, get_token, KeycloakError
 from ansible.module_utils.basic import AnsibleModule
 
 
 def sanitize_cr(clientrep):
     """ Removes probably sensitive details from a client representation
+
     :param clientrep: the clientrep dict to be sanitized
     :return: sanitized clientrep dict
     """
@@ -784,6 +793,7 @@ def sanitize_cr(clientrep):
 def main():
     """
     Module execution
+
     :return:
     """
     argument_spec = keycloak_argument_spec()
@@ -877,7 +887,20 @@ def main():
     result = dict(changed=False, msg='', diff={}, proposed={}, existing={}, end_state={}, clientSecret='')
 
     # Obtain access token, initialize API
-    kc = KeycloakAPI(module)
+    try:
+        connection_header = get_token(
+            base_url=module.params.get('auth_keycloak_url'),
+            validate_certs=module.params.get('validate_certs'),
+            auth_realm=module.params.get('auth_realm'),
+            client_id=module.params.get('auth_client_id'),
+            auth_username=module.params.get('auth_username'),
+            auth_password=module.params.get('auth_password'),
+            client_secret=module.params.get('auth_client_secret'),
+        )
+    except KeycloakError as e:
+        module.fail_json(msg=str(e))
+
+    kc = KeycloakAPI(module, connection_header)
 
     realm = module.params.get('realm')
     cid = module.params.get('id')

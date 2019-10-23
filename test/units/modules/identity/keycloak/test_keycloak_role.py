@@ -1,4 +1,4 @@
-from ansible.module_utils.keycloak import isDictEquals
+from ansible.module_utils.identity.keycloak.keycloak import isDictEquals
 from ansible.module_utils.keycloak_utils import loginAndSetHeaders
 from ansible.modules.identity.keycloak import keycloak_role
 from units.modules.utils import AnsibleExitJson, AnsibleFailJson, ModuleTestCase, set_module_args

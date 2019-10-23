@@ -116,7 +116,8 @@ changed:
   returned: always
   type: bool
 '''
-from ansible.module_utils.keycloak import KeycloakAPI, keycloak_argument_spec
+from ansible.module_utils.identity.keycloak.keycloak import KeycloakAPI, \
+    keycloak_argument_spec, get_token, KeycloakError
 from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils.urls import open_url
 import datetime
@@ -174,8 +175,20 @@ def main():
     result = dict(changed=False, msg={}, habilitation={})
 
     # Obtain access token, initialize API
-    kc = KeycloakAPI(module)
+    try:
+        connection_header = get_token(
+            base_url=module.params.get('auth_keycloak_url'),
+            validate_certs=module.params.get('validate_certs'),
+            auth_realm=module.params.get('auth_realm'),
+            client_id=module.params.get('auth_client_id'),
+            auth_username=module.params.get('auth_username'),
+            auth_password=module.params.get('auth_password'),
+            client_secret=module.params.get('auth_client_secret'),
+        )
+    except KeycloakError as e:
+        module.fail_json(msg=str(e))
 
+    kc = KeycloakAPI(module, connection_header)
     realm = module.params.get('realm')
     operation = module.params.get('operation')
     duration = module.params.get('duration')
