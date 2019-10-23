@@ -692,6 +692,10 @@ DEFAULT_HASH_BEHAVIOUR:
   env: [{name: ANSIBLE_HASH_BEHAVIOUR}]
   ini:
   - {key: hash_behaviour, section: defaults}
+  deprecated:
+    why: This feature is fragile and not portable, leading to continual confusion and misuse
+    version: "2.13"
+    alternatives: the ``combine`` filter explicitly
 DEFAULT_HOST_LIST:
   name: Inventory Source
   default: /etc/ansible/hosts
@@ -1311,6 +1315,10 @@ CONNECTION_FACTS_MODULES:
     junos: junos_facts
     nxos: nxos_facts
     vyos: vyos_facts
+    exos: exos_facts
+    slxos: slxos_facts
+    voss: voss_facts
+    ironware: ironware_facts
   description: "Which modules to run during a play's fact gathering stage based on connection"
   env: [{name: ANSIBLE_CONNECTION_FACTS_MODULES}]
   ini:
@@ -1601,7 +1609,7 @@ MAX_FILE_SIZE_FOR_DIFF:
   type: int
 NETWORK_GROUP_MODULES:
   name: Network module families
-  default: [eos, nxos, ios, iosxr, junos, enos, ce, vyos, sros, dellos9, dellos10, dellos6, asa, aruba, aireos, bigip, ironware, onyx, netconf]
+  default: [eos, nxos, ios, iosxr, junos, enos, ce, vyos, sros, dellos9, dellos10, dellos6, asa, aruba, aireos, bigip, ironware, onyx, netconf, exos, voss, slxos]
   description: 'TODO: write it'
   env:
   - name: NETWORK_GROUP_MODULES
@@ -1667,7 +1675,7 @@ PERSISTENT_CONNECT_TIMEOUT:
 PERSISTENT_CONNECT_RETRY_TIMEOUT:
   name: Persistence connection retry timeout
   default: 15
-  description: This controls the retry timeout for presistent connection to connect to the local domain socket.
+  description: This controls the retry timeout for persistent connection to connect to the local domain socket.
   env: [{name: ANSIBLE_PERSISTENT_CONNECT_RETRY_TIMEOUT}]
   ini:
   - {key: connect_retry_timeout, section: persistent_connection}
@@ -1675,11 +1683,19 @@ PERSISTENT_CONNECT_RETRY_TIMEOUT:
 PERSISTENT_COMMAND_TIMEOUT:
   name: Persistence command timeout
   default: 30
-  description: This controls the amount of time to wait for response from remote device before timing out presistent connection.
+  description: This controls the amount of time to wait for response from remote device before timing out persistent connection.
   env: [{name: ANSIBLE_PERSISTENT_COMMAND_TIMEOUT}]
   ini:
   - {key: command_timeout, section: persistent_connection}
   type: int
+PLAYBOOK_DIR:
+  name: playbook dir override for non-playbook CLIs (ala --playbook-dir)
+  version_added: "2.9"
+  description:
+    - A number of non-playbook CLIs have a ``--playbook-dir`` argument; this sets the default value for it.
+  env: [{name: ANSIBLE_PLAYBOOK_DIR}]
+  ini: [{key: playbook_dir, section: defaults}]
+  type: path
 PLAYBOOK_VARS_ROOT:
   name: playbook vars files root
   default: top

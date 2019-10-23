@@ -5,7 +5,6 @@
 from __future__ import (absolute_import, division, print_function)
 __metaclass__ = type
 
-import base64
 import json
 import os
 import tarfile
@@ -16,7 +15,7 @@ from ansible import context
 from ansible.errors import AnsibleError
 from ansible.module_utils.six import string_types
 from ansible.module_utils.six.moves.urllib.error import HTTPError
-from ansible.module_utils.six.moves.urllib.parse import quote as urlquote, urlencode
+from ansible.module_utils.six.moves.urllib.parse import quote as urlquote, urlencode, urlparse
 from ansible.module_utils._text import to_bytes, to_native, to_text
 from ansible.module_utils.urls import open_url
 from ansible.utils.display import Display
@@ -39,25 +38,34 @@ def g_connect(versions):
 
                 # Determine the type of Galaxy server we are talking to. First try it unauthenticated then with Bearer
                 # auth for Automation Hub.
-                n_url = _urljoin(self.api_server, 'api')
+                n_url = self.api_server
                 error_context_msg = 'Error when finding available api versions from %s (%s)' % (self.name, n_url)
+
+                if self.api_server == 'https://galaxy.ansible.com' or self.api_server == 'https://galaxy.ansible.com/':
+                    n_url = 'https://galaxy.ansible.com/api/'
 
                 try:
                     data = self._call_galaxy(n_url, method='GET', error_context_msg=error_context_msg)
-                except GalaxyError as e:
-                    if e.http_code != 401:
-                        raise
+                except (AnsibleError, GalaxyError, ValueError, KeyError):
+                    # Either the URL doesnt exist, or other error. Or the URL exists, but isn't a galaxy API
+                    # root (not JSON, no 'available_versions') so try appending '/api/'
+                    n_url = _urljoin(n_url, '/api/')
 
-                    # Assume this is v3 (Automation Hub) and auth is required
-                    headers = {}
-                    self._add_auth_token(headers, n_url, token_type='Bearer', required=True)
-                    data = self._call_galaxy(n_url, headers=headers, method='GET', error_context_msg=error_context_msg)
+                    # let exceptions here bubble up
+                    data = self._call_galaxy(n_url, method='GET', error_context_msg=error_context_msg)
+                    if 'available_versions' not in data:
+                        raise AnsibleError("Tried to find galaxy API root at %s but no 'available_versions' are available on %s"
+                                           % (n_url, self.api_server))
+
+                # Update api_server to point to the "real" API root, which in this case
+                # was the configured url + '/api/' appended.
+                self.api_server = n_url
 
                 # Default to only supporting v1, if only v1 is returned we also assume that v2 is available even though
                 # it isn't returned in the available_versions dict.
-                available_versions = data.get('available_versions', {u'v1': u'/api/v1'})
+                available_versions = data.get('available_versions', {u'v1': u'v1/'})
                 if list(available_versions.keys()) == [u'v1']:
-                    available_versions[u'v2'] = u'/api/v2'
+                    available_versions[u'v2'] = u'v2/'
 
                 self._available_api_versions = available_versions
                 display.vvvv("Found API version '%s' with Galaxy server %s (%s)"
@@ -170,7 +178,7 @@ class GalaxyAPI:
         try:
             display.vvvv("Calling Galaxy at %s" % url)
             resp = open_url(to_native(url), data=args, validate_certs=self.validate_certs, headers=headers,
-                            method=method, timeout=20, unredirected_headers=['Authorization'])
+                            method=method, timeout=20)
         except HTTPError as e:
             raise GalaxyError(e, error_context_msg)
         except Exception as e:
@@ -190,22 +198,12 @@ class GalaxyAPI:
         if 'Authorization' in headers:
             return
 
-        token = self.token.get() if self.token else None
-
-        # 'Token' for v2 api, 'Bearer' for v3 but still allow someone to override the token if necessary.
-        is_v3 = 'v3' in url.split('/')
-        token_type = token_type or ('Bearer' if is_v3 else 'Token')
-
-        if token:
-            headers['Authorization'] = '%s %s' % (token_type, token)
-        elif self.username:
-            token = "%s:%s" % (to_text(self.username, errors='surrogate_or_strict'),
-                               to_text(self.password, errors='surrogate_or_strict', nonstring='passthru') or '')
-            b64_val = base64.b64encode(to_bytes(token, encoding='utf-8', errors='surrogate_or_strict'))
-            headers['Authorization'] = 'Basic %s' % to_text(b64_val)
-        elif required:
+        if not self.token and required:
             raise AnsibleError("No access token or username set. A token can be set with --api-key, with "
                                "'ansible-galaxy login', or set in ansible.cfg.")
+
+        if self.token:
+            headers.update(self.token.headers())
 
     @g_connect(['v1'])
     def authenticate(self, github_token):
@@ -441,24 +439,35 @@ class GalaxyAPI:
         return resp['task']
 
     @g_connect(['v2', 'v3'])
-    def wait_import_task(self, task_url, timeout=0):
+    def wait_import_task(self, task_id, timeout=0):
         """
         Waits until the import process on the Galaxy server has completed or the timeout is reached.
 
-        :param task_url: The full URI of the import task to wait for, this is returned by publish_collection.
+        :param task_id: The id of the import task to wait for. This can be parsed out of the return
+            value for GalaxyAPI.publish_collection.
         :param timeout: The timeout in seconds, 0 is no timeout.
         """
         # TODO: actually verify that v3 returns the same structure as v2, right now this is just an assumption.
         state = 'waiting'
         data = None
 
-        display.display("Waiting until Galaxy import task %s has completed" % task_url)
+        # Construct the appropriate URL per version
+        if 'v3' in self.available_api_versions:
+            full_url = _urljoin(self.api_server, self.available_api_versions['v3'],
+                                'imports/collections', task_id, '/')
+        else:
+            # TODO: Should we have a trailing slash here?  I'm working with what the unittests ask
+            # for but a trailing slash may be more correct
+            full_url = _urljoin(self.api_server, self.available_api_versions['v2'],
+                                'collection-imports', task_id)
+
+        display.display("Waiting until Galaxy import task %s has completed" % full_url)
         start = time.time()
         wait = 2
 
         while timeout == 0 or (time.time() - start) < timeout:
-            data = self._call_galaxy(task_url, method='GET', auth_required=True,
-                                     error_context_msg='Error when getting import task results at %s' % task_url)
+            data = self._call_galaxy(full_url, method='GET', auth_required=True,
+                                     error_context_msg='Error when getting import task results at %s' % full_url)
 
             state = data.get('state', 'waiting')
 
@@ -473,7 +482,7 @@ class GalaxyAPI:
             wait = min(30, wait * 1.5)
         if state == 'waiting':
             raise AnsibleError("Timeout while waiting for the Galaxy import process to finish, check progress at '%s'"
-                               % to_native(task_url))
+                               % to_native(full_url))
 
         for message in data.get('messages', []):
             level = message['level']
@@ -487,7 +496,7 @@ class GalaxyAPI:
         if state == 'failed':
             code = to_native(data['error'].get('code', 'UNKNOWN'))
             description = to_native(
-                data['error'].get('description', "Unknown error, see %s for more details" % task_url))
+                data['error'].get('description', "Unknown error, see %s for more details" % full_url))
             raise AnsibleError("Galaxy import process failed: %s (Code: %s)" % (description, code))
 
     @g_connect(['v2', 'v3'])

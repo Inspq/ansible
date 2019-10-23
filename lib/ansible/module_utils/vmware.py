@@ -365,7 +365,8 @@ def gather_vm_facts(content, vm):
     vmnet = _get_vm_prop(vm, ('guest', 'net'))
     if vmnet:
         for device in vmnet:
-            net_dict[device.macAddress] = list(device.ipAddress)
+            if device.deviceConfigId > 0:
+                net_dict[device.macAddress] = list(device.ipAddress)
 
     if vm.guest.ipAddress:
         if ':' in vm.guest.ipAddress:
@@ -819,6 +820,26 @@ def wait_for_poweroff(vm, timeout=300):
         result['failed'] = True
         result['msg'] = 'Timeout while waiting for VM power off.'
     return result
+
+
+def is_integer(value, type_of='int'):
+    try:
+        VmomiSupport.vmodlTypes[type_of](value)
+        return True
+    except (TypeError, ValueError):
+        return False
+
+
+def is_boolean(value):
+    if str(value).lower() in ['true', 'on', 'yes', 'false', 'off', 'no']:
+        return True
+    return False
+
+
+def is_truthy(value):
+    if str(value).lower() in ['true', 'on', 'yes']:
+        return True
+    return False
 
 
 class PyVmomi(object):

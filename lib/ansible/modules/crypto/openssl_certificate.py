@@ -277,6 +277,7 @@ options:
             - This option is deprecated since Ansible 2.9 and will be removed with the C(assertonly) provider in Ansible 2.13.
               For alternatives, see the example on replacing C(assertonly).
         type: list
+        elements: str
 
     issuer:
         description:
@@ -390,6 +391,7 @@ options:
             - This option is deprecated since Ansible 2.9 and will be removed with the C(assertonly) provider in Ansible 2.13.
               For alternatives, see the example on replacing C(assertonly).
         type: list
+        elements: str
         aliases: [ keyUsage ]
 
     key_usage_strict:
@@ -409,6 +411,7 @@ options:
             - This option is deprecated since Ansible 2.9 and will be removed with the C(assertonly) provider in Ansible 2.13.
               For alternatives, see the example on replacing C(assertonly).
         type: list
+        elements: str
         aliases: [ extendedKeyUsage ]
 
     extended_key_usage_strict:
@@ -428,6 +431,7 @@ options:
             - This option is deprecated since Ansible 2.9 and will be removed with the C(assertonly) provider in Ansible 2.13.
               For alternatives, see the example on replacing C(assertonly).
         type: list
+        elements: str
         aliases: [ subjectAltName ]
 
     subject_alt_name_strict:
@@ -466,7 +470,7 @@ options:
 
     entrust_cert_type:
         description:
-            - The type of certificate product to request.
+            - Specify the type of certificate requested.
             - This is only used by the C(entrust) provider.
         type: str
         default: STANDARD_SSL
@@ -515,7 +519,7 @@ options:
 
     entrust_api_client_cert_path:
         description:
-            - The path of the client certificate used to authenticate to the Entrust Certificate Services (ECS) API.
+            - The path to the client certificate used to authenticate to the Entrust Certificate Services (ECS) API.
             - This is only used by the C(entrust) provider.
             - This is required if the provider is C(entrust).
         type: path
@@ -523,7 +527,7 @@ options:
 
     entrust_api_client_cert_key_path:
         description:
-            - The path of the key for the client certificate used to authenticate to the Entrust Certificate Services (ECS) API.
+            - The path to the private key of the client certificate used to authenticate to the Entrust Certificate Services (ECS) API.
             - This is only used by the C(entrust) provider.
             - This is required if the provider is C(entrust).
         type: path
@@ -532,15 +536,15 @@ options:
     entrust_not_after:
         description:
             - The point in time at which the certificate stops being valid.
-            - Time can be specified either as relative time or as absolute timestamp.
+            - Time can be specified either as relative time or as an absolute timestamp.
+            - A valid absolute time format is C(ASN.1 TIME) such as C(2019-06-18).
+            - A valid relative time format is C([+-]timespec) where timespec can be an integer + C([w | d | h | m | s]), such as C(+365d) or C(+32w1d2h)).
             - Time will always be interpreted as UTC.
-            - Note that only the date (day, month, year) is supported for specifying expiry date of the issued certificate.
+            - Note that only the date (day, month, year) is supported for specifying the expiry date of the issued certificate.
             - The full date-time is adjusted to EST (GMT -5:00) before issuance, which may result in a certificate with an expiration date one day
               earlier than expected if a relative time is used.
             - The minimum certificate lifetime is 90 days, and maximum is three years.
-            - Valid format is C([+-]timespec | ASN.1 TIME) where timespec can be an integer
-              + C([w | d | h | m | s]) (e.g. C(+32w1d2h).
-            - If this value is not specified, the certificate will stop being valid 365 days from now.
+            - If this value is not specified, the certificate will stop being valid 365 days the date of issue.
             - This is only used by the C(entrust) provider.
         type: str
         default: +365d
@@ -548,8 +552,8 @@ options:
 
     entrust_api_specification_path:
         description:
-            - Path to the specification file defining the Entrust Certificate Services (ECS) API.
-            - Can be used to keep a local copy of the specification to avoid downloading it every time the module is used.
+            - The path to the specification file defining the Entrust Certificate Services (ECS) API configuration.
+            - You can use this to keep a local copy of the specification to avoid downloading it every time the module is used.
             - This is only used by the C(entrust) provider.
         type: path
         default: https://cloud.entrust.net/EntrustCloud/documentation/cms-api-2.1.0.yaml
@@ -1857,12 +1861,10 @@ class AssertOnlyCertificateCryptography(AssertOnlyCertificateBase):
     def _validate_csr_signature(self):
         if not self.csr.is_signature_valid:
             return False
-        if self.csr.public_key().public_numbers() != self.cert.public_key().public_numbers():
-            return False
+        return self.csr.public_key().public_numbers() == self.cert.public_key().public_numbers()
 
     def _validate_csr_subject(self):
-        if self.csr.subject != self.cert.subject:
-            return False
+        return self.csr.subject == self.cert.subject
 
     def _validate_csr_extensions(self):
         cert_exts = self.cert.extensions

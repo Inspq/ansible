@@ -37,8 +37,6 @@ No notable changes
 Modules
 =======
 
-No notable changes
-
 
 Modules removed
 ---------------
@@ -51,7 +49,11 @@ The following modules no longer exist:
 Deprecation notices
 -------------------
 
-No notable changes
+The following functionality will be removed in Ansible 2.14. Please update update your playbooks accordingly.
+
+* The :ref:`openssl_csr <openssl_csr_module>` module's option ``version`` no longer supports values other than ``1`` (the current only standardized CSR version).
+
+* :ref:`docker_container <docker_container_module>`: the ``trust_image_content`` option will be removed. It has always been ignored by the module.
 
 
 Noteworthy module changes
@@ -62,7 +64,8 @@ Noteworthy module changes
 * :ref:`vmware_host_ntp <vmware_host_ntp_module>` now returns ``host_ntp_status`` instead of Ansible internal key ``results``.
 * :ref:`vmware_host_service_manager <vmware_host_service_manager_module>` now returns ``host_service_status`` instead of Ansible internal key ``results``.
 * :ref:`vmware_tag <vmware_tag_module>` now returns ``tag_status`` instead of Ansible internal key ``results``.
-
+* The deprecated ``recurse`` option in :ref:`pacman <pacman_module>` module has been removed, you should use ``extra_args=--recursive`` instead.
+* :ref:`vmware_guest_custom_attributes <vmware_guest_custom_attributes_module>` module does not require VM name which was a required parameter for releases prior to Ansible 2.10.
 
 Plugins
 =======

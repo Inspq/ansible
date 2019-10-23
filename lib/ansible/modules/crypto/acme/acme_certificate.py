@@ -22,9 +22,9 @@ short_description: Create SSL/TLS certificates with the ACME protocol
 description:
    - "Create and renew SSL/TLS certificates with a CA supporting the
       L(ACME protocol,https://tools.ietf.org/html/rfc8555),
-      such as L(Let's Encrypt,https://letsencrypt.org/). The current
-      implementation supports the C(http-01), C(dns-01) and C(tls-alpn-01)
-      challenges."
+      such as L(Let's Encrypt,https://letsencrypt.org/) or
+      L(Buypass,https://www.buypass.com/). The current implementation
+      supports the C(http-01), C(dns-01) and C(tls-alpn-01) challenges."
    - "To use this module, it has to be executed twice. Either as two
       different tasks in the same run or during two runs. Note that the output
       of the first run needs to be recorded and passed to the second run as the
@@ -54,6 +54,10 @@ seealso:
     description: Documentation for the Let's Encrypt Certification Authority.
                  Provides useful information for example on rate limits.
     link: https://letsencrypt.org/docs/
+  - name: Buypass Go SSL
+    description: Documentation for the Buypass Certification Authority.
+                 Provides useful information for example on rate limits.
+    link: https://www.buypass.com/ssl/products/acme
   - name: Automatic Certificate Management Environment (ACME)
     description: The specification of the ACME protocol (RFC 8555).
     link: https://tools.ietf.org/html/rfc8555
@@ -320,7 +324,8 @@ challenge_data:
     - Per identifier / challenge type challenge data.
     - Since Ansible 2.8.5, only challenges which are not yet valid are returned.
   returned: changed
-  type: complex
+  type: list
+  elements: dict
   contains:
     resource:
       description: The challenge resource that must be created for validation.
@@ -362,14 +367,12 @@ challenge_data_dns:
   type: dict
   version_added: "2.5"
 authorizations:
-  description: ACME authorization data.
+  description:
+    - ACME authorization data.
+    - Maps an identifier to ACME authorization objects. See U(https://tools.ietf.org/html/rfc8555#section-7.1.4).
   returned: changed
-  type: complex
-  contains:
-      authorization:
-        description: ACME authorization object. See U(https://tools.ietf.org/html/rfc8555#section-7.1.4)
-        returned: success
-        type: dict
+  type: dict
+  sample: '{"example.com":{...}}'
 order_uri:
   description: ACME order URI.
   returned: changed
@@ -393,6 +396,7 @@ all_chains:
     - See L(Section 7.4.2 of RFC8555,https://tools.ietf.org/html/rfc8555#section-7.4.2) for details.
   returned: when certificate was retrieved and I(retrieve_all_alternates) is set to C(yes)
   type: list
+  elements: dict
   contains:
     cert:
       description:
@@ -414,24 +418,25 @@ all_chains:
 
 from ansible.module_utils.acme import (
     ModuleFailException,
-    write_file, nopad_b64, pem_to_der,
+    write_file,
+    nopad_b64,
+    pem_to_der,
     ACMEAccount,
     HAS_CURRENT_CRYPTOGRAPHY,
     cryptography_get_csr_identifiers,
     openssl_get_csr_identifiers,
     cryptography_get_cert_days,
-    set_crypto_backend,
+    handle_standard_module_arguments,
     process_links,
+    get_default_argspec,
 )
 
 import base64
 import hashlib
-import locale
 import os
 import re
 import textwrap
 import time
-import urllib
 from datetime import datetime
 
 from ansible.module_utils.basic import AnsibleModule
@@ -638,6 +643,7 @@ class ACMEClient(object):
                 keyauthorization = self.account.get_keyauthorization(token)
                 challenge_response["resource"] = "challenge"
                 challenge_response["keyAuthorization"] = keyauthorization
+                challenge_response["type"] = self.challenge
             result, info = self.account.send_signed_request(uri, challenge_response)
             if info['status'] not in [200, 202]:
                 raise ModuleFailException("Error validating challenge: CODE: {0} RESULT: {1}".format(info['status'], result))
@@ -987,30 +993,25 @@ class ACMEClient(object):
 
 
 def main():
+    argument_spec = get_default_argspec()
+    argument_spec.update(dict(
+        modify_account=dict(type='bool', default=True),
+        account_email=dict(type='str'),
+        agreement=dict(type='str'),
+        terms_agreed=dict(type='bool', default=False),
+        challenge=dict(type='str', default='http-01', choices=['http-01', 'dns-01', 'tls-alpn-01']),
+        csr=dict(type='path', required=True, aliases=['src']),
+        data=dict(type='dict'),
+        dest=dict(type='path', aliases=['cert']),
+        fullchain_dest=dict(type='path', aliases=['fullchain']),
+        chain_dest=dict(type='path', aliases=['chain']),
+        remaining_days=dict(type='int', default=10),
+        deactivate_authzs=dict(type='bool', default=False),
+        force=dict(type='bool', default=False),
+        retrieve_all_alternates=dict(type='bool', default=False),
+    ))
     module = AnsibleModule(
-        argument_spec=dict(
-            account_key_src=dict(type='path', aliases=['account_key']),
-            account_key_content=dict(type='str', no_log=True),
-            account_uri=dict(type='str'),
-            modify_account=dict(type='bool', default=True),
-            acme_directory=dict(type='str', default='https://acme-staging.api.letsencrypt.org/directory'),
-            acme_version=dict(type='int', default=1, choices=[1, 2]),
-            validate_certs=dict(default=True, type='bool'),
-            account_email=dict(type='str'),
-            agreement=dict(type='str'),
-            terms_agreed=dict(type='bool', default=False),
-            challenge=dict(type='str', default='http-01', choices=['http-01', 'dns-01', 'tls-alpn-01']),
-            csr=dict(type='path', required=True, aliases=['src']),
-            data=dict(type='dict'),
-            dest=dict(type='path', aliases=['cert']),
-            fullchain_dest=dict(type='path', aliases=['fullchain']),
-            chain_dest=dict(type='path', aliases=['chain']),
-            remaining_days=dict(type='int', default=10),
-            deactivate_authzs=dict(type='bool', default=False),
-            force=dict(type='bool', default=False),
-            retrieve_all_alternates=dict(type='bool', default=False),
-            select_crypto_backend=dict(type='str', default='auto', choices=['auto', 'openssl', 'cryptography']),
-        ),
+        argument_spec=argument_spec,
         required_one_of=(
             ['account_key_src', 'account_key_content'],
             ['dest', 'fullchain_dest'],
@@ -1020,16 +1021,7 @@ def main():
         ),
         supports_check_mode=True,
     )
-    set_crypto_backend(module)
-
-    # AnsibleModule() changes the locale, so change it back to C because we rely on time.strptime() when parsing certificate dates.
-    module.run_command_environ_update = dict(LANG='C', LC_ALL='C', LC_MESSAGES='C', LC_CTYPE='C')
-    locale.setlocale(locale.LC_ALL, 'C')
-
-    if not module.params.get('validate_certs'):
-        module.warn(warning='Disabling certificate validation for communications with ACME endpoint. ' +
-                            'This should only be done for testing against a local ACME server for ' +
-                            'development purposes, but *never* for production purposes.')
+    handle_standard_module_arguments(module)
 
     try:
         if module.params.get('dest'):

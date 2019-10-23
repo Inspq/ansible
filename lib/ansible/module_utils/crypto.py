@@ -30,6 +30,7 @@ from __future__ import absolute_import, division, print_function
 __metaclass__ = type
 
 
+import sys
 from distutils.version import LooseVersion
 
 try:
@@ -1883,3 +1884,48 @@ def quick_is_not_prime(n):
     # TODO: maybe do some iterations of Miller-Rabin to increase confidence
     # (https://en.wikipedia.org/wiki/Miller%E2%80%93Rabin_primality_test)
     return False
+
+
+python_version = (sys.version_info[0], sys.version_info[1])
+if python_version >= (2, 7) or python_version >= (3, 1):
+    # Ansible still supports Python 2.6 on remote nodes
+    def count_bits(no):
+        no = abs(no)
+        if no == 0:
+            return 0
+        return no.bit_length()
+else:
+    # Slow, but works
+    def count_bits(no):
+        no = abs(no)
+        count = 0
+        while no > 0:
+            no >>= 1
+            count += 1
+        return count
+
+
+PEM_START = '-----BEGIN '
+PEM_END = '-----'
+PKCS8_PRIVATEKEY_NAMES = ('PRIVATE KEY', 'ENCRYPTED PRIVATE KEY')
+PKCS1_PRIVATEKEY_SUFFIX = ' PRIVATE KEY'
+
+
+def identify_private_key_format(content):
+    '''Given the contents of a private key file, identifies its format.'''
+    # See https://github.com/openssl/openssl/blob/master/crypto/pem/pem_pkey.c#L40-L85
+    # (PEM_read_bio_PrivateKey)
+    # and https://github.com/openssl/openssl/blob/master/include/openssl/pem.h#L46-L47
+    # (PEM_STRING_PKCS8, PEM_STRING_PKCS8INF)
+    try:
+        lines = content.decode('utf-8').splitlines(False)
+        if lines[0].startswith(PEM_START) and lines[0].endswith(PEM_END) and len(lines[0]) > len(PEM_START) + len(PEM_END):
+            name = lines[0][len(PEM_START):-len(PEM_END)]
+            if name in PKCS8_PRIVATEKEY_NAMES:
+                return 'pkcs8'
+            if len(name) > len(PKCS1_PRIVATEKEY_SUFFIX) and name.endswith(PKCS1_PRIVATEKEY_SUFFIX):
+                return 'pkcs1'
+            return 'unknown-pem'
+    except UnicodeDecodeError:
+        pass
+    return 'raw'
