@@ -1,7 +1,7 @@
 from units.modules.utils import AnsibleExitJson, AnsibleFailJson, ModuleTestCase, set_module_args
 from ansible.modules.identity.keycloak import keycloak_user, keycloak_role, keycloak_client
 from ansible.modules.identity.sx5 import sx5_habilitation
-from ansible.module_utils.keycloak import KeycloakAPI, keycloak_argument_spec, isDictEquals
+from ansible.module_utils.identity.keycloak.keycloak import KeycloakAPI, keycloak_argument_spec, isDictEquals
 from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils.sx5_sp_config_system_utils import loginAndSetHeaders
 from ansible.module_utils.urls import open_url
