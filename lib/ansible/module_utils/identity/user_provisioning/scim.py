@@ -108,8 +108,8 @@ class SCIMClient(object):
         self.headers = {
             'Content-Type': 'application/scim+json'
         }
-        if 'Authorization' in access_token:
-            self.headers["Authorization"] =  access_token['Authorization']
+        if access_token is not None and len(access_token) > 0:
+            self.headers["Authorization"] = "bearer: " + access_token
         
     def searchUserByUserName(self, userName):
         userSearchUrl = self.base_url + User.URI + '/.search'
@@ -118,7 +118,9 @@ class SCIMClient(object):
             response = open_url(userSearchUrl, method='POST', headers=self.headers,
                             validate_certs=self.validate_certs, data=data)
             users = json.load(response)
-            return User.from_json(json.dumps(users["Resources"][0]))
+            if "Resources" in users and len(users["Resources"]) > 0:
+                return User.from_json(json.dumps(users["Resources"][0]))
+            return None
         except Exception as e:
             self.module.fail_json(msg='Could not search for user %s at %s: %s'
                                       % (userName, userSearchUrl, str(e)))

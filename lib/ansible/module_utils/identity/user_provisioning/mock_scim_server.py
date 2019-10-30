@@ -239,16 +239,40 @@ def mocked_scim_requests(*args, **kwargs):
             return self.fp
 
     if args[0] == 'http://scim.server.url/scim/v2/Users/.search' and kwargs["method"] == 'POST':
-        response = {
-            "schemas": ["urn:ietf:params:scim:api:messages:2.0:ListResponse"],
-            "id": None,
-            "externalId": None,
-            "meta": None,
-            "totalResults": 1,
-            "Resources": [ USERS[1] ],
-            "startIndex": 1,
-            "itemsPerPage": 10
-        }
+        if "data" in kwargs and USERS[1]["userName"] in kwargs["data"]:
+            response = {
+                "schemas": ["urn:ietf:params:scim:api:messages:2.0:ListResponse"],
+                "id": None,
+                "externalId": None,
+                "meta": None,
+                "totalResults": 1,
+                "Resources": [ USERS[1] ],
+                "startIndex": 1,
+                "itemsPerPage": 10
+            }
+        elif "data" in kwargs and USERS[0]["userName"] in kwargs["data"]:
+            response = {
+                "schemas": ["urn:ietf:params:scim:api:messages:2.0:ListResponse"],
+                "id": None,
+                "externalId": None,
+                "meta": None,
+                "totalResults": 1,
+                "Resources": [ USERS[0] ],
+                "startIndex": 1,
+                "itemsPerPage": 10
+            }
+        else:
+            response = {
+                "schemas": ["urn:ietf:params:scim:api:messages:2.0:ListResponse"],
+                "id": None,
+                "externalId": None,
+                "meta": None,
+                "totalResults": 0,
+                "Resources": [],
+                "startIndex": 1,
+                "itemsPerPage": 10
+            }
+            
         return MockResponse(
             response
             ,200)

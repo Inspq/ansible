@@ -192,6 +192,13 @@ class SCIMTestCase(TestCase):
         self.assertEqual(scimuser.userName, userToSearch, scimuser.userName + " is not " + userToSearch)
         
     @mock.patch('ansible.module_utils.identity.user_provisioning.scim.open_url', side_effect=mocked_scim_requests)
+    def testSearchNonExistingUser(self, open_url):
+        userToSearch = "test05"
+        scimClient = SCIMClient(base_url="http://scim.server.url/scim/v2", access_token=self.access_token)
+        scimuser = scimClient.searchUserByUserName(userToSearch)
+        self.assertIs(scimuser, None, userToSearch + " is not supposed to be found")
+
+    @mock.patch('ansible.module_utils.identity.user_provisioning.scim.open_url', side_effect=mocked_scim_requests)
     def testGetUserById(self, open_url):
         userToGet = "test02"
         scimClient = SCIMClient(base_url="http://scim.server.url/scim/v2", access_token=self.access_token)
