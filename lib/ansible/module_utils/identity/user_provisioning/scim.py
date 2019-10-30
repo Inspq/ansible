@@ -115,8 +115,9 @@ class SCIMClient(object):
         userSearchUrl = self.base_url + User.URI + '/.search'
         data = '{"filter":"userName eq \\\"' + userName + '\\\""}"'
         try:
-            users = json.load(open_url(userSearchUrl, method='POST', headers=self.headers,
-                            validate_certs=self.validate_certs, data=data))
+            response = open_url(userSearchUrl, method='POST', headers=self.headers,
+                            validate_certs=self.validate_certs, data=data)
+            users = json.load(response)
             return User.from_json(json.dumps(users["Resources"][0]))
         except Exception as e:
             self.module.fail_json(msg='Could not search for user %s at %s: %s'
