@@ -4,9 +4,8 @@
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
 from __future__ import absolute_import, division, print_function
-from __builtin__ import False
-from gtk import FALSE
 __metaclass__ = type
+
 
 ANSIBLE_METADATA = {'metadata_version': '1.1',
                     'status': ['preview'],
@@ -38,7 +37,7 @@ options:
         required: true
         type: str
     name:
-        description: 
+        description:
             - Name of the user
         required: false
         type: dict
@@ -53,7 +52,7 @@ options:
                     - Last name of the user
                 required: true
                 type: str
-            middleName
+            middleName:
                 description:
                     - Middle name of the user
                 required: false
@@ -133,6 +132,7 @@ from ansible.module_utils.identity.keycloak.keycloak import isDictEquals
 from ansible.module_utils.basic import AnsibleModule
 import json
 
+
 def main():
     """
     Module execution
@@ -141,8 +141,8 @@ def main():
     name_spec = dict(
         givenName=dict(type='str'),
         familyName=dict(type='str'),
-        middleName=dict(type='str'),
-        )
+        middleName=dict(type='str')
+    )
     argument_spec = dict(
         scim_server_url=dict(type='str', required=True),
         userName=dict(type='str', required=True),
@@ -162,7 +162,7 @@ def main():
 
     newUser = {
         "userName": module.params.get("userName"),
-        "id" : module.params.get("userName"),
+        "id": module.params.get("userName"),
         "name": {
             "givenName": module.params.get("name")["givenName"],
             "familyName": module.params.get("name")["familyName"],
@@ -173,7 +173,7 @@ def main():
     newScimUser = User(newUser)
     # Search the user
     existingScimUser = scimClient.searchUserByUserName(userName=module.params.get("userName"))
-    
+
     if existingScimUser is None:
         if module.params.get("state") == "present":
             createdSCIMUser = scimClient.createUser(newScimUser)
@@ -196,10 +196,9 @@ def main():
                 updatedSCIMUser = scimClient.updateUser(newScimUser)
                 result['changed'] = True
                 result['user'] = json.loads(updatedSCIMUser.to_json())
-                                            
+
     module.exit_json(**result)
 
 
 if __name__ == '__main__':
     main()
-        
