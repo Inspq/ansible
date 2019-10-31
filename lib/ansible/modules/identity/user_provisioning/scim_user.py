@@ -172,7 +172,7 @@ def main():
         display=dict(type='str', required=True),
         type=dict(type='str'),
         primary=dict(type='bool')
-        )
+    )
     argument_spec = dict(
         scim_server_url=dict(type='str', required=True),
         userName=dict(type='str', required=True),
