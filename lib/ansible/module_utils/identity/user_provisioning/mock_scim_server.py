@@ -217,14 +217,34 @@ def mocked_scim_requests(*args, **kwargs):
                 }
             ],
             "x509Certificates":None
-        }
+        },
+        {
+           "userName":"testes01",
+           "displayName":None,
+           "name":{
+              "middleName":None,
+              "givenName":"Test",
+              "familyName":"Test"
+           },
+           "roles":[
+              {
+                 "display":"FA-SAISIE",
+                 "primary":False
+              }
+           ],
+           "id":"testes01",
+           "schemas":[
+              "urn:ietf:params:scim:schemas:core:2.0:User"
+           ]
+        }        
     ]        
     class MockResponse:
         def __init__(self, json_data, status_code):
             #self.json_data = json_data
             self.code = status_code
-            self.fp = json.dumps(json_data)
-            self.json_data = json_data
+            if json_data is not None:                                                                                                  
+                self.fp = json.dumps(json_data)                               
+                self.json_data = json_data
             self.headers = {
                 "dict": {
                     "connection":"close",
@@ -281,7 +301,25 @@ def mocked_scim_requests(*args, **kwargs):
         return MockResponse(USERS[1], 200)
 
     elif args[0] == 'http://scim.server.url/scim/v2/Users' and kwargs["method"] == 'POST':
-        return MockResponse(USERS[2], 201)
+        if "data" in kwargs and "externalId" not in kwargs["data"]:
+            response = {
+                "schemas":["urn:ietf:params:scim:api:messages:2.0:Error"],
+                "id":None,
+                "externalId":None,
+                "status":400,
+                "meta":None,
+                "scimType":None,
+                "detail":"External Id must be specified"
+            }
+            return(MockResponse(response, 400))
+        if "data" in kwargs:
+            for user in USERS:
+                if user["userName"] in kwargs["data"]:
+                    if "externalId" not in user:
+                        user["externalId"] =  json.loads(kwargs["data"])["externalId"]
+                    return MockResponse(user, 201)
+            
+        return MockResponse(None, 400)
 
     elif args[0] == 'http://scim.server.url/scim/v2/Users/' + USERS[0]["userName"] and kwargs["method"] == 'DELETE':
         return MockResponse(None, 204)

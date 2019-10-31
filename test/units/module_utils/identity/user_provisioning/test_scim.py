@@ -174,6 +174,25 @@ class SCIMTestCase(TestCase):
                 }
             ],
             "x509Certificates":None
+        },
+        {
+           "userName":"testes01",
+           "displayName":None,
+           "name":{
+              "middleName":None,
+              "givenName":"Test",
+              "familyName":"Test"
+           },
+           "roles":[
+              {
+                 "display":"FA-SAISIE",
+                 "primary":False
+              }
+           ],
+           "id":"testes01",
+           "schemas":[
+              "urn:ietf:params:scim:schemas:core:2.0:User"
+           ]
         }
     ]        
     
@@ -217,7 +236,7 @@ class SCIMTestCase(TestCase):
         userToDelete = User.from_json(json.dumps(self.testUsers[0]))
         scimClient = SCIMClient(base_url="http://scim.server.url/scim/v2", access_token=self.access_token)
         response = scimClient.deleteUser(userToDelete)
-        self.assertEqual(response.code, 204, "Create response code incorrect: " + str(response.code))
+        self.assertEqual(response.code, 204, "Delete response code incorrect: " + str(response.code))
 
     @mock.patch('ansible.module_utils.identity.user_provisioning.scim.open_url', side_effect=mocked_scim_requests)
     def testUpdateUser(self, open_url):
@@ -226,3 +245,11 @@ class SCIMTestCase(TestCase):
         scimClient = SCIMClient(base_url="http://scim.server.url/scim/v2", access_token=self.access_token)
         scimuser = scimClient.updateUser(userToUpdate)
         self.assertEqual(scimuser.userName, userToUpdate.userName, scimuser.userName + " is not " + userToUpdate.userName)
+
+    @mock.patch('ansible.module_utils.identity.user_provisioning.scim.open_url', side_effect=mocked_scim_requests)
+    def testCreateUserWithoutExternalId(self, open_url):
+        userToCreate = User.from_json(json.dumps(self.testUsers[2]))
+        scimClient = SCIMClient(base_url="http://scim.server.url/scim/v2", access_token=self.access_token)
+        scimuser = scimClient.createUser(userToCreate)
+        self.assertDictContainsSubset(json.loads(scimuser.to_json()), json.loads(userToCreate.to_json()), scimuser.to_json() + " is not " + userToCreate.to_json())
+        self.assertTrue("externalId" in json.loads(scimuser.to_json()), scimuser.to_json() + " does not have externalId")

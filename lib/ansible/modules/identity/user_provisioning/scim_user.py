@@ -62,6 +62,27 @@ options:
             - Display Name
         required: false
         type: str
+    roles:
+        description:
+        - List of roles for the user.
+        required: false
+        type: list
+        suboptions:
+            display:
+                description:
+                - Name of the role
+                type: str
+                required: true
+            type:
+                description:
+                - Type of role
+                type: str
+                required: false
+            primary:
+                description:
+                - Is this role primary
+                type: bool
+                required: false
     state:
         description:
             - Control if the user must exist or not
@@ -91,6 +112,10 @@ EXAMPLES = '''
           givenName: Totally
           familyName: Totest
         displayName: "user 12"
+        roles:
+        - display: FA-SAISIE
+          type: test
+          primary: True
         state: present
 
     - name: Re-create the user
@@ -143,19 +168,27 @@ def main():
         familyName=dict(type='str'),
         middleName=dict(type='str')
     )
+    role_spec = dict(
+        display=dict(type='str', required=True),
+        type=dict(type='str'),
+        primary=dict(type='bool')
+        )
     argument_spec = dict(
         scim_server_url=dict(type='str', required=True),
         userName=dict(type='str', required=True),
         name=dict(type='dict', options=name_spec),
         displayName=dict(type='str'),
+        roles=dict(type='list', options=role_spec),
         access_token=dict(type='str'),
         state=dict(choices=["absent", "present"], default='present'),
         force=dict(type='bool', default=False),
     )
 
+    f = open("/tmp/scim_user_params.json", "w+")
     module = AnsibleModule(argument_spec=argument_spec,
                            supports_check_mode=True)
-
+    f.write(str(module.params))
+    f.close()
     result = dict(changed=False, msg='', flow={})
     # Initialize SCIM client API
     scimClient = SCIMClient(module, base_url=module.params.get("scim_server_url"), access_token=module.params.get("access_token"))
@@ -163,26 +196,32 @@ def main():
     newUser = {
         "userName": module.params.get("userName"),
         "id": module.params.get("userName"),
-        "name": {
-            "givenName": module.params.get("name")["givenName"],
-            "familyName": module.params.get("name")["familyName"],
-            "middleName": module.params.get("name")["middleName"]
-        },
+        "name": module.params.get("name"),
+        "roles": module.params.get("roles"),
         "displayName": module.params.get("displayName")
     }
     newScimUser = User(newUser)
+    f = open("/tmp/scim_user_newUser.json", "w+")
+    f.write(newScimUser.to_json())
+    f.close()
     # Search the user
     existingScimUser = scimClient.searchUserByUserName(userName=module.params.get("userName"))
 
     if existingScimUser is None:
         if module.params.get("state") == "present":
             createdSCIMUser = scimClient.createUser(newScimUser)
+            f = open("/tmp/scim_user_createdSCIMUser.json", "w+")
+            f.write(createdSCIMUser.to_json())
+            f.close()
             result['changed'] = True
             result['user'] = json.loads(createdSCIMUser.to_json())
         else:
             result['changed'] = False
             result['msg'] = 'The user to be deleted does not exist'
     else:
+        f = open("/tmp/scim_user_existingScimUser.json", "w+")
+        f.write(existingScimUser.to_json())
+        f.close()
         if module.params.get("state") == "absent":
             response = scimClient.deleteUser(existingScimUser)
             result['changed'] = True
@@ -194,6 +233,9 @@ def main():
                 result['user'] = json.loads(existingScimUser.to_json())
             else:
                 updatedSCIMUser = scimClient.updateUser(newScimUser)
+                f = open("/tmp/scim_user_updatedSCIMUser.json", "w+")
+                f.write(updatedSCIMUser.to_json())
+                f.close()
                 result['changed'] = True
                 result['user'] = json.loads(updatedSCIMUser.to_json())
 

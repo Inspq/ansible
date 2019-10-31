@@ -18,6 +18,13 @@ class ScimUserTestCase(ModuleTestCase):
                 "givenName":"Test1",
                 "middleName":None
                 },
+            "roles":[
+                {
+                    "display":"FA-SAISIE",
+                    "type":None,
+                    "primary":None
+                }
+            ],
             "state": "present",
             "force": False
             },
@@ -30,6 +37,13 @@ class ScimUserTestCase(ModuleTestCase):
                 "givenName":"Test2",
                 "middleName":None
                 },
+            "roles":[
+                {
+                    "display":"FA-SAISIE",
+                    "type":None,
+                    "primary":None
+                }
+            ],
             "state": "present",
             "force": False
             },
@@ -42,6 +56,13 @@ class ScimUserTestCase(ModuleTestCase):
                 "givenName":"Test3",
                 "middleName":None
                 },
+            "roles":[
+                {
+                    "display":"FA-SAISIE",
+                    "type":None,
+                    "primary":None
+                }
+            ],
             "state": "present",
             "force": False
             }
@@ -71,6 +92,7 @@ class ScimUserTestCase(ModuleTestCase):
             self.module.main()
         self.assertTrue(results.exception.args[0]['changed'])
         self.assertTrue(isDictEquals(json.loads(scimUser.to_json()), json.loads(User(results.exception.args[0]['user']).to_json()), exclude=["_ansible_keep_remote_files","scim_server_url","access_token","_ansible_remote_tmp"]), "User :" + str(results.exception.args[0]['user']) + " is not " + scimUser.to_json())
+        self.assertTrue("externalId" in json.loads(User(results.exception.args[0]['user']).to_json()), User(results.exception.args[0]['user']).to_json() + " does not have externalId")
         
     @mock.patch('ansible.module_utils.identity.user_provisioning.scim.open_url', side_effect=mocked_scim_requests)
     def testUserNotChanged(self, open_url):
@@ -102,3 +124,4 @@ class ScimUserTestCase(ModuleTestCase):
             self.module.main()
         self.assertTrue(results.exception.args[0]['changed'])
         self.assertRegexpMatches(results.exception.args[0]['msg'], 'deleted', 'User not deleted')
+

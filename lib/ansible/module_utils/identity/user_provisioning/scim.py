@@ -1,5 +1,5 @@
 # Module scim
-
+import uuid 
 import json
 from ansible.module_utils.urls import open_url
    
@@ -109,7 +109,7 @@ class SCIMClient(object):
             'Content-Type': 'application/scim+json'
         }
         if access_token is not None and len(access_token) > 0:
-            self.headers["Authorization"] = "bearer: " + access_token
+            self.headers["Authorization"] = "bearer " + access_token
         
     def searchUserByUserName(self, userName):
         userSearchUrl = self.base_url + User.URI + '/.search'
@@ -122,8 +122,11 @@ class SCIMClient(object):
                 return User.from_json(json.dumps(users["Resources"][0]))
             return None
         except Exception as e:
-            self.module.fail_json(msg='Could not search for user %s at %s: %s'
-                                      % (userName, userSearchUrl, str(e)))
+            msg='Could not search for user %s at %s: %s' % (userName, userSearchUrl, str(e))
+            if self.module is not None:
+                self.module.fail_json(msg=msg)
+            else:
+                print(msg)
         
     def getUserById(self, id):
         userUrl = self.base_url + User.URI + '/' + id
@@ -132,19 +135,27 @@ class SCIMClient(object):
                             validate_certs=self.validate_certs))
             return User.from_json(json.dumps(response))
         except Exception as e:
-            self.module.fail_json(msg='Could not get user %s at %s: %s'
-                                      % (id, userUrl, str(e)))
+            msg='Could not get user %s at %s: %s' % (id, userUrl, str(e))
+            if self.module is not None:
+                self.module.fail_json(msg=msg)
+            else:
+                print(msg)
 
     def createUser(self, user):
         userUrl = self.base_url + User.URI
-        data = user.to_json()
         try:
+            if "externalId" not in json.loads(user.to_json()):
+                user.externalId = str(uuid.uuid1())
+            data = user.to_json()
             response = json.load(open_url(userUrl, method='POST', headers=self.headers,
                             validate_certs=self.validate_certs, data=data))
             return User.from_json(json.dumps(response))
         except Exception as e:
-            self.module.fail_json(msg='Could not create user %s at %s: %s'
-                                      % (user.userName, userUrl, str(e)))
+            msg='Could not create user %s at %s: %s' % (user.userName, userUrl, str(e))
+            if self.module is not None:
+                self.module.fail_json(msg=msg)
+            else:
+                print(msg)
     
     def deleteUser(self, user):
         userUrl = self.base_url + User.URI + '/' + user.id
@@ -153,8 +164,11 @@ class SCIMClient(object):
                             validate_certs=self.validate_certs)
             return response
         except Exception as e:
-            self.module.fail_json(msg='Could not delete user %s at %s: %s'
-                                      % (user.userName, userUrl, str(e)))
+            msg='Could not delete user %s at %s: %s' % (user.userName, userUrl, str(e))
+            if self.module is not None:
+                self.module.fail_json(msg=msg)
+            else:
+                print(msg)
         
     def updateUser(self, user):
         userUrl = self.base_url + User.URI + '/' + user.id
@@ -164,6 +178,8 @@ class SCIMClient(object):
                             validate_certs=self.validate_certs, data=data))
             return User.from_json(json.dumps(response))
         except Exception as e:
-            self.module.fail_json(msg='Could not update user %s at %s: %s'
-                                      % (user.userName, userUrl, str(e)))
-        
+            msg='Could not update user %s at %s: %s' % (user.userName, userUrl, str(e))
+            if self.module is not None:
+                self.module.fail_json(msg=msg)
+            else:
+                print(msg)
