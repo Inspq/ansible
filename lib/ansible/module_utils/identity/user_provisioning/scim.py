@@ -66,6 +66,13 @@ class User(SCIMObject):
 
         self.__dict__[name] = value
     
+    def update(self, user):
+        updates = json.loads(user.to_json())
+        actual = json.loads(self.to_json())
+        updated = dict()
+        updated.update(actual)
+        updated.update(updates)
+        return self.from_json(json.dumps(updated))
     
 class Group(SCIMObject):
     URI = "/Groups"

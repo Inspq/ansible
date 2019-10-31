@@ -325,6 +325,22 @@ def mocked_scim_requests(*args, **kwargs):
         return MockResponse(None, 204)
 
     elif args[0] == 'http://scim.server.url/scim/v2/Users/' + USERS[1]["userName"] and kwargs["method"] == 'PUT':
-        return MockResponse(USERS[3], 204)
+        if "data" in kwargs and "externalId" not in kwargs["data"]:
+            response = {
+                "schemas":["urn:ietf:params:scim:api:messages:2.0:Error"],
+                "id":None,
+                "externalId":None,
+                "status":400,
+                "meta":None,
+                "scimType":None,
+                "detail":"External Id must be specified"
+            }
+            return(MockResponse(response, 400))
+        if "data" in kwargs:
+            return MockResponse(json.loads(kwargs["data"]), 204)
+            #for user in USERS:
+            #    if user["userName"] in kwargs["data"]:
+            #        user["externalId"] =  json.loads(kwargs["data"])["externalId"]
+            #        return MockResponse(user, 204)
     
     return MockResponse(None, 404)

@@ -184,11 +184,8 @@ def main():
         force=dict(type='bool', default=False),
     )
 
-    f = open("/tmp/scim_user_params.json", "w+")
     module = AnsibleModule(argument_spec=argument_spec,
                            supports_check_mode=True)
-    f.write(str(module.params))
-    f.close()
     result = dict(changed=False, msg='', flow={})
     # Initialize SCIM client API
     scimClient = SCIMClient(module, base_url=module.params.get("scim_server_url"), access_token=module.params.get("access_token"))
@@ -201,27 +198,18 @@ def main():
         "displayName": module.params.get("displayName")
     }
     newScimUser = User(newUser)
-    f = open("/tmp/scim_user_newUser.json", "w+")
-    f.write(newScimUser.to_json())
-    f.close()
     # Search the user
     existingScimUser = scimClient.searchUserByUserName(userName=module.params.get("userName"))
 
     if existingScimUser is None:
         if module.params.get("state") == "present":
             createdSCIMUser = scimClient.createUser(newScimUser)
-            f = open("/tmp/scim_user_createdSCIMUser.json", "w+")
-            f.write(createdSCIMUser.to_json())
-            f.close()
             result['changed'] = True
             result['user'] = json.loads(createdSCIMUser.to_json())
         else:
             result['changed'] = False
             result['msg'] = 'The user to be deleted does not exist'
     else:
-        f = open("/tmp/scim_user_existingScimUser.json", "w+")
-        f.write(existingScimUser.to_json())
-        f.close()
         if module.params.get("state") == "absent":
             response = scimClient.deleteUser(existingScimUser)
             result['changed'] = True
@@ -232,10 +220,8 @@ def main():
                 result['changed'] = False
                 result['user'] = json.loads(existingScimUser.to_json())
             else:
-                updatedSCIMUser = scimClient.updateUser(newScimUser)
-                f = open("/tmp/scim_user_updatedSCIMUser.json", "w+")
-                f.write(updatedSCIMUser.to_json())
-                f.close()
+                mergedScimUser = existingScimUser.update(newScimUser)
+                updatedSCIMUser = scimClient.updateUser(mergedScimUser)
                 result['changed'] = True
                 result['user'] = json.loads(updatedSCIMUser.to_json())
 
