@@ -161,6 +161,8 @@ lib/ansible/modules/cloud/oneandone/oneandone_private_network.py E326
 lib/ansible/modules/cloud/oneandone/oneandone_public_ip.py E324
 lib/ansible/modules/cloud/oneandone/oneandone_public_ip.py E326
 lib/ansible/modules/cloud/oneandone/oneandone_server.py E326
+lib/ansible/modules/cloud/online/online_server_facts.py E319
+lib/ansible/modules/cloud/online/online_user_facts.py E319
 lib/ansible/modules/cloud/openstack/os_flavor_facts.py E324
 lib/ansible/modules/cloud/openstack/os_flavor_facts.py E335
 lib/ansible/modules/cloud/openstack/os_image.py E324
@@ -174,6 +176,7 @@ lib/ansible/modules/cloud/openstack/os_ironic_node.py E326
 lib/ansible/modules/cloud/openstack/os_ironic_node.py E335
 lib/ansible/modules/cloud/openstack/os_keystone_endpoint.py E322
 lib/ansible/modules/cloud/openstack/os_keystone_endpoint.py E326
+lib/ansible/modules/cloud/openstack/os_quota.py E319
 lib/ansible/modules/cloud/openstack/os_quota.py E322
 lib/ansible/modules/cloud/openstack/os_quota.py E323
 lib/ansible/modules/cloud/openstack/os_quota.py E326
@@ -281,6 +284,13 @@ lib/ansible/modules/cloud/rackspace/rax_network.py E324
 lib/ansible/modules/cloud/rackspace/rax_queue.py E324
 lib/ansible/modules/cloud/rackspace/rax_scaling_group.py E324
 lib/ansible/modules/cloud/rackspace/rax_scaling_policy.py E324
+lib/ansible/modules/cloud/scaleway/scaleway_image_facts.py E319
+lib/ansible/modules/cloud/scaleway/scaleway_ip_facts.py E319
+lib/ansible/modules/cloud/scaleway/scaleway_organization_facts.py E319
+lib/ansible/modules/cloud/scaleway/scaleway_security_group_facts.py E319
+lib/ansible/modules/cloud/scaleway/scaleway_server_facts.py E319
+lib/ansible/modules/cloud/scaleway/scaleway_snapshot_facts.py E319
+lib/ansible/modules/cloud/scaleway/scaleway_volume_facts.py E319
 lib/ansible/modules/cloud/smartos/imgadm.py E317
 lib/ansible/modules/cloud/smartos/vmadm.py E322
 lib/ansible/modules/cloud/smartos/vmadm.py E324
@@ -309,6 +319,16 @@ lib/ansible/modules/cloud/vmware/vca_vapp.py E322
 lib/ansible/modules/cloud/vmware/vca_vapp.py E324
 lib/ansible/modules/cloud/vmware/vmware_guest.py E322
 lib/ansible/modules/cloud/vmware/vsphere_copy.py E322
+lib/ansible/modules/cloud/vultr/vultr_block_storage_facts.py E319
+lib/ansible/modules/cloud/vultr/vultr_dns_domain_facts.py E319
+lib/ansible/modules/cloud/vultr/vultr_firewall_group_facts.py E319
+lib/ansible/modules/cloud/vultr/vultr_network_facts.py E319
+lib/ansible/modules/cloud/vultr/vultr_os_facts.py E319
+lib/ansible/modules/cloud/vultr/vultr_region_facts.py E319
+lib/ansible/modules/cloud/vultr/vultr_server_facts.py E319
+lib/ansible/modules/cloud/vultr/vultr_ssh_key_facts.py E319
+lib/ansible/modules/cloud/vultr/vultr_startup_script_facts.py E319
+lib/ansible/modules/cloud/vultr/vultr_user_facts.py E319
 lib/ansible/modules/clustering/consul.py E322
 lib/ansible/modules/clustering/consul.py E324
 lib/ansible/modules/clustering/consul_kv.py E322
@@ -383,7 +403,6 @@ lib/ansible/modules/monitoring/logentries.py E322
 lib/ansible/modules/monitoring/logentries.py E326
 lib/ansible/modules/monitoring/logicmonitor.py E317
 lib/ansible/modules/monitoring/logicmonitor.py E324
-lib/ansible/modules/monitoring/logicmonitor.py E326
 lib/ansible/modules/monitoring/logicmonitor_facts.py E317
 lib/ansible/modules/monitoring/logicmonitor_facts.py E324
 lib/ansible/modules/monitoring/nagios.py E317
@@ -696,6 +715,7 @@ lib/ansible/modules/packaging/os/portage.py E322
 lib/ansible/modules/packaging/os/portinstall.py E322
 lib/ansible/modules/packaging/os/pulp_repo.py E322
 lib/ansible/modules/packaging/os/pulp_repo.py E324
+lib/ansible/modules/packaging/os/redhat_subscription.py E319
 lib/ansible/modules/packaging/os/rhn_channel.py E322
 lib/ansible/modules/packaging/os/rhn_channel.py E326
 lib/ansible/modules/packaging/os/rhsm_repository.py E324
@@ -784,6 +804,8 @@ lib/ansible/modules/storage/netapp/netapp_e_volume_copy.py E323
 lib/ansible/modules/storage/netapp/netapp_e_volume_copy.py E324
 lib/ansible/modules/storage/netapp/netapp_e_volume_copy.py E326
 lib/ansible/modules/storage/netapp/netapp_e_volume_copy.py E335
+lib/ansible/modules/storage/purestorage/purefa_facts.py E319
+lib/ansible/modules/storage/purestorage/purefb_facts.py E319
 lib/ansible/modules/storage/purestorage/purefb_fs.py E324
 lib/ansible/modules/storage/zfs/zfs.py E322
 lib/ansible/modules/storage/zfs/zfs.py E323
@@ -796,7 +818,9 @@ lib/ansible/modules/system/runit.py E322
 lib/ansible/modules/system/runit.py E324
 lib/ansible/modules/system/service.py E210
 lib/ansible/modules/system/service.py E323
+lib/ansible/modules/system/systemd.py E319
 lib/ansible/modules/system/systemd.py E336
+lib/ansible/modules/system/sysvinit.py E319
 lib/ansible/modules/system/user.py E210
 lib/ansible/modules/system/user.py E324
 lib/ansible/modules/system/user.py E327

@@ -28,7 +28,7 @@ options:
     type: list
   strategy:
     description:
-      - This option controls how the module queres the package managers on the system.
+      - This option controls how the module queries the package managers on the system.
         C(first) means it will return only informatino for the first supported package manager available.
         C(all) will return information for all supported and available package managers on the system.
     choices: ['first', 'all']
@@ -53,6 +53,11 @@ EXAMPLES = '''
   debug:
     var: ansible_facts.packages
 
+- name: Check whether a package called foobar is installed
+  debug:
+    msg: "{{ ansible_facts.packages['foobar'] | length }} versions of foobar are installed!"
+  when: "'foobar' in ansible_facts.packages"
+
 '''
 
 RETURN = '''
@@ -62,9 +67,55 @@ ansible_facts:
   type: complex
   contains:
     packages:
-      description: list of dicts with package information
+      description:
+        - Maps the package name to a non-empty list of dicts with package information.
+        - Every dict in the list corresponds to one installed version of the package.
+        - The fields described below are present for all package managers. Depending on the
+          package manager, there might be more fields for a package.
       returned: when operating system level package manager is specified or auto detected manager
       type: dict
+      contains:
+        name:
+          description: The package's name.
+          returned: always
+          type: str
+        version:
+          description: The package's version.
+          returned: always
+          type: str
+        source:
+          description: Where information on the package came from.
+          returned: always
+          type: str
+      sample: |-
+        {
+          "packages": {
+            "kernel": [
+              {
+                "name": "kernel",
+                "source": "rpm",
+                "version": "3.10.0",
+                ...
+              },
+              {
+                "name": "kernel",
+                "source": "rpm",
+                "version": "3.10.0",
+                ...
+              },
+              ...
+            ],
+            "kernel-tools": [
+              {
+                "name": "kernel-tools",
+                "source": "rpm",
+                "version": "3.10.0",
+                ...
+              }
+            ],
+            ...
+          }
+        }
       sample_rpm:
         {
           "packages": {
@@ -156,7 +207,8 @@ ansible_facts:
 '''
 
 from ansible.module_utils._text import to_native, to_text
-from ansible.module_utils.basic import AnsibleModule
+from ansible.module_utils.basic import AnsibleModule, missing_required_lib
+from ansible.module_utils.common.process import get_bin_path
 from ansible.module_utils.facts.packages import LibMgr, CLIMgr, get_all_pkg_managers
 
 
@@ -174,10 +226,21 @@ class RPM(LibMgr):
                     epoch=package[self._lib.RPMTAG_EPOCH],
                     arch=package[self._lib.RPMTAG_ARCH],)
 
+    def is_available(self):
+        ''' we expect the python bindings installed, but this gives warning if they are missing and we have rpm cli'''
+        we_have_lib = super(RPM, self).is_available()
+        if not we_have_lib and get_bin_path('rpm'):
+            module.warn('Found "rpm" but %s' % (missing_required_lib('rpm')))
+        return we_have_lib
+
 
 class APT(LibMgr):
 
     LIB = 'apt'
+
+    def __init__(self):
+        self._cache = None
+        super(APT, self).__init__()
 
     @property
     def pkg_cache(self):
@@ -186,6 +249,16 @@ class APT(LibMgr):
 
         self._cache = self._lib.Cache()
         return self._cache
+
+    def is_available(self):
+        ''' we expect the python bindings installed, but if there is apt/apt-get give warning about missing bindings'''
+        we_have_lib = super(APT, self).is_available()
+        if not we_have_lib:
+            for exe in ('apt', 'apt-get', 'aptitude'):
+                if get_bin_path(exe):
+                    module.warn('Found "%s" but %s' % (exe, missing_required_lib('apt')))
+                    break
+        return we_have_lib
 
     def list_installed(self):
         # Store the cache to avoid running pkg_cache() for each item in the comprehension, which is very slow
@@ -279,7 +352,11 @@ def main():
 
     unsupported = set(managers).difference(PKG_MANAGER_NAMES)
     if unsupported:
-        module.fail_json(msg='Unsupported package managers requested: %s' % (', '.join(unsupported)))
+        if 'auto' in module.params['manager']:
+            msg = 'Could not auto detect a usable package manager, check warnings for details.'
+        else:
+            msg = 'Unsupported package managers requested: %s' % (', '.join(unsupported))
+        module.fail_json(msg=msg)
 
     found = 0
     seen = set()
@@ -299,6 +376,7 @@ def main():
                 if manager.is_available():
                     found += 1
                     packages.update(manager.get_packages())
+
             except Exception as e:
                 if pkgmgr in module.params['manager']:
                     module.warn('Requested package manager %s was not usable by this module: %s' % (pkgmgr, to_text(e)))

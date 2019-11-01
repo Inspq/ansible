@@ -62,7 +62,7 @@ logger = None
 if getattr(C, 'DEFAULT_LOG_PATH'):
     path = C.DEFAULT_LOG_PATH
     if path and (os.path.exists(path) and os.access(path, os.W_OK)) or os.access(os.path.dirname(path), os.W_OK):
-        logging.basicConfig(filename=path, level=logging.DEBUG, format='%(asctime)s %(name)s %(message)s')
+        logging.basicConfig(filename=path, level=logging.INFO, format='%(asctime)s %(name)s %(message)s')
         mypid = str(os.getpid())
         user = getpass.getuser()
         logger = logging.getLogger("p=%s u=%s | " % (mypid, user))
@@ -234,7 +234,7 @@ class Display(with_metaclass(Singleton, object)):
     def warning(self, msg, formatted=False):
 
         if not formatted:
-            new_msg = "\n[WARNING]: %s" % msg
+            new_msg = "[WARNING]: %s" % msg
             wrapped = textwrap.wrap(new_msg, self.columns)
             new_msg = "\n".join(wrapped) + "\n"
         else:
