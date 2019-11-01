@@ -27,9 +27,9 @@ pipeline {
         }
         stage ('Validation des modules ansibles') {
             steps {
-                sh "python3 bin/ansible-test sanity --test pep8 lib/ansible/module_utils/keycloak.py lib/ansible/modules/identity/keycloak/keycloak_user.py lib/ansible/modules/identity/keycloak/keycloak_authentication.py lib/ansible/modules/identity/keycloak/keycloak_client.py lib/ansible/modules/identity/keycloak/keycloak_clienttemplate.py lib/ansible/modules/identity/keycloak/keycloak_component.py lib/ansible/modules/identity/keycloak/keycloak_group.py lib/ansible/modules/identity/keycloak/keycloak_identity_provider.py lib/ansible/modules/identity/keycloak/keycloak_realm.py lib/ansible/modules/identity/keycloak/keycloak_role.py lib/ansible/modules/identity/sx5/sx5_habilitation.py lib/ansible/modules/identity/sx5/sx5_sp_config_system.py"            
-                // sh "python3 bin/ansible-test sanity --test validate-modules lib/ansible/module_utils/keycloak.py lib/ansible/modules/identity/keycloak/keycloak_user.py lib/ansible/modules/identity/keycloak/keycloak_authentication.py lib/ansible/modules/identity/keycloak/keycloak_client.py lib/ansible/modules/identity/keycloak/keycloak_clienttemplate.py lib/ansible/modules/identity/keycloak/keycloak_component.py lib/ansible/modules/identity/keycloak/keycloak_group.py lib/ansible/modules/identity/keycloak/keycloak_identity_provider.py lib/ansible/modules/identity/keycloak/keycloak_realm.py lib/ansible/modules/identity/keycloak/keycloak_role.py lib/ansible/modules/identity/sx5/sx5_habilitation.py lib/ansible/modules/identity/sx5/sx5_sp_config_system.py"
-                sh "python3 bin/ansible-test sanity --test validate-modules lib/ansible/module_utils/keycloak.py lib/ansible/modules/identity/keycloak/keycloak_user.py lib/ansible/modules/identity/keycloak/keycloak_authentication.py lib/ansible/modules/identity/keycloak/keycloak_client.py lib/ansible/modules/identity/keycloak/keycloak_clienttemplate.py lib/ansible/modules/identity/keycloak/keycloak_component.py lib/ansible/modules/identity/keycloak/keycloak_group.py lib/ansible/modules/identity/keycloak/keycloak_identity_provider.py lib/ansible/modules/identity/keycloak/keycloak_realm.py lib/ansible/modules/identity/keycloak/keycloak_role.py lib/ansible/modules/identity/sx5/sx5_habilitation.py"
+                sh "python3 bin/ansible-test sanity --test pep8 lib/ansible/module_utils/keycloak.py lib/ansible/modules/identity/keycloak/keycloak_user.py lib/ansible/modules/identity/keycloak/keycloak_authentication.py lib/ansible/modules/identity/keycloak/keycloak_client.py lib/ansible/modules/identity/keycloak/keycloak_clienttemplate.py lib/ansible/modules/identity/keycloak/keycloak_component.py lib/ansible/modules/identity/keycloak/keycloak_group.py lib/ansible/modules/identity/keycloak/keycloak_identity_provider.py lib/ansible/modules/identity/keycloak/keycloak_realm.py lib/ansible/modules/identity/keycloak/keycloak_role.py lib/ansible/modules/identity/sx5/sx5_habilitation.py lib/ansible/modules/identity/sx5/sx5_sp_config_system.py lib/ansible/modules/identity/user_provisioning/scim_user.py"            
+                // sh "python3 bin/ansible-test sanity --test validate-modules lib/ansible/module_utils/keycloak.py lib/ansible/modules/identity/keycloak/keycloak_user.py lib/ansible/modules/identity/keycloak/keycloak_authentication.py lib/ansible/modules/identity/keycloak/keycloak_client.py lib/ansible/modules/identity/keycloak/keycloak_clienttemplate.py lib/ansible/modules/identity/keycloak/keycloak_component.py lib/ansible/modules/identity/keycloak/keycloak_group.py lib/ansible/modules/identity/keycloak/keycloak_identity_provider.py lib/ansible/modules/identity/keycloak/keycloak_realm.py lib/ansible/modules/identity/keycloak/keycloak_role.py lib/ansible/modules/identity/sx5/sx5_habilitation.py lib/ansible/modules/identity/sx5/sx5_sp_config_system.py lib/ansible/modules/identity/user_provisioning/scim_user.py"
+                sh "python3 bin/ansible-test sanity --test validate-modules lib/ansible/module_utils/keycloak.py lib/ansible/modules/identity/keycloak/keycloak_user.py lib/ansible/modules/identity/keycloak/keycloak_authentication.py lib/ansible/modules/identity/keycloak/keycloak_client.py lib/ansible/modules/identity/keycloak/keycloak_clienttemplate.py lib/ansible/modules/identity/keycloak/keycloak_component.py lib/ansible/modules/identity/keycloak/keycloak_group.py lib/ansible/modules/identity/keycloak/keycloak_identity_provider.py lib/ansible/modules/identity/keycloak/keycloak_realm.py lib/ansible/modules/identity/keycloak/keycloak_role.py lib/ansible/modules/identity/sx5/sx5_habilitation.py lib/ansible/modules/identity/user_provisioning/scim_user.py"
            	}
         }
         stage ('Tests sécurités des modules ansible sx5') {
@@ -49,6 +49,18 @@ pipeline {
                 script {
                     try{
                         sh "docker run -u root --rm -v ${WORKSPACE}/lib/ansible/modules/identity/keycloak:/app nexus3.inspq.qc.ca:5000/inspq/bandit:SNAPSHOT bandit -r -s B501,B105 ./"
+                    }
+                    catch (exc){
+                        currentBuild.result = 'UNSTABLE'
+                    }
+                }
+           	}
+        }
+        stage ('Tests sécurités des modules ansible SCIM') {
+            steps {
+                script {
+                    try{
+                        sh "docker run -u root --rm -v ${WORKSPACE}/lib/ansible/modules/identity/user_provisioning:/app nexus3.inspq.qc.ca:5000/inspq/bandit:SNAPSHOT bandit -r -s B501,B105 ./"
                     }
                     catch (exc){
                         currentBuild.result = 'UNSTABLE'
@@ -180,6 +192,27 @@ pipeline {
                 }
             }
         }
+        stage ('Tests unitaires des modules ansible SCIM') {
+            steps {
+                script {
+                    try {
+		                sh "source hacking/env-setup; nosetests --with-xunit --xunit-file=nosetests-scim.xml test/units/module_utils/identity/user_provisioning/test_scim.py test/units/modules/identity/user_provisioning/test_scim_user.py"
+                    }
+                    catch (exc){
+                        currentBuild.result = 'UNSTABLE'
+                    }
+                }
+            }
+            post {
+                success {
+                    junit '**/nosetests-scim.xml'
+                }
+                unstable{
+                    junit '**/nosetests-scim.xml'
+                }
+            }
+        }
+        
     }
     post {
         success {
