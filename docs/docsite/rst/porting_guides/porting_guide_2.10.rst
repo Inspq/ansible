@@ -52,8 +52,21 @@ Deprecation notices
 The following functionality will be removed in Ansible 2.14. Please update update your playbooks accordingly.
 
 * The :ref:`openssl_csr <openssl_csr_module>` module's option ``version`` no longer supports values other than ``1`` (the current only standardized CSR version).
-
 * :ref:`docker_container <docker_container_module>`: the ``trust_image_content`` option will be removed. It has always been ignored by the module.
+* :ref:`iam_managed_policy <iam_managed_policy_module>`: the ``fail_on_delete`` option wil be removed.  It has always been ignored by the module.
+* :ref:`s3_lifecycle <s3_lifecycle_module>`: the ``requester_pays`` option will be removed. It has always been ignored by the module.
+* :ref:`s3_sync <s3_sync_module>`: the ``retries`` option will be removed. It has always been ignored by the module.
+* The return values ``err`` and ``out`` of :ref:`docker_stack <docker_stack_module>` have been deprecated. Use ``stdout`` and ``stderr`` from now on instead.
+* :ref:`cloudformation <cloudformation_module>`: the ``template_format`` option will be removed. It has been ignored by the module since Ansible 2.3.
+* :ref:`data_pipeline <data_pipeline_module>`: the ``version`` option will be removed. It has always been ignored by the module.
+* :ref:`ec2_eip <ec2_eip_module>`: the ``wait_timeout`` option will be removed. It has had no effect since Ansible 2.3.
+* :ref:`ec2_key <ec2_key_module>`: the ``wait`` option will be removed. It has had no effect since Ansible 2.5.
+* :ref:`ec2_key <ec2_key_module>`: the ``wait_timeout`` option will be removed. It has had no effect since Ansible 2.5.
+* :ref:`ec2_lc <ec2_lc_module>`: the ``associate_public_ip_address`` option will be removed. It has always been ignored by the module.
+
+The following functionality will change in Ansible 2.14. Please update update your playbooks accordingly.
+
+* The :ref:`docker_container <docker_container_module>` module has a new option, ``container_default_behavior``, whose default value will change from ``compatibility`` to ``no_defaults``. Set to an explicit value to avoid deprecation warnings.
 
 
 Noteworthy module changes
