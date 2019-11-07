@@ -196,7 +196,7 @@ pipeline {
             steps {
                 script {
                     try {
-		                sh "source hacking/env-setup; nosetests --with-xunit --xunit-file=nosetests-scim.xml test/units/module_utils/identity/user_provisioning/test_scim.py test/units/modules/identity/user_provisioning/test_scim_user.py"
+		                sh "source hacking/env-setup; cd test; nosetests --with-xunit --xunit-file=nosetests-scim.xml units/module_utils/identity/user_provisioning/test_scim.py units/modules/identity/user_provisioning/test_scim_user.py"
                     }
                     catch (exc){
                         currentBuild.result = 'UNSTABLE'
