@@ -45,17 +45,14 @@ options:
             givenName:
                 description:
                     - First name of the user.
-                required: true
                 type: str
             familyName:
                 description:
                     - Last name of the user
-                required: true
                 type: str
             middleName:
                 description:
                     - Middle name of the user
-                required: false
                 type: str
     displayName:
         description:

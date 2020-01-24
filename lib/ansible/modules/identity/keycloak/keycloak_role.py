@@ -25,7 +25,6 @@ options:
     realm:
         description:
             - The name of the realm in which is the role.
-        required: true
         default: master
         type: str
     name:
@@ -66,6 +65,7 @@ options:
                 description:
                     - Name of the role. This can be the name of a REALM role or a client role.
                 type: str
+                required: true
             clientId:
                 description:
                     - Client ID if the role is a client role. Do not include this option for a REALM role.

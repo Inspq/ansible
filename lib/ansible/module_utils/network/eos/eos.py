@@ -58,7 +58,7 @@ eos_provider_spec = {
     'transport': dict(default='cli', choices=['cli', 'eapi'])
 }
 eos_argument_spec = {
-    'provider': dict(type='dict', options=eos_provider_spec),
+    'provider': dict(type='dict', options=eos_provider_spec, removed_in_version=2.14),
 }
 
 
@@ -387,6 +387,15 @@ class LocalEapi:
         configdiff = dumps(configdiffobjs, 'commands') if configdiffobjs else ''
         diff['config_diff'] = configdiff if configdiffobjs else {}
         return diff
+
+    def get_capabilities(self):
+        # Implement the bare minimum to support eos_facts
+        return dict(
+            device_info=dict(
+                network_os="eos",
+            ),
+            network_api="eapi",
+        )
 
 
 class HttpApi:

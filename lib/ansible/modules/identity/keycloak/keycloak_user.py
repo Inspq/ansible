@@ -85,10 +85,12 @@ options:
                 description:
                     - Client ID for the role
                 type: str
+                required: true
             roles:
                 description:
                     - List of roles for this client to grant to the user.
                 type: list
+                required: true
     clientConsents:
         description:
             - client Authenticator Type.
@@ -108,7 +110,6 @@ options:
     groups:
         description:
             - List of groups for the user.
-        required: true
         type: list
     credentials:
         description:

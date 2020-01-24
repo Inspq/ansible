@@ -59,7 +59,6 @@ options:
     parentId:
         description:
             - Parent ID of the component. Use the realm name for top level component.
-        required: true
         type: str
     config:
         description:

@@ -55,7 +55,7 @@ junos_provider_spec = {
     'transport': dict(default='netconf', choices=['cli', 'netconf'])
 }
 junos_argument_spec = {
-    'provider': dict(type='dict', options=junos_provider_spec),
+    'provider': dict(type='dict', options=junos_provider_spec, removed_in_version=2.14),
 }
 
 
@@ -112,6 +112,12 @@ def get_device(module):
 
     if 'ssh_keyfile' in provider:
         kwargs['ssh_private_key_file'] = provider.get('ssh_keyfile')
+
+    if module.params.get('ssh_config'):
+        kwargs['ssh_config'] = module.params['ssh_config']
+
+    if module.params.get('ssh_private_key_file'):
+        kwargs['ssh_private_key_file'] = module.params['ssh_private_key_file']
 
     kwargs['gather_facts'] = False
 

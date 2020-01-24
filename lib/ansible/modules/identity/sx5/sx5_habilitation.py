@@ -25,7 +25,6 @@ options:
     realm:
         description:
             - The name of the realm in which is the role.
-        required: true
         default: master
         type: str
     spConfigUrl:

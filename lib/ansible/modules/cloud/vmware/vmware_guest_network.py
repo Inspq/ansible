@@ -119,6 +119,8 @@ options:
            When reconfigure MAC address, VM should be in powered off state.'
      - ' - C(connected) (bool): Indicates that virtual network adapter connects to the associated virtual machine.'
      - ' - C(start_connected) (bool): Indicates that virtual network adapter starts with associated virtual machine powers on.'
+     - ' - C(directpath_io) (bool): If set, Universal Pass-Through (UPT or DirectPath I/O) will be enabled on the network adapter.
+           UPT is only compatible for Vmxnet3 adapter.'
 extends_documentation_fragment: vmware.documentation
 '''
 
@@ -175,6 +177,21 @@ EXAMPLES = '''
       - state: absent
         mac: "00:50:56:44:55:77"
   delegate_to: localhost
+
+- name: Enable DirectPath I/O on a Vmxnet3 adapter
+  vmware_guest_network:
+    hostname: "{{ vcenter_hostname }}"
+    username: "{{ vcenter_username }}"
+    password: "{{ vcenter_password }}"
+    datacenter: "{{ datacenter_name }}"
+    validate_certs: no
+    name: test-vm
+    gather_network_info: false
+    networks:
+      - state: present
+        mac: "aa:50:56:58:59:61"
+        directpath_io: True
+  delegate_to: localhost
 '''
 
 RETURN = """
@@ -187,6 +204,7 @@ network_data:
             "label": "Network Adapter 1",
             "name": "VM Network",
             "device_type": "E1000E",
+            "directpath_io": "N/A",
             "mac_addr": "00:50:56:89:dc:05",
             "unit_number": 7,
             "wake_onlan": false,
@@ -194,6 +212,17 @@ network_data:
             "connected": true,
             "start_connected": true,
         },
+        "1": {
+            "label": "Network Adapter 2",
+            "name": "VM Network",
+            "device_type": "VMXNET3",
+            "directpath_io": true,
+            "mac_addr": "00:50:56:8d:93:8c",
+            "unit_number": 8,
+            "start_connected": true,
+            "wake_on_lan": true,
+            "connected": true,
+        }
     }
 """
 
@@ -277,9 +306,27 @@ class PyVmomiHelper(PyVmomi):
         nic = vim.vm.device.VirtualDeviceSpec()
         nic.device = self.get_device_type(device_type=device_info.get('device_type', 'vmxnet3'))
         nic.device.deviceInfo = vim.Description()
-        nic.device.deviceInfo.summary = device_info['name']
-        nic.device.backing = vim.vm.device.VirtualEthernetCard.NetworkBackingInfo()
-        nic.device.backing.deviceName = device_info['name']
+        network_object = self.find_network_by_name(network_name=device_info['name'])[0]
+        if network_object:
+            if hasattr(network_object, 'portKeys'):
+                # DistributedVirtualPortGroup
+                nic.device.backing = vim.vm.device.VirtualEthernetCard.DistributedVirtualPortBackingInfo()
+                nic.device.backing.port = vim.dvs.PortConnection()
+                nic.device.backing.port.switchUuid = network_object.config.distributedVirtualSwitch.uuid
+                nic.device.backing.port.portgroupKey = network_object.key
+            elif isinstance(network_object, vim.OpaqueNetwork):
+                # NSX-T Logical Switch
+                nic.device.backing = vim.vm.device.VirtualEthernetCard.OpaqueNetworkBackingInfo()
+                network_id = network_object.summary.opaqueNetworkId
+                nic.device.backing.opaqueNetworkType = 'nsx.LogicalSwitch'
+                nic.device.backing.opaqueNetworkId = network_id
+                nic.device.deviceInfo.summary = 'nsx.LogicalSwitch: %s' % network_id
+            else:
+                # Standard vSwitch
+                nic.device.deviceInfo.summary = device_info['name']
+                nic.device.backing = vim.vm.device.VirtualEthernetCard.NetworkBackingInfo()
+                nic.device.backing.deviceName = device_info['name']
+                nic.device.backing.network = network_object
         nic.device.connectable = vim.vm.device.VirtualDevice.ConnectInfo()
         nic.device.connectable.startConnected = device_info.get('start_connected', True)
         nic.device.connectable.allowGuestControl = True
@@ -289,6 +336,12 @@ class PyVmomiHelper(PyVmomi):
             nic.device.macAddress = device_info['manual_mac']
         else:
             nic.device.addressType = 'generated'
+        if 'directpath_io' in device_info:
+            if isinstance(nic.device, vim.vm.device.VirtualVmxnet3):
+                nic.device.uptCompatibilityEnabled = device_info['directpath_io']
+            else:
+                self.module.fail_json(msg='UPT is only compatible for Vmxnet3 adapter.'
+                                      + ' Clients can set this property enabled or disabled if ethernet virtual device is Vmxnet3.')
 
         return nic
 
@@ -300,12 +353,14 @@ class PyVmomiHelper(PyVmomi):
         nic_index = 0
         for nic in vm_obj.config.hardware.device:
             nic_type = None
+            directpath_io = 'N/A'
             if isinstance(nic, vim.vm.device.VirtualPCNet32):
                 nic_type = 'PCNet32'
             elif isinstance(nic, vim.vm.device.VirtualVmxnet2):
                 nic_type = 'VMXNET2'
             elif isinstance(nic, vim.vm.device.VirtualVmxnet3):
                 nic_type = 'VMXNET3'
+                directpath_io = nic.uptCompatibilityEnabled
             elif isinstance(nic, vim.vm.device.VirtualE1000):
                 nic_type = 'E1000'
             elif isinstance(nic, vim.vm.device.VirtualE1000e):
@@ -323,6 +378,7 @@ class PyVmomiHelper(PyVmomi):
                     allow_guest_ctl=nic.connectable.allowGuestControl,
                     connected=nic.connectable.connected,
                     start_connected=nic.connectable.startConnected,
+                    directpath_io=directpath_io
                 )
                 nic_index += 1
 
@@ -423,15 +479,45 @@ class PyVmomiHelper(PyVmomi):
                             if 'connected' in network and nic_device.connectable.connected != network['connected']:
                                 nic_device.connectable.connected = network['connected']
                                 self.change_detected = True
-                            if 'name' in network and nic_device.deviceInfo.summary != network['name']:
-                                nic_device.deviceInfo.summary = network['name']
-                                self.change_detected = True
+                            if 'name' in network:
+                                network_object = self.find_network_by_name(network_name=network['name'])[0]
+                                if network_object and hasattr(network_object, 'portKeys') and hasattr(nic_spec.device.backing, 'port'):
+                                    if network_object.config.distributedVirtualSwitch.uuid != nic_spec.device.backing.port.switchUuid:
+                                        # DistributedVirtualPortGroup
+                                        nic_spec.device.backing = vim.vm.device.VirtualEthernetCard.DistributedVirtualPortBackingInfo()
+                                        nic_spec.device.backing.port = vim.dvs.PortConnection()
+                                        nic_spec.device.backing.port.switchUuid = network_object.config.distributedVirtualSwitch.uuid
+                                        nic_spec.device.backing.port.portgroupKey = network_object.key
+                                        self.change_detected = True
+                                elif network_object and isinstance(network_object, vim.OpaqueNetwork) and hasattr(nic_spec.device.backing, 'opaqueNetworkId'):
+                                    if nic_spec.device.backing.opaqueNetworkId != network_object.summary.opaqueNetworkId:
+                                        # NSX-T Logical Switch
+                                        nic_spec.device.backing = vim.vm.device.VirtualEthernetCard.OpaqueNetworkBackingInfo()
+                                        network_id = network_object.summary.opaqueNetworkId
+                                        nic_spec.device.backing.opaqueNetworkType = 'nsx.LogicalSwitch'
+                                        nic_spec.device.backing.opaqueNetworkId = network_id
+                                        nic_spec.device.deviceInfo.summary = 'nsx.LogicalSwitch: %s' % network_id
+                                        self.change_detected = True
+                                elif nic_device.deviceInfo.summary != network['name']:
+                                    # Standard vSwitch
+                                    nic_spec.device.backing = vim.vm.device.VirtualEthernetCard.NetworkBackingInfo()
+                                    nic_spec.device.backing.deviceName = network['name']
+                                    nic_spec.device.backing.network = network_object
+                                    self.change_detected = True
                             if 'manual_mac' in network and nic_device.macAddress != network['manual_mac']:
                                 if vm_obj.runtime.powerState != vim.VirtualMachinePowerState.poweredOff:
                                     self.module.fail_json(msg='Expected power state is poweredOff to reconfigure MAC address')
                                 nic_device.addressType = 'manual'
                                 nic_device.macAddress = network['manual_mac']
                                 self.change_detected = True
+                            if 'directpath_io' in network:
+                                if isinstance(nic_device, vim.vm.device.VirtualVmxnet3):
+                                    if nic_device.uptCompatibilityEnabled != network['directpath_io']:
+                                        nic_device.uptCompatibilityEnabled = network['directpath_io']
+                                        self.change_detected = True
+                                else:
+                                    self.module.fail_json(msg='UPT is only compatible for Vmxnet3 adapter.'
+                                                          + ' Clients can set this property enabled or disabled if ethernet virtual device is Vmxnet3.')
                             if self.change_detected:
                                 self.config_spec.deviceChange.append(nic_spec)
                         elif network['state'].lower() == 'absent':

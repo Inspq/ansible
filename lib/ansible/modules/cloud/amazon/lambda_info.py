@@ -26,7 +26,6 @@ options:
   query:
     description:
       - Specifies the resource type for which to gather information.  Leave blank to retrieve all information.
-    required: true
     choices: [ "aliases", "all", "config", "mappings", "policy", "versions" ]
     default: "all"
     type: str
@@ -88,7 +87,6 @@ from ansible.module_utils.aws.core import AnsibleAWSModule
 from ansible.module_utils.ec2 import camel_dict_to_snake_dict, get_aws_connection_info, boto3_conn
 import json
 import datetime
-import sys
 import re
 
 
@@ -367,8 +365,6 @@ def main():
     except ClientError as e:
         module.fail_json_aws(e, "trying to set up boto connection")
 
-    this_module = sys.modules[__name__]
-
     invocations = dict(
         aliases='alias_details',
         all='all_details',
@@ -378,7 +374,7 @@ def main():
         versions='version_details',
     )
 
-    this_module_function = getattr(this_module, invocations[module.params['query']])
+    this_module_function = globals()[invocations[module.params['query']]]
     all_facts = fix_return(this_module_function(client, module))
 
     results = dict(function=all_facts, changed=False)

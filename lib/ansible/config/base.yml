@@ -2,10 +2,10 @@
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 ---
 ALLOW_WORLD_READABLE_TMPFILES:
-  name: Allow world readable temporary files
+  name: Allow world-readable temporary files
   default: False
   description:
-    - This makes the temporary files created on the machine to be world readable and will issue a warning instead of failing the task.
+    - This makes the temporary files created on the machine world-readable and will issue a warning instead of failing the task.
     - It is useful when becoming an unprivileged user.
   env: []
   ini:
@@ -1458,6 +1458,8 @@ INTERPRETER_PYTHON_DISTRO_MAP:
     centos: &rhelish
       '6': /usr/bin/python
       '8': /usr/libexec/platform-python
+    debian:
+      '10': /usr/bin/python3
     fedora:
       '23': /usr/bin/python3
     redhat: *rhelish
@@ -1489,7 +1491,7 @@ TRANSFORM_INVALID_GROUP_CHARS:
     - Make ansible transform invalid characters in group names supplied by inventory sources.
     - If 'never' it will allow for the group name but warn about the issue.
     - When 'ignore', it does the same as 'never', without issuing a warning.
-    - When 'always' it will replace any invalid charachters with '_' (underscore) and warn the user
+    - When 'always' it will replace any invalid characters with '_' (underscore) and warn the user
     - When 'silently', it does the same as 'always', without issuing a warning.
   env: [{name: ANSIBLE_TRANSFORM_INVALID_GROUP_CHARS}]
   ini:
@@ -1752,7 +1754,9 @@ RETRY_FILES_ENABLED:
 RETRY_FILES_SAVE_PATH:
   name: Retry files path
   default: ~
-  description: This sets the path in which Ansible will save .retry files when a playbook fails and retry files are enabled.
+  description:
+    - This sets the path in which Ansible will save .retry files when a playbook fails and retry files are enabled.
+    - This file will be overwritten after each run with the list of failed hosts from all plays.
   env: [{name: ANSIBLE_RETRY_FILES_SAVE_PATH}]
   ini:
   - {key: retry_files_save_path, section: defaults}
@@ -1842,6 +1846,23 @@ VARIABLE_PRECEDENCE:
   - {key: precedence, section: defaults}
   type: list
   version_added: "2.4"
+WIN_ASYNC_STARTUP_TIMEOUT:
+  name: Windows Async Startup Timeout
+  default: 5
+  description:
+    - For asynchronous tasks in Ansible (covered in Asynchronous Actions and Polling),
+      this is how long, in seconds, to wait for the task spawned by Ansible to connect back to the named pipe used
+      on Windows systems. The default is 5 seconds. This can be too low on slower systems, or systems under heavy load.
+    - This is not the total time an async command can run for, but is a separate timeout to wait for an async command to
+      start. The task will only start to be timed against its async_timeout once it has connected to the pipe, so the
+      overall maximum duration the task can take will be extended by the amount specified here.
+  env: [{name: ANSIBLE_WIN_ASYNC_STARTUP_TIMEOUT}]
+  ini:
+    - {key: win_async_startup_timeout, section: defaults}
+  type: integer
+  vars:
+    - {name: ansible_win_async_startup_timeout}
+  version_added: '2.10'
 YAML_FILENAME_EXTENSIONS:
   name: Valid YAML extensions
   default: [".yml", ".yaml", ".json"]

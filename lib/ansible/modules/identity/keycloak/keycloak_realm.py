@@ -29,13 +29,13 @@ options:
     displayName:
         description:
             - The display name of the realm.
-        required: false
+        required: true
         aliases: ['name']
         type: str
     displayNameHtml:
         description:
             - The name to use within the HTML page of the realm.
-        required: true
+        required: false
         aliases: ['namehtml']
         type: str
     loginTheme:
