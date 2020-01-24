@@ -13,7 +13,7 @@ import time
 
 from ansible import context
 from ansible.errors import AnsibleError
-from ansible.module_utils.ansible_release import __version__ as ansible_version
+from ansible.galaxy.user_agent import user_agent
 from ansible.module_utils.six import string_types
 from ansible.module_utils.six.moves.urllib.error import HTTPError
 from ansible.module_utils.six.moves.urllib.parse import quote as urlquote, urlencode, urlparse
@@ -185,7 +185,7 @@ class GalaxyAPI:
         try:
             display.vvvv("Calling Galaxy at %s" % url)
             resp = open_url(to_native(url), data=args, validate_certs=self.validate_certs, headers=headers,
-                            method=method, timeout=20, http_agent='ansible-galaxy/%s' % ansible_version)
+                            method=method, timeout=20, http_agent=user_agent())
         except HTTPError as e:
             raise GalaxyError(e, error_context_msg)
         except Exception as e:
@@ -219,7 +219,7 @@ class GalaxyAPI:
         """
         url = _urljoin(self.api_server, self.available_api_versions['v1'], "tokens") + '/'
         args = urlencode({"github_token": github_token})
-        resp = open_url(url, data=args, validate_certs=self.validate_certs, method="POST")
+        resp = open_url(url, data=args, validate_certs=self.validate_certs, method="POST", http_agent=user_agent())
         data = json.loads(to_text(resp.read(), errors='surrogate_or_strict'))
         return data
 
@@ -523,7 +523,7 @@ class GalaxyAPI:
         :return: CollectionVersionMetadata about the collection at the version requested.
         """
         api_path = self.available_api_versions.get('v3', self.available_api_versions.get('v2'))
-        url_paths = [self.api_server, api_path, 'collections', namespace, name, 'versions', version]
+        url_paths = [self.api_server, api_path, 'collections', namespace, name, 'versions', version, '/']
 
         n_collection_url = _urljoin(*url_paths)
         error_context_msg = 'Error when getting collection version metadata for %s.%s:%s from %s (%s)' \
@@ -552,7 +552,7 @@ class GalaxyAPI:
             results_key = 'results'
             pagination_path = ['next']
 
-        n_url = _urljoin(self.api_server, api_path, 'collections', namespace, name, 'versions')
+        n_url = _urljoin(self.api_server, api_path, 'collections', namespace, name, 'versions', '/')
 
         error_context_msg = 'Error when getting available collection versions for %s.%s from %s (%s)' \
                             % (namespace, name, self.name, self.api_server)

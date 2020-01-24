@@ -28,50 +28,36 @@ matrix:
     - env: T=units/3.7/2
     - env: T=units/3.8/2
 
-    - env: T=windows/2008/1
-    - env: T=windows/2008-R2/1
     - env: T=windows/2012/1
     - env: T=windows/2012-R2/1
     - env: T=windows/2016/1
     - env: T=windows/2019/1
 
-    - env: T=windows/2008/2
-    - env: T=windows/2008-R2/2
     - env: T=windows/2012/2
     - env: T=windows/2012-R2/2
     - env: T=windows/2016/2
     - env: T=windows/2019/2
 
-    - env: T=windows/2008/3
-    - env: T=windows/2008-R2/3
     - env: T=windows/2012/3
     - env: T=windows/2012-R2/3
     - env: T=windows/2016/3
     - env: T=windows/2019/3
 
-    - env: T=windows/2008/4
-    - env: T=windows/2008-R2/4
     - env: T=windows/2012/4
     - env: T=windows/2012-R2/4
     - env: T=windows/2016/4
     - env: T=windows/2019/4
 
-    - env: T=windows/2008/5
-    - env: T=windows/2008-R2/5
     - env: T=windows/2012/5
     - env: T=windows/2012-R2/5
     - env: T=windows/2016/5
     - env: T=windows/2019/5
 
-    - env: T=windows/2008/6
-    - env: T=windows/2008-R2/6
     - env: T=windows/2012/6
     - env: T=windows/2012-R2/6
     - env: T=windows/2016/6
     - env: T=windows/2019/6
 
-    - env: T=windows/2008/7
-    - env: T=windows/2008-R2/7
     - env: T=windows/2012/7
     - env: T=windows/2012-R2/7
     - env: T=windows/2016/7
@@ -86,8 +72,8 @@ matrix:
     - env: T=freebsd/12.0/1
     - env: T=linux/centos6/1
     - env: T=linux/centos7/1
-    - env: T=linux/fedora29/1
     - env: T=linux/fedora30/1
+    - env: T=linux/fedora31/1
     - env: T=linux/opensuse15py2/1
     - env: T=linux/opensuse15/1
     - env: T=linux/ubuntu1604/1
@@ -100,8 +86,8 @@ matrix:
     - env: T=freebsd/12.0/2
     - env: T=linux/centos6/2
     - env: T=linux/centos7/2
-    - env: T=linux/fedora29/2
     - env: T=linux/fedora30/2
+    - env: T=linux/fedora31/2
     - env: T=linux/opensuse15py2/2
     - env: T=linux/opensuse15/2
     - env: T=linux/ubuntu1604/2
@@ -114,8 +100,8 @@ matrix:
     - env: T=freebsd/12.0/3
     - env: T=linux/centos6/3
     - env: T=linux/centos7/3
-    - env: T=linux/fedora29/3
     - env: T=linux/fedora30/3
+    - env: T=linux/fedora31/3
     - env: T=linux/opensuse15py2/3
     - env: T=linux/opensuse15/3
     - env: T=linux/ubuntu1604/3
@@ -128,8 +114,8 @@ matrix:
     - env: T=freebsd/12.0/4
     - env: T=linux/centos6/4
     - env: T=linux/centos7/4
-    - env: T=linux/fedora29/4
     - env: T=linux/fedora30/4
+    - env: T=linux/fedora31/4
     - env: T=linux/opensuse15py2/4
     - env: T=linux/opensuse15/4
     - env: T=linux/ubuntu1604/4

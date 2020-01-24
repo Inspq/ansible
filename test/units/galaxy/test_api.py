@@ -158,7 +158,9 @@ def test_initialise_galaxy(monkeypatch):
     assert actual == {u'token': u'my token'}
     assert mock_open.call_count == 2
     assert mock_open.mock_calls[0][1][0] == 'https://galaxy.ansible.com/api/'
+    assert 'ansible-galaxy' in mock_open.mock_calls[0][2]['http_agent']
     assert mock_open.mock_calls[1][1][0] == 'https://galaxy.ansible.com/api/v1/tokens/'
+    assert 'ansible-galaxy' in mock_open.mock_calls[1][2]['http_agent']
     assert mock_open.mock_calls[1][2]['data'] == 'github_token=github_token'
 
 
@@ -179,7 +181,9 @@ def test_initialise_galaxy_with_auth(monkeypatch):
     assert actual == {u'token': u'my token'}
     assert mock_open.call_count == 2
     assert mock_open.mock_calls[0][1][0] == 'https://galaxy.ansible.com/api/'
+    assert 'ansible-galaxy' in mock_open.mock_calls[0][2]['http_agent']
     assert mock_open.mock_calls[1][1][0] == 'https://galaxy.ansible.com/api/v1/tokens/'
+    assert 'ansible-galaxy' in mock_open.mock_calls[1][2]['http_agent']
     assert mock_open.mock_calls[1][2]['data'] == 'github_token=github_token'
 
 
@@ -201,6 +205,7 @@ def test_initialise_automation_hub(monkeypatch):
     assert api.available_api_versions['v3'] == u'v3/'
 
     assert mock_open.mock_calls[0][1][0] == 'https://galaxy.ansible.com/api/'
+    assert 'ansible-galaxy' in mock_open.mock_calls[0][2]['http_agent']
     assert mock_open.mock_calls[0][2]['headers'] == {'Authorization': 'Bearer my_token'}
 
 
@@ -235,6 +240,7 @@ def test_get_available_api_versions(monkeypatch):
 
     assert mock_open.call_count == 1
     assert mock_open.mock_calls[0][1][0] == 'https://galaxy.ansible.com/api/'
+    assert 'ansible-galaxy' in mock_open.mock_calls[0][2]['http_agent']
 
 
 def test_publish_collection_missing_file():
@@ -664,7 +670,7 @@ def test_get_collection_version_metadata_no_version(api_version, token_type, ver
     assert actual.dependencies == {}
 
     assert mock_open.call_count == 1
-    assert mock_open.mock_calls[0][1][0] == '%s%s/collections/namespace/collection/versions/%s' \
+    assert mock_open.mock_calls[0][1][0] == '%s%s/collections/namespace/collection/versions/%s/' \
         % (api.api_server, api_version, version)
 
     # v2 calls dont need auth, so no authz header or token_type
@@ -724,7 +730,7 @@ def test_get_collection_versions(api_version, token_type, token_ins, response, m
 
     assert mock_open.call_count == 1
     assert mock_open.mock_calls[0][1][0] == 'https://galaxy.server.com/api/%s/collections/namespace/collection/' \
-                                            'versions' % api_version
+                                            'versions/' % api_version
     if token_ins:
         assert mock_open.mock_calls[0][2]['headers']['Authorization'] == '%s my token' % token_type
 
@@ -848,7 +854,7 @@ def test_get_collection_versions_pagination(api_version, token_type, token_ins, 
 
     assert mock_open.call_count == 3
     assert mock_open.mock_calls[0][1][0] == 'https://galaxy.server.com/api/%s/collections/namespace/collection/' \
-                                            'versions' % api_version
+                                            'versions/' % api_version
     assert mock_open.mock_calls[1][1][0] == 'https://galaxy.server.com/api/%s/collections/namespace/collection/' \
                                             'versions/?page=2' % api_version
     assert mock_open.mock_calls[2][1][0] == 'https://galaxy.server.com/api/%s/collections/namespace/collection/' \

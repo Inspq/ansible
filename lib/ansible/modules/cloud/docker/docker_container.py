@@ -1064,6 +1064,7 @@ import re
 import shlex
 import traceback
 from distutils.version import LooseVersion
+from time import sleep
 
 from ansible.module_utils.common.text.formatters import human_to_bytes
 from ansible.module_utils.docker.common import (
@@ -1366,12 +1367,17 @@ class TaskParameters(DockerBaseClass):
             mem_reservation='memory_reservation',
             memswap_limit='memory_swap',
             kernel_memory='kernel_memory',
+            restart_policy='restart_policy',
         )
 
         result = dict()
         for key, value in update_parameters.items():
             if getattr(self, value, None) is not None:
-                if self.client.option_minimal_versions[value]['supported']:
+                if key == 'restart_policy' and self.client.option_minimal_versions[value]['supported']:
+                    restart_policy = dict(Name=self.restart_policy,
+                                          MaximumRetryCount=self.restart_retries)
+                    result[key] = restart_policy
+                elif self.client.option_minimal_versions[value]['supported']:
                     result[key] = getattr(self, value)
         return result
 
@@ -1954,6 +1960,12 @@ class Container(DockerBaseClass):
         return True if self.container else False
 
     @property
+    def removing(self):
+        if self.container and self.container.get('State'):
+            return self.container['State'].get('Status') == 'removing'
+        return False
+
+    @property
     def running(self):
         if self.container and self.container.get('State'):
             if self.container['State'].get('Running') and not self.container['State'].get('Ghost', False):
@@ -2022,7 +2034,6 @@ class Container(DockerBaseClass):
 
         host_config = self.container['HostConfig']
         log_config = host_config.get('LogConfig', dict())
-        restart_policy = host_config.get('RestartPolicy', dict())
         config = self.container['Config']
         network = self.container['NetworkSettings']
 
@@ -2069,7 +2080,6 @@ class Container(DockerBaseClass):
             privileged=host_config.get('Privileged'),
             expected_ports=host_config.get('PortBindings'),
             read_only=host_config.get('ReadonlyRootfs'),
-            restart_policy=restart_policy.get('Name'),
             runtime=host_config.get('Runtime'),
             shm_size=host_config.get('ShmSize'),
             security_opts=host_config.get("SecurityOpt"),
@@ -2099,8 +2109,6 @@ class Container(DockerBaseClass):
             expected_mounts=self._decode_mounts(host_config.get('Mounts')),
         )
         # Options which don't make sense without their accompanying option
-        if self.parameters.restart_policy:
-            config_mapping['restart_retries'] = restart_policy.get('MaximumRetryCount')
         if self.parameters.log_driver:
             config_mapping['log_driver'] = log_config.get('Type')
             config_mapping['log_options'] = log_config.get('Config')
@@ -2122,6 +2130,12 @@ class Container(DockerBaseClass):
             # we need to handle all limits which are usually handled by
             # update_container() as configuration changes which require a container
             # restart.
+            restart_policy = host_config.get('RestartPolicy', dict())
+
+            # Options which don't make sense without their accompanying option
+            if self.parameters.restart_policy:
+                config_mapping['restart_retries'] = restart_policy.get('MaximumRetryCount')
+
             config_mapping.update(dict(
                 blkio_weight=host_config.get('BlkioWeight'),
                 cpu_period=host_config.get('CpuPeriod'),
@@ -2133,6 +2147,7 @@ class Container(DockerBaseClass):
                 memory=host_config.get('Memory'),
                 memory_reservation=host_config.get('MemoryReservation'),
                 memory_swap=host_config.get('MemorySwap'),
+                restart_policy=restart_policy.get('Name')
             ))
 
         differences = DifferenceTracker()
@@ -2186,6 +2201,8 @@ class Container(DockerBaseClass):
 
         host_config = self.container['HostConfig']
 
+        restart_policy = host_config.get('RestartPolicy') or dict()
+
         config_mapping = dict(
             blkio_weight=host_config.get('BlkioWeight'),
             cpu_period=host_config.get('CpuPeriod'),
@@ -2197,7 +2214,12 @@ class Container(DockerBaseClass):
             memory=host_config.get('Memory'),
             memory_reservation=host_config.get('MemoryReservation'),
             memory_swap=host_config.get('MemorySwap'),
+            restart_policy=restart_policy.get('Name')
         )
+
+        # Options which don't make sense without their accompanying option
+        if self.parameters.restart_policy:
+            config_mapping['restart_retries'] = restart_policy.get('MaximumRetryCount')
 
         differences = DifferenceTracker()
         for key, value in config_mapping.items():
@@ -2554,6 +2576,31 @@ class ContainerManager(DockerBaseClass):
             self.results['ansible_facts'] = {'docker_container': self.facts}
             self.results['container'] = self.facts
 
+    def wait_for_state(self, container_id, complete_states=None, wait_states=None, accept_removal=False):
+        delay = 1.0
+        while True:
+            # Inspect container
+            result = self.client.get_container_by_id(container_id)
+            if result is None:
+                if accept_removal:
+                    return
+                msg = 'Encontered vanished container while waiting for container {0}'
+                self.fail(msg.format(container_id))
+            # Check container state
+            state = result.get('State', {}).get('Status')
+            if complete_states is not None and state in complete_states:
+                return
+            if wait_states is not None and state not in wait_states:
+                msg = 'Encontered unexpected state "{1}" while waiting for container {0}'
+                self.fail(msg.format(container_id, state))
+            # Wait
+            sleep(delay)
+            # Exponential backoff, but never wait longer than 10 seconds
+            # (1.1**24 < 10, 1.1**25 > 10, so it will take 25 iterations
+            #  until the maximal 10 seconds delay is reached. By then, the
+            #  code will have slept for ~1.5 minutes.)
+            delay = min(delay * 1.1, 10)
+
     def present(self, state):
         container = self._get_container(self.parameters.name)
         was_running = container.running
@@ -2567,12 +2614,18 @@ class ContainerManager(DockerBaseClass):
         # image ID.
         image = self._get_image()
         self.log(image, pretty_print=True)
-        if not container.exists:
+        if not container.exists or container.removing:
             # New container
-            self.log('No container found')
+            if container.removing:
+                self.log('Found container in removal phase')
+            else:
+                self.log('No container found')
             if not self.parameters.image:
                 self.fail('Cannot create container when image is not specified!')
             self.diff_tracker.add('exists', parameter=True, active=False)
+            if container.removing and not self.check_mode:
+                # Wait for container to be removed before trying to create it
+                self.wait_for_state(container.Id, wait_states=['removing'], accept_removal=True)
             new_container = self.container_create(self.parameters.image, self.parameters.create_parameters)
             if new_container:
                 container = new_container
@@ -2598,6 +2651,8 @@ class ContainerManager(DockerBaseClass):
                 if container.running:
                     self.container_stop(container.Id)
                 self.container_remove(container.Id)
+                if not self.check_mode:
+                    self.wait_for_state(container.Id, wait_states=['removing'], accept_removal=True)
                 new_container = self.container_create(image_to_use, self.parameters.create_parameters)
                 if new_container:
                     container = new_container
