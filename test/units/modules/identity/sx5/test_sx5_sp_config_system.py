@@ -5,8 +5,6 @@ from ansible.modules.identity.keycloak import keycloak_client
 from ansible.module_utils.sx5_sp_config_system_utils import loginAndSetHeaders
 from units.modules.utils import AnsibleExitJson, ModuleTestCase, set_module_args
 
-from __builtin__ import False, True
-
 class Sx5SystemTestCase(ModuleTestCase):
     systemsToCreate = [
         {
@@ -233,6 +231,11 @@ class Sx5SystemTestCase(ModuleTestCase):
             "name": "clientarecreer",
             "roles": [{"name":"test1","description": "test1","composite": "False"}]
             },
+        {
+            "clientId": "clientsyschangesadu",
+            "name": "clientsyschangesadu",
+            "roles": [{"name":"test1","description": "test1","composite": "False"}]
+            }
         ]
     clientsToDelete = [
         {
@@ -540,7 +543,6 @@ class Sx5SystemTestCase(ModuleTestCase):
         dataResponse = getResponse.json()
         print str(dataResponse["composants"][0]["roles"])
         self.assertEquals(len(dataResponse["composants"][0]["roles"]),NnClient,str(len(dataResponse["composants"][0]["roles"])) + " : " + str(NnClient))
-
 
     def test_create_system_no_sadu(self):
         toCreate = {}
