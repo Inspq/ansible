@@ -226,7 +226,7 @@ def role(params):
 
     try:
         headers = loginAndSetHeaders(url, username, password)
-    except Exception, e:
+    except Exception as e:
         result = dict(
             stderr   = 'login: ' + str(e),
             rc       = 1,
@@ -238,7 +238,7 @@ def role(params):
         getResponse = requests.get(roleSvcBaseUrl + newRoleRepresentation["name"], headers=headers)
         if getResponse.status_code != 404:
             roleRepresentation = getResponse.json()
-    except Exception, e:
+    except Exception as e:
         result = dict(
             stderr   = 'first role get: ' + str(e),
             rc       = 1,
@@ -280,7 +280,7 @@ def role(params):
                     rc = 0,
                     changed = changed
                     )
-            except requests.exceptions.RequestException, e:
+            except requests.exceptions.RequestException as e:
                 fact = dict(
                     role = newRoleRepresentation)
                 result = dict(
@@ -289,7 +289,7 @@ def role(params):
                     rc       = 1,
                     changed  = changed
                     )
-            except ValueError, e:
+            except ValueError as e:
                 fact = dict(
                     role = newRoleRepresentation)
                 result = dict(
@@ -357,13 +357,13 @@ def role(params):
                     rc       = 0,
                     changed  = changed
                 )
-        except requests.exceptions.RequestException, e:
+        except requests.exceptions.RequestException as e:
             result = dict(
                 stderr   = 'put or delete role: ' + newRoleRepresentation['name'] + ' error: ' + str(e),
                 rc       = 1,
                 changed  = changed
                 )
-        except ValueError, e:
+        except ValueError as e:
             result = dict(
                 stderr   = 'put or delete role: ' + newRoleRepresentation['name'] + ' error: ' + str(e),
                 rc       = 1,

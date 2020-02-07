@@ -232,7 +232,7 @@ paramètres:
                 idPConfiguration["authorizationUrl"] = openIdConfig["authorization_endpoint"]
             if 'end_session_endpoint' in openIdConfig.keys():
                 idPConfiguration["logoutUrl"] = openIdConfig["end_session_endpoint"]        
-        except Exception, e:
+        except Exception as e:
             raise e
 
 def deleteAllMappers(url, bearerHeader):
@@ -245,7 +245,7 @@ def deleteAllMappers(url, bearerHeader):
             requests.delete(url + '/mappers/' + mapper['id'], headers={'Authorization' : bearerHeader})
     except requests.exceptions.RequestException, ValueError:
         return False
-    except Exception, e:
+    except Exception as e:
         raise e
      
     return changed
@@ -289,7 +289,7 @@ def createOrUpdateMappers(url, headers, alias, idPMappers):
                 response = requests.post(url + '/mappers', headers=headers, data=data)
                 changed = True
                 
-    except Exception ,e :
+    except Exception as e :
         raise e
     return changed
                     
@@ -398,7 +398,7 @@ def idp(params, module = None):
         #accessToken = login(url, username, password)
         #bearerHeader = "bearer " + accessToken
         headers = loginAndSetHeaders(url, username, password)
-    except Exception, e:
+    except Exception as e:
         result = dict(
             stderr   = 'login: ' + str(e),
             rc       = 1,
@@ -411,7 +411,7 @@ def idp(params, module = None):
                 addIdPEndpoints(newIdPConfig, params["config"]['openIdConfigurationUrl'])
         
             newIdPRepresentation["config"] = newIdPConfig
-    except Exception, e:
+    except Exception as e:
         result = dict(
             stderr   = 'addIdPEndpoints: ' + str(e),
             rc       = 1,
@@ -433,7 +433,7 @@ def idp(params, module = None):
                 
         #print str(queryParams)
         #print str(getResponse.json())
-    except Exception, e:
+    except Exception as e:
         result = dict(
             stderr   = 'first realm get: ' + str(e),
             rc       = 1,
@@ -481,7 +481,7 @@ def idp(params, module = None):
                     rc = 0,
                     changed = changed
                     )
-            except requests.exceptions.RequestException, e:
+            except requests.exceptions.RequestException as e:
                 fact = dict(
                     idp = newIdPRepresentation)
                 result = dict(
@@ -490,7 +490,7 @@ def idp(params, module = None):
                     rc       = 1,
                     changed  = changed
                     )
-            except ValueError, e:
+            except ValueError as e:
                 fact = dict(
                     idp = newIdPRepresentation)
                 result = dict(
@@ -574,13 +574,13 @@ def idp(params, module = None):
                     rc       = 0,
                     changed  = changed
                 )
-        except requests.exceptions.RequestException, e:
+        except requests.exceptions.RequestException as e:
             result = dict(
                 stderr   = 'put or delete idp: ' + str(newIdPRepresentation) + ' error: ' + str(e),
                 rc       = 1,
                 changed  = changed
                 )
-        except ValueError, e:
+        except ValueError as e:
             result = dict(
                 stderr   = 'put or delete idp: ' + str(newIdPRepresentation) + ' error: ' + str(e),
                 rc       = 1,

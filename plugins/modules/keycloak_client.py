@@ -362,7 +362,7 @@ def client(params):
 
     try:
         headers = loginAndSetHeaders(url, username, password)
-    except Exception, e:
+    except Exception as e:
         result = dict(
             stderr   = 'login: ' + str(e),
             rc       = 1,
@@ -372,7 +372,7 @@ def client(params):
     try: 
         # Vérifier si le client existe sur le serveur Keycloak
         getResponse = requests.get(clientSvcBaseUrl, headers=headers, params={'clientId': newClientRepresentation["clientId"]})
-    except Exception, e:
+    except Exception as e:
         result = dict(
             stderr   = 'first client get: ' + str(e),
             rc       = 1,
@@ -448,7 +448,7 @@ def client(params):
                     rc = 0,
                     changed = changed
                     )
-            except requests.exceptions.RequestException, e:
+            except requests.exceptions.RequestException as e:
                 fact = dict(
                     client = newClientRepresentation)
                 result = dict(
@@ -457,7 +457,7 @@ def client(params):
                     rc       = 1,
                     changed  = changed
                     )
-            except ValueError, e:
+            except ValueError as e:
                 fact = dict(
                     client = newClientRepresentation)
                 result = dict(
@@ -640,13 +640,13 @@ def client(params):
                     rc       = 0,
                     changed  = changed
                 )
-        except requests.exceptions.RequestException, e:
+        except requests.exceptions.RequestException as e:
             result = dict(
                 stderr   = 'put or delete client: ' + newClientRepresentation['clientId'] + ' error: ' + str(e),
                 rc       = 1,
                 changed  = changed
                 )
-        except ValueError, e:
+        except ValueError as e:
             result = dict(
                 stderr   = 'put or delete client: ' + newClientRepresentation['clientId'] + ' error: ' + str(e),
                 rc       = 1,

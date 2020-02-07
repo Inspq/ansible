@@ -582,7 +582,7 @@ def realm(params):
     realmRepresentation = {}
     try:
         headers = loginAndSetHeaders(url, username, password)
-    except Exception, e:
+    except Exception as e:
         result = dict(
             stderr   = 'login: ' + str(e),
             rc       = 1,
@@ -599,7 +599,7 @@ def realm(params):
                 realmExists = True
                 realmRepresentation = realm
                 break
-    except Exception, e:
+    except Exception as e:
         result = dict(
             stderr   = 'first realm get: ' + str(e),
             rc       = 1,
@@ -634,14 +634,14 @@ def realm(params):
                     rc = 0,
                     changed = changed
                     )
-            except requests.exceptions.RequestException, e:
+            except requests.exceptions.RequestException as e:
                 result = dict(
                     realm    = newRealmRepresentation["id"],
                     stderr   = 'post realm: ' + str(e),
                     rc       = 1,
                     changed  = changed
                     )
-            except ValueError, e:
+            except ValueError as e:
                 result = dict(
                     realm    = newRealmRepresentation["id"],
                     stderr   = 'post realm: ' + str(e),
@@ -699,14 +699,14 @@ def realm(params):
                     rc       = 0,
                     changed  = changed
                 )
-        except requests.exceptions.RequestException, e:
+        except requests.exceptions.RequestException as e:
             result = dict(
                 realm    = newRealmRepresentation["id"],
                 stderr   = 'put or delete realm: ' + str(e),
                 rc       = 1,
                 changed  = changed
                 )
-        except ValueError, e:
+        except ValueError as e:
             result = dict(
                 realm    = newRealmRepresentation["id"],
                 stderr   = 'put or delete realm: ' + str(e),

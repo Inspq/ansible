@@ -285,7 +285,7 @@ def authentication(params):
 
     try:
         headers = loginAndSetHeaders(url, username, password)
-    except Exception, e:
+    except Exception as e:
         result = dict(
             stderr   = 'login: ' + str(e),
             rc       = 1,
@@ -300,7 +300,7 @@ def authentication(params):
             if authentication["alias"] == newAuthenticationRepresentation["alias"]:
                 authenticationRepresentation = authentication
                 break
-    except Exception, e:
+    except Exception as e:
         result = dict(
             stderr   = 'first authentication get: ' + str(e),
             rc       = 1,
@@ -334,7 +334,7 @@ def authentication(params):
                     rc = 0,
                     changed = changed
                     )
-            except requests.exceptions.RequestException, e:
+            except requests.exceptions.RequestException as e:
                 fact = dict(
                     authentication = newAuthenticationRepresentation)
                 result = dict(
@@ -343,7 +343,7 @@ def authentication(params):
                     rc       = 1,
                     changed  = changed
                     )
-            except ValueError, e:
+            except ValueError as e:
                 fact = dict(
                     authentication = newAuthenticationRepresentation)
                 result = dict(
@@ -412,13 +412,13 @@ def authentication(params):
                     rc       = 0,
                     changed  = changed
                 )
-        except requests.exceptions.RequestException, e:
+        except requests.exceptions.RequestException as e:
             result = dict(
                 stderr   = 'put or delete authentication: ' + newAuthenticationRepresentation['alias'] + ' error: ' + str(e),
                 rc       = 1,
                 changed  = changed
                 )
-        except ValueError, e:
+        except ValueError as e:
             result = dict(
                 stderr   = 'put or delete authentication: ' + newAuthenticationRepresentation['alias'] + ' error: ' + str(e),
                 rc       = 1,

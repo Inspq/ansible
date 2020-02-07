@@ -344,7 +344,7 @@ def component(params):
     component = None
     try:
         headers = loginAndSetHeaders(url, username, password)
-    except Exception, e:
+    except Exception as e:
         result = dict(
             stderr   = 'login: ' + str(e),
             rc       = 1,
@@ -358,7 +358,7 @@ def component(params):
         for component in components:
             if "providerId" in component and component["providerId"] == newComponent["providerId"]:
                 break
-    except Exception, e:
+    except Exception as e:
         result = dict(
             stderr   = 'first client get: ' + str(e),
             rc       = 1,
@@ -405,7 +405,7 @@ def component(params):
                     rc = 0,
                     changed = changed
                     )
-            except requests.exceptions.RequestException, e:
+            except requests.exceptions.RequestException as e:
                 fact = dict(
                     component = newComponent)
                 result = dict(
@@ -414,7 +414,7 @@ def component(params):
                     rc       = 1,
                     changed  = changed
                     )
-            except ValueError, e:
+            except ValueError as e:
                 fact = dict(
                     component = newComponent)
                 result = dict(
@@ -489,13 +489,13 @@ def component(params):
                     rc       = 0,
                     changed  = changed
                 )
-        except requests.exceptions.RequestException, e:
+        except requests.exceptions.RequestException as e:
             result = dict(
                 stderr   = 'put or delete component: ' + newComponent['id'] + ' error: ' + str(e),
                 rc       = 1,
                 changed  = changed
                 )
-        except ValueError, e:
+        except ValueError as e:
             result = dict(
                 stderr   = 'put or delete component: ' + newComponent['id'] + ' error: ' + str(e),
                 rc       = 1,

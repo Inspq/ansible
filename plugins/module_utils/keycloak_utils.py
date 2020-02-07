@@ -1,22 +1,29 @@
 # -*- coding: utf-8 -*-
 
-def isDictEquals(dict1, dict2, exclude = []):
+from __future__ import (absolute_import, division, print_function)
+
+import requests
+
+__metaclass__ = type
+
+
+def isDictEquals(dict1, dict2, exclude=[]):
     '''
 Fonction: isDictEquals
-Description:    Cette fonction compare deux structures. Elle utilise tous les étéments de la structure 
+Description:    Cette fonction compare deux structures. Elle utilise tous les étéments de la structure
                 dict1 et valide que ses éléments se trouvent dans la structure dict2.
-                Ca ne veut pas dire que les deux structures sont identiques, Il peut y avoir des 
+                Ca ne veut pas dire que les deux structures sont identiques, Il peut y avoir des
                 éléments dans dict2 qui ne sont pas dans dict1.
                 Cette fonction est récursive et elle peut s'appeler avec des arguments qui ne sont pas
                 de type dict
 Arguments:
-    dict1 : 
-        type : 
+    dict1 :
+        type :
             dict pour l'appel de base, peut être de type dict, list, bool, int ou str pour les appels récursifs
         description :
             structure de référence.
-    dict2 : 
-        type : 
+    dict2 :
+        type :
             dict pour l'appel de base, peut être de type dict, list, bool, int ou str pour les appels récursifs
         description :
             structure avec laquelle comparer la structure dict1.
@@ -66,28 +73,29 @@ Retour:
                 return True
             for key in dict1:
                 if not (exclude and key in exclude):
-                    if not isDictEquals(dict1[key], dict2[key], exclude) :
+                    if not isDictEquals(dict1[key], dict2[key], exclude):
                         return False
             return True
         else:
             if type(dict1) == bool and (type(dict2) == str or type(dict2) == unicode):
-                #print ("dict1 bool: " + str(dict1) + " dict2 str: " + dict2 )
+                # print ("dict1 bool: " + str(dict1) + " dict2 str: " + dict2 )
                 return dict1 == str2bool(dict2.decode("utf-8"))
-            if type(dict2) == bool and (type(dict1) == str or type(dict1) == unicode):            
-                #print ("dict1 str: " + dict1 + " dict2 bool: " + str(dict2) )
+            if type(dict2) == bool and (type(dict1) == str or type(dict1) == unicode):
+                # print ("dict1 str: " + dict1 + " dict2 bool: " + str(dict2) )
                 return dict2 == str2bool(dict1.decode("utf-8"))
             return dict1 == dict2
     except KeyError:
         return False
-    except Exception, e:
+    except Exception as e:
         raise e
+
 
 def str2bool(value):
     if type(value) == unicode:
-        return value.decode("utf-8").lower() in ("yes","true")
-    return value.lower() in ("yes","true")
+        return value.decode("utf-8").lower() in ("yes", "true")
+    return value.lower() in ("yes", "true")
 
-import requests
+
 def login(url, username, password):
     '''
 Fonction : login
@@ -97,46 +105,48 @@ Arguments :
     url :
         type : str
         description :
-            url de base du serveur Keycloak        
+            url de base du serveur Keycloak
     username :
         type : str
         description :
-            identifiant à utiliser pour s'authentifier au serveur Keycloak        
+            identifiant à utiliser pour s'authentifier au serveur Keycloak
     password :
         type : str
         description :
-            Mot de passe pour s'authentifier au serveur Keycloak        
+            Mot de passe pour s'authentifier au serveur Keycloak
     '''
     # Login to Keycloak
     accessToken = ""
     body = {
-            'grant_type': 'password',
-            'username': username,
-            'password': password,
-            'client_id': 'admin-cli'
+        'grant_type': 'password',
+        'username': username,
+        'password': password,
+        'client_id': 'admin-cli'
     }
     try:
-        loginResponse = requests.post(url + '/auth/realms/master/protocol/openid-connect/token',data=body)
-    
+        loginResponse = requests.post(url + '/auth/realms/master/protocol/openid-connect/token', data=body)
+
         loginData = loginResponse.json()
         accessToken = loginData['access_token']
-    except requests.exceptions.RequestException, e:
+    except requests.exceptions.RequestException as e:
         raise e
-    except ValueError, e:
+    except ValueError as e:
         raise e
 
     return accessToken
 
+
 def setHeaders(accessToken):
     bearerHeader = "bearer " + accessToken
-    headers={'Authorization' : bearerHeader, 'Content-type': 'application/json'}
+    headers = {'Authorization': bearerHeader, 'Content-type': 'application/json'}
     return headers
+
 
 def loginAndSetHeaders(url, username, password):
     headers = {}
     try:
         accessToken = login(url, username, password)
         headers = setHeaders(accessToken)
-    except Exception, e:
+    except Exception as e:
         raise e
     return headers

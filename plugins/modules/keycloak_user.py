@@ -342,7 +342,7 @@ def user(params):
 
     try:
         headers = loginAndSetHeaders(url, username, password)
-    except Exception, e:
+    except Exception as e:
         result = dict(
             stderr   = 'login: ' + str(e),
             rc       = 1,
@@ -357,7 +357,7 @@ def user(params):
         for userRepresentation in users:
             if "username" in userRepresentation and userRepresentation["username"] == newUserRepresentation["username"]:
                 break
-    except Exception, e:
+    except Exception as e:
         result = dict(
             stderr   = 'first user get: ' + str(e),
             rc       = 1,
@@ -392,7 +392,7 @@ def user(params):
                     rc = 0,
                     changed = changed
                     )
-            except requests.exceptions.RequestException, e:
+            except requests.exceptions.RequestException as e:
                 fact = dict(
                     user = newUserRepresentation)
                 result = dict(
@@ -401,7 +401,7 @@ def user(params):
                     rc       = 1,
                     changed  = changed
                     )
-            except ValueError, e:
+            except ValueError as e:
                 fact = dict(
                     user = newUserRepresentation)
                 result = dict(
@@ -467,13 +467,13 @@ def user(params):
                     rc       = 0,
                     changed  = changed
                 )
-        except requests.exceptions.RequestException, e:
+        except requests.exceptions.RequestException as e:
             result = dict(
                 stderr   = 'put or delete user: ' + newUserRepresentation['username'] + ' error: ' + str(e),
                 rc       = 1,
                 changed  = changed
                 )
-        except ValueError, e:
+        except ValueError as e:
             result = dict(
                 stderr   = 'put or delete user: ' + newUserRepresentation['username'] + ' error: ' + str(e),
                 rc       = 1,
