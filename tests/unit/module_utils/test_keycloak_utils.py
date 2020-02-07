@@ -2,7 +2,7 @@ import collections
 import os
 import unittest
 
-from ansible.module_utils.keycloak_utils import isDictEquals
+from ansible_collections.inspq.keycloak.plugins.module_utils.keycloak_utils import isDictEquals
 
 
 class KeycloakIsDictEqualsTestCase(unittest.TestCase):
