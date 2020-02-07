@@ -1,3 +1,0 @@
-freebsd/10.3-STABLE
-freebsd/11.0-STABLE
-osx/10.11
