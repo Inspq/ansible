@@ -13,7 +13,7 @@ class KeycloakIsDictEqualsTestCase(unittest.TestCase):
             test1='test1',
             test2='test2'
             ),
-        test3 = ['test1',dict(test='test1',test2='test2')]         
+        test3 = ['test1',dict(test='test1',test2='test2')]
         )
     dict2 = dict(
         test1 = 'test1',
@@ -23,7 +23,7 @@ class KeycloakIsDictEqualsTestCase(unittest.TestCase):
             test3='test3'
             ),
         test3 = ['test1',dict(test='test1',test2='test2'),'test3'],
-        test4 = 'test4'         
+        test4 = 'test4'
         )
     dict3 = dict(
         test1 = 'test1',
@@ -33,7 +33,7 @@ class KeycloakIsDictEqualsTestCase(unittest.TestCase):
             test3='test3'
             ),
         test3 = ['test1',dict(test='test1',test2='test23'),'test3'],
-        test4 = 'test4'         
+        test4 = 'test4'
         )
 
     dict5 = dict(
@@ -44,7 +44,7 @@ class KeycloakIsDictEqualsTestCase(unittest.TestCase):
             test3='test3'
             ),
         test3 = ['test1',dict(test='test1',test2='test23'),'test3'],
-        test4 = 'test4'         
+        test4 = 'test4'
         )
 
     dict6 = dict(
@@ -55,9 +55,9 @@ class KeycloakIsDictEqualsTestCase(unittest.TestCase):
             test3='test3'
             ),
         test3 = ['test1',dict(test='test1',test2='test23'),'test3'],
-        test4 = 'test4'         
+        test4 = 'test4'
         )
-    
+
     def test_trivial(self):
         self.assertTrue(isDictEquals(self.dict1,self.dict1))
 
