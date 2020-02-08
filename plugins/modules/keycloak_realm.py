@@ -393,7 +393,7 @@ changed:
 
 import json
 import urllib
-from ansible.module_utils.keycloak_utils import * 
+from ansible_collections.inspq.keycloak.plugins.module_utils.keycloak_utils import *
 
 def main():
     module = AnsibleModule(
