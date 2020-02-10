@@ -1,0 +1,255 @@
+---
+
+- name: create a client
+  keycloak_client:
+      url: "{{ keycloak_url }}"
+      username: "{{ keycloak_admin_user }}"
+      password: "{{ keycloak_admin_password }}"
+      realm: master
+      state: present
+      clientId: test
+      rootUrl: "http://test.com:8080"
+      name: "test"
+      description: "Ceci est un test"
+      adminUrl: "http://test.com:8080/admin"
+      enabled: true
+      clientAuthenticatorType: "client-secret"
+      redirectUris:
+      - "http://test.com:8080/secure"
+      - "http://test1.com:8080/secure"
+      webOrigins: ["*"]
+      consentRequired: false
+      standardFlowEnabled: true
+      implicitFlowEnabled: true
+      directAccessGrantsEnabled: true
+      serviceAccountsEnabled: true
+      protocol: "openid-connect"
+      bearerOnly: false
+      roles:
+      - name: "test1"
+        description: "test1"
+        composite: "False"
+      - name: "test2"
+        description: "test2"
+        composite: True
+        composites:
+        - id: "test1"
+          name: "test1"
+          clientRole: True
+          composite: True
+      protocolMappers:
+      - name: "test1Mapper"
+        protocol: "openid-connect"
+        protocolMapper: "oidc-usermodel-attribute-mapper"
+        consentRequired: False
+        config:
+          multivalued: 'false'
+          userinfo.token.claim: 'true'
+          user.attribute: "test1"
+          id.token.claim: 'true'
+          access.token.claim: 'true'
+          claim.name: "test1"
+          jsonType.label: "String"
+      - name: "test2Mapper"
+        protocol: "openid-connect"
+        protocolMapper: "oidc-usermodel-attribute-mapper"
+        consentRequired: False
+        config:
+          multivalued: 'false'
+          userinfo.token.claim: 'true'
+          user.attribute: "test2"
+          id.token.claim: 'true'
+          access.token.claim: 'true'
+          claim.name: "test2"
+          jsonType.label: "String"
+      publicClient: false
+      force: false
+  register: result
+
+- assert:
+    that:
+      - "result.changed"
+      - "result.ansible_facts.client.enabled"
+      - "result.ansible_facts.clientSecret"
+      - "'test1' in result.ansible_facts.clientRoles | map(attribute='name') | list "
+      - "'test2' in result.ansible_facts.clientRoles | map(attribute='name') | list "
+      - "'http://test.com:8080/secure' in result.ansible_facts.client.redirectUris"
+      - "'http://test1.com:8080/secure' in result.ansible_facts.client.redirectUris"
+
+- name: create a client (idempotency)
+  keycloak_client:
+      url: "{{ keycloak_url }}"
+      username: "{{ keycloak_admin_user }}"
+      password: "{{ keycloak_admin_password }}"
+      realm: master
+      state: present
+      clientId: test
+      rootUrl: "http://test.com:8080"
+      name: "test"
+      description: "Ceci est un test"
+      adminUrl: "http://test.com:8080/admin"
+      enabled: true
+      clientAuthenticatorType: "client-secret"
+      redirectUris:
+      - "http://test.com:8080/secure"
+      - "http://test1.com:8080/secure"
+      webOrigins: ["*"]
+      consentRequired: false
+      standardFlowEnabled: true
+      implicitFlowEnabled: true
+      directAccessGrantsEnabled: true
+      serviceAccountsEnabled: true
+      protocol: "openid-connect"
+      bearerOnly: false
+      roles:
+      - name: "test1"
+        description: "test1"
+        composite: "False"
+      - name: "test2"
+        description: "test2"
+        composite: True
+        composites:
+        - id: "test1"
+          name: "test1"
+          clientRole: True
+          composite: True
+      protocolMappers:
+      - name: "test1Mapper"
+        protocol: "openid-connect"
+        protocolMapper: "oidc-usermodel-attribute-mapper"
+        consentRequired: False
+        config:
+          multivalued: 'false'
+          userinfo.token.claim: 'true'
+          user.attribute: "test1"
+          id.token.claim: 'true'
+          access.token.claim: 'true'
+          claim.name: "test1"
+          jsonType.label: "String"
+      - name: "test2Mapper"
+        protocol: "openid-connect"
+        protocolMapper: "oidc-usermodel-attribute-mapper"
+        consentRequired: False
+        config:
+          multivalued: 'false'
+          userinfo.token.claim: 'true'
+          user.attribute: "test2"
+          id.token.claim: 'true'
+          access.token.claim: 'true'
+          claim.name: "test2"
+          jsonType.label: "String"
+      publicClient: false
+      force: false
+  register: result
+
+- assert:
+    that:
+      - "not result.changed"
+      - "result.ansible_facts.client.enabled"
+      - "result.ansible_facts.clientSecret"
+      - "'test1' in result.ansible_facts.clientRoles | map(attribute='name') | list "
+      - "'test2' in result.ansible_facts.clientRoles | map(attribute='name') | list "
+      - "'http://test.com:8080/secure' in result.ansible_facts.client.redirectUris"
+      - "'http://test1.com:8080/secure' in result.ansible_facts.client.redirectUris"
+
+- name: modify a client
+  keycloak_client:
+      url: "{{ keycloak_url }}"
+      username: "{{ keycloak_admin_user }}"
+      password: "{{ keycloak_admin_password }}"
+      realm: master
+      state: present
+      clientId: test
+      rootUrl: "http://test.com:8080"
+      name: "test3"
+      description: "Ceci est un test3"
+      adminUrl: "http://test.com:8080/admin"
+      enabled: true
+      clientAuthenticatorType: "client-secret"
+      redirectUris:
+      - "http://test.com:8080/secure"
+      - "http://test1.com:8080/secure"
+      webOrigins: ["*"]
+      consentRequired: false
+      standardFlowEnabled: true
+      implicitFlowEnabled: true
+      directAccessGrantsEnabled: true
+      serviceAccountsEnabled: true
+      protocol: "openid-connect"
+      bearerOnly: false
+      roles:
+      - name: "test1"
+        description: "test1"
+        composite: "False"
+      - name: "test2"
+        description: "test2"
+        composite: True
+        composites:
+        - id: "test1"
+          name: "test1"
+          clientRole: True
+          composite: True
+      protocolMappers:
+      - name: "test1Mapper"
+        protocol: "openid-connect"
+        protocolMapper: "oidc-usermodel-attribute-mapper"
+        consentRequired: False
+        config:
+          multivalued: 'false'
+          userinfo.token.claim: 'false'
+          user.attribute: "test12"
+          id.token.claim: 'true'
+          access.token.claim: 'true'
+          claim.name: "test12"
+          jsonType.label: "String"
+      publicClient: false
+      force: false
+  register: result
+
+- assert:
+    that:
+      - "result.changed"
+      - "result.ansible_facts.client.name == 'test3'"
+      - "result.ansible_facts.client.description == 'Ceci est un test3'"
+      - "'test1' in result.ansible_facts.clientRoles | map(attribute='name') | list "
+      - "'test2' in result.ansible_facts.clientRoles | map(attribute='name') | list "
+      - "'http://test.com:8080/secure' in result.ansible_facts.client.redirectUris"
+      - "'http://test1.com:8080/secure' in result.ansible_facts.client.redirectUris"
+      - "(result.ansible_facts.client.protocolMappers | selectattr('name', 'equalto', 'test1Mapper') | list).0.name == 'test1Mapper'"
+      - "(result.ansible_facts.client.protocolMappers | selectattr('name', 'equalto', 'test1Mapper') | list).0.config['user.attribute'] == 'test12'"
+      - "(result.ansible_facts.client.protocolMappers | selectattr('name', 'equalto', 'test1Mapper') | list).0.config['userinfo.token.claim'] == 'false'"
+      - "(result.ansible_facts.client.protocolMappers | selectattr('name', 'equalto', 'test1Mapper') | list).0.config['claim.name'] == 'test12'"
+
+- name: delete a client
+  keycloak_client:
+      url: "{{ keycloak_url }}"
+      username: "{{ keycloak_admin_user }}"
+      password: "{{ keycloak_admin_password }}"
+      realm: master
+      state: absent
+      clientId: test
+  register: result
+
+- assert:
+    that:
+      - "result.changed"
+      - "result.stdout == 'deleted'"
+
+- name: delete a client (idempotency)
+  keycloak_client:
+      url: "{{ keycloak_url }}"
+      username: "{{ keycloak_admin_user }}"
+      password: "{{ keycloak_admin_password }}"
+      realm: master
+      state: absent
+      clientId: test
+  register: result
+
+- debug:
+    var: result
+
+- assert:
+    that:
+      - "not result.changed"
+      - "result.stdout == 'test absent'"
+...
