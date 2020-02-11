@@ -1,6 +1,6 @@
 ---
 
-keycloak_url: "http://127.0.0.1:8080"
+keycloak_url: "http://127.0.0.1:8080/auth"
 keycloak_admin_user: "admin"
 keycloak_admin_password: "admin"
 
