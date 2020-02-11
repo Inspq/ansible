@@ -50,6 +50,11 @@ jobs:
     strategy:
       matrix:
         python_version: ["2.7"]
+    container: python:${{ matrix.python_version }}
+    services:
+      keycloak:
+          image: jboss/keycloak
+          options: -e KEYCLOAK_USER=admin -e KEYCLOAK_PASSWORD=admin
     steps:
       - name: Check out code
         uses: actions/checkout@v1
@@ -65,7 +70,7 @@ jobs:
         run: pip install git+https://github.com/ansible-collection-migration/ansible-base.git --disable-pip-version-check
 
       - name: Run integration tests on Python ${{ matrix.python_version }}
-        run: ansible-test integration keycloak_realm --docker -v --color --retry-on-error --python ${{ matrix.python_version }} --continue-on-error --diff #--coverage
+        run: ansible-test integration keycloak_realm -v --color --retry-on-error --python ${{ matrix.python_version }} --continue-on-error --diff #--coverage
 
         #      - name: Upload Coverage data
         #        run: tests/coverage.sh
