@@ -1,94 +1,75 @@
 import collections
 import os
-import unittest
 import copy
-from ansible.modules.identity.keycloak.keycloak_identity_provider import *
+from ansible.modules.identity.keycloak import keycloak_identity_provider
+from units.modules.utils import AnsibleExitJson, AnsibleFailJson, ModuleTestCase, set_module_args
 
-class KeycloakIdentityProviderTestCase(unittest.TestCase):
- 
-    def test_create_idp(self):
-        toCreate = dict(
-            username = "admin", 
-            password = "admin",
-            realm = "master",
-            url = "http://localhost:18081",
-            alias = "test",
-            providerId = "oidc",
-            displayName = "Test",
-            enabled = True,
-            updateProfileFirstLoginMode="on",
-            trustEmail=False,
-            storeToken = True,
-            addReadTokenRoleOnCreate = True,
-            authenticateByDefault = False,
-            linkOnly = False,
-            firstBrokerLoginFlowAlias = "first broker login",
-            config = dict(
-                openIdConfigurationUrl = "http://localhost:18081/auth/realms/master/.well-known/openid-configuration",
-                clientId = "test",
-                clientSecret = "test",
-                defaultScope = "openid email profile",
-                disableUserInfo = "false",
-                guiOrder = "1"
-                ),
-            mappers = [ 
-                    {
-                        "name": "test",
-                        "identityProviderMapper": "oidc-user-attribute-idp-mapper", 
-                        "config" : {
-                            "claim" : "test",
-                            "user.attribute": "lastname"
-                            }
-                    }, 
-                    {
-                        "name" : "test2",
-                        "identityProviderMapper": "oidc-user-attribute-idp-mapper", 
-                        "config" : {
-                            "claim": "test2",
-                            "user.attribute":"firstname"
-                        }
-                    },
-                    {
-                        "name" : "test3",
-                        "identityProviderMapper": "oidc-role-idp-mapper", 
-                        "config" : {
-                            "claim": "claimName",
-                            "claim.value": "valueThatGiveRole",
-                            "role": "roleName"
-                        }
-                    }
+class KeycloakIdentityProviderTestCase(ModuleTestCase):
 
-                ],
-            state = "present",
-            force = False
-        )
-        results = idp(toCreate)
-        self.assertTrue(results['changed'])
-        #err = results['stderr'] if 'stderr' in results else ""            
-        #out = results['stdout'] if 'stdout' in results else ""
-        self.assertEquals(results['rc'], 0, "rc: " + str(results['rc']) + " : " + results['stdout'] if 'stdout' in results else "" + " : " + results['stderr'] if 'stderr' in results else "")
-        self.assertTrue(results['ansible_facts']['idp']['enabled'])
-        self.assertEquals(results['ansible_facts']['idp']['alias'],toCreate["alias"], 'Alias = ' + results['ansible_facts']['idp']['alias'])
-        self.assertEquals(results['ansible_facts']['idp']['config']['clientId'],toCreate["config"]["clientId"],"ClientId: " + results['ansible_facts']['idp']['config']['clientId'])
-        self.assertEquals(results['ansible_facts']['idp']['config']['guiOrder'], toCreate["config"]["guiOrder"],"GuiOrder: " + results['ansible_facts']['idp']['config']['guiOrder'] + ": " + toCreate["config"]["guiOrder"])
-        for mapperToCreate in toCreate["mappers"]:
-            mapperFound = False
-            for mapper in results['ansible_facts']['mappers']:
-                if mapper["name"] == mapperToCreate["name"]:
-                    mapperFound = True
-                    self.assertEquals(mapper["identityProviderMapper"], mapperToCreate["identityProviderMapper"], "identityProviderMapper: " + mapper["identityProviderMapper"] + "not equal " + mapperToCreate["identityProviderMapper"])
-                    self.assertDictEqual(mapper["config"], mapperToCreate["config"], "config: " + str(mapper["config"]) + "not equal " + str(mapperToCreate["config"]))
-            self.assertTrue(mapperFound, "mapper " + mapperToCreate["name"] + " not found")                                          
-        
-    def test_idp_not_changed(self):
-        ToDoNotChange = {
-            "username": "admin", 
-            "password": "admin",
+    testIDPs = [
+        {
+            "auth_username": "admin", 
+            "auth_password": "admin",
             "realm": "master",
-            "url": "http://localhost:18081",
-            "alias": "test1",
+            "auth_keycloak_url": "http://localhost:18081/auth",
+            "alias": "test_create_idp",
             "providerId": "oidc",
-            "displayName": "Test1",
+            "displayName": "test_create_idp",
+            "enabled": True,
+            "updateProfileFirstLoginMode": "on",
+            "trustEmail": False,
+            "storeToken": True,
+            "addReadTokenRoleOnCreate": True,
+            "authenticateByDefault": False,
+            "linkOnly": False,
+            "firstBrokerLoginFlowAlias": "first broker login",
+            "config": {
+                "openIdConfigurationUrl": "http://localhost:18081/auth/realms/master/.well-known/openid-configuration",
+                "clientId": "test",
+                "defaultScope": "openid email profile",
+                "disableUserInfo": "false",
+                "guiOrder": "1",
+                "backchannelSupported": "false"
+            },
+            "mappers": [ 
+                {
+                    "name": "test",
+                    "identityProviderMapper": "oidc-user-attribute-idp-mapper", 
+                    "config" : {
+                        "claim" : "test",
+                        "user.attribute": "lastname"
+                        }
+                }, 
+                {
+                    "name" : "test2",
+                    "identityProviderMapper": "oidc-user-attribute-idp-mapper", 
+                    "config" : {
+                        "claim": "test2",
+                        "user.attribute":"firstname"
+                    }
+                },
+                {
+                    "name" : "test3",
+                    "identityProviderMapper": "oidc-role-idp-mapper", 
+                    "config" : {
+                        "claim": "claimName",
+                        "claim.value": "valueThatGiveRole",
+                        "role": "roleName"
+                    }
+                }
+    
+            ],
+            "state": "absent",
+            "force": False
+        },
+        {
+            "auth_username": "admin", 
+            "auth_password": "admin",
+            "realm": "master",
+            "auth_keycloak_url": "http://localhost:18081/auth",
+            "alias": "test_idp_not_changed",
+            "providerId": "oidc",
+            "displayName": "test idp not changed",
             "enabled": True,
             "updateProfileFirstLoginMode": "on",
             "trustEmail": False,
@@ -102,7 +83,8 @@ class KeycloakIdentityProviderTestCase(unittest.TestCase):
                 "clientId": "test1",
                 "defaultScope": "openid email profile",
                 "disableUserInfo": "false",
-                "guiOrder": "1"
+                "guiOrder": "1",
+                "backchannelSupported": "true"
                 },
             "mappers": [ 
                     {
@@ -130,180 +112,409 @@ class KeycloakIdentityProviderTestCase(unittest.TestCase):
                             "role": "roleName"
                         }
                     }
-
+    
                 ],
             "state": "present",
             "force": False
+        },
+        {
+            "auth_username": "admin", 
+            "auth_password": "admin",
+            "realm": "master",
+            "auth_keycloak_url": "http://localhost:18081/auth",
+            "alias": "test_modify_idp",
+            "providerId": "oidc",
+            "displayName": "test modify idp",
+            "enabled": True,
+            "updateProfileFirstLoginMode": "on",
+            "trustEmail": False,
+            "storeToken": True,
+            "addReadTokenRoleOnCreate": True,
+            "authenticateByDefault": False,
+            "linkOnly": False,
+            "firstBrokerLoginFlowAlias": "first broker login",
+            "config": {
+                "openIdConfigurationUrl": "http://localhost:18081/auth/realms/master/.well-known/openid-configuration",
+                "clientId": "test2",
+                "defaultScope": "openid email profile",
+                "disableUserInfo": "false",
+                "guiOrder": "1",
+                "backchannelSupported": "true"
+            },
+            "mappers": [ 
+                {
+                    "name": "test21",
+                    "identityProviderMapper": "oidc-user-attribute-idp-mapper", 
+                    "config" : {
+                        "claim" : "test",
+                        "user.attribute": "lastname"
+                    }
+                }, 
+                {
+                    "name" : "test22",
+                    "identityProviderMapper": "oidc-user-attribute-idp-mapper", 
+                    "config" : {
+                        "claim": "test2",
+                        "user.attribute":"firstname"
+                    }
+                },
+                {
+                    "name" : "test23",
+                    "identityProviderMapper": "oidc-role-idp-mapper", 
+                    "config" : {
+                        "claim": "claimName",
+                        "claim.value": "valueThatGiveRole",
+                        "role": "roleName"
+                    }
+                }
+    
+            ],
+            "state": "present",
+            "force": False
+        },
+        {
+            "auth_username": "admin", 
+            "auth_password": "admin",
+            "realm": "master",
+            "auth_keycloak_url": "http://localhost:18081/auth",
+            "alias": "test_modify_idp_force",
+            "providerId": "oidc",
+            "displayName": "Test the force option for modify",
+            "enabled": True,
+            "updateProfileFirstLoginMode": "on",
+            "trustEmail": False,
+            "storeToken": False,
+            "addReadTokenRoleOnCreate": True,
+            "authenticateByDefault": False,
+            "linkOnly": False,
+            "firstBrokerLoginFlowAlias": "first broker login",
+            "config": {
+                "openIdConfigurationUrl": "http://localhost:18081/auth/realms/master/.well-known/openid-configuration",
+                "clientId": "test2",
+                "defaultScope": "openid email profile",
+                "disableUserInfo": "false",
+                "guiOrder": "1",
+                "backchannelSupported": "true"
+            },
+            "mappers": [ 
+                {
+                    "name": "test21",
+                    "identityProviderMapper": "oidc-user-attribute-idp-mapper", 
+                    "config" : {
+                        "claim" : "test",
+                        "user.attribute": "lastname"
+                        }
+                }, 
+                {
+                    "name" : "test22",
+                    "identityProviderMapper": "oidc-user-attribute-idp-mapper", 
+                    "config" : {
+                        "claim": "test2",
+                        "user.attribute":"firstname"
+                    }
+                },
+                {
+                    "name" : "test23",
+                    "identityProviderMapper": "oidc-role-idp-mapper", 
+                    "config" : {
+                        "claim": "claimName",
+                        "claim.value": "valueThatGiveRole",
+                        "role": "roleName"
+                    }
+                }
+    
+            ],
+            "state": "present",
+            "force": False
+        },
+        {
+            "auth_username": "admin", 
+            "auth_password": "admin",
+            "realm": "master",
+            "auth_keycloak_url": "http://localhost:18081/auth",
+            "alias": "test_modify_idp_mappers",
+            "providerId": "oidc",
+            "displayName": "test modify idp mappers",
+            "enabled": True,
+            "updateProfileFirstLoginMode": "on",
+            "trustEmail": False,
+            "storeToken": True,
+            "addReadTokenRoleOnCreate": True,
+            "authenticateByDefault": False,
+            "linkOnly": False,
+            "firstBrokerLoginFlowAlias": "first broker login",
+            "config": {
+                "openIdConfigurationUrl": "http://localhost:18081/auth/realms/master/.well-known/openid-configuration",
+                "clientId": "test2",
+                "defaultScope": "openid email profile",
+                "disableUserInfo": "false"
+            },
+            "mappers": [ 
+                {
+                    "name": "test21",
+                    "identityProviderMapper": "oidc-user-attribute-idp-mapper", 
+                    "config" : {
+                        "claim" : "test",
+                        "user.attribute": "lastname"
+                        }
+                }, 
+                {
+                    "name" : "test22",
+                    "identityProviderMapper": "oidc-user-attribute-idp-mapper", 
+                    "config" : {
+                        "claim": "test2",
+                        "user.attribute":"firstname"
+                    }
+                },
+                {
+                    "name" : "test23",
+                    "identityProviderMapper": "oidc-role-idp-mapper", 
+                    "config" : {
+                        "claim": "claimName",
+                        "claim.value": "valueThatGiveRole",
+                        "role": "roleName"
+                    }
+                }
+    
+            ],
+            "state": "present",
+            "force": False
+        },
+        {
+            "auth_username": "admin",
+            "auth_password":"admin",
+            "realm": "master",
+            "auth_keycloak_url": "http://localhost:18081/auth",
+            "alias": "test_modify_idp_remove_mappers",
+            "providerId": "oidc",
+            "displayName": "Test removal of mappers",
+            "enabled": True,
+            "updateProfileFirstLoginMode": "on",
+            "trustEmail": False,
+            "storeToken": True,
+            "addReadTokenRoleOnCreate": True,
+            "authenticateByDefault": False,
+            "linkOnly": False,
+            "firstBrokerLoginFlowAlias": "first broker login",
+            "config": {
+                "openIdConfigurationUrl": "http://localhost:18081/auth/realms/master/.well-known/openid-configuration",
+                "clientId": "test2",
+                "defaultScope": "openid email profile",
+                "disableUserInfo": "false"
+            },
+            "mappers": [
+                {
+                    "name": "thismapperissupposedtostay",
+                    "identityProviderMapper": "oidc-user-attribute-idp-mapper", 
+                    "config" : {
+                        "claim" : "newTest",
+                        "user.attribute": "lastname"
+                        },
+                    "state": "present"
+                },
+                {
+                    "name" : "thismapperissupposedtobedeleted",
+                    "identityProviderMapper": "oidc-role-idp-mapper", 
+                    "config" : {
+                        "claim": "claimName",
+                        "claim.value": "valueThatGiveRole",
+                        "role": "roleName"
+                        },
+                    "state": "present"
+                    }
+                 ],
+            "state": "present",
+            "force": False
+        },
+        {
+            "auth_username": "admin", 
+            "auth_password": "admin",
+            "realm": "master",
+            "auth_keycloak_url": "http://localhost:18081/auth",
+            "alias": "test_delete_idp",
+            "providerId": "oidc",
+            "displayName": "Test delete IdP",
+            "enabled": True,
+            "updateProfileFirstLoginMode": "on",
+            "trustEmail": False,
+            "storeToken": True,
+            "addReadTokenRoleOnCreate": True,
+            "authenticateByDefault": False,
+            "linkOnly": False,
+            "firstBrokerLoginFlowAlias": "first broker login",
+            "config": {
+                "openIdConfigurationUrl": "http://localhost:18081/auth/realms/master/.well-known/openid-configuration",
+                "clientId": "test2",
+                "defaultScope": "openid email profile",
+                "disableUserInfo": "false",
+                "guiOrder": "1",
+                "backchannelSupported": "true"
+            },
+            "mappers": [ 
+                {
+                    "name": "test21",
+                    "identityProviderMapper": "oidc-user-attribute-idp-mapper", 
+                    "config" : {
+                        "claim" : "test",
+                        "user.attribute": "lastname"
+                        }
+                }, 
+                {
+                    "name" : "test22",
+                    "identityProviderMapper": "oidc-user-attribute-idp-mapper", 
+                    "config" : {
+                        "claim": "test2",
+                        "user.attribute":"firstname"
+                    }
+                },
+                {
+                    "name" : "test23",
+                    "identityProviderMapper": "oidc-role-idp-mapper", 
+                    "config" : {
+                        "claim": "claimName",
+                        "claim.value": "valueThatGiveRole",
+                        "role": "roleName"
+                    }
+                }
+    
+            ],
+            "state": "present",
+            "force": False
+        },
+        {
+            "auth_username": "admin", 
+            "auth_password": "admin",
+            "realm": "master",
+            "auth_keycloak_url": "http://localhost:18081/auth",
+            "alias": "test_change_client_secret",
+            "providerId": "oidc",
+            "displayName": "Test change IdP client secret",
+            "config": {
+                "openIdConfigurationUrl": "http://localhost:18081/auth/realms/master/.well-known/openid-configuration",
+                "clientId": "test2",
+                "defaultScope": "openid email profile",
+                "disableUserInfo": "false",
+                "guiOrder": "1",
+                "backchannelSupported": "true"
+            },
+            "state": "present",
+            "force": False
         }
-        idp(ToDoNotChange)
-        
-        results = idp(ToDoNotChange)
-        print(str(results).decode("utf-8"))
-        self.assertFalse(results['changed'])
-        self.assertEquals(results['rc'], 0, "rc: " + str(results['rc']) + " : " + results['stdout'] if 'stdout' in results else "" + " : " + results['stderr'] if 'stderr' in results else "")
-        self.assertEquals(results['ansible_facts']['idp']['alias'],'test1', 'Alias = ' + results['ansible_facts']['idp']['alias'])
-        for mapperToDoNotChange in ToDoNotChange["mappers"]:
+    ]
+
+    def setUp(self):
+        super(KeycloakIdentityProviderTestCase, self).setUp()
+        self.module = keycloak_identity_provider
+        for idp in self.testIDPs:
+            set_module_args(idp)
+            with self.assertRaises(AnsibleExitJson) as results:
+                self.module.main()
+ 
+    def tearDown(self):
+        self.module = keycloak_identity_provider
+        for idp in self.testIDPs:
+            toDelete = idp.copy()
+            toDelete["state"] = "absent"
+            set_module_args(toDelete)
+            with self.assertRaises(AnsibleExitJson) as results:
+                self.module.main()
+        super(KeycloakIdentityProviderTestCase, self).tearDown()
+ 
+    def test_create_idp(self):
+        toCreate = self.testIDPs[0].copy()
+        toCreate["state"] = "present"
+        set_module_args(toCreate)
+        with self.assertRaises(AnsibleExitJson) as results:
+            self.module.main()
+        self.assertTrue(results.exception.args[0]['changed'])
+        self.assertTrue(results.exception.args[0]['idp']['enabled'])
+        self.assertEquals(results.exception.args[0]['idp']['alias'],toCreate["alias"], 'Alias = ' + results.exception.args[0]['idp']['alias'])
+        self.assertEquals(results.exception.args[0]['idp']['config']['clientId'],toCreate["config"]["clientId"],"ClientId: " + results.exception.args[0]['idp']['config']['clientId'])
+        self.assertEquals(results.exception.args[0]['idp']['config']['guiOrder'], toCreate["config"]["guiOrder"],"GuiOrder: " + results.exception.args[0]['idp']['config']['guiOrder'] + ": " + toCreate["config"]["guiOrder"])
+        for mapperToCreate in toCreate["mappers"]:
             mapperFound = False
-            for mapper in results['ansible_facts']['mappers']:
+            for mapper in results.exception.args[0]['mappers']:
+                if mapper["name"] == mapperToCreate["name"]:
+                    mapperFound = True
+                    self.assertEquals(mapper["identityProviderMapper"], mapperToCreate["identityProviderMapper"], "identityProviderMapper: " + mapper["identityProviderMapper"] + "not equal " + mapperToCreate["identityProviderMapper"])
+                    self.assertDictEqual(mapper["config"], mapperToCreate["config"], "config: " + str(mapper["config"]) + "not equal " + str(mapperToCreate["config"]))
+            self.assertTrue(mapperFound, "mapper " + mapperToCreate["name"] + " not found")                                          
+        
+    def test_idp_not_changed(self):
+        toDoNotChange = self.testIDPs[1].copy()
+        set_module_args(toDoNotChange)
+        with self.assertRaises(AnsibleExitJson) as results:
+            self.module.main()
+        self.assertFalse(results.exception.args[0]['changed'])
+        self.assertEquals(results.exception.args[0]['idp']['alias'],toDoNotChange['alias'], 'Alias = ' + results.exception.args[0]['idp']['alias'])
+        for mapperToDoNotChange in toDoNotChange["mappers"]:
+            mapperFound = False
+            for mapper in results.exception.args[0]['mappers']:
                 if mapper["name"] == mapperToDoNotChange["name"]:
                     mapperFound = True
                     self.assertEquals(mapper["identityProviderMapper"], mapperToDoNotChange["identityProviderMapper"], "identityProviderMapper: " + mapper["identityProviderMapper"] + "not equal " + mapperToDoNotChange["identityProviderMapper"])
                     self.assertDictEqual(mapper["config"], mapperToDoNotChange["config"], "config: " + str(mapper["config"]) + "not equal " + str(mapperToDoNotChange["config"]))
             self.assertTrue(mapperFound, "mapper " + mapperToDoNotChange["name"] + " not found")                                          
 
-    def test_modify_idp(self):
-        ToChange = dict(
-            username = "admin", 
-            password = "admin",
-            realm = "master",
-            url = "http://localhost:18081",
-            alias = "test2",
-            providerId = "oidc",
-            displayName = "Test2",
-            enabled = True,
-            updateProfileFirstLoginMode="on",
-            trustEmail=False,
-            storeToken = True,
-            addReadTokenRoleOnCreate = True,
-            authenticateByDefault = False,
-            linkOnly = False,
-            firstBrokerLoginFlowAlias = "first broker login",
-            config = dict(
-                openIdConfigurationUrl = "http://localhost:18081/auth/realms/master/.well-known/openid-configuration",
-                clientId = "test2",
-                clientSecret = "test2",
-                defaultScope = "openid email profile",
-                disableUserInfo = "false",
-                guiOrder = "1"
-                ),
-            mappers = [ 
-                    {
-                        "name": "test21",
-                        "identityProviderMapper": "oidc-user-attribute-idp-mapper", 
-                        "config" : {
-                            "claim" : "test",
-                            "user.attribute": "lastname"
-                            }
-                    }, 
-                    {
-                        "name" : "test22",
-                        "identityProviderMapper": "oidc-user-attribute-idp-mapper", 
-                        "config" : {
-                            "claim": "test2",
-                            "user.attribute":"firstname"
-                        }
-                    },
-                    {
-                        "name" : "test23",
-                        "identityProviderMapper": "oidc-role-idp-mapper", 
-                        "config" : {
-                            "claim": "claimName",
-                            "claim.value": "valueThatGiveRole",
-                            "role": "roleName"
-                        }
-                    }
+    def test_idp_not_changed_with_display_name_removed(self):
+        toDoNotChange = self.testIDPs[1].copy()
+        del(toDoNotChange["displayName"])
+        set_module_args(toDoNotChange)
+        with self.assertRaises(AnsibleExitJson) as results:
+            self.module.main()
+        self.assertFalse(results.exception.args[0]['changed'])
+        self.assertEquals(results.exception.args[0]['idp']['displayName'],self.testIDPs[1]['displayName'], 'displayName changed: ' + results.exception.args[0]['idp']['displayName'])
 
-                ],
-            state = "present",
-            force = False
-        )
-        idp(ToChange)
-        
-        #newToChange = copy.deepcopy(ToChange)
+    def test_modify_idp(self):
         newToChange = {
-            "username": "admin",
-            "password":"admin",
+            "auth_username": "admin",
+            "auth_password":"admin",
             "realm": "master",
-            "url": "http://localhost:18081",
-            "alias": "test2",
+            "auth_keycloak_url": "http://localhost:18081/auth",
+            "alias": "test_modify_idp",
             "providerId": "oidc",
             "storeToken": False,
             "firstBrokerLoginFlowAlias": "registration",
             "config": { 
                 "openIdConfigurationUrl": "http://localhost:18081/auth/realms/master/.well-known/openid-configuration",
                 "clientId": "test2",
-                "clientSecret": "password",
                 "defaultScope": "openid email profile",
                 "disableUserInfo": "false",
                 "guiOrder": "2"
                 },
-                "state": "present",
-                "force": False
-            }
+            "state": "present",
+            "force": False
+        }
         
-        results = idp(newToChange)
-        
-        self.assertEquals(results['rc'], 0, "rc: " + str(results['rc']) + " : " + results['stdout'] if 'stdout' in results else "" + " : " + results['stderr'] if 'stderr' in results else "")
-        self.assertEquals(results['ansible_facts']['idp']['alias'],ToChange["alias"], 'Alias = ' + results['ansible_facts']['idp']['alias'])
-        self.assertFalse(results['ansible_facts']['idp']['storeToken'], 'storeToken should be false : ' + str(results['ansible_facts']['idp']['storeToken']))
-        self.assertEquals(results['ansible_facts']['idp']['firstBrokerLoginFlowAlias'], newToChange["firstBrokerLoginFlowAlias"], "firstBrokerLoginFlowAlias: " + results['ansible_facts']['idp']['firstBrokerLoginFlowAlias'])
-        self.assertEquals(results['ansible_facts']['idp']['config']['guiOrder'],newToChange["config"]["guiOrder"],"GuiOrder: " + results['ansible_facts']['idp']['config']['guiOrder'])
-        self.assertTrue(results['changed'])
+        set_module_args(newToChange)
+        with self.assertRaises(AnsibleExitJson) as results:
+            self.module.main()
+        self.assertTrue(results.exception.args[0]['changed'])
+        self.assertEquals(results.exception.args[0]['idp']['alias'],newToChange["alias"], 'Alias = ' + results.exception.args[0]['idp']['alias'])
+        self.assertFalse(results.exception.args[0]['idp']['storeToken'], 'storeToken should be false : ' + str(results.exception.args[0]['idp']['storeToken']))
+        self.assertEquals(results.exception.args[0]['idp']['firstBrokerLoginFlowAlias'], newToChange["firstBrokerLoginFlowAlias"], "firstBrokerLoginFlowAlias: " + results.exception.args[0]['idp']['firstBrokerLoginFlowAlias'])
+        self.assertEquals(results.exception.args[0]['idp']['config']['guiOrder'],newToChange["config"]["guiOrder"],"GuiOrder: " + results.exception.args[0]['idp']['config']['guiOrder'])
 
-    def test_modify_idp_modify_mappers(self):
-        ToChange = dict(
-            username = "admin", 
-            password = "admin",
-            realm = "master",
-            url = "http://localhost:18081",
-            alias = "test5",
-            providerId = "oidc",
-            displayName = "Test5",
-            enabled = True,
-            updateProfileFirstLoginMode="on",
-            trustEmail=False,
-            storeToken = True,
-            addReadTokenRoleOnCreate = True,
-            authenticateByDefault = False,
-            linkOnly = False,
-            firstBrokerLoginFlowAlias = "first broker login",
-            config = dict(
-                openIdConfigurationUrl = "http://localhost:18081/auth/realms/master/.well-known/openid-configuration",
-                clientId = "test2",
-                clientSecret = "test2",
-                defaultScope = "openid email profile",
-                disableUserInfo = "false"
-                ),
-            mappers = [ 
-                    {
-                        "name": "test21",
-                        "identityProviderMapper": "oidc-user-attribute-idp-mapper", 
-                        "config" : {
-                            "claim" : "test",
-                            "user.attribute": "lastname"
-                            }
-                    }, 
-                    {
-                        "name" : "test22",
-                        "identityProviderMapper": "oidc-user-attribute-idp-mapper", 
-                        "config" : {
-                            "claim": "test2",
-                            "user.attribute":"firstname"
-                        }
-                    },
-                    {
-                        "name" : "test23",
-                        "identityProviderMapper": "oidc-role-idp-mapper", 
-                        "config" : {
-                            "claim": "claimName",
-                            "claim.value": "valueThatGiveRole",
-                            "role": "roleName"
-                        }
-                    }
-
-                ],
-            state = "present",
-            force = False
-        )
-        idp(ToChange)
+    def test_modify_idp_force(self):
+        newToChange = self.testIDPs[3].copy()
+        newToChange["force"] = True
+        set_module_args(newToChange)
+        with self.assertRaises(AnsibleExitJson) as results:
+            self.module.main()
+        self.assertTrue(results.exception.args[0]['changed'])
         
-        #newToChange = copy.deepcopy(ToChange)
+        self.assertEquals(results.exception.args[0]['idp']['alias'],newToChange["alias"], 'Alias = ' + results.exception.args[0]['idp']['alias'])
+        self.assertFalse(results.exception.args[0]['idp']['storeToken'], 'storeToken should be false : ' + str(results.exception.args[0]['idp']['storeToken']))
+        self.assertEquals(results.exception.args[0]['idp']['firstBrokerLoginFlowAlias'], newToChange["firstBrokerLoginFlowAlias"], "firstBrokerLoginFlowAlias: " + results.exception.args[0]['idp']['firstBrokerLoginFlowAlias'])
+        self.assertEquals(results.exception.args[0]['idp']['config']['guiOrder'],newToChange["config"]["guiOrder"],"GuiOrder: " + results.exception.args[0]['idp']['config']['guiOrder'])
+
+    def test_modify_idp_mappers(self):
         newToChange = {
-            "username": "admin",
-            "password":"admin",
+            "auth_username": "admin",
+            "auth_password":"admin",
             "realm": "master",
-            "url": "http://localhost:18081",
-            "alias": "test5",
+            "auth_keycloak_url": "http://localhost:18081/auth",
+            "alias": "test_modify_idp_mappers",
             "providerId": "oidc",
             "mappers": [
                 {
@@ -327,126 +538,50 @@ class KeycloakIdentityProviderTestCase(unittest.TestCase):
                 "state": "present",
                 "force": False
             }
-        
-        results = idp(newToChange)
-        
-        self.assertEquals(results['rc'], 0, "rc: " + str(results['rc']) + " : " + results['stdout'] if 'stdout' in results else "" + " : " + results['stderr'] if 'stderr' in results else "")
-        self.assertEquals(results['ansible_facts']['idp']['alias'], ToChange["alias"], 'Alias = ' + results['ansible_facts']['idp']['alias'])
-        self.assertTrue(results['changed'])
+        set_module_args(newToChange)
+        with self.assertRaises(AnsibleExitJson) as results:
+            self.module.main()
+        self.assertTrue(results.exception.args[0]['changed'])        
+        self.assertEquals(results.exception.args[0]['idp']['alias'], newToChange["alias"], 'Alias = ' + results.exception.args[0]['idp']['alias'])
         for mapperToChange in newToChange["mappers"]:
             mapperFound = False
-            for mapper in results['ansible_facts']['mappers']:
+            for mapper in results.exception.args[0]['mappers']:
                 if mapper["name"] == mapperToChange["name"]:
                     mapperFound = True
                     self.assertEquals(mapper["identityProviderMapper"], mapperToChange["identityProviderMapper"], "identityProviderMapper: " + mapper["identityProviderMapper"] + "not equal " + mapperToChange["identityProviderMapper"])
                     self.assertDictEqual(mapper["config"], mapperToChange["config"], "config: " + str(mapper["config"]) + "not equal " + str(mapperToChange["config"]))
             self.assertTrue(mapperFound, "mapper " + mapperToChange["name"] + " not found")  
 
-    def test_delete_idp(self):
-        toDelete = dict(
-            username = "admin", 
-            password = "admin",
-            realm = "master",
-            url = "http://localhost:18081",
-            alias = "test3",
-            providerId = "oidc",
-            displayName = "Test3",
-            enabled = True,
-            updateProfileFirstLoginMode="on",
-            trustEmail=False,
-            storeToken = True,
-            addReadTokenRoleOnCreate = True,
-            authenticateByDefault = False,
-            linkOnly = False,
-            firstBrokerLoginFlowAlias = "first broker login",
-            config = dict(
-                openIdConfigurationUrl = "http://localhost:18081/auth/realms/master/.well-known/openid-configuration",
-                clientId = "test3",
-                clientSecret = "test3",
-                defaultScope = "openid email profile",
-                disableUserInfo = "false"
-                ),
-            mappers = [ 
-                    {
-                        "name": "test31",
-                        "identityProviderMapper": "oidc-user-attribute-idp-mapper", 
-                        "config" : {
-                            "claim" : "test",
-                            "user.attribute": "lastname"
-                            }
-                    }, 
-                    {
-                        "name" : "test32",
-                        "identityProviderMapper": "oidc-user-attribute-idp-mapper", 
-                        "config" : {
-                            "claim": "test2",
-                            "user.attribute":"firstname"
-                        }
-                    },
-                    {
-                        "name" : "test33",
-                        "identityProviderMapper": "oidc-role-idp-mapper", 
-                        "config" : {
-                            "claim": "claimName",
-                            "claim.value": "valueThatGiveRole",
-                            "role": "roleName"
-                        }
-                    }
+    def test_modify_idp_remove_mappers(self):
+        toChange = self.testIDPs[5].copy()
+        toChange["mappers"][1]["state"] = "absent"
+        set_module_args(toChange)
+        with self.assertRaises(AnsibleExitJson) as results:
+            self.module.main()
+        self.assertTrue(results.exception.args[0]['changed'])        
+        mapperFound = False
+        for mapper in results.exception.args[0]['mappers']:
+            if mapper["name"] == toChange['mappers'][1]["name"]:
+                mapperFound = True
+                break
+        self.assertFalse(mapperFound, "mapper " + toChange['mappers'][1]["name"] + " has not been deleted")  
 
-                ],
-            state = "present",
-            force = False
-        )        
-        idp(toDelete)
+    def test_delete_idp(self):
+        toDelete = self.testIDPs[6].copy()         
         toDelete['state'] = "absent"
-        results = idp(toDelete)
-        self.assertEquals(results['rc'], 0, "rc: " + str(results['rc']) + " : " + results['stdout'] if 'stdout' in results else "" + " : " + results['stderr'] if 'stderr' in results else "")
-        self.assertTrue(results['changed'])
-        self.assertEqual(results['stdout'], 'deleted', 'idp has been deleted')
+        set_module_args(toDelete)
+        with self.assertRaises(AnsibleExitJson) as results:
+            self.module.main()
+        self.assertTrue(results.exception.args[0]['changed'])        
+        self.assertRegexpMatches(results.exception.args[0]['msg'], 'deleted', 'IdP not deleted')
 
     def test_change_client_secret(self):
-        ToChange = dict(
-            username = "admin", 
-            password = "admin",
-            realm = "master",
-            url = "http://localhost:18081",
-            alias = "test4",
-            providerId = "oidc",
-            displayName = "Test4",
-            enabled = True,
-            updateProfileFirstLoginMode="on",
-            trustEmail=False,
-            storeToken = True,
-            addReadTokenRoleOnCreate = True,
-            authenticateByDefault = False,
-            linkOnly = False,
-            firstBrokerLoginFlowAlias = "first broker login",
-            config = dict(
-                openIdConfigurationUrl = "http://localhost:18081/auth/realms/master/.well-known/openid-configuration",
-                clientId = "test4",
-                defaultScope = "openid email profile",
-                disableUserInfo = "false"
-                ),
-            mappers = [ 
-                    {
-                        "name": "test41",
-                        "identityProviderMapper": "oidc-user-attribute-idp-mapper", 
-                        "config" : {
-                            "claim" : "test",
-                            "user.attribute": "lastname"
-                            }
-                    } 
-                ],
-            state = "present",
-            force = False
-        )
-        idp(ToChange)
         toChangeSecret = dict(
-            username = "admin", 
-            password = "admin",
+            auth_username = "admin", 
+            auth_password = "admin",
             realm = "master",
-            url = "http://localhost:18081",
-            alias = "test4",
+            auth_keycloak_url = "http://localhost:18081/auth",
+            alias = "test_change_client_secret",
             config = dict(
                 clientId = "test4",
                 clientSecret = "CeciEstMonSecret"
@@ -454,17 +589,17 @@ class KeycloakIdentityProviderTestCase(unittest.TestCase):
             state="present",
             force=False
             )
-    
-        results = idp(toChangeSecret)
-        self.assertEquals(results['rc'], 0, "rc: " + str(results['rc']) + " : " + results['stdout'] if 'stdout' in results else "" + " : " + results['stderr'] if 'stderr' in results else "")
-        self.assertTrue(results['changed'])
+        set_module_args(toChangeSecret)
+        with self.assertRaises(AnsibleExitJson) as results:
+            self.module.main()
+        self.assertTrue(results.exception.args[0]['changed'])
         
     def test_change_client_secret_without_alias(self):
         toChangeSecret = dict(
-            username = "admin", 
-            password = "admin",
+            auth_username = "admin", 
+            auth_password = "admin",
             realm = "master",
-            url = "http://localhost:18081",
+            auth_keycloak_url = "http://localhost:18081/auth",
             config = dict(
                 clientId = "test4",
                 clientSecret = "CeciEstMonSecret"
@@ -473,6 +608,9 @@ class KeycloakIdentityProviderTestCase(unittest.TestCase):
             force=False
             )
     
-        results = idp(toChangeSecret)
-        self.assertEquals(results['rc'], 1, "rc: " + str(results['rc']) + " : " + results['stdout'] if 'stdout' in results else "" + " : " + results['stderr'] if 'stderr' in results else "")
-        self.assertFalse(results['changed'])
+        set_module_args(toChangeSecret)
+        with self.assertRaises(AnsibleFailJson) as results:
+            self.module.main()
+        self.assertTrue(results.exception.args[0]['failed'], 'Test has not failed has it is supposed to.')
+        self.assertRegexpMatches(results.exception.args[0]['msg'], 'missing required arguments', 'Wrong error message: ' + results.exception.args[0]['msg'])
+

@@ -1,130 +1,201 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-# (c) 2017, Philippe Gauthier INSPQ <philippe.gauthier@inspq.qc.ca>
-#
-# This file is not part of Ansible
-#
-# Ansible is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# Ansible is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with Ansible.  If not, see <http://www.gnu.org/licenses/>.
 
-ANSIBLE_METADATA = {'metadata_version': '1.0',
+# Copyright: (c) 2019, INSPQ <philippe.gauthier@inspq.qc.ca>
+# GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
+
+from __future__ import absolute_import, division, print_function
+__metaclass__ = type
+
+
+ANSIBLE_METADATA = {'metadata_version': '1.1',
                     'status': ['preview'],
                     'supported_by': 'community'}
 
 
 DOCUMENTATION = '''
 ---
-author: "Philippe Gauthier (philippe.gauthier@inspq.qc.ca"
 module: keycloak_identity_provider
 short_description: Configure an identity provider in Keycloak
 description:
   - This module creates, removes or update Keycloak identity provider.
-version_added: "1.1"
+version_added: "2.9"
 options:
-  url:
-    description:
-    - The url of the Keycloak server.
-    default: http://localhost:8080/auth
-    required: true    
-  username:
-    description:
-    - The username to logon to the master realm.
-    required: true
-  password:
-    description:
-    - The password for the user to logon the master realm.
-    required: true
   realm:
     description:
     - The name of the realm in which is the identity provider.
-    required: true
+    default: master
+    type: str
   alias:
     description:
     - The alias of the identity provider.
     required: true
+    type: str
   displayName:
     description:
     - The display name of the realm.
     required: false
+    type: str
   providerId:
     description:
     - Type of identity provider.
     required: false
+    type: str
   enabled:
     description:
     - enabled.
-    required: false
     default: true
+    type: bool
   updateProfileFirstLoginMode:
     description:
     - update Profile First Login Mode.
     required: false
+    type: str
   trustEmail:
-    description: 
+    description:
     - trust Email.
     required: false
+    type: bool
   storeToken:
     description:
     - store Token.
-    required: false
     default: true
+    type: bool
   addReadTokenRoleOnCreate:
     description:
     - add Read Token Role On Create.
     required: false
+    type: bool
   authenticateByDefault:
     description:
     - authenticate By Default.
     required: false
+    type: bool
   firstBrokerLoginFlowAlias:
     description:
     - first Broker Login Flow Alias.
     required: false
+    type: str
   postBrokerLoginFlowAlias:
     description:
     - post Broker Login Flow Alias.
     required: false
+    type: str
+  linkOnly:
+    description:
+    - Link only option for identity provider
+    default: False
+    type: bool
   config:
     description:
-    - Detailed configuration of the identity provider. 
+    - Detailed configuration of the identity provider.
     required: false
+    type: dict
+    suboptions:
+        openIdConfigurationUrl:
+            description:
+                - Open ID configuration URL of the IdP to configure. Will be used to configure IdP endpoints.
+            type: str
+        clientId:
+            description:
+                - Client ID used to authenticate Keycloak on this IdP
+            type: str
+        clientSecret:
+            description:
+                - Client secret to authenticate client on the IdP.
+            type: str
+        disableUserInfo:
+            description:
+                - Do we need to disable user info endpoint query. Default value is False.
+                - Must be set to true when IdP is Microsoft ADFS.
+            type: str
+            choices:
+                - 'true'
+                - 'false'
+            default: 'false'
+        defaultScope:
+            description:
+                - Default scope supported with this IdP
+            type: str
+        guiOrder:
+            description:
+                - Order to display the IdP button on login screen. Lower's first.
+            type: int
+        backchannelSupported:
+            description:
+                - Is back channel logout is supported by the IdP.
+            type: str
+            choices:
+                - 'true'
+                - 'false'
+            default: 'true'
   mappers:
     description:
     - List of mappers for the Identity provider.
     required: false
+    type: list
+    suboptions:
+        name:
+            description:
+                - Name of the mapper
+            type: str
+        identityProviderMapper:
+            description:
+                - Type of identity provider mapper.
+            type: str
+            choices:
+                - oidc-user-attribute-idp-mapper
+                - oidc-role-idp-mapper
+        config:
+            description:
+                - Configuration for this mapper.
+            type: dict
+            suboptions:
+                claim:
+                    description:
+                        - Name of the claim to map.
+                    type: str
+                user.attribute:
+                    description:
+                        - This option is for oidc-user-attribute-idp-mapper
+                        - User attribute to copy the claim value to.
+                    type: str
+                claim.value:
+                    description:
+                        - This option is for oidc-role-idp-mapper
+                        - Role will be granted to the user only if the claim match this value.
+                    type: str
+                role:
+                    description:
+                        - This option is for oidc-role-idp-mapper
+                        - Role to be granted to the user if the claim match claim.value.
+                    type: str
   state:
     description:
     - Control if the realm exists.
     choices: [ "present", "absent" ]
     default: present
-    required: false
+    type: str
   force:
-    choices: [ "yes", "no" ]
-    default: "no"
     description:
-    - If yes, allows to remove realm and recreate it.
-    required: false
+    - If true, allows to remove realm and recreate it.
+    type: bool
+    default: false
+extends_documentation_fragment:
+    - keycloak
 notes:
   - module does not modify identity provider alias.
+author:
+    - Philippe Gauthier (@elfelip)
 '''
 
 EXAMPLES = '''
     - name: Create IdP1 fully configured with idp user attribute mapper and a role mapper
       keycloak_identity_provider:
+        auth_keycloak_url: http://localhost:8080/auth
+        auth_sername: admin
+        auth_password: password
         realm: "master"
-        url: "http://localhost:8080"
-        username: "admin"
-        password: "password"  
         alias: "IdP1"
         displayName: "My super dooper IdP"
         providerId: "oidc"
@@ -135,26 +206,29 @@ EXAMPLES = '''
           disableUserInfo: False
           defaultScope: "openid email profile"
           guiOrder: 1
+          backchannelSupported: True
         mappers:
           - name: ClaimMapper
             identityProviderMapper: oidc-user-attribute-idp-mapper
             config:
               claim: claim1
               user.attribute: attr1
+            state: present
           - name: MyRoleMapper
             identityProviderMapper: oidc-role-idp-mapper
             config:
               claim: claimName
               claim.value: valueThatGiveRole
               role: roleName
+            state: absent
         state: present
 
     - name: Re-create the Idp1 without mappers. The existing Idp will be deleted.
       keycloak_identity_provider:
+        auth_keycloak_url: http://localhost:8080/auth
+        auth_sername: admin
+        auth_password: password
         realm: "master"
-        url: "http://localhost:8080"
-        username: "admin"
-        password: "password"  
         alias: "IdP1"
         displayName: "My super dooper IdP"
         providerId: "oidc"
@@ -165,432 +239,252 @@ EXAMPLES = '''
           disableUserInfo: False
           defaultScope: "openid email profile"
           guiOrder: 2
+          backchannelSupported: True
         state: present
         force: yes
 
     - name: Remove a the Idp IdP1.
       keycloak_identity_provider:
+        auth_keycloak_url: http://localhost:8080/auth
+        auth_sername: admin
+        auth_password: password
+        realm: "master"
         alias: IdP1
         state: absent
 '''
 
 RETURN = '''
-ansible_facts:
+idp:
   description: JSON representation for the identity provider.
   returned: on success
   type: dict
-stderr:
+mappers:
+  description: List of idp's mappers
+  returned: on success
+  type: list
+msg:
   description: Error message if it is the case
   returned: on error
   type: str
-rc:
-  description: return code, 0 if success, 1 otherwise.
-  returned: always
-  type: bool
 changed:
   description: Return True if the operation changed the identity provider on the keycloak server, false otherwise.
-  returned: always
+  returned: on success
   type: bool
 '''
-import requests
-import json
-import urllib
 import copy
-from ansible.module_utils.keycloak_utils import *
-    
-def addIdPEndpoints(idPConfiguration, url):
-    '''
-fonction :      addIdPEndpoints
-description:    Cette fonction permet d'intéroger le endpoint openid-configuration d'un fournisseur
-                d'identité afin d'en extraire les différents endpoints à mettre dans l'objet
-                config de keycloak.
-paramètres:
-    idPConfiguration:
-    type: dict
-    description: Dictionnaire contenant ls structure config à compléter.
-    url:
-    type: str
-    description: URL de la configuration OpenID connect à intérroger
-    '''
-#    url = None
-#    if 'openIdConfigurationUrl' in idPConfiguration.keys():
-#        url = idPConfiguration["openIdConfigurationUrl"]
-#        del idPConfiguration["openIdConfigurationUrl"]
-    if url is not None:
-        try:
-            openidConfigRequest = requests.get(url, verify=False)
-            openIdConfig = openidConfigRequest.json()
-            if 'userinfo_endpoint' in openIdConfig.keys():
-                idPConfiguration["userInfoUrl"] = openIdConfig["userinfo_endpoint"]
-            if 'token_endpoint' in openIdConfig.keys():
-                idPConfiguration["tokenUrl"] = openIdConfig["token_endpoint"]
-            if 'jwks_uri' in openIdConfig.keys():
-                idPConfiguration["jwksUrl"] = openIdConfig["jwks_uri"]
-            if 'issuer' in openIdConfig.keys():
-                idPConfiguration["issuer"] = openIdConfig["issuer"]
-            if 'authorization_endpoint' in openIdConfig.keys():
-                idPConfiguration["authorizationUrl"] = openIdConfig["authorization_endpoint"]
-            if 'end_session_endpoint' in openIdConfig.keys():
-                idPConfiguration["logoutUrl"] = openIdConfig["end_session_endpoint"]        
-        except Exception as e:
-            raise e
+from ansible.module_utils.identity.keycloak.keycloak import KeycloakAPI, camel, \
+    keycloak_argument_spec, get_token, KeycloakError, isDictEquals, remove_arguments_with_value_none
+from ansible.module_utils.basic import AnsibleModule
 
-def deleteAllMappers(url, bearerHeader):
-    changed = False
-    try:
-        # Obtenir la liste des mappers existant
-        getMappersRequest = requests.get(url + '/mappers', headers={'Authorization' : bearerHeader})
-        mappers = getMappersRequest.json()
-        for mapper in mappers:
-            requests.delete(url + '/mappers/' + mapper['id'], headers={'Authorization' : bearerHeader})
-    except requests.exceptions.RequestException, ValueError:
-        return False
-    except Exception as e:
-        raise e
-     
-    return changed
-
-def createOrUpdateMappers(url, headers, alias, idPMappers):
-    changed = False
-    create = False
-   
-    try:
-        # Obtenir la liste des mappers existant
-        getMappersRequest = requests.get(url + '/mappers', headers=headers)
-        try:
-            mappers = getMappersRequest.json()
-        except ValueError: # Il n'y a pas de mapper de défini pour cet IdP
-            mappers = []
-            create = True
-        for idPMapper in idPMappers:
-            mapperFound = False
-            mapperId = ""
-            for mapper in mappers:
-                if mapper['name'] == idPMapper['name']:
-                    mapperFound = True
-                    break
-            # If mapper already exist and is different
-            if mapperFound and not isDictEquals(idPMapper,mapper):
-                # update the existing mapper
-                for key in idPMapper.keys():
-                    mapper[key] = idPMapper[key]
-                    data=json.dumps(mapper)
-                    response = requests.put(url + '/mappers/' + mapper["id"], headers=headers, data=data)
-                changed = True
-            # If the mapper does not already exist
-            if not mapperFound:
-                # Complete the mapper settings with defaults
-                if 'identityProviderMapper' not in idPMapper.keys(): # si le type de mapper a été fourni
-                    idPMapper['identityProviderMapper'] = 'oidc-user-attribute-idp-mapper'                
-                idPMapper['identityProviderAlias'] = alias
- 
-                # Create it
-                data=json.dumps(idPMapper)
-                response = requests.post(url + '/mappers', headers=headers, data=data)
-                changed = True
-                
-    except Exception as e :
-        raise e
-    return changed
-                    
 
 def main():
-    module = AnsibleModule(
-        argument_spec = dict(
-            url=dict(type='str', required=True),
-            username=dict(type='str', required=True),
-            password=dict(required=True),
-            realm=dict(type='str', required=True),
-            alias=dict(type='str', required=True),
-            displayName=dict(type='str'),
-            providerId=dict(type='str'),
-            enabled = dict(type='bool', default=True),
-            updateProfileFirstLoginMode=dict(type='str'),
-            trustEmail=dict(type='bool'),
-            storeToken = dict(type='bool', default=True),
-            addReadTokenRoleOnCreate = dict(type='bool'),
-            authenticateByDefault = dict(type='bool'),
-            firstBrokerLoginFlowAlias = dict(type='str'),
-            postBrokerLoginFlowAlias = dict(type='str'),
-            config = dict(type='dict'),
-            mappers = dict(type='list'),
-            state=dict(choices=["absent", "present"], default='present'),
-            force=dict(type='bool', default=False),
-        ),
-        supports_check_mode=True,
+    argument_spec = keycloak_argument_spec()
+    idpconfig_spec = {
+        "openIdConfigurationUrl": {
+            "type": "str"
+        },
+        "clientId": {
+            "type": "str"
+        },
+        "clientSecret": {
+            "type": "str"
+        },
+        "disableUserInfo": {
+            "type": "str",
+            "default": "false",
+            "choices": ["true", "false"]
+        },
+        "defaultScope": {
+            "type": "str"
+        },
+        "guiOrder": {
+            "type": "int"
+        },
+        "backchannelSupported": {
+            "type": "str",
+            "default": "true",
+            "choices": ["true", "false"]
+        }
+    }
+    mapperconfig_args = {
+        "claim": {
+            "type": "str"
+        },
+        "user.attribute": {
+            "type": "str"
+        },
+        "claim.value": {
+            "type": "str"
+        },
+        "role": {
+            "type": "str"
+        }
+    }
+    mapper_spec = {
+        "name": {
+            "type": "str"
+        },
+        "identityProviderMapper": {
+            "type": "str",
+            "choices": [
+                "oidc-user-attribute-idp-mapper",
+                "oidc-role-idp-mapper"
+            ]
+        },
+        "config": {
+            "type": "dict",
+            "options": mapperconfig_args
+        }
+    }
+    meta_args = dict(
+        realm=dict(type='str', default='master'),
+        alias=dict(type='str', required=True),
+        displayName=dict(type='str'),
+        providerId=dict(type='str'),
+        enabled=dict(type='bool', default=True),
+        updateProfileFirstLoginMode=dict(type='str'),
+        trustEmail=dict(type='bool'),
+        storeToken=dict(type='bool', default=True),
+        addReadTokenRoleOnCreate=dict(type='bool'),
+        authenticateByDefault=dict(type='bool'),
+        firstBrokerLoginFlowAlias=dict(type='str'),
+        postBrokerLoginFlowAlias=dict(type='str'),
+        linkOnly=dict(type='bool', default=False),
+        config=dict(type='dict', options=idpconfig_spec),
+        mappers=dict(type='list', options=mapper_spec),
+        state=dict(choices=["absent", "present"], default='present'),
+        force=dict(type='bool', default=False),
     )
-    
-    
-    params = module.params.copy()
-    
-    result = idp(params, module)
-    
-    if result['rc'] != 0:
-        module.fail_json(msg='non-zero return code', **result)
-    else:
-        module.exit_json(**result)
-    
-    
-def idp(params, module = None):
-    url = params['url']
-    username = params['username']
-    password = params['password']
-    realm = params['realm']
-    state = params['state']
-    force = module.boolean(module.params['force']) if module is not None else params['force']
-    rc = 0
-    result = dict()
+
+    argument_spec.update(meta_args)
+
+    module = AnsibleModule(argument_spec=argument_spec,
+                           supports_check_mode=True)
+
+    result = dict(changed=False, msg='', idp={}, mappers=[])
+
+    # Obtain access token, initialize API
+    try:
+        connection_header = get_token(
+            base_url=module.params.get('auth_keycloak_url'),
+            validate_certs=module.params.get('validate_certs'),
+            auth_realm=module.params.get('auth_realm'),
+            client_id=module.params.get('auth_client_id'),
+            auth_username=module.params.get('auth_username'),
+            auth_password=module.params.get('auth_password'),
+            client_secret=module.params.get('auth_client_secret'),
+        )
+    except KeycloakError as e:
+        module.fail_json(msg=str(e))
+
+    kc = KeycloakAPI(module, connection_header)
+
+    realm = module.params.get('realm')
+    state = module.params.get('state')
+    force = module.params.get('force')
     changed = False
-    idPExists = False
     # Créer un représentation du realm recu en paramètres
     newIdPRepresentation = {}
-    if 'alias' in params and params['alias'] is not None and len(params['alias']) > 0:
-        newIdPRepresentation["alias"] = params['alias'].decode("utf-8")
-        queryParams = {'alias': params['alias'].decode("utf-8")}
-    else:
-        #if 'config' in params and 'clientId' in params['config']:
-        #    queryParams = {'clientId': params['config']['clientId'].decode("utf-8")}
-        #else:
-        result = dict(
-            stderr   = 'Alias must be provided',
-            rc       = 1,
-            changed  = changed
-            )
-        return result
-    if 'displayName' in params and params['displayName'] is not None:
-        newIdPRepresentation["displayName"] = params['displayName'].decode("utf-8")
-    if 'providerId' in params and params['providerId'] is not None:
-        newIdPRepresentation["providerId"] = params['providerId'].decode("utf-8")
-    if 'enabled' in params:
-        newIdPRepresentation["enabled"] = module.boolean(params['enabled']) if module is not None else params['enabled']
-    if 'updateProfileFirstLoginMode' in params and params['updateProfileFirstLoginMode'] is not None:
-        newIdPRepresentation["updateProfileFirstLoginMode"] = params['updateProfileFirstLoginMode'].decode("utf-8")
-    if 'trustEmail' in params and params["trustEmail"] is not None:
-        newIdPRepresentation["trustEmail"] = module.boolean(params['trustEmail']) if module is not None else params['trustEmail']
-    if 'storeToken' in params and params["storeToken"] is not None:
-        newIdPRepresentation["storeToken"] = module.boolean(params['storeToken']) if module is not None else params['storeToken']
-    if 'addReadTokenRoleOnCreate' in params and params["addReadTokenRoleOnCreate"] is not None:
-        newIdPRepresentation["addReadTokenRoleOnCreate"] = module.boolean(params['addReadTokenRoleOnCreate']) if module is not None else params['addReadTokenRoleOnCreate']
-    if 'authenticateByDefault' in params and params["authenticateByDefault"] is not None:
-        newIdPRepresentation["authenticateByDefault"] = module.boolean(params['authenticateByDefault']) if module is not None else params['authenticateByDefault']
-    if 'firstBrokerLoginFlowAlias' in params and params['firstBrokerLoginFlowAlias'] is not None:
-        newIdPRepresentation["firstBrokerLoginFlowAlias"] = params['firstBrokerLoginFlowAlias'].decode("utf-8")
-    if 'postBrokerLoginFlowAlias' in params and params['postBrokerLoginFlowAlias'] is not None:
-        newIdPRepresentation["postBrokerLoginFlowAlias"] = params['postBrokerLoginFlowAlias'].decode("utf-8")
+    newIdPRepresentation["alias"] = module.params.get('alias')
+    if module.params.get('displayName') is not None:
+        newIdPRepresentation["displayName"] = module.params.get('displayName')
+    newIdPRepresentation["providerId"] = module.params.get('providerId')
+    newIdPRepresentation["enabled"] = module.params.get('enabled')
+    if module.params.get('updateProfileFirstLoginMode') is not None:
+        newIdPRepresentation["updateProfileFirstLoginMode"] = module.params.get('updateProfileFirstLoginMode')
+    if module.params.get('trustEmail') is not None:
+        newIdPRepresentation["trustEmail"] = module.params.get('trustEmail')
+    if module.params.get('storeToken') is not None:
+        newIdPRepresentation["storeToken"] = module.params.get('storeToken')
+    if module.params.get('addReadTokenRoleOnCreate') is not None:
+        newIdPRepresentation["addReadTokenRoleOnCreate"] = module.params.get('addReadTokenRoleOnCreate')
+    if module.params.get("authenticateByDefault") is not None:
+        newIdPRepresentation["authenticateByDefault"] = module.params.get('authenticateByDefault')
+    if module.params.get('firstBrokerLoginFlowAlias') is not None:
+        newIdPRepresentation["firstBrokerLoginFlowAlias"] = module.params.get('firstBrokerLoginFlowAlias')
+    if module.params.get('postBrokerLoginFlowAlias') is not None:
+        newIdPRepresentation["postBrokerLoginFlowAlias"] = module.params.get('postBrokerLoginFlowAlias')
 
     newIdPConfig = None
-    if 'config' in params and params['config'] is not None:
-        #newIdPConfig = params['config']
-        newIdPConfig = {}  
-        for param, value in params["config"].iteritems():
-            if param != 'openIdConfigurationUrl':
-                newIdPConfig[param] = value
-  
-    if 'providerId' in newIdPRepresentation and newIdPRepresentation["providerId"] == 'google' and 'userIp' in params["config"]:
-        newIdPConfig["userIp"] = params["config"]["userIp"]
-    newIdPMappers = params['mappers'] if 'mappers' in params else None
-    
-    idPSvcBaseUrl = url + "/auth/admin/realms/" + realm + "/identity-provider/instances/"
-    
-    #print str(newIdPRepresentation)
+    if module.params.get('config') is not None:
+        newIdPConfig = module.params.get('config').copy()
+        remove_arguments_with_value_none(newIdPConfig)
+        if 'openIdConfigurationUrl' in newIdPConfig:
+            del(newIdPConfig['openIdConfigurationUrl'])
 
-    try:
-        #accessToken = login(url, username, password)
-        #bearerHeader = "bearer " + accessToken
-        headers = loginAndSetHeaders(url, username, password)
-    except Exception as e:
-        result = dict(
-            stderr   = 'login: ' + str(e),
-            rc       = 1,
-            changed  = changed
-            )
-        return result
-    try:
-        if newIdPConfig is not None:
-            if 'openIdConfigurationUrl' in params['config']:
-                addIdPEndpoints(newIdPConfig, params["config"]['openIdConfigurationUrl'])
-        
-            newIdPRepresentation["config"] = newIdPConfig
-    except Exception as e:
-        result = dict(
-            stderr   = 'addIdPEndpoints: ' + str(e),
-            rc       = 1,
-            changed  = changed
-            )
-        return result
+    if 'providerId' in newIdPRepresentation and newIdPRepresentation["providerId"] == 'google' and 'userIp' in module.params.get("config"):
+        newIdPConfig["userIp"] = module.params.get("config")["userIp"]
 
-    try: 
-        # Vérifier si le IdP existe sur le serveur Keycloak
-        getResponse = requests.get(idPSvcBaseUrl, headers=headers)
-        listIdPs = getResponse.json()
-        
-        for idP in listIdPs:
-            if ('alias' in queryParams and idP['alias'] == queryParams['alias']) or ('clientId' in queryParams and idP['config']['clientId'] == queryParams['clientId']):
-                idPExists = True
-                # Obtenir le IdP exitant
-                idPRepresentation = idP
-                break
-                
-        #print str(queryParams)
-        #print str(getResponse.json())
-    except Exception as e:
-        result = dict(
-            stderr   = 'first realm get: ' + str(e),
-            rc       = 1,
-            changed  = changed
-            )
-        return result
-        
-    
-   
-    if not idPExists: # Le IdP n'existe pas
-        # Creer le IdP
-        if not 'alias' in newIdPRepresentation:
-            result = dict(
-                stderr   = 'No Alias provided while creating a new Identity Provider or updating a non existing identity provider',
-                rc       = 1,
-                changed  = changed
-                )
-            return result
-        idPSvcUrl = idPSvcBaseUrl + newIdPRepresentation['alias']
-        if (state == 'present'): # Si le status est présent
-            try:
-                # Stocker le IdP dans un body prêt a être posté
-                data=json.dumps(newIdPRepresentation)
-                # Créer le IdP
-                postResponse = requests.post(idPSvcBaseUrl, headers=headers, data=data)
-                # S'il y a des mappers de définis pour l'IdP
-                if newIdPMappers is not None and len(newIdPMappers) > 0:
-                    createOrUpdateMappers(idPSvcUrl, headers, newIdPRepresentation["alias"], newIdPMappers)
-                # Obtenir le nouvel IdP créé
-                getResponse = requests.get(idPSvcUrl, headers=headers)
-                changed = True
-                idPRepresentation = getResponse.json()
-                
-                getResponse = requests.get(idPSvcUrl + "/mappers", headers=headers)
-                try:
-                    mappersRepresentation = getResponse.json()
-                except ValueError:
-                    mappersRepresentation = {}
-                
-                fact = dict(
-                    idp = idPRepresentation,
-                    mappers = mappersRepresentation)
-                result = dict(
-                    ansible_facts = fact,
-                    rc = 0,
-                    changed = changed
-                    )
-            except requests.exceptions.RequestException as e:
-                fact = dict(
-                    idp = newIdPRepresentation)
-                result = dict(
-                    ansible_facts= fact,
-                    stderr   = 'post idp: ' + newIdPRepresentation["alias"] + ' erreur: ' + str(e),
-                    rc       = 1,
-                    changed  = changed
-                    )
-            except ValueError as e:
-                fact = dict(
-                    idp = newIdPRepresentation)
-                result = dict(
-                    ansible_facts = fact,
-                    stderr   = 'post idp: ' + newIdPRepresentation["alias"] + ' erreur: ' + str(e),
-                    rc       = 1,
-                    changed  = changed
-                    )
-        else: # Sinon, le status est absent
-            result = dict(
-                stdout   = newIdPRepresentation["alias"] + ' absent',
-                rc       = 0,
-                changed  = changed
-            )
-                
-    else:  # Le realm existe déjà
+    newIdPMappers = module.params.get('mappers')
+    remove_arguments_with_value_none(newIdPMappers)
+
+    if newIdPConfig is not None:
+        if (module.params.get('config') is not None and
+                'openIdConfigurationUrl' in module.params.get('config') and
+                module.params.get("config")['openIdConfigurationUrl'] is not None):
+            kc.add_idp_endpoints(newIdPConfig, module.params.get("config")['openIdConfigurationUrl'])
+        newIdPRepresentation["config"] = newIdPConfig
+
+    # Search the Idp on Keycloak server.
+    # By its alias
+    idPRepresentation = kc.search_idp_by_alias(alias=newIdPRepresentation["alias"], realm=realm)
+
+    if idPRepresentation == {}:  # IdP does not exist on Keycloak server
+        if (state == 'present'):  # If desired state is present
+            # Create IdP
+            changed = True
+            idPRepresentation = kc.create_idp(newIdPRepresentation=newIdPRepresentation, realm=realm)
+            result["idp"] = idPRepresentation
+            if newIdPMappers is not None and len(newIdPMappers) > 0:
+                kc.create_or_update_idp_mappers(alias=newIdPRepresentation["alias"], idPMappers=newIdPMappers, realm=realm)
+            mappersRepresentation = kc.get_idp_mappers(alias=newIdPRepresentation["alias"], realm=realm)
+            result["mappers"] = mappersRepresentation
+        else:  # Sinon, le status est absent
+            result["msg"] = newIdPRepresentation["alias"] + ' absent'
+    else:  # if IdP already exists
         alias = idPRepresentation['alias']
-        idPSvcUrl = idPSvcBaseUrl + alias
-        try:
-            if (state == 'present'): # si le status est présent
-                
-                if force: # Si l'option force est sélectionné
-                    # Supprimer les mappings existants
-                    deleteAllMappers(idPSvcUrl, bearerHeader)
-                    # Supprimer le IdP existant
-                    deleteResponse = requests.delete(idPSvcUrl, headers=headers)
-                    changed = True
-                    # Stocker le IdP dans un body prêt a être posté
-                    data=json.dumps(newIdPRepresentation)
-                    # Créer le nouveau IdP
-                    postResponse = requests.post(idPSvcBaseUrl, headers=headers, data=data)
-                else: # Si l'option force n'est pas sélectionné
-                    # Comparer les realms
-                    if not isDictEquals(newIdPRepresentation, idPRepresentation, ["clientSecret", "openIdConfigurationUrl", "mappers"]) or ("config" in newIdPRepresentation and "clientSecret" in newIdPRepresentation["config"] and newIdPRepresentation["config"]["clientSecret"] is not None): # Si le nouveau IdP n'introduit pas de modification au IdP existant
-                    #if not isDictEquals(newIdPRepresentation, idPRepresentation): # Si le nouveau IdP n'introduit pas de modification au IdP existant
-                        # S'il y a un changement
-                        # Mettre a jour la representation existante
-                        updatedIdP = copy.deepcopy(idPRepresentation)
-                        updatedIdP.update(newIdPRepresentation)
-                        if "config" in newIdPRepresentation and newIdPRepresentation["config"] is not None:
-                            updatedConfig = idPRepresentation["config"]
-                            updatedConfig.update(newIdPRepresentation["config"])
-                            updatedIdP["config"] = updatedConfig
-                        #with open("/tmp/keycloak_idp.log","a") as f:
-                        #    f.write(str(updatedIdP))
-                        #f.close()
-                        # Stocker le IdP dans un body prêt a être posté
-                        data=json.dumps(updatedIdP)
-                        # Mettre à jour le IdP sur le serveur Keycloak
-                        updateResponse = requests.put(idPSvcUrl, headers=headers, data=data)
-                        changed = True
-                if newIdPMappers is not None and len(newIdPMappers) > 0:
-                    if createOrUpdateMappers(idPSvcUrl, headers, alias, newIdPMappers):
-                        changed = True
-        
-                # Obtenir sa représentation JSON sur le serveur Keycloak                        
-                getResponse = requests.get(idPSvcUrl, headers=headers)
-                idPRepresentation = getResponse.json()
-                
-                getResponse = requests.get(idPSvcUrl + "/mappers", headers=headers)
-                try:
-                    mappersRepresentation = getResponse.json()
-                except ValueError:
-                    mappersRepresentation = {}
-                
-                fact = dict(
-                    idp = idPRepresentation,
-                    mappers = mappersRepresentation)
-                result = dict(
-                    ansible_facts = fact,
-                    rc = 0,
-                    changed = changed
-                    )
-                    
-            else: # Le status est absent
-                # Supprimer le IdP
-                deleteResponse = requests.delete(idPSvcUrl, headers=headers)
+        if (state == 'present'):  # if desired state is present
+            if force:  # If force option is true
+                # Delete all idp's mappers
+                kc.delete_all_idp_mappers(alias=alias, realm=realm)
+                # Delete the existing IdP
+                kc.delete_idp(alias=alias, realm=realm)
+                # Re-create the IdP
+                idPRepresentation = kc.create_idp(newIdPRepresentation=newIdPRepresentation, realm=realm)
                 changed = True
-                result = dict(
-                    stdout   = 'deleted',
-                    rc       = 0,
-                    changed  = changed
-                )
-        except requests.exceptions.RequestException as e:
-            result = dict(
-                stderr   = 'put or delete idp: ' + str(newIdPRepresentation) + ' error: ' + str(e),
-                rc       = 1,
-                changed  = changed
-                )
-        except ValueError as e:
-            result = dict(
-                stderr   = 'put or delete idp: ' + str(newIdPRepresentation) + ' error: ' + str(e),
-                rc       = 1,
-                changed  = changed
-                )
-    
-    return result
-        
-# import module snippets
-from ansible.module_utils.basic import *
+            else:  # if force option is false
+                # Compare the new Idp with the existing IdP
+                if (not isDictEquals(newIdPRepresentation, idPRepresentation, ["clientSecret", "openIdConfigurationUrl", "mappers"]) or
+                    ("config" in newIdPRepresentation and "clientSecret" in newIdPRepresentation["config"] and
+                     newIdPRepresentation["config"]["clientSecret"] is not None)):
+                    # If they are different
+                    # Create an updated representation of the IdP
+                    updatedIdP = copy.deepcopy(idPRepresentation)
+                    updatedIdP.update(newIdPRepresentation)
+                    if "config" in newIdPRepresentation and newIdPRepresentation["config"] is not None:
+                        updatedConfig = idPRepresentation["config"]
+                        updatedConfig.update(newIdPRepresentation["config"])
+                        updatedIdP["config"] = updatedConfig
+                    # Update the IdP
+                    idPRepresentation = kc.update_idp(newIdPRepresentation=updatedIdP, realm=realm)
+                    changed = True
+            if newIdPMappers is not None and len(newIdPMappers) > 0:
+                if kc.create_or_update_idp_mappers(alias=newIdPRepresentation["alias"], idPMappers=newIdPMappers, realm=realm):
+                    changed = True
+            mappersRepresentation = kc.get_idp_mappers(alias=newIdPRepresentation["alias"], realm=realm)
+            result["idp"] = idPRepresentation
+            result["mappers"] = mappersRepresentation
+        else:  # If desired state is absent
+            # Delete all idp's mappers
+            kc.delete_all_idp_mappers(alias=alias, realm=realm)
+            # Delete the existing IdP
+            kc.delete_idp(alias=alias, realm=realm)
+            changed = True
+            result["msg"] = 'IdP %s is deleted' % (alias)
+
+    result["changed"] = changed
+    module.exit_json(**result)
+
 
 if __name__ == '__main__':
     main()

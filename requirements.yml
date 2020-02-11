@@ -1,0 +1,4 @@
+- name: keycloak
+  src: https://gitlab.forge.gouv.qc.ca/ansible-inspq/roles/keycloak.git
+  version: master
+  scm: git

@@ -1,131 +1,336 @@
-import collections
-import os
-import unittest
+from ansible.modules.identity.keycloak import keycloak_user, keycloak_group, keycloak_role
+from ansible.module_utils.identity.keycloak.keycloak import isDictEquals
+from units.modules.utils import AnsibleExitJson, AnsibleFailJson, ModuleTestCase, set_module_args
 
-from ansible.modules.identity.keycloak.keycloak_user import *
+class KeycloakUserTestCase(ModuleTestCase):
+    testGroups = [
+        {
+            "auth_username":"admin", 
+            "auth_password":"admin",
+            "realm":"master",
+            "auth_keycloak_url":"http://localhost:18081/auth",
+            "name":"testUserGroup1",
+            "state":"present",
+            "force":False
+            },
+        {
+            "auth_username":"admin", 
+            "auth_password":"admin",
+            "realm":"master",
+            "auth_keycloak_url":"http://localhost:18081/auth",
+            "name":"testUserGroup2",
+            "state":"present",
+            "force":False
+            }
+        ]
+    compareExcludes = ["auth_keycloak_url", "auth_username", "auth_password", "realm", "state", "force", "credentials","_ansible_keep_remote_files","_ansible_remote_tmp"]
+    testRoles = [
+        {
+            "auth_username":"admin", 
+            "auth_password":"admin",
+            "realm":"master",
+            "auth_keycloak_url":"http://localhost:18081/auth",
+            "name":"testUserRole1",
+            "description":"Test1",
+            "state":"present",
+            "force":False
+        },
+                {
+            "auth_username":"admin", 
+            "auth_password":"admin",
+            "realm":"master",
+            "auth_keycloak_url":"http://localhost:18081/auth",
+            "name":"testUserRole2",
+            "description":"Test2",
+            "state":"present",
+            "force":False
+        }]
 
-class KeycloakUserTestCase(unittest.TestCase):
- 
-    def test_create_user(self):
-        toCreate = {
-            "url": "http://localhost:18081",
-            "masterUsername": "admin",
-            "masterpassword": "admin",
+    testUsers = [
+        {
+            "auth_keycloak_url": "http://localhost:18081/auth",
+            "auth_username": "admin",
+            "auth_password": "admin",
             "realm": "master",
-            "username": "user1",
-            "firstName": "user1",
-            "lastName": "user1",
+            "username": "createuser",
+            "firstName": "Create",
+            "lastName": "User",
             "email": "user1@user.ca",
             "enabled": True,
             "emailVerified": False,
-            "credentials": [{"temporary": 'false',"type": "password","value": "password"}],
+            "credentials": [{"temporary": 'false',"type": "password","value": "password"}], 
+            "clientRoles": [{"clientId": "master-realm","roles": ["manage-clients"]}],
+            "realmRoles": ["testUserRole1","testUserRole2"],
             "attributes": {"attr1": ["value1"],"attr2": ["value2"]},
-            "state":"present",
+            "groups": ["testUserGroup1","testUserGroup2"],
+            "state":"absent",
             "force":"no"
-        }
-
-        results = user(toCreate)
-        print str(results)
-        self.assertTrue(results['changed'])
-
-    def test_user_not_changed(self):
-        toDoNotChange = {
-            "url": "http://localhost:18081",
-            "masterUsername": "admin",
-            "masterpassword": "admin",
+        },
+        {
+            "auth_keycloak_url": "http://localhost:18081/auth",
+            "auth_username": "admin",
+            "auth_password": "admin",
             "realm": "master",
-            "username": "user2",
-            "firstName": "user2",
-            "lastName": "user2",
+            "username": "usernotchanged",
+            "firstName": "ThisUser",
+            "lastName": "DoNotChange",
             "email": "user2@user.ca",
             "enabled": True,
             "emailVerified": False,
             "credentials": [{"temporary": 'false',"type": "password","value": "password"}],
+            "clientRoles": [{"clientId": "master-realm","roles": ["manage-clients"]}],
+            "realmRoles": ["testUserRole1","testUserRole2"],
             "attributes": {"attr1": ["value1"],"attr2": ["value2"]},
+            "groups": ["testUserGroup1","testUserGroup2"],
             "state": "present",
             "force": False
-        }
-
-        results = user(toDoNotChange)
-        print str(results)
-        results = user(toDoNotChange)
-        print str(results)
-        self.assertFalse(results['changed'])
-        self.assertEquals(results["ansible_facts"]["user"]["username"], toDoNotChange["username"], "username: " + results["ansible_facts"]["user"]["username"] + " : " + toDoNotChange["username"])
-        self.assertEquals(results["ansible_facts"]["user"]["firstName"], toDoNotChange["firstName"], "firstName: " + results["ansible_facts"]["user"]["firstName"] + " : " + toDoNotChange["firstName"])
-        self.assertEquals(results["ansible_facts"]["user"]["lastName"], toDoNotChange["lastName"], "lastName: " + results["ansible_facts"]["user"]["lastName"] + " : " + toDoNotChange["lastName"])
-
-    def test_user_modify_force(self):
-        toDoNotChange = {
-            "url": "http://localhost:18081",
-            "masterUsername": "admin",
-            "masterpassword": "admin",
+        },
+        {
+            "auth_keycloak_url": "http://localhost:18081/auth",
+            "auth_username": "admin",
+            "auth_password": "admin",
             "realm": "master",
-            "username": "user3",
-            "firstName": "user3",
-            "lastName": "user3",
+            "username": "usermodifyforce",
+            "firstName": "ThisUser",
+            "lastName": "ModifiedForce",
             "email": "user3@user.ca",
             "enabled": True,
             "emailVerified": False,
             "credentials": [{"temporary": 'false',"type": "password","value": "password"}],
+            "clientRoles": [{"clientId": "master-realm","roles": ["manage-clients"]}],
+            "realmRoles": ["testUserRole1","testUserRole2"],
             "attributes": {"attr1": ["value1"],"attr2": ["value2"]},
+            "groups": ["testUserGroup1","testUserGroup2"],
             "state":"present",
             "force": False
-        }
-
-        user(toDoNotChange)
-        toDoNotChange["force"] = True
-        results = user(toDoNotChange)
-        print str(results)
-        self.assertTrue(results['changed'])
-        #self.assertEquals(results["ansible_facts"]["user"]["lastName"], toDoNotChange["lastName"], "lastName: " + results["ansible_facts"]["user"]["lastName"] + " : " + toDoNotChange["lastName"])
-
-    def test_modify_user(self):
-        toChange = {
-            "url": "http://localhost:18081",
-            "masterUsername": "admin",
-            "masterpassword": "admin",
+        },
+        {
+            "auth_keycloak_url": "http://localhost:18081/auth",
+            "auth_username": "admin",
+            "auth_password": "admin",
             "realm": "master",
-            "username": "user4",
-            "firstName": "user4",
-            "lastName": "user4",
+            "username": "modifyuser",
+            "firstName": "Modify",
+            "lastName": "User",
             "email": "user4@user.ca",
             "enabled": True,
             "emailVerified": False,
             "credentials": [{"temporary": 'false',"type": "password","value": "password"}],
+            "clientRoles": [{"clientId": "master-realm","roles": ["manage-clients"]}],
+            "realmRoles": ["testUserRole1"],
             "attributes": {"attr1": ["value1"],"attr2": ["value2"]},
+            "groups": ["testUserGroup1"],
             "state":"present",
             "force": False
-        }
-        user(toChange)
-        toChange["lastName"] = "usernew4"
-        results = user(toChange)
-        print str(results)
-        self.assertTrue(results['changed'])
-        self.assertEquals(results["ansible_facts"]["user"]["lastName"], toChange["lastName"], "lastName: " + results["ansible_facts"]["user"]["lastName"] + " : " + toChange["lastName"])
-        
-        
-    def test_delete_user(self):
-        toDelete = {
-            "url": "http://localhost:18081",
-            "masterUsername": "admin",
-            "masterpassword": "admin",
+        },
+        {
+            "auth_keycloak_url": "http://localhost:18081/auth",
+            "auth_username": "admin",
+            "auth_password": "admin",
             "realm": "master",
-            "username": "user5",
-            "firstName": "user5",
-            "lastName": "user5",
+            "username": "delete",
+            "firstName": "Delete",
+            "lastName": "User",
             "email": "user5@user.ca",
             "enabled": True,
             "emailVerified": False,
             "credentials": [{"temporary": 'false',"type": "password","value": "password"}],
+            "clientRoles": [{"clientId": "master-realm","roles": ["manage-clients"]}],
+            "realmRoles": ["uma_authorization","offline_access"],
             "attributes": {"attr1": ["value1"],"attr2": ["value2"]},
+            "groups": ["testUserGroup1","testUserGroup2"],
             "state":"present",
             "force": False
-        }
+        },
+        {
+            "auth_keycloak_url": "http://localhost:18081/auth",
+            "auth_username": "admin",
+            "auth_password": "admin",
+            "realm": "master",
+            "username": "userwoclrole",
+            "firstName": "User-Without",
+            "lastName": "Client-Role",
+            "email": "user6@user.ca",
+            "enabled": True,
+            "emailVerified": False,
+            "credentials": [{"temporary": 'false',"type": "password","value": "password"}], 
+            "realmRoles": ["testUserRole1","testUserRole2"],
+            "state":"absent",
+            "force":"no"
+        },        
+        {
+            "auth_keycloak_url": "http://localhost:18081/auth",
+            "auth_username": "admin",
+            "auth_password": "admin",
+            "realm": "master",
+            "username": "userworealmrole",
+            "firstName": "User-Without",
+            "lastName": "Realm-Role",
+            "email": "user7@user.ca",
+            "enabled": True,
+            "emailVerified": False,
+            "credentials": [{"temporary": 'false',"type": "password","value": "password"}], 
+            "clientRoles": [{"clientId": "master-realm","roles": ["manage-clients"]}],
+            "state":"absent",
+            "force":"no"
+        },
+        {
+            "auth_keycloak_url": "http://localhost:18081/auth",
+            "auth_username": "admin",
+            "auth_password": "admin",
+            "realm": "master",
+            "username": "nonexistclient",
+            "firstName": "User-With",
+            "lastName": "Nonexisting-Clientrole",
+            "email": "user8@user.ca",
+            "enabled": True,
+            "emailVerified": False,
+            "credentials": [{"temporary": 'false',"type": "password","value": "password"}],
+            "clientRoles": [{"clientId": "doesnotexist","roles": ["manage-clients"]}],
+            "realmRoles": ["testUserRole1","testUserRole2"],
+            "attributes": {"attr1": ["value1"],"attr2": ["value2"]},
+            "groups": ["testUserGroup1","testUserGroup2"],
+            "state":"absent",
+            "force": False
+        },
+        {
+            "auth_keycloak_url": "http://localhost:18081/auth",
+            "auth_username": "admin",
+            "auth_password": "admin",
+            "realm": "master",
+            "username": "clientspaces",
+            "firstName": "User-With",
+            "lastName": "Clientrole-Withspaces",
+            "email": "user9@user.ca",
+            "enabled": True,
+            "emailVerified": False,
+            "credentials": [{"temporary": 'false',"type": "password","value": "password"}],
+            "clientRoles": [{"clientId": "does not exist","roles": ["manage-clients"]}],
+            "realmRoles": ["testUserRole1","testUserRole2"],
+            "attributes": {"attr1": ["value1"],"attr2": ["value2"]},
+            "groups": ["testUserGroup1","testUserGroup2"],
+            "state":"absent",
+            "force": False
+        }                
+    ]
+    
+    def setUp(self):
+        super(KeycloakUserTestCase, self).setUp()
+        self.module = keycloak_group
+        for theGroup in self.testGroups:
+            theGroup["state"] = "present"
+            set_module_args(theGroup)
+            with self.assertRaises(AnsibleExitJson) as results:
+                self.module.main()
+        self.module = keycloak_role
+        for theRole in self.testRoles:
+            theRole["state"] = "present"
+            set_module_args(theRole)
+            with self.assertRaises(AnsibleExitJson) as results:
+                self.module.main()
+        self.module = keycloak_user
+        for theUser in self.testUsers:
+            set_module_args(theUser)
+            with self.assertRaises(AnsibleExitJson) as results:
+                self.module.main()
+    def tearDown(self):
+        self.module = keycloak_user
+        for user in self.testUsers:
+            theUser = user.copy()
+            theUser["state"] = "absent"
+            set_module_args(theUser)
+            with self.assertRaises(AnsibleExitJson) as results:
+                self.module.main()
+        self.module = keycloak_group
+        for theGroup in self.testGroups:
+            theGroup["state"] = "absent"
+            set_module_args(theGroup)
+            with self.assertRaises(AnsibleExitJson) as results:
+                self.module.main()
+        self.module = keycloak_role
+        for theRole in self.testRoles:
+            theRole["state"] = "absent"
+            set_module_args(theRole)
+            with self.assertRaises(AnsibleExitJson) as results:
+                self.module.main()
+        super(KeycloakUserTestCase, self).tearDown()           
+ 
+    def test_create_user(self):
+        toCreate = self.testUsers[0].copy()
+        toCreate["state"] = "present"
+        set_module_args(toCreate)
+        with self.assertRaises(AnsibleExitJson) as results:
+            self.module.main()
+        self.assertTrue(results.exception.args[0]['changed'])
+        self.assertTrue(isDictEquals(toCreate, results.exception.args[0]["user"], self.compareExcludes), "user: " + str(toCreate) + " : " + str(results.exception.args[0]["user"]))
 
-        user(toDelete)
+    def test_user_not_changed(self):
+        toDoNotChange = self.testUsers[1].copy()
+        set_module_args(toDoNotChange)
+        with self.assertRaises(AnsibleExitJson) as results:
+            self.module.main()
+        self.assertFalse(results.exception.args[0]['changed'])
+        self.assertTrue(isDictEquals(toDoNotChange, results.exception.args[0]["user"], self.compareExcludes), "user: " + str(toDoNotChange) + " : " + str(results.exception.args[0]["user"]))
+
+    def test_user_modify_force(self):
+        toDoNotChange = self.testUsers[2].copy()
+        toDoNotChange["force"] = True
+        set_module_args(toDoNotChange)
+        with self.assertRaises(AnsibleExitJson) as results:
+            self.module.main()
+        self.assertTrue(results.exception.args[0]['changed'])
+        self.assertTrue(isDictEquals(toDoNotChange, results.exception.args[0]["user"], self.compareExcludes), "user: " + str(toDoNotChange) + " : " + str(results.exception.args[0]["user"]))
+
+    def test_modify_user(self):
+        toChange = self.testUsers[3].copy()
+        toChange["lastName"] = "Modified"
+        toChange["clientRoles"] = [{"clientId": "master-realm","roles": ["manage-clients","query-groups"]}]
+        toChange["realmRoles"] = ["testUserRole1","testUserRole2"]
+        set_module_args(toChange)
+        with self.assertRaises(AnsibleExitJson) as results:
+            self.module.main()
+        self.assertTrue(results.exception.args[0]['changed'])
+        self.assertTrue(isDictEquals(toChange, results.exception.args[0]["user"], self.compareExcludes), "user: " + str(toChange) + " : " + str(results.exception.args[0]["user"]))
+        
+    def test_delete_user(self):
+        toDelete = self.testUsers[4].copy()
         toDelete["state"] = "absent"
-        results = user(toDelete)
-        print str(results)
-        self.assertTrue(results['changed'])
-        self.assertEqual(results['stdout'], 'deleted', 'user has been deleted')
+        set_module_args(toDelete)
+        with self.assertRaises(AnsibleExitJson) as results:
+            self.module.main()
+        self.assertTrue(results.exception.args[0]['changed'])
+        self.assertRegexpMatches(results.exception.args[0]['msg'], 'deleted', 'User not deleted')
+
+    def test_create_user_without_client_role(self):
+        toCreate = self.testUsers[5].copy()
+        toCreate["state"] = "present"
+        set_module_args(toCreate)
+        with self.assertRaises(AnsibleExitJson) as results:
+            self.module.main()
+        self.assertTrue(results.exception.args[0]['changed'])
+        self.assertTrue(isDictEquals(toCreate, results.exception.args[0]["user"], self.compareExcludes), "user: " + str(toCreate) + " : " + str(results.exception.args[0]["user"]))
+
+    def test_create_user_without_realm_role(self):
+        toCreate = self.testUsers[6].copy()
+        toCreate["state"] = "present"
+        set_module_args(toCreate)
+        with self.assertRaises(AnsibleExitJson) as results:
+            self.module.main()
+        self.assertTrue(results.exception.args[0]['changed'])
+        self.assertTrue(isDictEquals(toCreate, results.exception.args[0]["user"], self.compareExcludes), "user: " + str(toCreate) + " : " + str(results.exception.args[0]["user"]))
+
+    def test_create_user_with_non_existing_client_role(self):
+        toCreate = self.testUsers[7].copy()
+        toCreate["state"] = "present"
+        set_module_args(toCreate)
+        with self.assertRaises(AnsibleFailJson) as results:
+            self.module.main()
+        self.assertRegexpMatches(results.exception.args[0]['msg'], 'client ' + toCreate["clientRoles"][0]["clientId"] + ' not found', 'error not generated')
+
+    def test_create_user_with_non_existing_client_role_containing_spaces(self):
+        toCreate = self.testUsers[8].copy()
+        toCreate["state"] = "present"
+        set_module_args(toCreate)
+        with self.assertRaises(AnsibleFailJson) as results:
+            self.module.main()
+        self.assertRegexpMatches(results.exception.args[0]['msg'], 'client ' + toCreate["clientRoles"][0]["clientId"] + ' not found', 'error not generated')

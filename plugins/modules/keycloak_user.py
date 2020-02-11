@@ -1,168 +1,182 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-# (c) 2017, Philippe Gauthier INSPQ <philippe.gauthier@inspq.qc.ca>
-#
-# This file is not part of Ansible
-#
-# Ansible is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# Ansible is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with Ansible.  If not, see <http://www.gnu.org/licenses/>.
 
-ANSIBLE_METADATA = {'metadata_version': '1.0',
+# Copyright: (c) 2019, INSPQ <philippe.gauthier@inspq.qc.ca>
+# GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
+
+from __future__ import absolute_import, division, print_function
+__metaclass__ = type
+
+
+ANSIBLE_METADATA = {'metadata_version': '1.1',
                     'status': ['preview'],
                     'supported_by': 'community'}
 
 
 DOCUMENTATION = '''
 ---
-author: "Etienne Sadio (etienne.sadio@inspq.qc.ca)"
 module: keycloak_user
 short_description: create and Configure a user in Keycloak
 description:
     - This module creates, removes or update Keycloak users.
-version_added: "2.3"
+version_added: "2.9"
 options:
-    url:
-        description:
-            - The url of the Keycloak server.
-        default: http://localhost:8080/auth    
-        required: true    
-    masterUsername:
-        description:
-            - The username to logon to the master realm.
-        required: true
-    masterPassword:
-        description:
-            - The password for the user to logon the master realm.
-        required: true
     realm:
         description:
             - The name of the realm in which is the client.
-        required: true
+        default: master
+        type: str
     username:
         description:
             - username for the user.
-        required: false
+        required: true
+        type: str
+    id:
+        description:
+            - ID of the user on the keycloak server if known
+        type: str
     enabled:
         description:
             - Enabled user.
-        required: false
+        default: true
+        type: bool
     emailVerified:
         description:
             - check the validity of user email.
         default: false
-        required: false
+        type: bool
     firstName:
         description:
             - User firstName.
         required: false
+        type: str
     lastName:
         description:
             - User lastName.
         required: false
+        type: str
     email:
         description:
             - User email.
         required: false
+        type: str
     federationLink:
         description:
             - Federation Link.
         required: false
+        type: str
     serviceAccountClientId:
         description:
             - Description of the client Application.
         required: false
+        type: str
     realmRoles:
         description:
-            - List of ClientRoles for the user.
+            - List of realm roles for the user.
         required: false
+        type: list
     clientRoles:
         description:
             - List of ClientRoles for the user.
         required: false
+        type: list
+        suboptions:
+            clientId:
+                description:
+                    - Client ID for the role
+                type: str
+                required: true
+            roles:
+                description:
+                    - List of roles for this client to grant to the user.
+                type: list
+                required: true
     clientConsents:
-        description: 
+        description:
             - client Authenticator Type.
         required: false
+        type: list
+        suboptions:
+            clientId:
+                description:
+                - Client ID of the client role. Not the technical id of the client.
+                type: str
+                required: true
+            roles:
+                description:
+                - List of client roles to assign to the user
+                type: list
+                required: true
     groups:
         description:
             - List of groups for the user.
-        required: true
+        type: list
     credentials:
         description:
             - User credentials.
         required: false
-    consentRequired:
-        description:
-            - consent Required.
-        required: false
+        type: list
     requiredActions:
         description:
             - requiredActions user Auth.
         required: false
+        type: list
     federatedIdentities:
         description:
-            - list of IDP of user. 
+            - list of IDP of user.
         required: false
+        type: list
     attributes:
         description:
-            - list user attributes. 
+            - list user attributes.
         required: false
+        type: dict
     access:
         description:
-            - list user access. 
+            - list user access.
         required: false
-    clientConsents:
-        description:
-            - list user clientConsents. 
-        required: false
+        type: dict
     disableableCredentialTypes:
         description:
-            - list user Credential Type. 
+            - list user Credential Type.
         required: false
+        type: list
     origin:
         description:
-            - user origin. 
+            - user origin.
         required: false
-    serviceAccountClientId:
-        description:
-            - service Account ClientId for user. 
-        required: false
+        type: str
     self:
         description:
-            - user self administration. 
+            - user self administration.
         required: false
+        type: str
     state:
         description:
             - Control if the user must exists or not
         choices: [ "present", "absent" ]
         default: present
         required: false
+        type: str
     force:
         description:
-            - If yes, allows to remove user and recreate it.
-        choices: [ "yes", "no" ]
-        default: "no"
-        required: false
+            - If true, allows to remove user and recreate it.
+        type: bool
+        default: false
+extends_documentation_fragment:
+    - keycloak
 notes:
     - module does not modify userId.
+author:
+    - Philippe Gauthier (@elfelip)
 '''
 
 EXAMPLES = '''
-    - name: Create a user user1 with default settings.
+    - name: Create a user user1
       keycloak_user:
-        url: http://localhost:8080
-        masterUsername: admin
-        masterpassword: password
+        auth_keycloak_url: http://localhost:8080/auth
+        auth_sername: admin
+        auth_password: password
         realm: master
         username: user1
         firstName: user1
@@ -175,17 +189,28 @@ EXAMPLES = '''
             value: password
             temporary: false
         attributes:
-          attr1: 
+          attr1:
             - value1
-          attr2: 
+          attr2:
             - value2
+        clientRoles:
+          - clientId: client1
+            roles:
+            - role1
+          - clientId: client2
+            roles:
+            - role2
+        groups:
+          - group1
+        realmRoles:
+          - Role1
         state: present
 
-    - name: Re-create client1
+    - name: Re-create a User
       keycloak_user:
-        url: http://localhost:8080
-        masterUsername: admin
-        masterpassword: password
+        auth_keycloak_url: http://localhost:8080/auth
+        auth_sername: admin
+        auth_password: password
         realm: master
         username: user1
         firstName: user1
@@ -198,291 +223,241 @@ EXAMPLES = '''
             value: password
             temporary: false
         attributes:
-          attr1: 
+          attr1:
             - value1
-          attr2: 
+          attr2:
             - value2
+        clientRoles:
+          - clientId: client1
+            roles:
+            - role1
+          - clientId: client2
+            roles:
+            - role2
+        groups:
+          - group1
+        realmRoles:
+          - Roles1
         state: present
         force: yes
 
-    - name: Remove client1.
+    - name: Remove User.
       keycloak_user:
-        url: http://localhost:8080
-        masterUsername: admin
-        masterpassword: password
+        auth_keycloak_url: http://localhost:8080/auth
+        auth_sername: admin
+        auth_password: password
         realm: master
         username: user1
         state: absent
 '''
 
 RETURN = '''
-ansible_facts:
-  description: JSON representation for the client.
+user:
+  description: JSON representation for the user.
   returned: on success
   type: dict
-stderr:
-  description: Error message if it is the case
-  returned: on error
-  type: str
-rc:
-  description: return code, 0 if success, 1 otherwise.
+msg:
+  description: Message if it is the case
   returned: always
-  type: bool
+  type: str
 changed:
   description: Return True if the operation changed the client on the keycloak server, false otherwise.
   returned: always
   type: bool
 '''
-import requests
-import json
-import urllib
-from ansible.module_utils.keycloak_utils import *
-from __builtin__ import isinstance    
+from ansible.module_utils.identity.keycloak.keycloak import KeycloakAPI, camel, \
+    keycloak_argument_spec, get_token, KeycloakError, isDictEquals
+from ansible.module_utils.basic import AnsibleModule
+
 
 def main():
-    module = AnsibleModule(
-        argument_spec = dict(
-            url=dict(type='str', required=True),
-            masterUsername=dict(type='str', required=True),
-            masterpassword=dict(required=True),
-            realm=dict(type='str', required=True),
-            self=dict(type='str'),
-            id=dict(type='str'),
-            username=dict(type='str', required=True),
-            firstName=dict(type='str'),
-            lastName=dict(type='str'),
-            email=dict(type='str'),
-            enabled=dict(type='bool', default=True),
-            emailVerified=dict(type='bool', default=False),
-            federationLink=dict(type='str'),
-            serviceAccountClientId=dict(type='str'),
-            attributes=dict(type='dict'),
-            access=dict(type='dict'),
-            clientRoles=dict(type='dict'),
-            realmRoles=dict(type='list', default=[]),
-            groups=dict(type='list', default=[]),
-            disableableCredentialTypes=dict(type='list', default=[]),
-            requiredActions=dict(type='list', default=[]),
-            credentials=dict(type='list', default=[]),
-            federatedIdentities=dict(type='list', default=[]),
-            clientConsents=dict(type='list', default=[]),
-            origin=dict(type='str'),
-            state=dict(choices=["absent", "present"], default='present'),
-            force=dict(type='bool', default=False),
-        ),
-        supports_check_mode=True,
+    argument_spec = keycloak_argument_spec()
+
+    client_role_spec = dict(
+        clientId=dict(type='str', required=True),
+        roles=dict(type='list', required=True),
     )
-    params = module.params.copy()
-    params['force'] = module.boolean(module.params['force'])
-    
-    result = user(params)
-    
-    if result['rc'] != 0:
-        module.fail_json(msg='non-zero return code', **result)
-    else:
-        module.exit_json(**result)
-    
-    
-def user(params):
-    url = params['url']
-    username = params['masterUsername']
-    password = params['masterpassword']
-    realm = params['realm']
-    state = params['state'] if "state" in params else "present"
-    force = params['force'] if "force" in params else False
-    newUserRepresentation = None
-    
+    meta_args = dict(
+        realm=dict(type='str', default='master'),
+        self=dict(type='str'),
+        id=dict(type='str'),
+        username=dict(type='str', required=True),
+        firstName=dict(type='str'),
+        lastName=dict(type='str'),
+        email=dict(type='str'),
+        enabled=dict(type='bool', default=True),
+        emailVerified=dict(type='bool', default=False),
+        federationLink=dict(type='str'),
+        serviceAccountClientId=dict(type='str'),
+        attributes=dict(type='dict'),
+        access=dict(type='dict'),
+        clientRoles=dict(type='list', default=[], options=client_role_spec),
+        realmRoles=dict(type='list', default=[]),
+        groups=dict(type='list', default=[]),
+        disableableCredentialTypes=dict(type='list', default=[]),
+        requiredActions=dict(type='list', default=[]),
+        credentials=dict(type='list', default=[]),
+        federatedIdentities=dict(type='list', default=[]),
+        clientConsents=dict(type='list', default=[]),
+        origin=dict(type='str'),
+        state=dict(choices=["absent", "present"], default='present'),
+        force=dict(type='bool', default=False),
+    )
+    argument_spec.update(meta_args)
+
+    module = AnsibleModule(argument_spec=argument_spec,
+                           supports_check_mode=True)
+
+    result = dict(changed=False, msg='', user={})
+
+    # Obtain access token, initialize API
+    try:
+        connection_header = get_token(
+            base_url=module.params.get('auth_keycloak_url'),
+            validate_certs=module.params.get('validate_certs'),
+            auth_realm=module.params.get('auth_realm'),
+            client_id=module.params.get('auth_client_id'),
+            auth_username=module.params.get('auth_username'),
+            auth_password=module.params.get('auth_password'),
+            client_secret=module.params.get('auth_client_secret'),
+        )
+    except KeycloakError as e:
+        module.fail_json(msg=str(e))
+
+    kc = KeycloakAPI(module, connection_header)
+
+    realm = module.params.get('realm')
+    state = module.params.get('state')
+    force = module.params.get('force')
     # Create a representation of the user received in parameters
     newUserRepresentation = {}
-    newUserRepresentation["username"] = params['username'].decode("utf-8")
-    if "self" in params and params['self'] is not None:
-        newUserRepresentation["self"] = params['self'].decode("utf-8")
-    if "id" in params and params['id'] is not None:
-        newUserRepresentation["id"] = params['id'].decode("utf-8")
-    newUserRepresentation["enabled"] = params['enabled'] if "enabled" in params else True
-    newUserRepresentation["emailVerified"] = params['emailVerified'] if "enabled" in params else False
-    if "firstName" in params and params['firstName'] is not None:
-        newUserRepresentation["firstName"] = params['firstName'].decode("utf-8")
-    if "lastName" in params and params['lastName'] is not None:
-        newUserRepresentation["lastName"] = params['lastName'].decode("utf-8")
-    if "email" in params and params['email'] is not None:
-        newUserRepresentation["email"] = params['email'].decode("utf-8")
-    if "federationLink" in params and params['federationLink'] is not None:
-        newUserRepresentation["federationLink"] = params['federationLink']
-    if "serviceAccountClientId" in params and params['serviceAccountClientId'] is not None:
-        newUserRepresentation["serviceAccountClientId"] = params['serviceAccountClientId']
-    if "origin" in params and params['origin'] is not None:
-        newUserRepresentation["origin"] = params['origin']
-    if "credentials" in params and params['credentials'] is not None:
-        newUserRepresentation["credentials"] = params['credentials']
-    if "disableableCredentialTypes" in params and params['disableableCredentialTypes'] is not None:
-        newUserRepresentation["disableableCredentialTypes"] = params['disableableCredentialTypes']
-    if "federatedIdentities" in params and params['federatedIdentities'] is not None:
-        newUserRepresentation["federatedIdentities"] = params['federatedIdentities']
-    if "requiredActions" in params and params['requiredActions'] is not None:
-        newUserRepresentation["requiredActions"] = params['requiredActions']
-    if "clientConsents" in params and params['clientConsents'] is not None:
-        newUserRepresentation["clientConsents"] = params['clientConsents']
-    if "attributes" in params and params['attributes'] is not None:
-        newUserRepresentation["attributes"] = params['attributes']
-    if "access" in params and params['access'] is not None:
-        newUserRepresentation["access"] = params['access']
-    if "clientRoles" in params and params['clientRoles'] is not None:
-        newUserRepresentation["clientRoles"] = params['clientRoles']
-    if "realmRoles" in params and params['realmRoles'] is not None:
-        newUserRepresentation["realmRoles"] = params['realmRoles']
-    if "groups" in params and params['groups'] is not None:
-        newUserRepresentation["groups"] = params['groups']
-    
-    userSvcBaseUrl = url + "/auth/admin/realms/" + realm + "/users/"
-    userRepresentation = None
-    rc = 0
-    result = dict()
-    changed = False
+    newUserClientRolesRepresentation = {}
+    newUserRepresentation["username"] = module.params.get('username')
+    if module.params.get('self') is not None:
+        newUserRepresentation["self"] = module.params.get('self')
+    if module.params.get('id') is not None:
+        newUserRepresentation["id"] = module.params.get('id')
+    newUserRepresentation["enabled"] = module.params.get('enabled')
+    newUserRepresentation["emailVerified"] = module.params.get('emailVerified')
+    if module.params.get('firstName') is not None:
+        newUserRepresentation["firstName"] = module.params.get('firstName')
+    if module.params.get('lastName') is not None:
+        newUserRepresentation["lastName"] = module.params.get('lastName')
+    if module.params.get('email') is not None:
+        newUserRepresentation["email"] = module.params.get('email')
+    if module.params.get('federationLink') is not None:
+        newUserRepresentation["federationLink"] = module.params.get('federationLink')
+    if module.params.get('serviceAccountClientId') is not None:
+        newUserRepresentation["serviceAccountClientId"] = module.params.get('serviceAccountClientId')
+    if module.params.get('origin') is not None:
+        newUserRepresentation["origin"] = module.params.get('origin')
+    if module.params.get('credentials') is not None:
+        newUserRepresentation["credentials"] = module.params.get('credentials')
+    if module.params.get('disableableCredentialTypes') is not None:
+        newUserRepresentation["disableableCredentialTypes"] = module.params.get('disableableCredentialTypes')
+    if module.params.get('federatedIdentities') is not None:
+        newUserRepresentation["federatedIdentities"] = module.params.get('federatedIdentities')
+    if module.params.get('requiredActions') is not None:
+        newUserRepresentation["requiredActions"] = module.params.get('requiredActions')
+    if module.params.get('clientConsents') is not None:
+        newUserRepresentation["clientConsents"] = module.params.get('clientConsents')
+    if module.params.get('attributes') is not None:
+        newUserRepresentation["attributes"] = module.params.get('attributes')
+    if module.params.get('access') is not None:
+        newUserRepresentation["access"] = module.params.get('access')
+    if module.params.get('clientRoles') is not None:
+        newUserClientRolesRepresentation["clientRoles"] = module.params.get('clientRoles')
+    if module.params.get('realmRoles') is not None:
+        newUserRepresentation["realmRoles"] = module.params.get('realmRoles')
+    if module.params.get('groups') is not None:
+        newUserRepresentation["groups"] = module.params.get('groups')
 
-    try:
-        headers = loginAndSetHeaders(url, username, password)
-    except Exception as e:
-        result = dict(
-            stderr   = 'login: ' + str(e),
-            rc       = 1,
-            changed  = changed
-            )
-        return result
-    try: 
-        # Check if the user exists on the Keycloak server
-        #getResponse = requests.get(userSvcBaseUrl+"?username="+newUserRepresentation["username"], headers=headers)
-        getResponse = requests.get(userSvcBaseUrl, headers=headers, params={"username": newUserRepresentation["username"]})
-        users = getResponse.json()
-        for userRepresentation in users:
-            if "username" in userRepresentation and userRepresentation["username"] == newUserRepresentation["username"]:
-                break
-    except Exception as e:
-        result = dict(
-            stderr   = 'first user get: ' + str(e),
-            rc       = 1,
-            changed  = changed
-            )
-        return result
-        
-    if userRepresentation is None: # The user does not exist
+    changed = False
+    userRepresentation = kc.search_user_by_username(username=newUserRepresentation["username"], realm=realm)
+
+    if userRepresentation == {}:  # The user does not exist
         # Create the user
-        if (state == 'present'): # If state is present
-            try:
-                # Store the user in a post body
-                data=json.dumps(newUserRepresentation)
-                # Create the user
-                postResponse = requests.post(userSvcBaseUrl, headers=headers, data=data)
-                # Get new user created
-                #getResponse = requests.get(userSvcBaseUrl+"?username="+newUserRepresentation["username"], headers=headers)
-                getResponse = requests.get(userSvcBaseUrl, headers=headers, params={"username": newUserRepresentation["username"]})
-                #userRepresentation = getResponse.json()[0]
-                users = getResponse.json()
-                for userRepresentation in users:
-                    if "username" in userRepresentation and userRepresentation["username"] == newUserRepresentation["username"]:
-                        break
-                
-                changed = True
-                fact = dict(
-                    user = userRepresentation
-                    )
-                
-                result = dict(
-                    ansible_facts = fact,
-                    rc = 0,
-                    changed = changed
-                    )
-            except requests.exceptions.RequestException as e:
-                fact = dict(
-                    user = newUserRepresentation)
-                result = dict(
-                    ansible_facts= fact,
-                    stderr   = 'post user: ' + newUserRepresentation["username"] + ' erreur: ' + str(e),
-                    rc       = 1,
-                    changed  = changed
-                    )
-            except ValueError as e:
-                fact = dict(
-                    user = newUserRepresentation)
-                result = dict(
-                    ansible_facts = fact,
-                    stderr   = 'post user: ' + newUserRepresentation["username"] + ' erreur: ' + str(e),
-                    rc       = 1,
-                    changed  = changed
-                    )
-        elif state == 'absent': # Otherwise, the status is absent
-            result = dict(
-                stdout   = newUserRepresentation["username"] + ' absent',
-                rc       = 0,
-                changed  = changed
-            )
-                
+        if (state == 'present'):  # If state is present
+            # Create the user
+            userRepresentation = kc.create_user(newUserRepresentation=newUserRepresentation, realm=realm)
+            # Add user ID to new representation
+            newUserRepresentation['id'] = userRepresentation["id"]
+            # Assign roles to user
+            kc.assing_roles_to_user(
+                user_id=newUserRepresentation["id"],
+                userRealmRoles=newUserRepresentation['realmRoles'],
+                userClientRoles=newUserClientRolesRepresentation['clientRoles'],
+                realm=realm)
+            # set user groups
+            kc.update_user_groups_membership(newUserRepresentation=newUserRepresentation, realm=realm)
+            # Get the updated user realm roles
+            userRepresentation["realmRoles"] = kc.get_user_realm_roles(user_id=userRepresentation["id"], realm=realm)
+            # Get the user clientRoles
+            userRepresentation["clientRoles"] = kc.get_user_client_roles(user_id=userRepresentation["id"], realm=realm)
+            # Get the user groups
+            userRepresentation["groups"] = kc.get_user_groups(user_id=userRepresentation["id"], realm=realm)
+            changed = True
+            result["user"] = userRepresentation
+        elif state == 'absent':  # Otherwise, the status is absent
+            result["msg"] = 'User %s is absent' % (newUserRepresentation["username"])
+
     else:  # the user already exists
-        #userRepresentation = getResponse.json()[0]
-        try:
-            if (state == 'present'): # if the status is present
-                if force == True: # If the force option is set to true
-                    # Delete the existing user
-                    deleteResponse = requests.delete(userSvcBaseUrl + userRepresentation["id"], headers=headers)
-                    changed = True
-                    # Store the user in a body for a post
-                    data=json.dumps(newUserRepresentation)
-                    # Create the new user
-                    postResponse = requests.post(userSvcBaseUrl, headers=headers, data=data)
-                else: # If the force option is false
-                    excludes = ["access","notBefore","createdTimestamp","totp","credentials","disableableCredentialTypes","realmRoles","clientRoles","groups","clientConsents","federatedIdentities","requiredActions"]
-                    # Compare users
-                    if (isDictEquals(newUserRepresentation, userRepresentation, excludes)): # If the new user does not introduce a change to the existing user
-                        # Do not change anything
-                        changed = False
-                    else: # Otherwise the user must be updated
-                        # Store the user in a body for a post
-                        data=json.dumps(newUserRepresentation)
-                        # Updated the user on the Keycloak server
-                        updateResponse = requests.put(userSvcBaseUrl + userRepresentation["id"], headers=headers, data=data)
-                        changed = True
-                # Get the new user
-                #getResponse = requests.get(userSvcBaseUrl+"?username="+newUserRepresentation["username"], headers=headers)
-                getResponse = requests.get(userSvcBaseUrl, headers=headers, params={"username": newUserRepresentation["username"]})
-                users = getResponse.json()
-                for userRepresentation in users:
-                    if "username" in userRepresentation and userRepresentation["username"] == newUserRepresentation["username"]:
-                        break
-                #userRepresentation = getResponse.json()[0]
-                fact = dict(
-                    user = userRepresentation
-                    )
-                result = dict(
-                    ansible_facts = fact,
-                    rc = 0,
-                    changed = changed
-                    )
-                    
-            elif state == 'absent': # Status is absent
-                # Delete user
-                deleteResponse = requests.delete(userSvcBaseUrl + userRepresentation['id'], headers=headers)
+        if (state == 'present'):  # if desired state is present
+            if force:  # If the force option is set to true
+                # Delete the existing user
+                kc.delete_user(user_id=userRepresentation["id"], realm=realm)
                 changed = True
-                result = dict(
-                    stdout   = 'deleted',
-                    rc       = 0,
-                    changed  = changed
-                )
-        except requests.exceptions.RequestException as e:
-            result = dict(
-                stderr   = 'put or delete user: ' + newUserRepresentation['username'] + ' error: ' + str(e),
-                rc       = 1,
-                changed  = changed
-                )
-        except ValueError as e:
-            result = dict(
-                stderr   = 'put or delete user: ' + newUserRepresentation['username'] + ' error: ' + str(e),
-                rc       = 1,
-                changed  = changed
-                )
-    return result
-        
-# import module snippets
-from ansible.module_utils.basic import *
+                # Recreate the user
+                userRepresentation = kc.create_user(newUserRepresentation=newUserRepresentation, realm=realm)
+                # Add user ID to new representation
+                newUserRepresentation['id'] = userRepresentation["id"]
+            else:  # If the force option is false
+                excludes = [
+                    "access",
+                    "notBefore",
+                    "createdTimestamp",
+                    "totp",
+                    "credentials",
+                    "disableableCredentialTypes",
+                    "realmRoles",
+                    "clientRoles",
+                    "groups",
+                    "clientConsents",
+                    "federatedIdentities",
+                    "requiredActions"]
+                # Add user ID to new representation
+                newUserRepresentation['id'] = userRepresentation["id"]
+                # Compare users
+                if not (isDictEquals(newUserRepresentation, userRepresentation, excludes)):  # If the new user does not introduce a change to the existing user
+                    # Update the user
+                    userRepresentation = kc.update_user(newUserRepresentation=newUserRepresentation, realm=realm)
+                    changed = True
+            # Assign roles to user
+            if kc.assing_roles_to_user(
+                    user_id=newUserRepresentation["id"],
+                    userRealmRoles=newUserRepresentation['realmRoles'],
+                    userClientRoles=newUserClientRolesRepresentation['clientRoles'],
+                    realm=realm):
+                changed = True
+            # set user groups
+            if kc.update_user_groups_membership(newUserRepresentation=newUserRepresentation, realm=realm):
+                changed = True
+            # Get the updated user realm roles
+            userRepresentation["realmRoles"] = kc.get_user_realm_roles(user_id=userRepresentation["id"], realm=realm)
+            # Get the user clientRoles
+            userRepresentation["clientRoles"] = kc.get_user_client_roles(user_id=userRepresentation["id"], realm=realm)
+            # Get the user groups
+            userRepresentation["groups"] = kc.get_user_groups(user_id=userRepresentation["id"], realm=realm)
+            result["user"] = userRepresentation
+        elif state == 'absent':  # Status is absent
+            # Delete user
+            kc.delete_user(user_id=userRepresentation['id'], realm=realm)
+            result["msg"] = 'User %s deleted' % (userRepresentation['id'])
+            changed = True
+
+    result['changed'] = changed
+    module.exit_json(**result)
+
 
 if __name__ == '__main__':
     main()
