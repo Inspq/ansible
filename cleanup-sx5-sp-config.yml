@@ -2,6 +2,7 @@
 - hosts: all
   vars:
     sx5spconfigservices_container_name: sx5spconfig
+    ansible_python_interpreter: /usr/bin/python3
    
   tasks:
   - name: Removing SX5-SP-CONFIG container {{ sx5spconfigservices_container_name }}
