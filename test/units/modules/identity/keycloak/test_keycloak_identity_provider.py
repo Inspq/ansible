@@ -576,19 +576,9 @@ class KeycloakIdentityProviderTestCase(ModuleTestCase):
         self.assertRegexpMatches(results.exception.args[0]['msg'], 'deleted', 'IdP not deleted')
 
     def test_change_client_secret(self):
-        toChangeSecret = dict(
-            auth_username = "admin", 
-            auth_password = "admin",
-            realm = "master",
-            auth_keycloak_url = "http://localhost:18081/auth",
-            alias = "test_change_client_secret",
-            config = dict(
-                clientId = "test4",
-                clientSecret = "CeciEstMonSecret"
-                ),
-            state="present",
-            force=False
-            )
+        toChangeSecret = self.testIDPs[7].copy()
+        toChangeSecret["config"]["clientId"] = "test4"
+        toChangeSecret["config"]["clientSecret"] = "CeciEstMonSecret"
         set_module_args(toChangeSecret)
         with self.assertRaises(AnsibleExitJson) as results:
             self.module.main()
