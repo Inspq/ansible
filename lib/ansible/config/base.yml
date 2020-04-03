@@ -592,7 +592,7 @@ DEFAULT_FACT_PATH:
   env: [{name: ANSIBLE_FACT_PATH}]
   ini:
   - {key: fact_path, section: defaults}
-  type: path
+  type: string
   yaml: {key: facts.gathering.fact_path}
 DEFAULT_FILTER_PLUGIN_PATH:
   name: Jinja2 Filter Plugins Path
@@ -1227,6 +1227,14 @@ DEPRECATION_WARNINGS:
   ini:
   - {key: deprecation_warnings, section: defaults}
   type: boolean
+DEVEL_WARNING:
+  name: Running devel warning
+  default: True
+  description: Toggle to control showing warnings related to running devel
+  env: [{name: ANSIBLE_DEVEL_WARNING}]
+  ini:
+  - {key: devel_warning, section: defaults}
+  type: boolean
 DIFF_ALWAYS:
   name: Show differences
   default: False
@@ -1820,6 +1828,25 @@ TAGS_SKIP:
   ini:
   - {key: skip, section: tags}
   version_added: "2.5"
+WORKER_SHUTDOWN_POLL_COUNT:
+  name: Worker Shutdown Poll Count
+  default: 0
+  description:
+    - The maximum number of times to check Task Queue Manager worker processes to verify they have exited cleanly.
+    - After this limit is reached any worker processes still running will be terminated.
+    - This is for internal use only.
+  env: [{name: ANSIBLE_WORKER_SHUTDOWN_POLL_COUNT}]
+  type: integer
+  version_added: '2.10'
+WORKER_SHUTDOWN_POLL_DELAY:
+  name: Worker Shutdown Poll Delay
+  default: 0.1
+  description:
+    - The number of seconds to sleep between polling loops when checking Task Queue Manager worker processes to verify they have exited cleanly.
+    - This is for internal use only.
+  env: [{name: ANSIBLE_WORKER_SHUTDOWN_POLL_DELAY}]
+  type: float
+  version_added: '2.10'
 USE_PERSISTENT_CONNECTIONS:
   name: Persistence
   default: False
