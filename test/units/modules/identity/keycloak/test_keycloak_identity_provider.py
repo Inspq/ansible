@@ -604,3 +604,17 @@ class KeycloakIdentityProviderTestCase(ModuleTestCase):
         self.assertTrue(results.exception.args[0]['failed'], 'Test has not failed has it is supposed to.')
         self.assertRegexpMatches(results.exception.args[0]['msg'], 'missing required arguments', 'Wrong error message: ' + results.exception.args[0]['msg'])
 
+    def test_change_client_secret_with_minimal_info(self):
+        toChangeSecret = {}
+        toChangeSecret["auth_keycloak_url"] = self.testIDPs[7]["auth_keycloak_url"]
+        toChangeSecret["auth_username"] = self.testIDPs[7]["auth_username"]
+        toChangeSecret["auth_password"] = self.testIDPs[7]["auth_password"]
+        toChangeSecret["realm"] = self.testIDPs[7]["realm"]
+        toChangeSecret["alias"] = self.testIDPs[7]["alias"]
+        toChangeSecret["config"] = {}
+        toChangeSecret["config"]["clientId"] = self.testIDPs[7]["config"]["clientId"]
+        toChangeSecret["config"]["clientSecret"] = "CeciEstMonSecret"
+        set_module_args(toChangeSecret)
+        with self.assertRaises(AnsibleExitJson) as results:
+            self.module.main()
+        self.assertTrue(results.exception.args[0]['changed'])

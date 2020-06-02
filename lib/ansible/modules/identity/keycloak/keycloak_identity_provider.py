@@ -39,7 +39,7 @@ options:
   providerId:
     description:
     - Type of identity provider.
-    required: false
+    default: oidc
     type: str
   enabled:
     description:
@@ -340,7 +340,7 @@ def main():
         realm=dict(type='str', default='master'),
         alias=dict(type='str', required=True),
         displayName=dict(type='str'),
-        providerId=dict(type='str'),
+        providerId=dict(type='str', default='oidc'),
         enabled=dict(type='bool', default=True),
         updateProfileFirstLoginMode=dict(type='str'),
         trustEmail=dict(type='bool'),
