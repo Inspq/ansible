@@ -1592,3 +1592,126 @@ releases:
     - warnings-remove-extra-newline.yaml
     - win-coverage-out-encoding.yaml
     release_date: '2020-02-13'
+  2.9.6:
+    codename: Immigrant Song
+    fragments:
+    - 57737-fix-asg-with-no-lc-anymore.yml
+    - 59438-hostname-use-hostnamectl.yml
+    - 60265-vmware_export_ovf-py3fix.yml
+    - 60508-route53-improve-octal-characters-handling.yml
+    - 62062-os_network-openstacksdk-min.yml
+    - 64633-fix-ios-vlans-traceback-error.yaml
+    - 64733-make-no_log-false-override-no_log-warnings.yml
+    - 65698-synchronize-docker-controller-managed.yml
+    - 66098-unixy-remove-duplicate-log-entries.yaml
+    - 66131_backport_eos_vlans_doc_fix.yaml
+    - 66517-nxos-append-allowed-vlans.yaml
+    - 67303-vmware_host_firewall_manager-fix_ip_specific_firewall_rules_for_python2.yml
+    - 67318-eos_vlans_replaced.yml
+    - 67337-fix-proxysql-mysql-cursor.yaml
+    - 67353-docker_login-permissions.yml
+    - 67365-role-list-role-name-in-path.yml
+    - 67429-jinja2-caching.yml
+    - 67437-vultr-fix-retry-max-delay-param.yml
+    - 67454-ovirt_disk-correct-description-of-storage_domain.yml
+    - 67463-ovirt_vm-fix-keyError-for-iSCSI-parameters.yml
+    - 67479-fix-azure_rm_resourcegroup_facts.yaml
+    - 67492-fix-decrypting-str-types-for-plugins.yaml
+    - 67511-postgresql-fix-link.yml
+    - 67515-openssl-fingerprint-fips.yml
+    - 67574-null_collection_dependency_list.yml
+    - 67611-ovirt_vm-correct-numa-nodes.yml
+    - 67735-warning-cleanup.yml
+    - 67767-mysql_db_fix_bug_introduced_by_56721.yml
+    - 67832-run_powershell_modules_on_windows_containers.yml
+    - 67901-get_certificate-fix-cryptography.yml
+    - 67922-ovirt_vm-remove-deprecation-warning.yml
+    - ansible-galaxy-collections.yaml
+    - end_host-remove_host_from_play.yml
+    - galaxy-collection-install-version.yaml
+    - net_modules_collection_support.yml
+    - pathlist_strip.yml
+    - v2.9.6_summary.yaml
+    - valdate-modules-ps-arg-util.yaml
+    - win_credential-wildcard.yaml
+    - win_unzip-paths.yaml
+    release_date: '2020-03-04'
+  2.9.7:
+    codename: Immigrant Song
+    fragments:
+    - 64074_update_nxos_lacp.yaml
+    - 64628-dense-callback-warning.yml
+    - 64906-always-delegate-fact-prefixes.yml
+    - 64958-routeros-facts-ipv6.yml
+    - 65715-vmware-content-deploy-template-fix-cluster.yml
+    - 65968-vmware_guest_network.yml
+    - 66525-fix-assing-role-domain-only.yml
+    - 66592_ipa_encoding_fix.yml
+    - 67417-get_url-incorrect-if-modified-since.yaml
+    - 68044-mysql_user_idempotency.yml
+    - 68175-vmware_cluster-document_alternatives_for_deprecated_parameters.yml
+    - 68180-purefa_smnp_fixes.yaml
+    - 68496-persistent-logging.yaml
+    - 68505-ovirt_storage_domain-fix-update_check-warning_low_space.yml
+    - 68556-start_conn-forward-compat.yaml
+    - af_clean.yml
+    - ansible-adhoc-cb-playbook_start.yaml
+    - ansible-test-opensuse-15.1.yml
+    - ansible-test-rhel-7.8.yml
+    - collection-install-mode.yaml
+    - community.general-80-update_docker_connection_plugin.yml
+    - fallback_uid.yml
+    - fetch_no_slurp.yml
+    - galaxy-install-tar-path-traversal.yaml
+    - ldap-params-removal.yml
+    - passwordstore_fix.yml
+    - plugin_doc_link_fix.yml
+    - rabbitmq-3.8.yml
+    - remote_mkdir_fix.yml
+    - subversion_password.yaml
+    - v2.9.7_summary.yaml
+    - vault_tmp_file.yml
+    - vault_tmp_race_fix.yml
+    - vmware_rest_client_tag_fix.yml
+    - warnings-remove-extra-newline-better.yaml
+    - win-unzip-check-extraction-path.yml
+    - win-web-request-no_proxy.yaml
+    - win_setup-fqdn.yaml
+    release_date: '2020-04-16'
+  2.9.8:
+    codename: Immigrant Song
+    fragments:
+    - 225-mysql_user_fix_no_database_selected.yml
+    - 64810-hostname-add-manjaro-linux-distribution.yml
+    - 66721-better-jinja2-collection-error-handling.yml
+    - 66996-zabbix-template.yaml
+    - 67407-pip-virtualenv_command-args.yml
+    - 67418-postgresql_set_converts_value_to_uppercase.yml
+    - 68211-systemd-list-unit-files-parsing.yml
+    - 68251-redfish_config-fix-boolean-bios-attr-support.yaml
+    - 68310-low_level_execute_command-honor-executable.yml
+    - 68592-pip-check_mode-prereleases.yml
+    - 69101-collection-role-to-standalone-role.yml
+    - 69123-ovirt_network-allow-to-remove-vlan_tag.yml
+    - 69133-role-install-non-ascii.yml
+    - 69150-ovirt_disk-upload-image-auto-detect-size.yml
+    - 69153-ovirt_disk-add-warning-when-uploading-wrong-format.yml
+    - 69160-add-missing-parameter.yaml
+    - 69165_constructed.yml
+    - ansible-test-obsolete-vcenter-proivisioning.yml
+    - ansible-test-rhel-82.yml
+    - b5a0475a-revert-persistent-connection-messages.yml
+    - dnf-4-2-18.yml
+    - dont_hide_json_error.yml
+    - fileglob_fixes.yml
+    - inventory_docs_fix.yml
+    - network_refactor_prompt_check.yaml
+    - v2.9.8_summary.yaml
+    - win_psmodule-repo-tls.yaml
+    release_date: '2020-05-11'
+  2.9.9:
+    codename: Immigrant Song
+    fragments:
+    - 69451-fix-fileglob-nonexistent-subdirs.yaml
+    - v2.9.9_summary.yaml
+    release_date: '2020-05-12'

@@ -42,7 +42,10 @@ Command Line
 Deprecated
 ==========
 
-No notable changes
+- The ``params`` module option in ``ldap_attr`` and ``ldap_entry`` are deprecated on a short cycle (to be
+  removed in Ansible-2.10) due to circumventing Ansible's normal option handling.  In particular, if
+  the ``bind_pw`` option is set with ``params``, the value of the option could end up being placed in
+  a logfile or displayed on stdout.
 
 
 Collection loader changes
@@ -691,6 +694,10 @@ be removed in Ansible 2.13. Please update update your playbooks accordingly.
 Noteworthy module changes
 -------------------------
 
+* **Security Issue** Setting ``bind_pw`` with the ``params`` option for the ``ldap_entry`` and
+  ``ldap_attr`` modules has been disallowed.  If ``bind_pw`` was set with ``params``, the value could
+  have ended up in a logfile or displayed on stdout.  Set ``bind_pw`` directly, with the modules'
+  options instead.
 * :ref:`vmware_cluster <vmware_cluster_module>` was refactored for easier maintenance/bugfixes. Use the three new, specialized modules to configure clusters. Configure DRS with :ref:`vmware_cluster_drs <vmware_cluster_drs_module>`, HA with :ref:`vmware_cluster_ha <vmware_cluster_ha_module>` and vSAN with :ref:`vmware_cluster_vsan <vmware_cluster_vsan_module>`.
 * :ref:`vmware_dvswitch <vmware_dvswitch_module>` accepts ``folder`` parameter to place dvswitch in user defined folder. This option makes ``datacenter`` as an optional parameter.
 * :ref:`vmware_datastore_cluster <vmware_datastore_cluster_module>` accepts ``folder`` parameter to place datastore cluster in user defined folder. This option makes ``datacenter`` as an optional parameter.
@@ -700,6 +707,7 @@ Noteworthy module changes
 * :ref:`openssl_certificate <openssl_certificate_module>`'s ``ownca`` provider creates authority key identifiers if not explicitly disabled with ``ownca_create_authority_key_identifier: no``. This is only the case for the ``cryptography`` backend, which is selected by default if the ``cryptography`` library is available.
 * :ref:`openssl_certificate <openssl_certificate_module>`'s ``ownca`` and ``selfsigned`` providers create subject key identifiers if not explicitly disabled with ``ownca_create_subject_key_identifier: never_create`` resp. ``selfsigned_create_subject_key_identifier: never_create``. If a subject key identifier is provided by the CSR, it is taken; if not, it is created from the public key. This is only the case for the ``cryptography`` backend, which is selected by default if the ``cryptography`` library is available.
 * :ref:`openssh_keypair <openssh_keypair_module>` now applies the same file permissions and ownership to both public and private keys (both get the same ``mode``, ``owner``, ``group``, etc.). If you need to change permissions / ownership on one key, use the :ref:`file <file_module>` to modify it after it is created.
+* :ref:`acme_certificate <acme_certificate_module>` only returns challenges that need to be satisfied in ``challenge_data`` and ``challenge_data_dns`` (since Ansible 2.8.5). Depending on how you process challenges, you need to adjust your challenge satisfying tasks to either use ``when:`` to only process domain names which appear in ``challenge_data``, or by looping over the ``challenge_data`` dictionary itself. See the updated examples in the module documentation.
 
 
 Plugins

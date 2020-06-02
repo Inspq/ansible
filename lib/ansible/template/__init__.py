@@ -335,9 +335,10 @@ class JinjaPluginIntercept(MutableMapping):
         if not acr:
             raise KeyError('invalid plugin name: {0}'.format(key))
 
-        # FIXME: error handling for bogus plugin name, bogus impl, bogus filter/test
-
-        pkg = import_module(acr.n_python_package_name)
+        try:
+            pkg = import_module(acr.n_python_package_name)
+        except ImportError:
+            raise KeyError()
 
         parent_prefix = acr.collection
 
@@ -348,7 +349,10 @@ class JinjaPluginIntercept(MutableMapping):
             if ispkg:
                 continue
 
-            plugin_impl = self._pluginloader.get(module_name)
+            try:
+                plugin_impl = self._pluginloader.get(module_name)
+            except Exception as e:
+                raise TemplateSyntaxError(to_native(e), 0)
 
             method_map = getattr(plugin_impl, self._method_map_name)
 
@@ -596,7 +600,7 @@ class Templar:
                         # we only cache in the case where we have a single variable
                         # name, to make sure we're not putting things which may otherwise
                         # be dynamic in the cache (filters, lookups, etc.)
-                        if cache:
+                        if cache and only_one:
                             self._cached_result[sha1_hash] = result
 
                 return result

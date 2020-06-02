@@ -108,6 +108,61 @@ EOF
 popd # ${galaxy_testdir}
 rm -fr "${galaxy_testdir}"
 
+
+# Galaxy role list tests
+#
+# Basic tests to ensure listing roles works
+
+f_ansible_galaxy_status \
+    "role list"
+
+    ansible-galaxy role list | tee out.txt
+    ansible-galaxy role list test-role | tee -a out.txt
+
+    [[ $(grep -c '^- test-role' out.txt ) -eq 2 ]]
+
+
+# Properly list roles when the role name is a subset of the path, or the role
+# name is the same name as the parent directory of the role. Issue #67365
+#
+# ./parrot/parrot
+# ./parrot/arr
+# ./testing-roles/test
+
+f_ansible_galaxy_status \
+    "list roles where the role name is the same or a subset of the role path (#67365)"
+
+role_testdir=$(mktemp -d)
+pushd "${role_testdir}"
+
+    mkdir parrot
+    ansible-galaxy role init --init-path ./parrot parrot
+    ansible-galaxy role init --init-path ./parrot parrot-ship
+    ansible-galaxy role init --init-path ./parrot arr
+
+    ansible-galaxy role list -p ./parrot | tee out.txt
+
+    [[ $(grep -Ec '\- (parrot|arr)' out.txt) -eq 3 ]]
+    ansible-galaxy role list test-role | tee -a out.txt
+
+popd # ${role_testdir}
+rm -rf "${role_testdir}"
+
+f_ansible_galaxy_status \
+    "Test role with non-ascii characters"
+
+role_testdir=$(mktemp -d)
+pushd "${role_testdir}"
+
+    mkdir nonascii
+    ansible-galaxy role init --init-path ./nonascii nonascii
+    touch nonascii/ÅÑŚÌβŁÈ.txt
+    tar czvf nonascii.tar.gz nonascii
+    ansible-galaxy role install -p ./roles nonascii.tar.gz
+
+popd # ${role_testdir}
+rm -rf "${role_testdir}"
+
 #################################
 # ansible-galaxy collection tests
 #################################

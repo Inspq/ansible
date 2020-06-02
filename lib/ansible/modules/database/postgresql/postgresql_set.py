@@ -99,7 +99,7 @@ EXAMPLES = r'''
   postgresql_set:
     name: work_mem
     value: 32mb
-    register: set
+  register: set
 
 - debug:
     msg: "{{ set.name }} {{ set.prev_val_pretty }} >> {{ set.value_pretty }} restart_req: {{ set.restart_required }}"
@@ -300,7 +300,7 @@ def main():
     # Allow to pass values like 1mb instead of 1MB, etc:
     if value:
         for unit in POSSIBLE_SIZE_UNITS:
-            if unit in value:
+            if value[:-2].isdigit() and unit in value[-2:]:
                 value = value.upper()
 
     if value and reset:

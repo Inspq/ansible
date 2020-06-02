@@ -51,6 +51,7 @@ options:
     upload_image_path:
         description:
             - "Path to disk image, which should be uploaded."
+            - "Note if C(size) is not specified the size of the disk will be determined by the size of the specified image."
             - "Note that currently we support only compatibility version 0.10 of the qcow disk."
             - "Note that you must have an valid oVirt/RHV engine CA in your system trust store
                or you must provide it in C(ca_file) parameter."
@@ -58,6 +59,7 @@ options:
                if you want to upload the disk even if the disk with C(id) or C(name) exists,
                then please use C(force) I(true). If you will use C(force) I(false), which
                is default, then the disk image won't be uploaded."
+            - "Note that to upload iso the C(format) should be 'raw'"
         version_added: "2.3"
     size:
         description:
@@ -73,6 +75,7 @@ options:
         description:
             - Specify format of the disk.
             - Note that this option isn't idempotent as it's not currently possible to change format of the disk via API.
+        default: 'cow'
         choices: ['raw', 'cow']
     content_type:
         description:
@@ -91,7 +94,7 @@ options:
             - Note that this option isn't idempotent as it's not currently possible to change sparseness of the disk via API.
     storage_domain:
         description:
-            - "Storage domain name where disk should be created. By default storage is chosen by oVirt/RHV engine."
+            - "Storage domain name where disk should be created."
     storage_domains:
         description:
             - "Storage domain names where disk should be copied."
@@ -486,6 +489,9 @@ class DisksModule(BaseModule):
     def build_entity(self):
         hosts_service = self._connection.system_service().hosts_service()
         logical_unit = self._module.params.get('logical_unit')
+        size = convert_to_bytes(self._module.params.get('size'))
+        if not size and self._module.params.get('upload_image_path'):
+            size = os.path.getsize(self._module.params.get('upload_image_path'))
         disk = otypes.Disk(
             id=self._module.params.get('id'),
             name=self._module.params.get('name'),
@@ -504,9 +510,7 @@ class DisksModule(BaseModule):
             openstack_volume_type=otypes.OpenStackVolumeType(
                 name=self.param('openstack_volume_type')
             ) if self.param('openstack_volume_type') else None,
-            provisioned_size=convert_to_bytes(
-                self._module.params.get('size')
-            ),
+            provisioned_size=size,
             storage_domains=[
                 otypes.StorageDomain(
                     name=self._module.params.get('storage_domain'),
@@ -535,9 +539,7 @@ class DisksModule(BaseModule):
             ) if logical_unit else None,
         )
         if hasattr(disk, 'initial_size') and self._module.params['upload_image_path']:
-            disk.initial_size = convert_to_bytes(
-                self._module.params.get('size')
-            )
+            disk.initial_size = size
 
         return disk
 
@@ -740,6 +742,8 @@ def main():
 
             # Upload disk image in case it's new disk or force parameter is passed:
             if module.params['upload_image_path'] and (is_new_disk or module.params['force']):
+                if module.params['format'] == 'cow' and module.params['content_type'] == 'iso':
+                    module.warn("To upload an ISO image 'format' parameter needs to be set to 'raw'.")
                 uploaded = upload_disk_image(connection, module)
                 ret['changed'] = ret['changed'] or uploaded
             # Download disk image in case it's file don't exist or force parameter is passed:

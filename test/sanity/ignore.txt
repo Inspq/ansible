@@ -1707,7 +1707,6 @@ lib/ansible/modules/cloud/ovirt/ovirt_datacenter_info.py validate-modules:doc-mi
 lib/ansible/modules/cloud/ovirt/ovirt_disk.py future-import-boilerplate
 lib/ansible/modules/cloud/ovirt/ovirt_disk.py metaclass-boilerplate
 lib/ansible/modules/cloud/ovirt/ovirt_disk.py validate-modules:undocumented-parameter
-lib/ansible/modules/cloud/ovirt/ovirt_disk.py validate-modules:doc-default-does-not-match-spec
 lib/ansible/modules/cloud/ovirt/ovirt_disk.py validate-modules:doc-choices-do-not-match-spec
 lib/ansible/modules/cloud/ovirt/ovirt_disk.py validate-modules:parameter-type-not-in-doc
 lib/ansible/modules/cloud/ovirt/ovirt_disk.py validate-modules:doc-missing-type
@@ -2175,16 +2174,6 @@ lib/ansible/modules/commands/command.py validate-modules:undocumented-parameter
 lib/ansible/modules/commands/command.py validate-modules:nonexistent-parameter-documented
 lib/ansible/modules/commands/command.py validate-modules:doc-missing-type
 lib/ansible/modules/commands/expect.py validate-modules:doc-missing-type
-lib/ansible/modules/database/influxdb/influxdb_database.py validate-modules:doc-default-does-not-match-spec
-lib/ansible/modules/database/influxdb/influxdb_database.py validate-modules:parameter-type-not-in-doc
-lib/ansible/modules/database/influxdb/influxdb_query.py validate-modules:doc-default-does-not-match-spec
-lib/ansible/modules/database/influxdb/influxdb_query.py validate-modules:parameter-type-not-in-doc
-lib/ansible/modules/database/influxdb/influxdb_retention_policy.py validate-modules:doc-default-does-not-match-spec
-lib/ansible/modules/database/influxdb/influxdb_retention_policy.py validate-modules:parameter-type-not-in-doc
-lib/ansible/modules/database/influxdb/influxdb_user.py validate-modules:doc-default-does-not-match-spec
-lib/ansible/modules/database/influxdb/influxdb_user.py validate-modules:parameter-type-not-in-doc
-lib/ansible/modules/database/influxdb/influxdb_write.py validate-modules:doc-default-does-not-match-spec
-lib/ansible/modules/database/influxdb/influxdb_write.py validate-modules:parameter-type-not-in-doc
 lib/ansible/modules/database/misc/elasticsearch_plugin.py validate-modules:parameter-type-not-in-doc
 lib/ansible/modules/database/misc/elasticsearch_plugin.py validate-modules:doc-missing-type
 lib/ansible/modules/database/misc/kibana_plugin.py validate-modules:parameter-type-not-in-doc
@@ -2401,9 +2390,11 @@ lib/ansible/modules/net_tools/dnsmadeeasy.py validate-modules:doc-missing-type
 lib/ansible/modules/net_tools/ip_netns.py validate-modules:doc-missing-type
 lib/ansible/modules/net_tools/ipinfoio_facts.py validate-modules:parameter-type-not-in-doc
 lib/ansible/modules/net_tools/ipinfoio_facts.py validate-modules:doc-missing-type
-lib/ansible/modules/net_tools/ldap/ldap_attr.py validate-modules:parameter-type-not-in-doc
-lib/ansible/modules/net_tools/ldap/ldap_entry.py validate-modules:parameter-type-not-in-doc
+lib/ansible/modules/net_tools/ldap/ldap_attr.py validate-modules:parameter-type-not-in-doc  # This triggers when a parameter is undocumented
+lib/ansible/modules/net_tools/ldap/ldap_attr.py validate-modules:undocumented-parameter # Parameter removed but reason for removal is shown by custom code
 lib/ansible/modules/net_tools/ldap/ldap_entry.py validate-modules:doc-missing-type
+lib/ansible/modules/net_tools/ldap/ldap_entry.py validate-modules:parameter-type-not-in-doc  # This triggers when a parameter is undocumented
+lib/ansible/modules/net_tools/ldap/ldap_entry.py validate-modules:undocumented-parameter # Parameter removed but reason for removal is shown by custom code
 lib/ansible/modules/net_tools/ldap/ldap_passwd.py validate-modules:doc-missing-type
 lib/ansible/modules/net_tools/netbox/netbox_device.py validate-modules:parameter-type-not-in-doc
 lib/ansible/modules/net_tools/netbox/netbox_device.py validate-modules:doc-missing-type
@@ -5663,7 +5654,6 @@ lib/ansible/modules/windows/win_share.ps1 pslint:PSCustomUseLiteralPath
 lib/ansible/modules/windows/win_shell.ps1 pslint:PSUseApprovedVerbs
 lib/ansible/modules/windows/win_shortcut.ps1 pslint:PSCustomUseLiteralPath
 lib/ansible/modules/windows/win_snmp.ps1 pslint:PSCustomUseLiteralPath
-lib/ansible/modules/windows/win_unzip.ps1 pslint:PSCustomUseLiteralPath
 lib/ansible/modules/windows/win_unzip.ps1 pslint:PSUseApprovedVerbs
 lib/ansible/modules/windows/win_updates.ps1 pslint:PSCustomUseLiteralPath
 lib/ansible/modules/windows/win_uri.ps1 pslint:PSAvoidUsingEmptyCatchBlock # Keep
@@ -5946,6 +5936,7 @@ test/integration/targets/collections_relative_imports/collection_root/ansible_co
 test/integration/targets/collections_relative_imports/collection_root/ansible_collections/my_ns/my_col/plugins/modules/my_module.py pylint:relative-beyond-top-level
 test/integration/targets/expect/files/test_command.py future-import-boilerplate
 test/integration/targets/expect/files/test_command.py metaclass-boilerplate
+test/integration/targets/gathering_facts/library/bogus_facts shebang
 test/integration/targets/get_url/files/testserver.py future-import-boilerplate
 test/integration/targets/get_url/files/testserver.py metaclass-boilerplate
 test/integration/targets/group/files/gidget.py future-import-boilerplate

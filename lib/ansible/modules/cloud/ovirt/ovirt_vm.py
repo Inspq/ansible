@@ -522,25 +522,21 @@ options:
         description:
             - "If I(true) C(kernel_params), C(initrd_path) and C(kernel_path) will persist in virtual machine configuration,
                if I(False) it will be used for run once."
-            - Usable with oVirt 4.3 and lower; removed in oVirt 4.4.
         type: bool
         version_added: "2.8"
     kernel_path:
         description:
             - Path to a kernel image used to boot the virtual machine.
             - Kernel image must be stored on either the ISO domain or on the host's storage.
-            - Usable with oVirt 4.3 and lower; removed in oVirt 4.4.
         version_added: "2.3"
     initrd_path:
         description:
             - Path to an initial ramdisk to be used with the kernel specified by C(kernel_path) option.
             - Ramdisk image must be stored on either the ISO domain or on the host's storage.
-            - Usable with oVirt 4.3 and lower; removed in oVirt 4.4.
         version_added: "2.3"
     kernel_params:
         description:
             - Kernel command line parameters (formatted as string) to be used with the kernel specified by C(kernel_path) option.
-            - Usable with oVirt 4.3 and lower; removed in oVirt 4.4.
         version_added: "2.3"
     instance_type:
         description:
@@ -727,16 +723,21 @@ options:
         suboptions:
             index:
                 description:
-                    - "The index of this NUMA node (mandatory)."
+                    - "The index of this NUMA node."
+                required: True
             memory:
                 description:
-                    - "Memory size of the NUMA node in MiB (mandatory)."
+                    - "Memory size of the NUMA node in MiB."
+                required: True
             cores:
                 description:
-                    - "list of VM CPU cores indexes to be included in this NUMA node (mandatory)."
+                    - "List of VM CPU cores indexes to be included in this NUMA node."
+                type: list
+                required: True
             numa_node_pins:
                 description:
-                    - "list of physical NUMA node indexes to pin this virtual NUMA node to."
+                    - "List of physical NUMA node indexes to pin this virtual NUMA node to."
+                type: list
         version_added: "2.6"
     rng_device:
         description:
@@ -1264,7 +1265,6 @@ from ansible.module_utils.ovirt import (
     search_by_attributes,
     search_by_name,
     wait,
-    engine_supported,
 )
 
 
@@ -1892,17 +1892,20 @@ class VmsModule(BaseModule):
                 )
             )
 
-    def __attach_numa_nodes(self, entity):
-        updated = False
-        numa_nodes_service = self._service.service(entity.id).numa_nodes_service()
+    def __get_numa_serialized(self, numa):
+        return sorted([(x.index,
+                        [y.index for y in x.cpu.cores] if x.cpu else [],
+                        x.memory,
+                        [y.index for y in x.numa_node_pins] if x.numa_node_pins else []
+                        ) for x in numa], key=lambda x: x[0])
 
+    def __attach_numa_nodes(self, entity):
+        numa_nodes_service = self._service.service(entity.id).numa_nodes_service()
+        existed_numa_nodes = numa_nodes_service.list()
         if len(self.param('numa_nodes')) > 0:
             # Remove all existing virtual numa nodes before adding new ones
-            existed_numa_nodes = numa_nodes_service.list()
-            existed_numa_nodes.sort(reverse=len(existed_numa_nodes) > 1 and existed_numa_nodes[1].index > existed_numa_nodes[0].index)
-            for current_numa_node in existed_numa_nodes:
+            for current_numa_node in sorted(existed_numa_nodes, reverse=True, key=lambda x: x.index):
                 numa_nodes_service.node_service(current_numa_node.id).remove()
-                updated = True
 
         for numa_node in self.param('numa_nodes'):
             if numa_node is None or numa_node.get('index') is None or numa_node.get('cores') is None or numa_node.get('memory') is None:
@@ -1926,9 +1929,7 @@ class VmsModule(BaseModule):
                     ] if numa_node.get('numa_node_pins') is not None else None,
                 )
             )
-            updated = True
-
-        return updated
+        return self.__get_numa_serialized(numa_nodes_service.list()) != self.__get_numa_serialized(existed_numa_nodes)
 
     def __attach_watchdog(self, entity):
         watchdogs_service = self._service.service(entity.id).watchdogs_service()
@@ -2165,13 +2166,13 @@ def _get_lun_mappings(module):
                             ['iscsi', 'fcp']) else None,
                         logical_units=[
                             otypes.LogicalUnit(
-                                id=lunMapping['dest_logical_unit_id'],
-                                port=lunMapping['dest_logical_unit_port'],
-                                portal=lunMapping['dest_logical_unit_portal'],
-                                address=lunMapping['dest_logical_unit_address'],
-                                target=lunMapping['dest_logical_unit_target'],
-                                password=lunMapping['dest_logical_unit_password'],
-                                username=lunMapping['dest_logical_unit_username'],
+                                id=lunMapping.get('dest_logical_unit_id'),
+                                port=lunMapping.get('dest_logical_unit_port'),
+                                portal=lunMapping.get('dest_logical_unit_portal'),
+                                address=lunMapping.get('dest_logical_unit_address'),
+                                target=lunMapping.get('dest_logical_unit_target'),
+                                password=lunMapping.get('dest_logical_unit_password'),
+                                username=lunMapping.get('dest_logical_unit_username'),
                             )
                         ],
                     ),
@@ -2269,15 +2270,6 @@ def import_vm(module, connection):
         poll_interval=module.params['poll_interval'],
     )
     return True
-
-
-def check_deprecated_params(module, connection):
-    if engine_supported(connection, '4.4') and \
-            (module.params.get('kernel_params_persist') is not None or
-             module.params.get('kernel_path') is not None or
-             module.params.get('initrd_path') is not None or
-             module.params.get('kernel_params') is not None):
-        module.warn("Parameters 'kernel_params_persist', 'kernel_path', 'initrd_path', 'kernel_params' are not supported since oVirt 4.4.")
 
 
 def control_state(vm, vms_service, module):
@@ -2428,7 +2420,6 @@ def main():
         state = module.params['state']
         auth = module.params.pop('auth')
         connection = create_connection(auth)
-        check_deprecated_params(module, connection)
         vms_service = connection.system_service().vms_service()
         vms_module = VmsModule(
             connection=connection,

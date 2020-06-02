@@ -232,16 +232,12 @@ VALID_PRIVS = frozenset(('CREATE', 'DROP', 'GRANT', 'GRANT OPTION',
                          'SUPER', 'ALL', 'ALL PRIVILEGES', 'USAGE', 'REQUIRESSL',
                          'CREATE ROLE', 'DROP ROLE', 'APPLICATION_PASSWORD_ADMIN',
                          'AUDIT_ADMIN', 'BACKUP_ADMIN', 'BINLOG_ADMIN',
-                         'BINLOG_ENCRYPTION_ADMIN', 'CLONE_ADMIN', 'CONNECTION_ADMIN',
+                         'BINLOG_ENCRYPTION_ADMIN', 'CONNECTION_ADMIN',
                          'ENCRYPTION_KEY_ADMIN', 'FIREWALL_ADMIN', 'FIREWALL_USER',
-                         'GROUP_REPLICATION_ADMIN', 'INNODB_REDO_LOG_ARCHIVE',
-                         'NDB_STORED_USER', 'PERSIST_RO_VARIABLES_ADMIN',
-                         'REPLICATION_APPLIER', 'REPLICATION_SLAVE_ADMIN',
-                         'RESOURCE_GROUP_ADMIN', 'RESOURCE_GROUP_USER',
+                         'GROUP_REPLICATION_ADMIN', 'PERSIST_RO_VARIABLES_ADMIN',
+                         'REPLICATION_SLAVE_ADMIN', 'RESOURCE_GROUP_ADMIN', 'RESOURCE_GROUP_USER',
                          'ROLE_ADMIN', 'SESSION_VARIABLES_ADMIN', 'SET_USER_ID',
-                         'SYSTEM_USER', 'SYSTEM_VARIABLES_ADMIN', 'SYSTEM_USER',
-                         'TABLE_ENCRYPTION_ADMIN', 'VERSION_TOKEN_ADMIN',
-                         'XA_RECOVER_ADMIN', 'LOAD FROM S3', 'SELECT INTO S3'))
+                         'SYSTEM_VARIABLES_ADMIN', 'VERSION_TOKEN_ADMIN', 'XA_RECOVER_ADMIN'))
 
 
 class InvalidPrivsError(Exception):
@@ -390,7 +386,7 @@ def user_mod(cursor, user, host, host_all, password, encrypted, new_priv, append
                         # Replacing empty root password with new authentication mechanisms fails with error 1396
                         if e.args[0] == 1396:
                             cursor.execute(
-                                "UPDATE user SET plugin = %s, authentication_string = %s, Password = '' WHERE User = %s AND Host = %s",
+                                "UPDATE mysql.user SET plugin = %s, authentication_string = %s, Password = '' WHERE User = %s AND Host = %s",
                                 ('mysql_native_password', encrypted_password, user, host)
                             )
                             cursor.execute("FLUSH PRIVILEGES")
@@ -494,14 +490,14 @@ def privileges_get(cursor, user, host):
         res = re.match("""GRANT (.+) ON (.+) TO (['`"]).*\\3@(['`"]).*\\4( IDENTIFIED BY PASSWORD (['`"]).+\\6)? ?(.*)""", grant[0])
         if res is None:
             raise InvalidPrivsError('unable to parse the MySQL grant string: %s' % grant[0])
-        privileges = res.group(1).split(", ")
-        privileges = [pick(x) for x in privileges]
+        privileges = res.group(1).split(",")
+        privileges = [pick(x.strip()) for x in privileges]
         if "WITH GRANT OPTION" in res.group(7):
             privileges.append('GRANT')
         if "REQUIRE SSL" in res.group(7):
             privileges.append('REQUIRESSL')
         db = res.group(2)
-        output[db] = privileges
+        output.setdefault(db, []).extend(privileges)
     return output
 
 
