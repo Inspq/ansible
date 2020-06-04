@@ -19,7 +19,7 @@ module: keycloak_identity_provider
 short_description: Configure an identity provider in Keycloak
 description:
   - This module creates, removes or update Keycloak identity provider.
-version_added: "2.9"
+version_added: "2.8"
 options:
   realm:
     description:
@@ -272,8 +272,7 @@ changed:
   type: bool
 '''
 import copy
-from ansible.module_utils.identity.keycloak.keycloak import KeycloakAPI, camel, \
-    keycloak_argument_spec, get_token, KeycloakError, isDictEquals, remove_arguments_with_value_none
+from ansible.module_utils.keycloak import KeycloakAPI, keycloak_argument_spec, isDictEquals, remove_arguments_with_value_none
 from ansible.module_utils.basic import AnsibleModule
 
 
@@ -364,21 +363,7 @@ def main():
     result = dict(changed=False, msg='', idp={}, mappers=[])
 
     # Obtain access token, initialize API
-    try:
-        connection_header = get_token(
-            base_url=module.params.get('auth_keycloak_url'),
-            validate_certs=module.params.get('validate_certs'),
-            auth_realm=module.params.get('auth_realm'),
-            client_id=module.params.get('auth_client_id'),
-            auth_username=module.params.get('auth_username'),
-            auth_password=module.params.get('auth_password'),
-            client_secret=module.params.get('auth_client_secret'),
-        )
-    except KeycloakError as e:
-        module.fail_json(msg=str(e))
-
-    kc = KeycloakAPI(module, connection_header)
-
+    kc = KeycloakAPI(module)
     realm = module.params.get('realm')
     state = module.params.get('state')
     force = module.params.get('force')
