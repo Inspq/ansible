@@ -15,7 +15,7 @@ pipeline {
 	    THREEEIGHTYNINEDS_VERSION='latest'
 	    SX5SPCONFIG_IMAGE='nexus3.inspq.qc.ca:5000/inspq/sx5-sp-config'
 	    SX5SPCONFIG_VERSION='latest'
-	    EMAIL_TO = 'mathieu.couture@inspq.qc.ca,etienne.sadio@inspq.qc.ca,soleman.merchan@inspq.qc.ca,philippe.gauthier@inspq.qc.ca,pierre-olivier.chiasson@inspq.qc.ca,eric.parent@inspq.qc.ca'
+	    EMAIL_TO = "${env.NOTIFICATION_SX5_TEAM}"
 	}
 
     stages {
