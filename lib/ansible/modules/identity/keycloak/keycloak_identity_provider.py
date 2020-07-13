@@ -104,6 +104,16 @@ options:
             description:
                 - Client secret to authenticate client on the IdP.
             type: str
+        clientAuthMethod:
+            description:
+                - Authentication method used with this identity provider
+            type: str
+            choices:
+                - client_secret_post
+                - client_secret_basic
+                - client_secret_jwt
+                - private_key_jwt
+            default: client_secret_post
         disableUserInfo:
             description:
                 - Do we need to disable user info endpoint query. Default value is False.
@@ -288,6 +298,16 @@ def main():
         },
         "clientSecret": {
             "type": "str"
+        },
+        "clientAuthMethod": {
+            "type": "str",
+            "choices": [
+                "client_secret_post",
+                "client_secret_basic",
+                "client_secret_jwt",
+                "private_key_jwt"
+            ],
+            "default": "client_secret_post"
         },
         "disableUserInfo": {
             "type": "str",

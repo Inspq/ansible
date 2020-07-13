@@ -15,7 +15,7 @@ pipeline {
 	    THREEEIGHTYNINEDS_VERSION='latest'
 	    SX5SPCONFIG_IMAGE='nexus3.inspq.qc.ca:5000/inspq/sx5-sp-config'
 	    SX5SPCONFIG_VERSION='latest'
-	    EMAIL_TO = 'mathieu.couture@inspq.qc.ca,etienne.sadio@inspq.qc.ca,soleman.merchan@inspq.qc.ca,philippe.gauthier@inspq.qc.ca,pierre-olivier.chiasson@inspq.qc.ca,eric.parent@inspq.qc.ca'
+	    EMAIL_TO = "${env.NOTIFICATION_SX5_TEAM}"
 	}
 
     stages {
@@ -71,7 +71,7 @@ pipeline {
         stage ('Tests unitaires des modules ansible de Keycloak sur la dernière version de Keycloak') {
             steps {
                 sh "docker run -d --rm --name testldap -p 10389:389 ${THREEEIGHTYNINEDS_IMAGE}:${THREEEIGHTYNINEDS_VERSION}"
-                sh "docker run -d --rm --name testkc -p 18081:8080 --link testldap:testldap -e KEYCLOAK_USER=admin -e KEYCLOAK_PASSWORD=admin -e KEYCLOAK_CONFIG=standalone-test.xml ${KEYCLOAK_IMAGE}:${KEYCLOAK_VERSION}"
+                sh "docker pull ${KEYCLOAK_IMAGE}:${KEYCLOAK_VERSION} && docker run -d --rm --name testkc -p 18081:8080 --link testldap:testldap -e KEYCLOAK_USER=admin -e KEYCLOAK_PASSWORD=admin -e KEYCLOAK_CONFIG=standalone-test.xml ${KEYCLOAK_IMAGE}:${KEYCLOAK_VERSION}"
                 sh '''
                 until $(curl --output /dev/null --silent --head --fail http://localhost:18081/auth)
                 do 
@@ -102,7 +102,7 @@ pipeline {
         stage ('Tests unitaires des modules ansible de Keycloak sur la dernière version de RHSSO') {
             steps {
                 sh "docker run -d --rm --name testldap -p 10389:389 ${THREEEIGHTYNINEDS_IMAGE}:${THREEEIGHTYNINEDS_VERSION}"
-                sh "docker run -d --rm --name testrhsso -p 18081:8080 --link testldap:testldap -e KEYCLOAK_USER=admin -e KEYCLOAK_PASSWORD=admin -e KEYCLOAK_CONFIG=standalone-test.xml ${RHSSO_IMAGE}:${RHSSO_VERSION}"
+                sh "docker pull ${RHSSO_IMAGE}:${RHSSO_VERSION} && docker run -d --rm --name testrhsso -p 18081:8080 --link testldap:testldap -e KEYCLOAK_USER=admin -e KEYCLOAK_PASSWORD=admin -e KEYCLOAK_CONFIG=standalone-test.xml ${RHSSO_IMAGE}:${RHSSO_VERSION}"
                 sh '''
                 until $(curl --output /dev/null --silent --head --fail http://localhost:18081/auth)
                 do 
@@ -196,7 +196,7 @@ pipeline {
             steps {
                 script {
                     try {
-		                sh "source hacking/env-setup; cd test; nosetests --with-xunit --xunit-file=nosetests-scim.xml units/module_utils/identity/user_provisioning/test_scim.py units/modules/identity/user_provisioning/test_scim_user.py"
+		                sh "source hacking/env-setup; nosetests --with-xunit --xunit-file=nosetests-scim.xml test/units/module_utils/identity/user_provisioning/test_scim.py test/units/modules/identity/user_provisioning/test_scim_user.py"
                     }
                     catch (exc){
                         currentBuild.result = 'UNSTABLE'
