@@ -3,8 +3,8 @@
 Special Variables
 =================
 
-Magic
------
+Magic variables
+---------------
 These variables cannot be set directly by the user; Ansible will always override them to reflect internal state.
 
 ansible_check_mode
@@ -67,6 +67,12 @@ ansible_role_names
     The names of the roles currently imported into the current play, or roles referenced as dependencies of the roles
     imported into the current play.
 
+ansible_role_name
+    The fully qualified collection role name, in the format of ``namespace.collection.role_name``
+
+ansible_collection_name
+    The name of the collection the task that is executing is a part of. In the format of ``namespace.collection``
+
 ansible_run_tags
     Contents of the ``--tags`` CLI option, which specifies which tags will be included for the current run.
 
@@ -126,7 +132,7 @@ role_path
 
 Facts
 -----
-These are variables that contain information pertinent to the current host (`inventory_hostname`). They are only available if gathered first.
+These are variables that contain information pertinent to the current host (`inventory_hostname`). They are only available if gathered first. See :ref:`vars_and_facts` for more information.
 
 ansible_facts
     Contains any facts gathered or cached for the `inventory_hostname`
@@ -135,7 +141,7 @@ ansible_facts
 ansible_local
     Contains any 'local facts' gathered or cached for the `inventory_hostname`.
     The keys available depend on the custom facts created.
-    See the :ref:`setup <setup_module>` module for more details.
+    See the :ref:`setup <setup_module>` module and :ref:`local_facts` for more details.
 
 .. _connection_variables:
 

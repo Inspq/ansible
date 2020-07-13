@@ -24,10 +24,10 @@ def assemble_files_to_ship(complete_file_list):
         '.github/*',
         '.github/*/*',
         'changelogs/fragments/*',
+        'hacking/backport/*',
         'hacking/shippable/*',
         'hacking/tests/*',
         'hacking/ticket_stubs/*',
-        'metadata-*.json',  # ansible-test with --docker produces this tmp file.
         'test/sanity/code-smell/botmeta.*',
         'test/utils/*',
         'test/utils/*/*',
@@ -37,7 +37,6 @@ def assemble_files_to_ship(complete_file_list):
     ignore_files = frozenset((
         # Developer-only tools
         'changelogs/config.yaml',
-        'changelogs/.changes.yaml',
         'hacking/README.md',
         'hacking/ansible-profile',
         'hacking/cgroup_perf_recap_graph.py',
@@ -56,6 +55,7 @@ def assemble_files_to_ship(complete_file_list):
         # Possibly should be included
         'examples/scripts/uptime.py',
         'examples/DOCUMENTATION.yml',
+        'examples/play.yml',
         'examples/hosts.yaml',
         'examples/hosts.yml',
         'examples/inventory_script_schema.json',

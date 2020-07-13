@@ -53,7 +53,6 @@ Functions and Methods
 Python tips
 ===========
 
-* When fetching URLs, use ``fetch_url`` or ``open_url`` from ``ansible.module_utils.urls``. Do not use ``urllib2``, which does not natively verify TLS certificates and so is insecure for https.
 * Include a ``main`` function that wraps the normal execution.
 * Call your ``main`` function from a conditional so you can import it into unit tests - for example:
 
@@ -76,7 +75,7 @@ Importing and using shared code
 
     import traceback
 
-    from ansible.basic import missing_required_lib
+    from ansible.module_utils.basic import missing_required_lib
 
     LIB_IMP_ERR = None
     try:

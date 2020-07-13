@@ -64,6 +64,7 @@ credentials.yml
 results.xml
 coverage.xml
 /test/units/cover-html
+/test/integration/inventory
 /test/integration/targets/*/backup/
 /test/cache/*
 # Development
@@ -85,16 +86,8 @@ Vagrantfile
 # Release directory
 packaging/release/ansible_release
 /.cache/
-/test/results/coverage/*=coverage.*
-/test/results/coverage/coverage*
-/test/results/reports/coverage*.xml
-/test/results/reports/coverage*/
-/test/results/bot/*.json
-/test/results/junit/*.xml
-/test/results/logs/*.log
-/test/results/data/*.json
+/test/results/
 /test/integration/cloud-config-aws.yml
-/test/integration/inventory.remote
 /test/integration/inventory.networking
 /test/integration/inventory.winrm
 /test/integration/cloud-config-aws.yml
@@ -113,87 +106,5 @@ test/units/.coverage.*
 /SYMLINK_CACHE.json
 changelogs/.plugin-cache.yaml
 .ansible-test-timeout.json
-# ansible-test temporary metadata file for use with delgation
-/metadata-*.json
-
-# INSPQ roles
-roles/
-
-# Unit tests results
-nosetests*.xml
-
-
-# Created by https://www.gitignore.io/api/eclipse
-# Edit at https://www.gitignore.io/?templates=eclipse
-
-### Eclipse ###
-.metadata
-bin/
-tmp/
-*.tmp
-*.bak
-*.swp
-*~.nib
-local.properties
-.settings/
-.loadpath
-.recommenders
-
-# External tool builders
-.externalToolBuilders/
-
-# Locally stored "Eclipse launch configurations"
-*.launch
-
-# PyDev specific (Python IDE for Eclipse)
-*.pydevproject
-
-# CDT-specific (C/C++ Development Tooling)
-.cproject
-
-# CDT- autotools
-.autotools
-
-# Java annotation processor (APT)
-.factorypath
-
-# PDT-specific (PHP Development Tools)
-.buildpath
-
-# sbteclipse plugin
-.target
-
-# Tern plugin
-.tern-project
-
-# TeXlipse plugin
-.texlipse
-
-# STS (Spring Tool Suite)
-.springBeans
-
-# Code Recommenders
-.recommenders/
-
-# Annotation Processing
-.apt_generated/
-
-# Scala IDE specific (Scala & Java development for Eclipse)
-.cache-main
-.scala_dependencies
-.worksheet
-
-### Eclipse Patch ###
-# Eclipse Core
-.project
-
-# JDT-specific (Eclipse Java Development Tools)
-.classpath
-
-# Annotation Processing
-.apt_generated
-
-.sts4-cache/
-
-# End of https://www.gitignore.io/api/eclipse
-
+.settings
+nosetests*

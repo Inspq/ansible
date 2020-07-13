@@ -72,14 +72,14 @@ class _Alpha:
 
         raise ValueError
 
-    def __gt__(self, other):
-        return not self.__lt__(other)
-
     def __le__(self, other):
         return self.__lt__(other) or self.__eq__(other)
 
+    def __gt__(self, other):
+        return not self.__le__(other)
+
     def __ge__(self, other):
-        return self.__gt__(other) or self.__eq__(other)
+        return not self.__lt__(other)
 
 
 class _Numeric:
@@ -115,14 +115,14 @@ class _Numeric:
 
         raise ValueError
 
-    def __gt__(self, other):
-        return not self.__lt__(other)
-
     def __le__(self, other):
         return self.__lt__(other) or self.__eq__(other)
 
+    def __gt__(self, other):
+        return not self.__le__(other)
+
     def __ge__(self, other):
-        return self.__gt__(other) or self.__eq__(other)
+        return not self.__lt__(other)
 
 
 class SemanticVersion(Version):
@@ -172,7 +172,7 @@ class SemanticVersion(Version):
             else:
                 if idx < extra_idx:
                     extra_idx = idx
-        version[:] = version[:extra_idx]
+        version = version[:extra_idx]
 
         if version and set(type(v) for v in version) != set((int,)):
             raise ValueError("Non integer values in %r" % loose_version)
@@ -180,7 +180,7 @@ class SemanticVersion(Version):
         # Extra is everything to the right of the core version
         extra = re.search('[+-].+$', loose_version.vstring)
 
-        version[:] = version + [0] * (3 - len(version))
+        version = version + [0] * (3 - len(version))
         return SemanticVersion(
             '%s%s' % (
                 '.'.join(str(v) for v in version),

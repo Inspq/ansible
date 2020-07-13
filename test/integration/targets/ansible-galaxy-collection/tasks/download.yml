@@ -4,8 +4,8 @@
     path: '{{ galaxy_dir }}/download'
     state: directory
 
-- name: download collection with multiple dependencides
-  command: ansible-galaxy collection download parent_dep.parent_collection -s {{ fallaxy_galaxy_server }}
+- name: download collection with multiple dependencies
+  command: ansible-galaxy collection download parent_dep.parent_collection -s pulp_v2 {{ galaxy_verbosity }}
   register: download_collection
   args:
     chdir: '{{ galaxy_dir }}/download'
@@ -30,7 +30,7 @@
     - (download_collection_actual.files[3].path | basename) in ['requirements.yml', 'child_dep-child_dep2-1.2.2.tar.gz', 'child_dep-child_collection-0.9.9.tar.gz', 'parent_dep-parent_collection-1.0.0.tar.gz']
 
 - name: test install of download requirements file
-  command: ansible-galaxy collection install -r requirements.yml -p '{{ galaxy_dir }}/download'
+  command: ansible-galaxy collection install -r requirements.yml -p '{{ galaxy_dir }}/download' {{ galaxy_verbosity }}
   args:
     chdir: '{{ galaxy_dir }}/download/collections'
   register: install_download
@@ -69,7 +69,7 @@
     dest: '{{ galaxy_dir }}/download/download.yml'
 
 - name: download collection with req to custom dir
-  command: ansible-galaxy collection download -r '{{ galaxy_dir }}/download/download.yml' -s {{ fallaxy_ah_server }} -p '{{ galaxy_dir }}/download/collections-custom'
+  command: ansible-galaxy collection download -r '{{ galaxy_dir }}/download/download.yml' -s galaxy_ng -p '{{ galaxy_dir }}/download/collections-custom' {{ galaxy_verbosity }}
   register: download_req_custom_path
 
 - name: get result of download collection with req to custom dir
@@ -86,3 +86,21 @@
     - download_req_custom_path_actual.matched == 2
     - (download_req_custom_path_actual.files[0].path | basename) in ['requirements.yml', 'namespace1-name1-1.1.0-beta.1.tar.gz']
     - (download_req_custom_path_actual.files[1].path | basename) in ['requirements.yml', 'namespace1-name1-1.1.0-beta.1.tar.gz']
+
+# https://github.com/ansible/ansible/issues/68186
+- name: create test requirements file without roles and collections
+  copy:
+    content: |
+      collections:
+      roles:
+
+    dest: '{{ galaxy_dir }}/download/no_roles_no_collections.yml'
+
+- name: install collection with requirements
+  command: ansible-galaxy collection install -r '{{ galaxy_dir }}/download/no_roles_no_collections.yml' {{ galaxy_verbosity }}
+  register: install_no_requirements
+
+- name: assert install collection with no roles and no collections in requirements
+  assert:
+    that:
+      - '"Skipping install, no requirements found" in install_no_requirements.stdout'

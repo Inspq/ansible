@@ -35,7 +35,7 @@ An Ansible role has a defined directory structure with seven main standard direc
             defaults/
             meta/
 
-Each directory within a role must contain a ``main.yml`` file with relevant content:
+By default Ansible will look in each directory within a role for a ``main.yml`` file for relevant content (also ``main.yaml`` and ``main``):
 
 - ``tasks/main.yml`` - the main list of tasks that the role executes.
 - ``handlers/main.yml`` - handlers, which may be used within or outside this role.
@@ -241,6 +241,8 @@ You can pass other keywords, including variables and tags, when importing roles:
       ...
 
 When you add a tag to an ``import_role`` statement, Ansible applies the tag to `all` tasks within the role. See :ref:`tag_inheritance` for details.
+
+.. _run_role_twice:
 
 Running a role multiple times in one playbook
 =============================================

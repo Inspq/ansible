@@ -33,6 +33,11 @@ Installing an older version of a collection
 
 .. include:: ../shared_snippets/installing_older_collection.txt
 
+Installing a collection from a git repository
+---------------------------------------------
+
+.. include:: ../shared_snippets/installing_collections_git_repo.txt
+
 .. _collection_requirements_file:
 
 Install multiple collections with a requirements file
@@ -114,7 +119,7 @@ collections on a host without access to a Galaxy or Automation Hub server.
 Listing collections
 ===================
 
-To list installed collections, run ``ansible-galaxy collection list``. This shows all of the installed collections found in the configured collections search paths. The path where the collections are located are displayed as well as version information. If no version information is available, a ``*`` is displayed for the version number.
+To list installed collections, run ``ansible-galaxy collection list``. This shows all of the installed collections found in the configured collections search paths. It will also show collections under development which contain a galaxy.yml file instead of a MANIFEST.json. The path where the collections are located are displayed as well as version information. If no version information is available, a ``*`` is displayed for the version number.
 
 .. code-block:: shell
 
@@ -124,7 +129,7 @@ To list installed collections, run ``ansible-galaxy collection list``. This show
       cisco.aci                  0.0.5
       cisco.mso                  0.0.4
       sandwiches.ham             *
-      splunk.enterprise_security 0.0.5
+      splunk.es                  0.0.5
 
       # /usr/share/ansible/collections/ansible_collections
       Collection        Version
@@ -174,7 +179,7 @@ To search other paths for collections, use the ``-p`` option. Specify multiple s
       cisco.mso                  0.0.4
       fortinet.fortios           1.0.1
       sandwiches.ham             *
-      splunk.enterprise_security 0.0.5
+      splunk.es                  0.0.5
 
       # /usr/share/ansible/collections/ansible_collections
       Collection        Version
@@ -233,6 +238,7 @@ In addition to the ``namespace.collection_name:version`` format, you can provide
 
 Verifying against ``tar.gz`` files is not supported. If your ``requirements.yml`` contains paths to tar files or URLs for installation, you can use the ``--ignore-errors`` flag to ensure that all collections using the ``namespace.name`` format in the file are processed.
 
+.. _collections_using_playbook:
 
 Using collections in a Playbook
 ===============================
@@ -291,7 +297,8 @@ In a playbook, you can control the collections Ansible searches for modules and 
 
      - hosts: all
        collections:
-        - my_namespace.my_collection
+         - my_namespace.my_collection
+
        tasks:
          - import_role:
              name: role1
