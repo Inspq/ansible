@@ -18,6 +18,7 @@ from ansible import constants as C
 from ansible.errors import AnsibleError, AnsibleParserError, AnsibleUndefinedVariable, AnsibleConnectionFailure, AnsibleActionFail, AnsibleActionSkip
 from ansible.executor.task_result import TaskResult
 from ansible.executor.module_common import get_action_args_with_defaults
+from ansible.module_utils.parsing.convert_bool import boolean
 from ansible.module_utils.six import iteritems, string_types, binary_type
 from ansible.module_utils.six.moves import xrange
 from ansible.module_utils._text import to_text, to_native
@@ -584,7 +585,12 @@ class TaskExecutor:
             return dict(include_args=include_args)
 
         # Now we do final validation on the task, which sets all fields to their final values.
-        self._task.post_validate(templar=templar)
+        try:
+            self._task.post_validate(templar=templar)
+        except AnsibleError:
+            raise
+        except Exception:
+            return dict(changed=False, failed=True, _ansible_no_log=self._play_context.no_log, exception=to_text(traceback.format_exc()))
         if '_variable_params' in self._task.args:
             variable_params = self._task.args.pop('_variable_params')
             if isinstance(variable_params, dict):
@@ -902,7 +908,7 @@ class TaskExecutor:
             raise AnsibleError("the connection plugin '%s' was not found" % conn_type)
 
         # load become plugin if needed
-        if cvars.get('ansible_become', self._task.become):
+        if boolean(cvars.get('ansible_become', self._task.become)):
             become_plugin = self._get_become(cvars.get('ansible_become_method', self._task.become_method))
 
             try:
