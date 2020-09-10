@@ -522,6 +522,10 @@ class TaskExecutor:
 
         context_validation_error = None
         try:
+            # TODO: remove play_context as this does not take delegation into account, task itself should hold values
+            #  for connection/shell/become/terminal plugin options to finalize.
+            #  Kept for now for backwards compatiblity and a few functions that are still exclusive to it.
+
             # apply the given task's information to the connection info,
             # which may override some fields already set by the play or
             # the options specified on the command line
@@ -540,7 +544,6 @@ class TaskExecutor:
             # a certain subset of variables exist.
             self._play_context.update_vars(variables)
 
-            # FIXME: update connection/shell plugin options
         except AnsibleError as e:
             # save the error, which we'll raise later if we don't end up
             # skipping this task during the conditional evaluation step
@@ -600,26 +603,28 @@ class TaskExecutor:
                 variable_params.update(self._task.args)
                 self._task.args = variable_params
 
+        if self._task.delegate_to:
+            # use vars from delegated host (which already include task vars) instead of original host
+            cvars = variables.get('ansible_delegated_vars', {}).get(self._task.delegate_to, {})
+            orig_vars = templar.available_variables
+        else:
+            # just use normal host vars
+            cvars = orig_vars = variables
+
+        templar.available_variables = cvars
+
         # get the connection and the handler for this execution
         if (not self._connection or
                 not getattr(self._connection, 'connected', False) or
                 self._play_context.remote_addr != self._connection._play_context.remote_addr):
-            self._connection = self._get_connection(variables=variables, templar=templar)
+            self._connection = self._get_connection(cvars, templar)
         else:
             # if connection is reused, its _play_context is no longer valid and needs
             # to be replaced with the one templated above, in case other data changed
             self._connection._play_context = self._play_context
 
-        if self._task.delegate_to:
-            # use vars from delegated host (which already include task vars) instead of original host
-            delegated_vars = variables.get('ansible_delegated_vars', {}).get(self._task.delegate_to, {})
-            orig_vars = templar.available_variables
-            templar.available_variables = delegated_vars
-            plugin_vars = self._set_connection_options(delegated_vars, templar)
-            templar.available_variables = orig_vars
-        else:
-            # just use normal host vars
-            plugin_vars = self._set_connection_options(variables, templar)
+        plugin_vars = self._set_connection_options(cvars, templar)
+        templar.available_variables = orig_vars
 
         # get handler
         self._handler = self._get_action_handler(connection=self._connection, templar=templar)
@@ -710,7 +715,7 @@ class TaskExecutor:
                 else:
                     # TODO: cleaning of facts should eventually become part of taskresults instead of vars
                     af = wrap_var(result['ansible_facts'])
-                    vars_copy.update(namespace_facts(af))
+                    vars_copy['ansible_facts'] = combine_vars(vars_copy.get('ansible_facts', {}), namespace_facts(af))
                     if C.INJECT_FACTS_AS_VARS:
                         vars_copy.update(clean_facts(af))
 
@@ -774,7 +779,7 @@ class TaskExecutor:
             else:
                 # TODO: cleaning of facts should eventually become part of taskresults instead of vars
                 af = wrap_var(result['ansible_facts'])
-                variables.update(namespace_facts(af))
+                variables['ansible_facts'] = combine_vars(variables.get('ansible_facts', {}), namespace_facts(af))
                 if C.INJECT_FACTS_AS_VARS:
                     variables.update(clean_facts(af))
 
@@ -786,10 +791,12 @@ class TaskExecutor:
 
         # add the delegated vars to the result, so we can reference them
         # on the results side without having to do any further templating
+        # also now add conneciton vars results when delegating
         if self._task.delegate_to:
             result["_ansible_delegated_vars"] = {'ansible_delegated_host': self._task.delegate_to}
             for k in plugin_vars:
-                result["_ansible_delegated_vars"][k] = delegated_vars.get(k)
+                result["_ansible_delegated_vars"][k] = cvars.get(k)
+
         # and return
         display.debug("attempt loop complete, returning result")
         return result
@@ -875,19 +882,17 @@ class TaskExecutor:
                                "Use `ansible-doc -t become -l` to list available plugins." % name)
         return become
 
-    def _get_connection(self, variables, templar):
+    def _get_connection(self, cvars, templar):
         '''
         Reads the connection property for the host, and returns the
         correct connection object from the list of connection plugins
         '''
 
-        if self._task.delegate_to is not None:
-            cvars = variables.get('ansible_delegated_vars', {}).get(self._task.delegate_to, {})
-        else:
-            cvars = variables
-
         # use magic var if it exists, if not, let task inheritance do it's thing.
-        self._play_context.connection = cvars.get('ansible_connection', self._task.connection)
+        if cvars.get('ansible_connection') is not None:
+            self._play_context.connection = templar.template(cvars['ansible_connection'])
+        else:
+            self._play_context.connection = self._task.connection
 
         # TODO: play context has logic to update the conneciton for 'smart'
         # (default value, will chose between ssh and paramiko) and 'persistent'
@@ -908,8 +913,16 @@ class TaskExecutor:
             raise AnsibleError("the connection plugin '%s' was not found" % conn_type)
 
         # load become plugin if needed
-        if boolean(cvars.get('ansible_become', self._task.become)):
-            become_plugin = self._get_become(cvars.get('ansible_become_method', self._task.become_method))
+        if cvars.get('ansible_become') is not None:
+            become = boolean(templar.template(cvars['ansible_become']))
+        else:
+            become = self._task.become
+
+        if become:
+            if cvars.get('ansible_become_method'):
+                become_plugin = self._get_become(templar.template(cvars['ansible_become_method']))
+            else:
+                become_plugin = self._get_become(self._task.become_method)
 
             try:
                 connection.set_become_plugin(become_plugin)
@@ -936,15 +949,14 @@ class TaskExecutor:
             display.vvvv('attempting to start connection', host=self._play_context.remote_addr)
             display.vvvv('using connection plugin %s' % connection.transport, host=self._play_context.remote_addr)
 
-            options = self._get_persistent_connection_options(connection, variables, templar)
+            options = self._get_persistent_connection_options(connection, cvars, templar)
             socket_path = start_connection(self._play_context, options, self._task._uuid)
             display.vvvv('local domain socket path is %s' % socket_path, host=self._play_context.remote_addr)
             setattr(connection, '_socket_path', socket_path)
 
         return connection
 
-    def _get_persistent_connection_options(self, connection, variables, templar):
-        final_vars = combine_vars(variables, variables.get('ansible_delegated_vars', dict()).get(self._task.delegate_to, dict()))
+    def _get_persistent_connection_options(self, connection, final_vars, templar):
 
         option_vars = C.config.get_plugin_vars('connection', connection._load_name)
         plugin = connection._sub_plugin
@@ -997,6 +1009,13 @@ class TaskExecutor:
                     options['_extras'][k] = templar.template(variables[k])
 
         task_keys = self._task.dump_attrs()
+
+        if self._play_context.password:
+            # The connection password is threaded through the play_context for
+            # now. This is something we ultimately want to avoid, but the first
+            # step is to get connection plugins pulling the password through the
+            # config system instead of directly accessing play_context.
+            task_keys['password'] = self._play_context.password
 
         # set options with 'templated vars' specific to this plugin and dependent ones
         self._connection.set_options(task_keys=task_keys, var_options=options)

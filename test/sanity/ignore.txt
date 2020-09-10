@@ -115,8 +115,6 @@ docs/docsite/rst/dev_guide/testing/sanity/no-smart-quotes.rst no-smart-quotes
 examples/scripts/ConfigureRemotingForAnsible.ps1 pslint:PSCustomUseLiteralPath
 examples/scripts/upgrade_to_ps3.ps1 pslint:PSCustomUseLiteralPath
 examples/scripts/upgrade_to_ps3.ps1 pslint:PSUseApprovedVerbs
-examples/scripts/uptime.py future-import-boilerplate
-examples/scripts/uptime.py metaclass-boilerplate
 hacking/aws_config/build_iam_policy_framework.py future-import-boilerplate
 hacking/aws_config/build_iam_policy_framework.py metaclass-boilerplate
 hacking/build-ansible.py shebang # only run by release engineers, Python 3.6+ required
@@ -163,8 +161,6 @@ lib/ansible/module_utils/alicloud_ecs.py future-import-boilerplate
 lib/ansible/module_utils/alicloud_ecs.py metaclass-boilerplate
 lib/ansible/module_utils/ansible_tower.py future-import-boilerplate
 lib/ansible/module_utils/ansible_tower.py metaclass-boilerplate
-lib/ansible/module_utils/api.py future-import-boilerplate
-lib/ansible/module_utils/api.py metaclass-boilerplate
 lib/ansible/module_utils/aws/batch.py future-import-boilerplate
 lib/ansible/module_utils/aws/batch.py metaclass-boilerplate
 lib/ansible/module_utils/aws/cloudfront_facts.py future-import-boilerplate
@@ -6059,6 +6055,7 @@ test/integration/targets/win_psmodule/files/module/template.psm1 pslint!skip
 test/integration/targets/win_psmodule/files/setup_modules.ps1 pslint:PSCustomUseLiteralPath
 test/integration/targets/win_reboot/templates/post_reboot.ps1 pslint:PSCustomUseLiteralPath
 test/integration/targets/win_regmerge/templates/win_line_ending.j2 line-endings
+test/integration/targets/win_fetch/tasks/main.yml no-smart-quotes  # We are explictly testing smart quotes in the file name to fetch
 test/integration/targets/win_script/files/test_script.ps1 pslint:PSAvoidUsingWriteHost # Keep
 test/integration/targets/win_script/files/test_script_creates_file.ps1 pslint:PSAvoidUsingCmdletAliases
 test/integration/targets/win_script/files/test_script_removes_file.ps1 pslint:PSCustomUseLiteralPath

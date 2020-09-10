@@ -43,6 +43,8 @@ DOCUMENTATION = """
             - name: ansible_winrm_pass
             - name: ansible_winrm_password
         type: str
+        aliases:
+        - password  # Needed for --ask-pass to come through on delegation
       port:
         description:
             - port for winrm to connect on remote target
@@ -652,7 +654,7 @@ class Connection(ConnectionBase):
             while True:
                 try:
                     script = '''
-                        $path = "%(path)s"
+                        $path = '%(path)s'
                         If (Test-Path -Path $path -PathType Leaf)
                         {
                             $buffer_size = %(buffer_size)d

@@ -182,7 +182,6 @@ class StrategyBase:
         self._final_q = tqm._final_q
         self._step = context.CLIARGS.get('step', False)
         self._diff = context.CLIARGS.get('diff', False)
-        self.flush_cache = context.CLIARGS.get('flush_cache', False)
 
         # the task cache is a dictionary of tuples of (host.name, task._uuid)
         # used to find the original task object of in-flight tasks and to store
@@ -553,7 +552,12 @@ class StrategyBase:
                     if iterator.is_failed(original_host) and state and state.run_state == iterator.ITERATING_COMPLETE:
                         self._tqm._failed_hosts[original_host.name] = True
 
-                    if state and iterator.get_active_state(state).run_state == iterator.ITERATING_RESCUE:
+                    # Use of get_active_state() here helps detect proper state if, say, we are in a rescue
+                    # block from an included file (include_tasks). In a non-included rescue case, a rescue
+                    # that starts with a new 'block' will have an active state of ITERATING_TASKS, so we also
+                    # check the current state block tree to see if any blocks are rescuing.
+                    if state and (iterator.get_active_state(state).run_state == iterator.ITERATING_RESCUE or
+                                  iterator.is_any_block_rescuing(state)):
                         self._tqm._stats.increment('rescued', original_host.name)
                         self._variable_manager.set_nonpersistent_facts(
                             original_host.name,
@@ -1103,6 +1107,7 @@ class StrategyBase:
 
         skipped = False
         msg = ''
+        # The top-level conditions should only compare meta_action
         if meta_action == 'noop':
             # FIXME: issue a callback for the noop here?
             if task.when:
@@ -1115,7 +1120,7 @@ class StrategyBase:
             self.run_handlers(iterator, play_context)
             self._flushed_hosts[target_host] = False
             msg = "ran handlers"
-        elif meta_action == 'refresh_inventory' or self.flush_cache:
+        elif meta_action == 'refresh_inventory':
             if task.when:
                 self._cond_not_supported_warn(meta_action)
             self._inventory.refresh_inventory()
