@@ -16,6 +16,8 @@ class KeycloakRealmTestCase(ModuleTestCase):
         'accessCodeLifespan': 60,
         'accessCodeLifespanLogin': 1800,
         'accessCodeLifespanUserAction': 300,
+        'actionTokenGeneratedByAdminLifespan': 360,
+        'actionTokenGeneratedByUserLifespan': 240,
         'notBefore':  0,
         'revokeRefreshToken':  False,
         'accessTokenLifespan':  300,
@@ -268,12 +270,15 @@ class KeycloakRealmTestCase(ModuleTestCase):
     def test_modify_realm(self):
         toModify = self.toModifyRealm.copy()
         toModify["displayNameHtml"] = "New name"
+        toModify["actionTokenGeneratedByAdminLifespan"] = 360
+        toModify["actionTokenGeneratedByUserLifespan"] = 240
         toModify['eventsConfig'] = {
             "eventsEnabled": True,
             "eventsListeners": [ "jboss-logging" ],
             "enabledEventTypes": ["SEND_RESET_PASSWORD", "UPDATE_TOTP", "REMOVE_TOTP", "REVOKE_GRANT", "LOGIN_ERROR", "CLIENT_LOGIN", "RESET_PASSWORD_ERROR", "IMPERSONATE_ERROR", "CODE_TO_TOKEN_ERROR", "CUSTOM_REQUIRED_ACTION", "UPDATE_PROFILE_ERROR", "IMPERSONATE", "LOGIN", "UPDATE_PASSWORD_ERROR", "REGISTER", "LOGOUT", "CLIENT_REGISTER", "UPDATE_PASSWORD", "FEDERATED_IDENTITY_LINK_ERROR", "CLIENT_DELETE", "IDENTITY_PROVIDER_FIRST_LOGIN", "VERIFY_EMAIL", "CLIENT_DELETE_ERROR", "CLIENT_LOGIN_ERROR", "REMOVE_FEDERATED_IDENTITY_ERROR", "EXECUTE_ACTIONS", "SEND_IDENTITY_PROVIDER_LINK_ERROR", "SEND_VERIFY_EMAIL", "EXECUTE_ACTIONS_ERROR", "REMOVE_FEDERATED_IDENTITY", "IDENTITY_PROVIDER_POST_LOGIN", "UPDATE_EMAIL", "REGISTER_ERROR", "REVOKE_GRANT_ERROR", "LOGOUT_ERROR", "UPDATE_EMAIL_ERROR", "CLIENT_UPDATE_ERROR", "UPDATE_PROFILE", "FEDERATED_IDENTITY_LINK", "CLIENT_REGISTER_ERROR", "SEND_VERIFY_EMAIL_ERROR", "SEND_IDENTITY_PROVIDER_LINK", "RESET_PASSWORD", "REMOVE_TOTP_ERROR", "VERIFY_EMAIL_ERROR", "SEND_RESET_PASSWORD_ERROR", "CLIENT_UPDATE", "IDENTITY_PROVIDER_POST_LOGIN_ERROR", "CUSTOM_REQUIRED_ACTION_ERROR", "UPDATE_TOTP_ERROR", "CODE_TO_TOKEN", "IDENTITY_PROVIDER_FIRST_LOGIN_ERROR"],
             "adminEventsEnabled": True,
-            "adminEventsDetailsEnabled": True}
+            "adminEventsDetailsEnabled": True,
+            }
         set_module_args(toModify)
         with self.assertRaises(AnsibleExitJson) as results:
             self.module.main()
