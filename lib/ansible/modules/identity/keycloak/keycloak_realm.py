@@ -109,7 +109,7 @@ options:
     displayName:
         description:
             - The display name of the realm.
-        required: false
+        required: true
         aliases: ['name']
         type: str
     displayNameHtml:
@@ -699,7 +699,7 @@ def main():
         defaultRoles=dict(type='list', default=["offline_access", "uma_authorization"]),
         directGrantFlow=dict(type='str', default="direct grant"),
         displayName=dict(type='str', required=True, aliases=['name']),
-        displayNameHtml=dict(type='str', default="", aliases=['namehtml']),
+        displayNameHtml=dict(type='str', required=True, aliases=['namehtml']),
         duplicateEmailsAllowed=dict(type='bool', default=False),
         editUsernameAllowed=dict(type='bool', default=False),
         emailTheme=dict(type="str"),
