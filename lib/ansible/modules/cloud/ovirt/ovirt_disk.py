@@ -351,7 +351,7 @@ def create_transfer_connection(module, transfer, context, connect_timeout=10, re
         url.netloc, context=context, timeout=connect_timeout)
     try:
         connection.connect()
-    except OSError as e:
+    except Exception as e:
         # Typically ConnectionRefusedError or socket.gaierror.
         module.warn("Cannot connect to %s, trying %s: %s" % (transfer.transfer_url, transfer.proxy_url, e))
 
@@ -562,6 +562,8 @@ class DisksModule(BaseModule):
         # Initiate move:
         if self._module.params['storage_domain']:
             new_disk_storage_id = get_id_by_name(sds_service, self._module.params['storage_domain'])
+            if new_disk_storage_id in [sd.id for sd in disk.storage_domains]:
+                return changed
             changed = self.action(
                 action='move',
                 entity=disk,

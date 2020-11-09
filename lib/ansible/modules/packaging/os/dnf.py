@@ -669,12 +669,16 @@ class DnfModule(YumDnf):
                 results=[],
                 rc=1
             )
+
+        filters = []
         if self.bugfix:
             key = {'advisory_type__eq': 'bugfix'}
-            base._update_security_filters = [base.sack.query().filter(**key)]
+            filters.append(base.sack.query().filter(**key))
         if self.security:
             key = {'advisory_type__eq': 'security'}
-            base._update_security_filters = [base.sack.query().filter(**key)]
+            filters.append(base.sack.query().filter(**key))
+        if filters:
+            base._update_security_filters = filters
 
         return base
 
@@ -1176,6 +1180,18 @@ class DnfModule(YumDnf):
                 self.module.exit_json(**response)
             else:
                 response['changed'] = True
+
+                # If packages got installed/removed, add them to the results.
+                # We do this early so we can use it for both check_mode and not.
+                if self.download_only:
+                    install_action = 'Downloaded'
+                else:
+                    install_action = 'Installed'
+                for package in self.base.transaction.install_set:
+                    response['results'].append("{0}: {1}".format(install_action, package))
+                for package in self.base.transaction.remove_set:
+                    response['results'].append("Removed: {0}".format(package))
+
                 if failure_response['failures']:
                     failure_response['msg'] = 'Failed to install some of the specified packages'
                     self.module.fail_json(**failure_response)
@@ -1216,15 +1232,11 @@ class DnfModule(YumDnf):
                             self.module.fail_json(msg=msg)
 
                 if self.download_only:
-                    for package in self.base.transaction.install_set:
-                        response['results'].append("Downloaded: {0}".format(package))
+                    # No further work left to do, and the results were already updated above.
+                    # Just return them.
                     self.module.exit_json(**response)
                 else:
                     self.base.do_transaction()
-                    for package in self.base.transaction.install_set:
-                        response['results'].append("Installed: {0}".format(package))
-                    for package in self.base.transaction.remove_set:
-                        response['results'].append("Removed: {0}".format(package))
 
                 if failure_response['failures']:
                     failure_response['msg'] = 'Failed to install some of the specified packages'

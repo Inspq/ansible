@@ -5,6 +5,107 @@ Ansible 2.9 "Immigrant Song" Release Notes
 .. contents:: Topics
 
 
+v2.9.15
+=======
+
+Release Summary
+---------------
+
+| Release Date: 2020-11-02
+| `Porting Guide <https://docs.ansible.com/ansible/devel/porting_guides.html>`__
+
+
+Minor Changes
+-------------
+
+- ansible-test - Add a ``--docker-network`` option to choose the network for running containers when using the ``--docker`` option.
+- ansible-test - Collections can now specify pip constraints for unit and integration test requirements using ``tests/unit/constraints.txt`` and ``tests/integration/constraints.txt`` respectively.
+- dnf - now shows specific package changes (installations/removals) under ``results`` in check_mode. (https://github.com/ansible/ansible/issues/66132)
+- module_defaults - add new module s3_metrics_configuration from community.aws to aws module_defaults group (https://github.com/ansible/ansible/pull/72145).
+- vmware_guest_custom_attributes - Fixed issue when trying to set a VM custom attribute when there are custom attributes with the same name for other object types (https://github.com/ansible-collections/community.vmware/issues/412).
+
+Breaking Changes / Porting Guide
+--------------------------------
+
+- ansible-galaxy login command has been removed (see https://github.com/ansible/ansible/issues/71560)
+
+Bugfixes
+--------
+
+- Restore the ability for changed_when/failed_when to function with group_by (#70844).
+- ansible-test - Always connect additional Docker containers to the network used by the current container (if any).
+- ansible-test - Always map ``/var/run/docker.sock`` into test containers created by the ``--docker`` option if the docker host is not ``localhost``.
+- ansible-test - Attempt to detect the Docker hostname instead of assuming ``localhost``.
+- ansible-test - Correctly detect running in a Docker container on Azure Pipelines.
+- ansible-test - Prefer container IP at ``.NetworkSettings.Networks.{NetworkName}.IPAddress`` over ``.NetworkSettings.IPAddress``.
+- ansible-test - The ``cs`` and ``openshift`` test plugins now search for containers on the current network instead of assuming the ``bridge`` network.
+- ansible-test - Using the ``--remote`` option on Azure Pipelines now works from a job running in a container.
+- ansible-test - disable ansible-doc sanity test for vars plugins in collections, which are not supported by Ansible 2.9 (https://github.com/ansible/ansible/pull/72336).
+- async_wrapper - Fix race condition when ``~/.ansible_async`` folder tries to be created by multiple async tasks at the same time - https://github.com/ansible/ansible/issues/59306
+- dnf - it is now possible to specify both ``security: true`` and ``bugfix: true`` to install updates of both types. Previously, only security would get installed if both were true. (https://github.com/ansible/ansible/issues/70854)
+- facts - fix distribution fact for SLES4SAP (https://github.com/ansible/ansible/pull/71559).
+- kubectl - follow up fix in _build_exec_cmd API (https://github.com/ansible/ansible/issues/72171).
+- nmcli - typecast parameters to string as required (https://github.com/ansible/ansible/issues/59095).
+- ovirt_disk - don't move disk when already in storage_domain (https://github.com/oVirt/ovirt-ansible-collection/pull/135).
+- postgresql_pg_hba - fix a crash when a new rule with an 'options' field replaces a rule without or vice versa (https://github.com/ansible-collections/community.general/issues/1108).
+- postgresql_privs - fix the module mistakes a procedure for a function (https://github.com/ansible-collections/community.general/issues/994)
+- powershell - remove getting the PowerShell version from the env var ``POWERSHELL_VERSION``. This feature never worked properly and can cause conflicts with other libraries that use this var
+- user - AnsibleModule.run_command returns a tuple of return code, stdout and stderr. The module main function of the user module expects user.create_user to return a tuple of return code, stdout and stderr. Fix the locations where stdout and stderr got reversed.
+
+- user - Local users with an expiry date cannot be created as the ``luseradd`` / ``lusermod`` commands do not support the ``-e`` option. Set the expiry time in this case via ``lchage`` after the user was created / modified. (https://github.com/ansible/ansible/issues/71942)
+
+- zfs - fixed ``invalid character '@' in pool name"`` error when working with snapshots on a root zvol (https://github.com/ansible-collections/community.general/issues/932).
+
+v2.9.14
+=======
+
+Release Summary
+---------------
+
+| Release Date: 2020-10-05
+| `Porting Guide <https://docs.ansible.com/ansible/devel/porting_guides.html>`__
+
+
+Minor Changes
+-------------
+
+- ansible-test - Added CI provider support for Azure Pipelines.
+- ansible-test - Added support for Ansible Core CI request signing for Shippable.
+- ansible-test - Allow custom ``--remote-stage`` options for development and testing.
+- ansible-test - Fix ``ansible-test coverage`` reporting sub-commands (``report``, ``html``, ``xml``) on Python 2.6.
+- ansible-test - Refactored CI related logic into a basic provider abstraction.
+- ansible-test - Remove the discontinued ``us-east-2`` choice from the ``--remote-aws-region`` option.
+- ansible-test - Request remote resources by provider name for all provider types.
+- ansible-test - Show a warning when the obsolete ``--remote-aws-region`` option is used.
+- ansible-test - Support custom remote endpoints with the ``--remote-endpoint`` option.
+- ansible-test - Update built-in service endpoints for the ``--remote`` option.
+- ansible-test - Use new endpoint for Parallels based instances with the ``--remote`` option.
+- vmware_guest - Support HW version 15 / vSphere 6.7U2 (https://github.com/ansible-collections/vmware/pull/99).
+
+Security Fixes
+--------------
+
+- kubectl - connection plugin now redact kubectl_token and kubectl_password in console log (https://github.com/ansible-collections/community.kubernetes/issues/65) (CVE-2020-1753).
+
+Bugfixes
+--------
+
+- Handle write_files option in cgroup_perf_recap callback plugin (https://github.com/ansible/ansible/issues/64936).
+- Prevent templating unused variables for {% include %} (https://github.com/ansible/ansible/issues/68699)
+- Provide more information in AnsibleUndefinedVariable (https://github.com/ansible/ansible/issues/55152)
+- ansible-doc - do not crash if plugin name cannot be found (https://github.com/ansible/ansible/pull/71965).
+- ansible-doc - properly show plugin name when ``name:`` is used instead of ``<plugin_type>:`` (https://github.com/ansible/ansible/pull/71965).
+- ansible-test - Change classification using ``--changed`` now consistently handles common configuration files for supported CI providers.
+- ansible-test - The ``resource_prefix`` variable provided to tests running on Azure Pipelines is now converted to lowercase to match other CI providers.
+- ansible-test - for local change detection, allow to specify branch to compare to with ``--base-branch`` for all types of tests (https://github.com/ansible/ansible/pull/69508).
+- docker_login - now correctly reports changed status on logout for Docker versions released after June 2020.
+- docker_login - now obeys check_mode for logout
+- interfaces_file - escape regular expression characters in old value (https://github.com/ansible-collections/community.general/issues/777).
+- ovirt_disk - fix upload when direct upload fails (https://github.com/oVirt/ovirt-ansible-collection/pull/120).
+- postgres_user - remove false positive ``no_log`` warning for ``no_password_changes`` option (https://github.com/ansible/ansible/issues/68106).
+- psrp - Fix hang when copying an empty file to the remote target
+- runas - create a new token when running as ``SYSTEM`` to ensure it has the full privileges assigned to that account
+
 v2.9.13
 =======
 

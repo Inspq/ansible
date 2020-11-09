@@ -70,6 +70,9 @@ from .docker_util import (
     docker_available,
     docker_network_disconnect,
     get_docker_networks,
+    get_docker_preferred_network_name,
+    get_docker_hostname,
+    is_docker_user_defined_network,
 )
 
 from .cloud import (
@@ -90,6 +93,10 @@ from .payload import (
 
 from .venv import (
     create_virtual_environment,
+)
+
+from .ci import (
+    get_ci_provider,
 )
 
 
@@ -115,6 +122,8 @@ def delegate(args, exclude, require, integration_targets):
     :rtype: bool
     """
     if isinstance(args, TestConfig):
+        args.metadata.ci_provider = get_ci_provider().code
+
         with tempfile.NamedTemporaryFile(prefix='metadata-', suffix='.json', dir=data_context().content.root) as metadata_fd:
             args.metadata_path = os.path.basename(metadata_fd.name)
             args.metadata.to_file(args.metadata_path)
@@ -356,14 +365,18 @@ def delegate_docker(args, exclude, require, integration_targets):
             if args.docker_seccomp != 'default':
                 test_options += ['--security-opt', 'seccomp=%s' % args.docker_seccomp]
 
-            if os.path.exists(docker_socket):
+            if get_docker_hostname() != 'localhost' or os.path.exists(docker_socket):
                 test_options += ['--volume', '%s:%s' % (docker_socket, docker_socket)]
 
             if httptester_id:
                 test_options += ['--env', 'HTTPTESTER=1']
 
-                for host in HTTPTESTER_HOSTS:
-                    test_options += ['--link', '%s:%s' % (httptester_id, host)]
+                network = get_docker_preferred_network_name(args)
+
+                if not is_docker_user_defined_network(network):
+                    # legacy links are required when using the default bridge network instead of user-defined networks
+                    for host in HTTPTESTER_HOSTS:
+                        test_options += ['--link', '%s:%s' % (httptester_id, host)]
 
             if isinstance(args, IntegrationConfig):
                 cloud_platforms = get_cloud_providers(args)
@@ -597,8 +610,10 @@ def generate_command(args, python_interpreter, ansible_bin_path, content_root, o
     if isinstance(args, ShellConfig):
         cmd = create_shell_command(cmd)
     elif isinstance(args, SanityConfig):
-        if args.base_branch:
-            cmd += ['--base-branch', args.base_branch]
+        base_branch = args.base_branch or get_ci_provider().get_base_branch()
+
+        if base_branch:
+            cmd += ['--base-branch', base_branch]
 
     return cmd
 
