@@ -364,6 +364,7 @@ def common_environment():
 
     optional = (
         'HTTPTESTER',
+        'KRB5_PASSWORD',
         'LD_LIBRARY_PATH',
         'SSH_AUTH_SOCK',
         # MacOS High Sierra Compatibility
@@ -500,7 +501,7 @@ def is_binary_file(path):
 
     with open_binary_file(path) as path_fd:
         # noinspection PyTypeChecker
-        return b'\0' in path_fd.read(1024)
+        return b'\0' in path_fd.read(4096)
 
 
 def generate_password():

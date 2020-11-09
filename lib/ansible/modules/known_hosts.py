@@ -14,8 +14,8 @@ short_description: Add or remove a host from the C(known_hosts) file
 description:
    - The C(known_hosts) module lets you add or remove a host keys from the C(known_hosts) file.
    - Starting at Ansible 2.2, multiple entries per host are allowed, but only one for each key type supported by ssh.
-     This is useful if you're going to want to use the M(git) module over ssh, for example.
-   - If you have a very large number of host keys to manage, you will find the M(template) module more useful.
+     This is useful if you're going to want to use the M(ansible.builtin.git) module over ssh, for example.
+   - If you have a very large number of host keys to manage, you will find the M(ansible.builtin.template) module more useful.
 version_added: "1.9"
 options:
   name:
@@ -24,8 +24,8 @@ options:
       - The host to add or remove (must match a host specified in key). It will be converted to lowercase so that ssh-keygen can find it.
       - Must match with <hostname> or <ip> present in key attribute.
       - For custom SSH port, C(name) needs to specify port as well. See example section.
-    required: true
     type: str
+    required: true
   key:
     description:
       - The SSH public host key, as a string.

@@ -72,8 +72,8 @@ options:
   protocol:
     description:
       - The protocol of the rule or of the packet to check.
-      - The specified protocol can be one of C(tcp), C(udp), C(udplite), C(icmp), C(esp),
-        C(ah), C(sctp) or the special keyword C(all), or it can be a numeric value,
+      - The specified protocol can be one of C(tcp), C(udp), C(udplite), C(icmp), C(ipv6-icmp) or C(icmpv6),
+        C(esp), C(ah), C(sctp) or the special keyword C(all), or it can be a numeric value,
         representing one of these protocols or a different one.
       - A protocol name from I(/etc/protocols) is also allowed.
       - A C(!) argument before the protocol inverts the test.
@@ -118,10 +118,12 @@ options:
             description:
                 - List of flags you want to examine.
             type: list
+            elements: str
         flags_set:
             description:
                 - Flags to be set.
             type: list
+            elements: str
   match:
     description:
       - Specifies a match to use, that is, an extension module that tests for
@@ -130,6 +132,7 @@ options:
       - Matches are evaluated first to last if specified as an array and work in short-circuit
         fashion, i.e. if one extension yields false, evaluation will stop.
     type: list
+    elements: str
     default: []
   jump:
     description:
@@ -268,6 +271,7 @@ options:
       - C(ctstate) is a list of the connection states to match in the conntrack module.
       - Possible states are C(INVALID), C(NEW), C(ESTABLISHED), C(RELATED), C(UNTRACKED), C(SNAT), C(DNAT)
     type: list
+    elements: str
     default: []
   src_range:
     description:
@@ -556,8 +560,6 @@ def construct_rule(params):
         '--set-dscp-class',
         False)
     append_match_flag(rule, params['syn'], '--syn', True)
-    append_match(rule, params['comment'], 'comment')
-    append_param(rule, params['comment'], '--comment', False)
     if 'conntrack' in params['match']:
         append_csv(rule, params['ctstate'], '--ctstate')
     elif 'state' in params['match']:
@@ -589,6 +591,8 @@ def construct_rule(params):
         params['icmp_type'],
         ICMP_TYPE_OPTIONS[params['ip_version']],
         False)
+    append_match(rule, params['comment'], 'comment')
+    append_param(rule, params['comment'], '--comment', False)
     return rule
 
 
@@ -667,11 +671,11 @@ def main():
             to_source=dict(type='str'),
             destination=dict(type='str'),
             to_destination=dict(type='str'),
-            match=dict(type='list', default=[]),
+            match=dict(type='list', elements='str', default=[]),
             tcp_flags=dict(type='dict',
                            options=dict(
-                                flags=dict(type='list'),
-                                flags_set=dict(type='list'))
+                                flags=dict(type='list', elements='str'),
+                                flags_set=dict(type='list', elements='str'))
                            ),
             jump=dict(type='str'),
             gateway=dict(type='str'),
@@ -693,7 +697,7 @@ def main():
             set_dscp_mark=dict(type='str'),
             set_dscp_mark_class=dict(type='str'),
             comment=dict(type='str'),
-            ctstate=dict(type='list', default=[]),
+            ctstate=dict(type='list', elements='str', default=[]),
             src_range=dict(type='str'),
             dst_range=dict(type='str'),
             limit=dict(type='str'),

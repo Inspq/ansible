@@ -21,6 +21,7 @@ def assemble_files_to_ship(complete_file_list):
     # All files which are in the repository except these:
     ignore_patterns = (
         # Developer-only tools
+        '.azure-pipelines/*',
         '.github/*',
         '.github/*/*',
         'changelogs/fragments/*',
@@ -54,6 +55,9 @@ def assemble_files_to_ship(complete_file_list):
         '.mailmap',
         # Possibly should be included
         'examples/scripts/uptime.py',
+        'examples/scripts/my_test.py',
+        'examples/scripts/my_test_info.py',
+        'examples/scripts/my_test_facts.py',
         'examples/DOCUMENTATION.yml',
         'examples/play.yml',
         'examples/hosts.yaml',

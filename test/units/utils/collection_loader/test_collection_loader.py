@@ -527,8 +527,6 @@ def test_default_collection_config():
     assert AnsibleCollectionConfig.default_collection is None
     AnsibleCollectionConfig.default_collection = 'foo.bar'
     assert AnsibleCollectionConfig.default_collection == 'foo.bar'
-    with pytest.raises(ValueError):
-        AnsibleCollectionConfig.default_collection = 'bar.baz'
 
 
 def test_default_collection_detection():
@@ -592,6 +590,22 @@ def test_bogus_imports():
     for bogus_import in bogus_imports:
         with pytest.raises(ImportError):
             import_module(bogus_import)
+
+
+def test_empty_vs_no_code():
+    finder = get_default_finder()
+    reset_collections_loader_state(finder)
+
+    from ansible_collections.testns import testcoll  # synthetic package with no code on disk
+    from ansible_collections.testns.testcoll.plugins import module_utils  # real package with empty code file
+
+    # ensure synthetic packages have no code object at all (prevent bogus coverage entries)
+    assert testcoll.__loader__.get_source(testcoll.__name__) is None
+    assert testcoll.__loader__.get_code(testcoll.__name__) is None
+
+    # ensure empty package inits do have a code object
+    assert module_utils.__loader__.get_source(module_utils.__name__) == b''
+    assert module_utils.__loader__.get_code(module_utils.__name__) is not None
 
 
 def test_finder_playbook_paths():

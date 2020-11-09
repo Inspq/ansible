@@ -325,6 +325,7 @@
   assert:
     that:
       - '"%Y-%m-%d"|strftime(1585247522) == "2020-03-26"'
+      - '"%Y-%m-%d"|strftime("1585247522.0") == "2020-03-26"'
       - '("%Y"|strftime(None)).startswith("20")' # Current date, can't check much there.
       - strftime_fail is failed
       - '"Invalid value for epoch value" in strftime_fail.msg'
@@ -600,3 +601,10 @@
       bar: 123
     thing_items: '{{ thing_dict.items() }}'
     thing_range: '{{ range(10) }}'
+
+- name: Assert that quote works on None
+  assert:
+    that:
+      - thing|quote == "''"
+  vars:
+    thing: null

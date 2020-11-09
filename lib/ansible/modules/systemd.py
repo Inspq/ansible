@@ -21,11 +21,13 @@ options:
         description:
             - Name of the service. This parameter takes the name of exactly one service to work with.
             - When using in a chroot environment you always need to specify the full name i.e. (crond.service).
+        type: str
         aliases: [ service, unit ]
     state:
         description:
             - C(started)/C(stopped) are idempotent actions that will not run commands unless necessary.
               C(restarted) will always bounce the service. C(reloaded) will always reload.
+        type: str
         choices: [ reloaded, restarted, started, stopped ]
     enabled:
         description:
@@ -61,6 +63,7 @@ options:
             - "For systemd to work with 'user', the executing user must have its own instance of dbus started (systemd requirement).
               The user dbus process is normally started during normal login, but not during the run of Ansible tasks.
               Otherwise you will probably get a 'Failed to connect to bus: no such file or directory' error."
+        type: str
         choices: [ system, user, global ]
         default: system
         version_added: "2.7"
@@ -270,7 +273,7 @@ def is_deactivating_service(service_status):
 
 
 def request_was_ignored(out):
-    return '=' not in out and 'ignoring request' in out
+    return '=' not in out and ('ignoring request' in out or 'ignoring command' in out)
 
 
 def parse_systemctl_show(lines):
@@ -397,6 +400,17 @@ def main():
                 # Check for loading error
                 if is_systemd and not is_masked and 'LoadError' in result['status']:
                     module.fail_json(msg="Error loading unit file '%s': %s" % (unit, result['status']['LoadError']))
+
+        # Workaround for https://github.com/ansible/ansible/issues/71528
+        elif err and rc == 1 and 'Failed to parse bus message' in err:
+            result['status'] = parse_systemctl_show(to_native(out).split('\n'))
+
+            (rc, out, err) = module.run_command("{systemctl} list-unit-files '{unit}*'".format(systemctl=systemctl, unit=unit))
+            is_systemd = unit in out
+
+            (rc, out, err) = module.run_command("{systemctl} is-active '{unit}'".format(systemctl=systemctl, unit=unit))
+            result['status']['ActiveState'] = out.rstrip('\n')
+
         else:
             # list taken from man systemctl(1) for systemd 244
             valid_enabled_states = [
@@ -517,8 +531,8 @@ def main():
                         if rc != 0:
                             module.fail_json(msg="Unable to %s service %s: %s" % (action, unit, err))
             # check for chroot
-            elif is_chroot(module):
-                module.warn("Target is a chroot. This can lead to false positives or prevent the init system tools from working.")
+            elif is_chroot(module) or os.environ.get('SYSTEMD_OFFLINE') == '1':
+                module.warn("Target is a chroot or systemd is offline. This can lead to false positives or prevent the init system tools from working.")
             else:
                 # this should not happen?
                 module.fail_json(msg="Service is in unknown state", status=result['status'])

@@ -391,7 +391,7 @@ def _remove_values_conditions(value, no_log_strings, deferred_removals):
             if omit_me in stringy_value:
                 return 'VALUE_SPECIFIED_IN_NO_LOG_PARAMETER'
 
-    elif isinstance(value, datetime.datetime):
+    elif isinstance(value, (datetime.datetime, datetime.date)):
         value = value.isoformat()
     else:
         raise TypeError('Value of unknown type: %s, %s' % (type(value), value))
@@ -401,7 +401,13 @@ def _remove_values_conditions(value, no_log_strings, deferred_removals):
 
 def remove_values(value, no_log_strings):
     """ Remove strings in no_log_strings from value.  If value is a container
-    type, then remove a lot more"""
+    type, then remove a lot more.
+
+    Use of deferred_removals exists, rather than a pure recursive solution,
+    because of the potential to hit the maximum recursion depth when dealing with
+    large amounts of data (see issue #24560).
+    """
+
     deferred_removals = deque()
 
     no_log_strings = [to_native(s, errors='surrogate_or_strict') for s in no_log_strings]
@@ -411,9 +417,8 @@ def remove_values(value, no_log_strings):
         old_data, new_data = deferred_removals.popleft()
         if isinstance(new_data, Mapping):
             for old_key, old_elem in old_data.items():
-                new_key = _remove_values_conditions(old_key, no_log_strings, deferred_removals)
                 new_elem = _remove_values_conditions(old_elem, no_log_strings, deferred_removals)
-                new_data[new_key] = new_elem
+                new_data[old_key] = new_elem
         else:
             for elem in old_data:
                 new_elem = _remove_values_conditions(elem, no_log_strings, deferred_removals)
@@ -423,6 +428,88 @@ def remove_values(value, no_log_strings):
                     new_data.add(new_elem)
                 else:
                     raise TypeError('Unknown container type encountered when removing private values from output')
+
+    return new_value
+
+
+def _sanitize_keys_conditions(value, no_log_strings, ignore_keys, deferred_removals):
+    """ Helper method to sanitize_keys() to build deferred_removals and avoid deep recursion. """
+    if isinstance(value, (text_type, binary_type)):
+        return value
+
+    if isinstance(value, Sequence):
+        if isinstance(value, MutableSequence):
+            new_value = type(value)()
+        else:
+            new_value = []  # Need a mutable value
+        deferred_removals.append((value, new_value))
+        return new_value
+
+    if isinstance(value, Set):
+        if isinstance(value, MutableSet):
+            new_value = type(value)()
+        else:
+            new_value = set()  # Need a mutable value
+        deferred_removals.append((value, new_value))
+        return new_value
+
+    if isinstance(value, Mapping):
+        if isinstance(value, MutableMapping):
+            new_value = type(value)()
+        else:
+            new_value = {}  # Need a mutable value
+        deferred_removals.append((value, new_value))
+        return new_value
+
+    if isinstance(value, tuple(chain(integer_types, (float, bool, NoneType)))):
+        return value
+
+    if isinstance(value, (datetime.datetime, datetime.date)):
+        return value
+
+    raise TypeError('Value of unknown type: %s, %s' % (type(value), value))
+
+
+def sanitize_keys(obj, no_log_strings, ignore_keys=frozenset()):
+    """ Sanitize the keys in a container object by removing no_log values from key names.
+
+    This is a companion function to the `remove_values()` function. Similar to that function,
+    we make use of deferred_removals to avoid hitting maximum recursion depth in cases of
+    large data structures.
+
+    :param obj: The container object to sanitize. Non-container objects are returned unmodified.
+    :param no_log_strings: A set of string values we do not want logged.
+    :param ignore_keys: A set of string values of keys to not sanitize.
+
+    :returns: An object with sanitized keys.
+    """
+
+    deferred_removals = deque()
+
+    no_log_strings = [to_native(s, errors='surrogate_or_strict') for s in no_log_strings]
+    new_value = _sanitize_keys_conditions(obj, no_log_strings, ignore_keys, deferred_removals)
+
+    while deferred_removals:
+        old_data, new_data = deferred_removals.popleft()
+
+        if isinstance(new_data, Mapping):
+            for old_key, old_elem in old_data.items():
+                if old_key in ignore_keys or old_key.startswith('_ansible'):
+                    new_data[old_key] = _sanitize_keys_conditions(old_elem, no_log_strings, ignore_keys, deferred_removals)
+                else:
+                    # Sanitize the old key. We take advantage of the sanitizing code in
+                    # _remove_values_conditions() rather than recreating it here.
+                    new_key = _remove_values_conditions(old_key, no_log_strings, None)
+                    new_data[new_key] = _sanitize_keys_conditions(old_elem, no_log_strings, ignore_keys, deferred_removals)
+        else:
+            for elem in old_data:
+                new_elem = _sanitize_keys_conditions(elem, no_log_strings, ignore_keys, deferred_removals)
+                if isinstance(new_data, MutableSequence):
+                    new_data.append(new_elem)
+                elif isinstance(new_data, MutableSet):
+                    new_data.add(new_elem)
+                else:
+                    raise TypeError('Unknown container type encountered when removing private values from keys')
 
     return new_value
 
@@ -1126,7 +1213,7 @@ class AnsibleModule(object):
         if self.check_file_absent_if_check_mode(b_path):
             return True
 
-        existing = self.get_file_attributes(b_path)
+        existing = self.get_file_attributes(b_path, include_version=False)
 
         attr_mod = '='
         if attributes.startswith(('-', '+')):
@@ -1157,17 +1244,21 @@ class AnsibleModule(object):
                                        details=to_native(e), exception=traceback.format_exc())
         return changed
 
-    def get_file_attributes(self, path):
+    def get_file_attributes(self, path, include_version=True):
         output = {}
         attrcmd = self.get_bin_path('lsattr', False)
         if attrcmd:
-            attrcmd = [attrcmd, '-vd', path]
+            flags = '-vd' if include_version else '-d'
+            attrcmd = [attrcmd, flags, path]
             try:
                 rc, out, err = self.run_command(attrcmd)
                 if rc == 0:
                     res = out.split()
-                    output['attr_flags'] = res[1].replace('-', '').strip()
-                    output['version'] = res[0].strip()
+                    attr_flags_idx = 0
+                    if include_version:
+                        attr_flags_idx = 1
+                        output['version'] = res[0].strip()
+                    output['attr_flags'] = res[attr_flags_idx].replace('-', '').strip()
                     output['attributes'] = format_attributes(output['attr_flags'])
             except Exception:
                 pass
@@ -1472,7 +1563,13 @@ class AnsibleModule(object):
             msg = "Unsupported parameters for (%s) module: %s" % (self._name, ', '.join(sorted(list(unsupported_parameters))))
             if self._options_context:
                 msg += " found in %s." % " -> ".join(self._options_context)
-            msg += " Supported parameters include: %s" % (', '.join(sorted(spec.keys())))
+            supported_parameters = list()
+            for key in sorted(spec.keys()):
+                if 'aliases' in spec[key] and spec[key]['aliases']:
+                    supported_parameters.append("%s (%s)" % (key, ', '.join(sorted(spec[key]['aliases']))))
+                else:
+                    supported_parameters.append(key)
+            msg += " Supported parameters include: %s" % (', '.join(supported_parameters))
             self.fail_json(msg=msg)
         if self.check_mode and not self.supports_check_mode:
             self.exit_json(skipped=True, msg="remote module (%s) does not support check mode" % self._name)
@@ -2229,7 +2326,7 @@ class AnsibleModule(object):
                 raise
 
         # Set the attributes
-        current_attribs = self.get_file_attributes(src)
+        current_attribs = self.get_file_attributes(src, include_version=False)
         current_attribs = current_attribs.get('attr_flags', '')
         self.set_attributes_if_different(dest, current_attribs, True)
 
@@ -2424,7 +2521,7 @@ class AnsibleModule(object):
 
     def run_command(self, args, check_rc=False, close_fds=True, executable=None, data=None, binary_data=False, path_prefix=None, cwd=None,
                     use_unsafe_shell=False, prompt_regex=None, environ_update=None, umask=None, encoding='utf-8', errors='surrogate_or_strict',
-                    expand_user_and_vars=True, pass_fds=None, before_communicate_callback=None):
+                    expand_user_and_vars=True, pass_fds=None, before_communicate_callback=None, ignore_invalid_cwd=True):
         '''
         Execute a command, returns rc, stdout, and stderr.
 
@@ -2475,6 +2572,9 @@ class AnsibleModule(object):
             after ``Popen`` object will be created
             but before communicating to the process.
             (``Popen`` object will be passed to callback as a first argument)
+        :kw ignore_invalid_cwd: This flag indicates whether an invalid ``cwd``
+            (non-existent or not a directory) should be ignored or should raise
+            an exception.
         :returns: A 3-tuple of return code (integer), stdout (native string),
             and stderr (native string).  On python2, stdout and stderr are both
             byte strings.  On python3, stdout and stderr are text strings converted
@@ -2588,14 +2688,17 @@ class AnsibleModule(object):
         prev_dir = os.getcwd()
 
         # make sure we're in the right working directory
-        if cwd and os.path.isdir(cwd):
-            cwd = to_bytes(os.path.abspath(os.path.expanduser(cwd)), errors='surrogate_or_strict')
-            kwargs['cwd'] = cwd
-            try:
-                os.chdir(cwd)
-            except (OSError, IOError) as e:
-                self.fail_json(rc=e.errno, msg="Could not open %s, %s" % (cwd, to_native(e)),
-                               exception=traceback.format_exc())
+        if cwd:
+            if os.path.isdir(cwd):
+                cwd = to_bytes(os.path.abspath(os.path.expanduser(cwd)), errors='surrogate_or_strict')
+                kwargs['cwd'] = cwd
+                try:
+                    os.chdir(cwd)
+                except (OSError, IOError) as e:
+                    self.fail_json(rc=e.errno, msg="Could not chdir to %s, %s" % (cwd, to_native(e)),
+                                   exception=traceback.format_exc())
+            elif not ignore_invalid_cwd:
+                self.fail_json(msg="Provided cwd is not a valid directory: %s" % cwd)
 
         old_umask = None
         if umask:
@@ -2613,7 +2716,13 @@ class AnsibleModule(object):
 
             stdout = b''
             stderr = b''
-            selector = selectors.DefaultSelector()
+            try:
+                selector = selectors.DefaultSelector()
+            except (IOError, OSError):
+                # Failed to detect default selector for the given platform
+                # Select PollSelector which is supported by major platforms
+                selector = selectors.PollSelector()
+
             selector.register(cmd.stdout, selectors.EVENT_READ)
             selector.register(cmd.stderr, selectors.EVENT_READ)
             if os.name == 'posix':

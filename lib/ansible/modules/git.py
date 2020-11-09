@@ -22,12 +22,16 @@ options:
     repo:
         description:
             - git, SSH, or HTTP(S) protocol address of the git repository.
+        type: str
         required: true
         aliases: [ name ]
     dest:
         description:
             - The path of where the repository should be checked out. This
+              is equivalent to C(git clone [repo_url] [directory]). The repository
+              named in C(repo) is not appended to this path and the destination directory must be empty. This
               parameter is required, unless C(clone) is set to C(no).
+        type: path
         required: true
     version:
         description:
@@ -35,6 +39,7 @@ options:
               the literal string C(HEAD), a branch name, a tag name.
               It can also be a I(SHA-1) hash, in which case C(refspec) needs
               to be specified if the given revision is not already available.
+        type: str
         default: "HEAD"
     accept_hostkey:
         description:
@@ -50,10 +55,12 @@ options:
               An example value could be "-o StrictHostKeyChecking=no"
               (although this particular option is better set via
               C(accept_hostkey)).
+        type: str
         version_added: "1.5"
     key_file:
         description:
             - Specify an optional private key file path, on the target host, to use for the checkout.
+        type: path
         version_added: "1.5"
     reference:
         description:
@@ -62,6 +69,7 @@ options:
     remote:
         description:
             - Name of the remote.
+        type: str
         default: "origin"
     refspec:
         description:
@@ -71,6 +79,7 @@ options:
               the I(SHA-1).
               Uses the same syntax as the C(git fetch) command.
               An example value could be "refs/meta/config".
+        type: str
         version_added: "1.9"
     force:
         description:
@@ -86,6 +95,7 @@ options:
             - Create a shallow clone with a history truncated to the specified
               number or revisions. The minimum possible value is C(1), otherwise
               ignored. Needs I(git>=1.9.1) to work correctly.
+        type: int
         version_added: "1.2"
     clone:
         description:
@@ -105,6 +115,7 @@ options:
         description:
             - Path to git executable to use. If not supplied,
               the normal mechanism for resolving binary paths will be used.
+        type: path
         version_added: "1.4"
     bare:
         description:
@@ -117,6 +128,7 @@ options:
         description:
             - The umask to set before doing any checkouts, or any other
               repository maintenance.
+        type: raw
         version_added: "2.2"
 
     recursive:
@@ -163,6 +175,7 @@ options:
               Allowed archive formats ["zip", "tar.gz", "tar", "tgz"]
             - This will clone and perform git archive from local directory as not
               all git servers support git archive.
+        type: path
         version_added: "2.4"
 
     archive_prefix:
@@ -175,6 +188,7 @@ options:
         description:
             - The path to place the cloned repository. If specified, Git repository
               can be separated from working tree.
+        type: path
         version_added: "2.7"
 
     gpg_whitelist:
@@ -182,7 +196,9 @@ options:
            - A list of trusted GPG fingerprints to compare to the fingerprint of the
              GPG-signed commit.
            - Only used when I(verify_commit=yes).
+           - Use of this feature requires Git 2.6+ due to its reliance on git's C(--raw) flag to C(verify-commit) and C(verify-tag).
         type: list
+        elements: str
         default: []
         version_added: "2.9"
 
@@ -244,6 +260,14 @@ EXAMPLES = '''
 - git:
     single_branch: yes
     branch: master
+
+- name: avoid hanging when http(s) password is missing
+  git:
+    repo: https://github.com/ansible/could-be-a-private-repo
+    dest: /src/from-private-repo
+  environment:
+    GIT_TERMINAL_PROMPT: 0 # reports "terminal prompts disabled" on missing password
+    # or GIT_ASKPASS: /bin/true # for git before version 2.3.0, reports "Authentication failed" on missing password
 '''
 
 RETURN = '''
@@ -958,7 +982,9 @@ def verify_commit_sign(git_path, module, dest, version, gpg_whitelist):
         git_sub = "verify-tag"
     else:
         git_sub = "verify-commit"
-    cmd = "%s %s %s --raw" % (git_path, git_sub, version)
+    cmd = "%s %s %s" % (git_path, git_sub, version)
+    if gpg_whitelist:
+        cmd += " --raw"
     (rc, out, err) = module.run_command(cmd, cwd=dest)
     if rc != 0:
         module.fail_json(msg='Failed to verify GPG signature of commit/tag "%s"' % version, stdout=out, stderr=err, rc=rc)
@@ -1078,7 +1104,7 @@ def main():
             clone=dict(default='yes', type='bool'),
             update=dict(default='yes', type='bool'),
             verify_commit=dict(default='no', type='bool'),
-            gpg_whitelist=dict(default=[], type='list'),
+            gpg_whitelist=dict(default=[], type='list', elements='str'),
             accept_hostkey=dict(default='no', type='bool'),
             key_file=dict(default=None, type='path', required=False),
             ssh_opts=dict(default=None, required=False),

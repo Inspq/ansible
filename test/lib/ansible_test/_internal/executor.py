@@ -90,6 +90,9 @@ from .docker_util import (
     docker_rm,
     get_docker_container_id,
     get_docker_container_ip,
+    get_docker_hostname,
+    get_docker_preferred_network_name,
+    is_docker_user_defined_network,
 )
 
 from .ansible_util import (
@@ -430,6 +433,7 @@ def generate_pip_install(pip, command, packages=None, constraints=None, use_cons
     """
     constraints = constraints or os.path.join(ANSIBLE_TEST_DATA_ROOT, 'requirements', 'constraints.txt')
     requirements = os.path.join(ANSIBLE_TEST_DATA_ROOT, 'requirements', '%s.txt' % ('%s.%s' % (command, context) if context else command))
+    content_constraints = None
 
     options = []
 
@@ -448,6 +452,8 @@ def generate_pip_install(pip, command, packages=None, constraints=None, use_cons
         if os.path.exists(requirements) and os.path.getsize(requirements):
             options += ['-r', requirements]
 
+        content_constraints = os.path.join(data_context().content.unit_path, 'constraints.txt')
+
     if command in ('integration', 'windows-integration', 'network-integration'):
         requirements = os.path.join(data_context().content.integration_path, 'requirements.txt')
 
@@ -459,6 +465,11 @@ def generate_pip_install(pip, command, packages=None, constraints=None, use_cons
         if os.path.exists(requirements) and os.path.getsize(requirements):
             options += ['-r', requirements]
 
+        content_constraints = os.path.join(data_context().content.integration_path, 'constraints.txt')
+
+    if command.startswith('integration.cloud.'):
+        content_constraints = os.path.join(data_context().content.integration_path, 'constraints.txt')
+
     if packages:
         options += packages
 
@@ -466,6 +477,10 @@ def generate_pip_install(pip, command, packages=None, constraints=None, use_cons
         return None
 
     if use_constraints:
+        if content_constraints and os.path.exists(content_constraints) and os.path.getsize(content_constraints):
+            # listing content constraints first gives them priority over constraints provided by ansible-test
+            options.extend(['-c', content_constraints])
+
         options.extend(['-c', constraints])
 
     return pip + ['install', '--disable-pip-version-check'] + options
@@ -1236,16 +1251,22 @@ def start_httptester(args):
             container=80,
         ),
         dict(
+            remote=8088,
+            container=88,
+        ),
+        dict(
             remote=8443,
             container=443,
+        ),
+        dict(
+            remote=8749,
+            container=749,
         ),
     ]
 
     container_id = get_docker_container_id()
 
-    if container_id:
-        display.info('Running in docker container: %s' % container_id, verbosity=1)
-    else:
+    if not container_id:
         for item in ports:
             item['localhost'] = get_available_port()
 
@@ -1257,7 +1278,7 @@ def start_httptester(args):
         container_host = get_docker_container_ip(args, httptester_id)
         display.info('Found httptester container address: %s' % container_host, verbosity=1)
     else:
-        container_host = 'localhost'
+        container_host = get_docker_hostname()
 
     ssh_options = []
 
@@ -1275,11 +1296,19 @@ def run_httptester(args, ports=None):
     """
     options = [
         '--detach',
+        '--env', 'KRB5_PASSWORD=%s' % args.httptester_krb5_password,
     ]
 
     if ports:
         for localhost_port, container_port in ports.items():
             options += ['-p', '%d:%d' % (localhost_port, container_port)]
+
+    network = get_docker_preferred_network_name(args)
+
+    if is_docker_user_defined_network(network):
+        # network-scoped aliases are only supported for containers in user defined networks
+        for alias in HTTPTESTER_HOSTS:
+            options.extend(['--network-alias', alias])
 
     httptester_id = docker_run(args, args.httptester, options=options)[0]
 
@@ -1319,7 +1348,9 @@ def inject_httptester(args):
 
         rules = '''
 rdr pass inet proto tcp from any to any port 80 -> 127.0.0.1 port 8080
+rdr pass inet proto tcp from any to any port 88 -> 127.0.0.1 port 8088
 rdr pass inet proto tcp from any to any port 443 -> 127.0.0.1 port 8443
+rdr pass inet proto tcp from any to any port 749 -> 127.0.0.1 port 8749
 '''
         cmd = ['pfctl', '-ef', '-']
 
@@ -1331,7 +1362,9 @@ rdr pass inet proto tcp from any to any port 443 -> 127.0.0.1 port 8443
     elif iptables:
         ports = [
             (80, 8080),
+            (88, 8088),
             (443, 8443),
+            (749, 8749),
         ]
 
         for src, dst in ports:
@@ -1394,13 +1427,14 @@ def integration_environment(args, target, test_dir, inventory_path, ansible_conf
     if args.inject_httptester:
         env.update(dict(
             HTTPTESTER='1',
+            KRB5_PASSWORD=args.httptester_krb5_password,
         ))
 
     callback_plugins = ['junit'] + (env_config.callback_plugins or [] if env_config else [])
 
     integration = dict(
         JUNIT_OUTPUT_DIR=ResultType.JUNIT.path,
-        ANSIBLE_CALLBACK_WHITELIST=','.join(sorted(set(callback_plugins))),
+        ANSIBLE_CALLBACKS_ENABLED=','.join(sorted(set(callback_plugins))),
         ANSIBLE_TEST_CI=args.metadata.ci_provider or get_ci_provider().code,
         ANSIBLE_TEST_COVERAGE='check' if args.coverage_check else ('yes' if args.coverage else ''),
         OUTPUT_DIR=test_dir,

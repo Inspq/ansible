@@ -174,7 +174,8 @@ logger = None
 if getattr(C, 'DEFAULT_LOG_PATH'):
     path = C.DEFAULT_LOG_PATH
     if path and (os.path.exists(path) and os.access(path, os.W_OK)) or os.access(os.path.dirname(path), os.W_OK):
-        logging.basicConfig(filename=path, level=logging.DEBUG,
+        # NOTE: level is kept at INFO to avoid security disclosures caused by certain libraries when using DEBUG
+        logging.basicConfig(filename=path, level=logging.INFO,  # DO NOT set to logging.DEBUG
                             format='%(asctime)s p=%(process)d u=%(user)s n=%(name)s | %(message)s')
 
         logger = logging.getLogger('ansible')
@@ -225,8 +226,8 @@ class Display(with_metaclass(Singleton, object)):
                 cmd = subprocess.Popen([self.b_cowsay, "-l"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
                 (out, err) = cmd.communicate()
                 self.cows_available = set([to_text(c) for c in out.split()])
-                if C.ANSIBLE_COW_WHITELIST and any(C.ANSIBLE_COW_WHITELIST):
-                    self.cows_available = set(C.ANSIBLE_COW_WHITELIST).intersection(self.cows_available)
+                if C.ANSIBLE_COW_ACCEPTLIST and any(C.ANSIBLE_COW_ACCEPTLIST):
+                    self.cows_available = set(C.ANSIBLE_COW_ACCEPTLIST).intersection(self.cows_available)
             except Exception:
                 # could not execute cowsay for some reason
                 self.b_cowsay = False

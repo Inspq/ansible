@@ -28,7 +28,7 @@ You can provide default values for variables directly in your templates using th
 In the above example, if the variable 'some_variable' is not defined, Ansible uses the default value 5, rather than raising an "undefined variable" error and failing. If you are working within a role, you can also add a ``defaults/main.yml`` to define the default values for variables in your role.
 
 Beginning in version 2.8, attempting to access an attribute of an Undefined value in Jinja will return another Undefined value, rather than throwing an error immediately. This means that you can now simply use
-a default with a value in a nested data structure (i.e :code:`{{ foo.bar.baz | default('DEFAULT') }}`) when you do not know if the intermediate values are defined.
+a default with a value in a nested data structure (in other words, :code:`{{ foo.bar.baz | default('DEFAULT') }}`) when you do not know if the intermediate values are defined.
 
 If you want to use the default value when variables evaluate to false or an empty string you have to set the second parameter to ``true``::
 
@@ -41,8 +41,8 @@ Making variables optional
 
 By default Ansible requires values for all variables in a templated expression. However, you can make specific variables optional. For example, you might want to use a system default for some items and control the value for others. To make a variable optional, set the default value to the special variable ``omit``::
 
-    - name: touch files with an optional mode
-      file:
+    - name: Touch files with an optional mode
+      ansible.builtin.file:
         dest: "{{ item.path }}"
         state: touch
         mode: "{{ item.mode | default(omit) }}"
@@ -55,14 +55,14 @@ By default Ansible requires values for all variables in a templated expression. 
 In this example, the default mode for the files ``/tmp/foo`` and ``/tmp/bar`` is determined by the umask of the system. Ansible does not send a value for ``mode``. Only the third file, ``/tmp/baz``, receives the `mode=0444` option.
 
 .. note:: If you are "chaining" additional filters after the ``default(omit)`` filter, you should instead do something like this:
-      ``"{{ foo | default(None) | some_filter or omit }}"``. In this example, the default ``None`` (Python null) value will cause the later filters to fail, which will trigger the ``or omit`` portion of the logic. Using ``omit`` in this manner is very specific to the later filters you're chaining though, so be prepared for some trial and error if you do this.
+      ``"{{ foo | default(None) | some_filter or omit }}"``. In this example, the default ``None`` (Python null) value will cause the later filters to fail, which will trigger the ``or omit`` portion of the logic. Using ``omit`` in this manner is very specific to the later filters you are chaining though, so be prepared for some trial and error if you do this.
 
 .. _forcing_variables_to_be_defined:
 
 Defining mandatory values
 -------------------------
 
-If you configure Ansible to ignore undefined variables, you may want to define some values as mandatory. By default, Ansible fails if a variable in your playbook or command is undefined. You can configure Ansible to allow undefined variables by setting :ref:`DEFAULT_UNDEFINED_VAR_BEHAVIOR` to ``false``. In that case, you may want to require some variables to be defined. You can do with this with::
+If you configure Ansible to ignore undefined variables, you may want to define some values as mandatory. By default, Ansible fails if a variable in your playbook or command is undefined. You can configure Ansible to allow undefined variables by setting :ref:`DEFAULT_UNDEFINED_VAR_BEHAVIOR` to ``false``. In that case, you may want to require some variables to be defined. You can do this with::
 
     {{ variable | mandatory }}
 
@@ -146,7 +146,7 @@ Transforming lists into dictionaries
 
 .. versionadded:: 2.7
 
-Use the ``items2dict``filter to transform a list into a dictionary, mapping the content into ``key: value`` pairs::
+Use the ``items2dict`` filter to transform a list into a dictionary, mapping the content into ``key: value`` pairs::
 
     {{ tags | items2dict }}
 
@@ -234,11 +234,31 @@ If you are reading in some already formatted data::
 for example::
 
   tasks:
-    - shell: cat /some/path/to/file.json
+    - name: Register JSON output as a variable 
+      ansible.builtin.shell: cat /some/path/to/file.json
       register: result
 
-    - set_fact:
+    - name: Set a variable
+      ansible.builtin.set_fact:
         myvar: "{{ result.stdout | from_json }}"
+
+
+Filter `to_json` and Unicode support
+------------------------------------
+
+By default `to_json` and `to_nice_json` will convert data received to ASCII, so::
+
+    {{ 'München'| to_json }}
+
+will return::
+
+    'M\u00fcnchen'
+
+To keep Unicode characters, pass the parameter `ensure_ascii=False` to the filter::
+
+    {{ 'München'| to_json(ensure_ascii=False) }}
+
+    'München'
 
 .. versionadded:: 2.7
 
@@ -248,9 +268,12 @@ The ``from_yaml_all`` filter will return a generator of parsed YAML documents.
 for example::
 
   tasks:
-    - shell: cat /some/path/to/multidoc-file.yaml
+    - name: Register a file content as a variable
+      ansible.builtin.shell: cat /some/path/to/multidoc-file.yaml
       register: result
-    - debug:
+
+    - name: Print the transformed variable
+      ansible.builtin.debug:
         msg: '{{ item }}'
       loop: '{{ result.stdout | from_yaml_all | list }}'
 
@@ -268,18 +291,18 @@ Combining items from multiple lists: zip and zip_longest
 
 To get a list combining the elements of other lists use ``zip``::
 
-    - name: give me list combo of two lists
-      debug:
+    - name: Give me list combo of two lists
+      ansible.builtin.debug:
        msg: "{{ [1,2,3,4,5] | zip(['a','b','c','d','e','f']) | list }}"
 
-    - name: give me shortest combo of two lists
-      debug:
+    - name: Give me shortest combo of two lists
+      ansible.builtin.debug:
         msg: "{{ [1,2,3] | zip(['a','b','c','d','e','f']) | list }}"
 
 To always exhaust all lists use ``zip_longest``::
 
-    - name: give me longest combo of three lists , fill with X
-      debug:
+    - name: Give me longest combo of three lists , fill with X
+      ansible.builtin.debug:
         msg: "{{ [1,2,3] | zip_longest(['a','b','c','d','e','f'], [21, 22, 23], fillvalue='X') | list }}"
 
 Similarly to the output of the ``items2dict`` filter mentioned above, these filters can be used to construct a ``dict``::
@@ -295,7 +318,7 @@ List data (before applying the ``zip`` filter)::
       - apple
       - orange
 
-Dictonary data (after applying the ``zip`` filter)::
+Dictionary data (after applying the ``zip`` filter)::
 
     one: apple
     two: orange
@@ -356,7 +379,7 @@ Data after applying the ``subelements`` filter::
 You can use the transformed data with ``loop`` to iterate over the same subelement for multiple objects::
 
     - name: Set authorized ssh key, extracting just that data from 'users'
-      authorized_key:
+      ansible.posix.authorized_key:
         user: "{{ item.0.name }}"
         key: "{{ lookup('file', item.1) }}"
       loop: "{{ users | subelements('authorized') }}"
@@ -615,20 +638,20 @@ permutations
 ^^^^^^^^^^^^
 To get permutations of a list::
 
-    - name: give me largest permutations (order matters)
-      debug:
+    - name: Give me largest permutations (order matters)
+      ansible.builtin.debug:
         msg: "{{ [1,2,3,4,5] | permutations | list }}"
 
-    - name: give me permutations of sets of three
-      debug:
+    - name: Give me permutations of sets of three
+      ansible.builtin.debug:
         msg: "{{ [1,2,3,4,5] | permutations(3) | list }}"
 
 combinations
 ^^^^^^^^^^^^
 Combinations always require a set size::
 
-    - name: give me combinations for sets of two
-      debug:
+    - name: Give me combinations for sets of two
+      ansible.builtin.debug:
         msg: "{{ [1,2,3,4,5] | combinations(2) | list }}"
 
 Also see the :ref:`zip_filter`
@@ -639,8 +662,8 @@ The product filter returns the `cartesian product <https://docs.python.org/3/lib
 
 For example::
 
-  - name: generate multiple hostnames
-    debug:
+  - name: Generate multiple hostnames
+    ansible.builtin.debug:
       msg: "{{ ['foo', 'bar'] | product(['com']) | map('join', '.') | join(',') }}"
 
 This would result in::
@@ -712,21 +735,21 @@ Consider this data structure::
 
 To extract all clusters from this structure, you can use the following query::
 
-    - name: "Display all cluster names"
-      debug:
+    - name: Display all cluster names
+      ansible.builtin.debug:
         var: item
       loop: "{{ domain_definition | community.general.json_query('domain.cluster[*].name') }}"
 
 To extract all server names::
 
-    - name: "Display all server names"
-      debug:
+    - name: Display all server names
+      ansible.builtin.debug:
         var: item
       loop: "{{ domain_definition | community.general.json_query('domain.server[*].name') }}"
 
 To extract ports from cluster1::
 
-    - name: "Display all ports from cluster1"
+    - ansible.builtin.name: Display all ports from cluster1
       debug:
         var: item
       loop: "{{ domain_definition | community.general.json_query(server_name_cluster1_query) }}"
@@ -737,16 +760,16 @@ To extract ports from cluster1::
 
 To print out the ports from cluster1 in a comma separated string::
 
-    - name: "Display all ports from cluster1 as a string"
-      debug:
+    - name: Display all ports from cluster1 as a string
+      ansible.builtin.debug:
         msg: "{{ domain_definition | community.general.json_query('domain.server[?cluster==`cluster1`].port') | join(', ') }}"
 
 .. note:: In the example above, quoting literals using backticks avoids escaping quotes and maintains readability.
 
 You can use YAML `single quote escaping <https://yaml.org/spec/current.html#id2534365>`_::
 
-    - name: "Display all ports from cluster1"
-      debug:
+    - name: Display all ports from cluster1
+      ansible.builtin.debug:
         var: item
       loop: "{{ domain_definition | community.general.json_query('domain.server[?cluster==''cluster1''].port') }}"
 
@@ -754,8 +777,8 @@ You can use YAML `single quote escaping <https://yaml.org/spec/current.html#id25
 
 To get a hash map with all ports and names of a cluster::
 
-    - name: "Display all server ports and names from cluster1"
-      debug:
+    - name: Display all server ports and names from cluster1
+      ansible.builtin.debug:
         var: item
       loop: "{{ domain_definition | community.general.json_query(server_name_cluster1_query) }}"
       vars:
@@ -859,9 +882,21 @@ To get the minimum value from list of numbers::
 
     {{ list1 | min }}
 
+.. versionadded:: 2.11
+
+To get the minimum value in a list of objects::
+
+    {{ [{'val': 1}, {'val': 2}] | min(attribute='val') }}
+
 To get the maximum value from a list of numbers::
 
     {{ [3, 4, 2] | max }}
+
+.. versionadded:: 2.11
+
+To get the maximum value in a list of objects::
+
+    {{ [{'val': 1}, {'val': 2}] | max(attribute='val') }}
 
 .. versionadded:: 2.5
 
@@ -893,24 +928,37 @@ You can select or combine items from sets or lists.
 
 To get a unique set from a list::
 
+    # list1: [1, 2, 5, 1, 3, 4, 10]
     {{ list1 | unique }}
+    # => [1, 2, 5, 3, 4, 10]
 
 To get a union of two lists::
 
+    # list1: [1, 2, 5, 1, 3, 4, 10]
+    # list2: [1, 2, 3, 4, 5, 11, 99]
     {{ list1 | union(list2) }}
+    # => [1, 2, 5, 1, 3, 4, 10, 11, 99]
 
 To get the intersection of 2 lists (unique list of all items in both)::
 
+    # list1: [1, 2, 5, 3, 4, 10]
+    # list2: [1, 2, 3, 4, 5, 11, 99]
     {{ list1 | intersect(list2) }}
+    # => [1, 2, 5, 3, 4]
 
 To get the difference of 2 lists (items in 1 that don't exist in 2)::
 
+    # list1: [1, 2, 5, 1, 3, 4, 10]
+    # list2: [1, 2, 3, 4, 5, 11, 99]
     {{ list1 | difference(list2) }}
+    # => [10]
 
 To get the symmetric difference of 2 lists (items exclusive to each list)::
 
+    # list1: [1, 2, 5, 1, 3, 4, 10]
+    # list2: [1, 2, 3, 4, 5, 11, 99]
     {{ list1 | symmetric_difference(list2) }}
-
+    # => [10, 11, 99]
 
 .. _math_stuff:
 
@@ -1446,7 +1494,7 @@ To replace text in a string with regex, use the "regex_replace" filter::
       {{ hosts | map('regex_replace', '(.*)', '\\1:80') | list }}
 
 .. note::
-   Prior to ansible 2.0, if "regex_replace" filter was used with variables inside YAML arguments (as opposed to simpler 'key=value' arguments), then you needed to escape backreferences (e.g. ``\\1``) with 4 backslashes (``\\\\``) instead of 2 (``\\``).
+   Prior to ansible 2.0, if "regex_replace" filter was used with variables inside YAML arguments (as opposed to simpler 'key=value' arguments), then you needed to escape backreferences (for example, ``\\1``) with 4 backslashes (``\\\\``) instead of 2 (``\\``).
 
 .. versionadded:: 2.0
 
@@ -1519,6 +1567,14 @@ To get the root and extension of a path or file name (new in version 2.0)::
     # with path == 'nginx.conf' the return would be ('nginx', '.conf')
     {{ path | splitext }}
 
+The ``splitext`` filter returns a string. The individual components can be accessed by using the ``first`` and ``last`` filters::
+
+    # with path == 'nginx.conf' the return would be 'nginx'
+    {{ path | splitext | first }}
+
+    # with path == 'nginx.conf' the return would be 'conf'
+    {{ path | splitext | last }}
+
 To join one or more path components::
 
     {{ ('/etc', path, 'subdir', file) | path_join }}
@@ -1530,7 +1586,8 @@ Manipulating strings
 
 To add quotes for shell usage::
 
-    - shell: echo {{ string_value | quote }}
+    - name: Run a shell command
+      ansible.builtin.shell: echo {{ string_value | quote }}
 
 To concatenate a list into a string::
 
@@ -1567,7 +1624,7 @@ To create a namespaced UUIDv5 using the default Ansible namespace '361E6D51-FAEC
 
 To make use of one attribute from each item in a list of complex variables, use the :func:`Jinja2 map filter <jinja2:map>`::
 
-    # get a comma-separated list of the mount points (e.g. "/,/mnt/stuff") on a host
+    # get a comma-separated list of the mount points (for example, "/,/mnt/stuff") on a host
     {{ ansible_mounts | map(attribute='mount') | join(',') }}
 
 Handling dates and times
@@ -1578,7 +1635,7 @@ To get a date object from a string use the `to_datetime` filter::
     # Get total amount of seconds between two dates. Default date format is %Y-%m-%d %H:%M:%S but you can pass your own format
     {{ (("2016-08-14 20:00:12" | to_datetime) - ("2015-12-25" | to_datetime('%Y-%m-%d'))).total_seconds()  }}
 
-    # Get remaining seconds after delta has been calculated. NOTE: This does NOT convert years, days, hours, etc to seconds. For that, use total_seconds()
+    # Get remaining seconds after delta has been calculated. NOTE: This does NOT convert years, days, hours, and so on to seconds. For that, use total_seconds()
     {{ (("2016-08-14 20:00:12" | to_datetime) - ("2016-08-14 18:00:00" | to_datetime)).seconds  }}
     # This expression evaluates to "12" and not "132". Delta is 2 hours, 12 seconds
 
@@ -1652,7 +1709,7 @@ This can then be used to reference hashes in Pod specifications::
    :ref:`playbooks_reuse_roles`
        Playbook organization by roles
    :ref:`playbooks_best_practices`
-       Best practices in playbooks
+       Tips and tricks for playbooks
    `User Mailing List <https://groups.google.com/group/ansible-devel>`_
        Have a question?  Stop by the google group!
    `irc.freenode.net <http://irc.freenode.net>`_

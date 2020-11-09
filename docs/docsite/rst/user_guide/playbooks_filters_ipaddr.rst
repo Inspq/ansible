@@ -292,7 +292,7 @@ on an interface:
     iface eth0 inet6 static
         address 2001:db8:deaf:be11::ef3/64
 
-If needed, you can extract subnet and prefix information from the 'host/prefix' value::
+If needed, you can extract subnet and prefix information from the 'host/prefix' value:
 
 .. code-block:: jinja
 
@@ -301,7 +301,6 @@ If needed, you can extract subnet and prefix information from the 'host/prefix' 
 
     # {{ host_prefix | ansible.netcommon.ipaddr('host/prefix') | ansible.netcommon.ipaddr('prefix') }}
     [64, 24]
-
 
 Converting subnet masks to CIDR notation
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -737,7 +736,7 @@ the filter ``slaac()`` generates an IPv6 address for a given network and a MAC A
    :ref:`playbooks_reuse_roles`
        Playbook organization by roles
    :ref:`playbooks_best_practices`
-       Best practices in playbooks
+    	 Tips and tricks for playbooks
    `User Mailing List <https://groups.google.com/group/ansible-devel>`_
        Have a question?  Stop by the google group!
    `irc.freenode.net <http://irc.freenode.net>`_
