@@ -30,7 +30,7 @@ from __future__ import absolute_import, division, print_function
 __metaclass__ = type
 
 import json
-#import urllib
+# import urllib
 from six.moves.urllib.parse import quote
 from ansible.module_utils.urls import open_url
 
