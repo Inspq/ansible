@@ -59,6 +59,7 @@ options:
     parentId:
         description:
             - Parent ID of the component. Use the realm name for top level component.
+        required: true
         type: str
     config:
         description:
@@ -730,10 +731,8 @@ def main():
     newComponent["providerId"] = module.params.get('providerId')
     newComponent["providerType"] = module.params.get('providerType')
     newComponent["parentId"] = module.params.get('parentId') if module.params.get('parentId') is not None else realm
-    newComponent["config"] = module.params.get("config")
-    remove_arguments_with_value_none(newComponent["config"])
-    newSubComponents = module.params.get("subComponents")
-    remove_arguments_with_value_none(newSubComponents)
+    newComponent["config"] = remove_arguments_with_value_none(module.params.get("config").copy())
+    newSubComponents = remove_arguments_with_value_none(module.params.get("subComponents").copy())
     syncUserStorage = module.params.get('syncUserStorage') if module.params.get('syncUserStorage') is not None else "no"
     syncLdapMappers = module.params.get('syncLdapMappers') if module.params.get('syncLdapMappers') is not None else "no"
 

@@ -231,11 +231,6 @@ class Sx5SystemTestCase(ModuleTestCase):
             "name": "clientarecreer",
             "roles": [{"name":"test1","description": "test1","composite": "False"}]
             },
-        {
-            "clientId": "clientsyschangesadu",
-            "name": "clientsyschangesadu",
-            "roles": [{"name":"test1","description": "test1","composite": "False"}]
-            }
         ]
     clientsToDelete = [
         {
@@ -299,7 +294,6 @@ class Sx5SystemTestCase(ModuleTestCase):
         toCreate["force"] = False
     
         results = system(toCreate)
-        #print str(results)
         self.assertTrue(results['changed'])
         self.assertEquals(results["ansible_facts"]["systemes"]["nom"], toCreate["systemName"], "systemName: " + results["ansible_facts"]["systemes"]["nom"] + " : " + toCreate["systemName"])
 
@@ -324,9 +318,7 @@ class Sx5SystemTestCase(ModuleTestCase):
         toDoNotChange["force"] = False
 
         system(toDoNotChange)
-        #print str(results)
         results = system(toDoNotChange)
-        #print str(results)
         self.assertFalse(results['changed'])
 
     def test_modify_system_no_pilotRoles(self):
@@ -349,12 +341,10 @@ class Sx5SystemTestCase(ModuleTestCase):
         toChange1["force"] = False
 
         results = system(toChange1)
-        print str(results)
         toChange1["sadu_principal"] = "http://localhost/test3"
         toChange1["clients"] = [{"clientId": "clientsystemChange31"}]
         NnClient=len(toChange1["clients"])+1
         results = system(toChange1)
-        print str(results)
         self.assertTrue(results['changed'])
         for adressesApprovisionnement in results["ansible_facts"]["entreesAdressesApprovisionnement"]["entreesAdressesApprovisionnement"]:
             if adressesApprovisionnement["principale"]:
@@ -385,12 +375,10 @@ class Sx5SystemTestCase(ModuleTestCase):
         toChangep["force"] = False
 
         results = system(toChangep)
-        #print str(results)
         toChangep["sadu_principal"] = "http://localhost/test3"
         toChangep["clients"] = [{"clientId": "clientsystemChange31"}]
         NnClient=len(toChangep["clients"])+1
         results = system(toChangep)
-        #print str(results)
         self.assertTrue(results['changed'])
         for adressesApprovisionnement in results["ansible_facts"]["entreesAdressesApprovisionnement"]["entreesAdressesApprovisionnement"]:
             if adressesApprovisionnement["principale"]:
@@ -442,10 +430,8 @@ class Sx5SystemTestCase(ModuleTestCase):
         newToChange["force"] = False
 
         results = system(newToChange)
-        print str(results)
         self.assertTrue(results['changed'])
         systemClients = results["ansible_facts"]["systemes"]["composants"]
-        print str(systemClients)
         for toChangeClient in toChange2["clients"]:
             clientFound = False
             for systemClient in systemClients:
@@ -509,7 +495,6 @@ class Sx5SystemTestCase(ModuleTestCase):
         toCreate1["state"] = "present"
         toCreate1["force"] = False
         results = system(toCreate1)
-        #print str(results)
         toCreate2 = {}
         toCreate2["spUrl"] = "http://localhost:18081"
         toCreate2["spUsername"] = "admin"
@@ -529,20 +514,17 @@ class Sx5SystemTestCase(ModuleTestCase):
         toCreate2["state"] = "present"
         toCreate2["force"] = False
         results = system(toCreate2)
-        #print str(results)
         NnClient=NnClient+1
         headers = loginAndSetHeaders(toCreate1["spUrl"], toCreate1["spRealm"], toCreate1["spUsername"], toCreate1["spPassword"], toCreate1["spConfigClient_id"], toCreate1["spConfigClient_secret"])
         getResponse = requests.get(toCreate1["spConfigUrl"]+"/systemes/"+toCreate1["systemShortName"], headers=headers)
         dataResponse = getResponse.json()
-        print str(dataResponse["composants"][0]["roles"])
         self.assertEquals(len(dataResponse["composants"][0]["roles"]),NnClient,str(len(dataResponse["composants"][0]["roles"])) + " : " + str(NnClient))
         results = system(toCreate1)
-        print str(results)
         headers = loginAndSetHeaders(toCreate1["spUrl"], toCreate1["spRealm"], toCreate1["spUsername"], toCreate1["spPassword"], toCreate1["spConfigClient_id"], toCreate1["spConfigClient_secret"])
         getResponse = requests.get(toCreate1["spConfigUrl"]+"/systemes/"+toCreate1["systemShortName"], headers=headers)
         dataResponse = getResponse.json()
-        print str(dataResponse["composants"][0]["roles"])
         self.assertEquals(len(dataResponse["composants"][0]["roles"]),NnClient,str(len(dataResponse["composants"][0]["roles"])) + " : " + str(NnClient))
+
 
     def test_create_system_no_sadu(self):
         toCreate = {}
@@ -561,7 +543,6 @@ class Sx5SystemTestCase(ModuleTestCase):
         toCreate["force"] = False
     
         results = system(toCreate)
-        #print str(results)
         self.assertTrue(results['changed'])
         self.assertEquals(results["ansible_facts"]["systemes"]["nom"], toCreate["systemName"], "systemName: " + results["ansible_facts"]["systemes"]["nom"] + " : " + toCreate["systemName"])
 
@@ -582,9 +563,7 @@ class Sx5SystemTestCase(ModuleTestCase):
         toDoNotChange["force"] = False
 
         system(toDoNotChange)
-        #print str(results)
         results = system(toDoNotChange)
-        #print str(results)
         self.assertFalse(results['changed'])
 
     def test_modify_system_no_sadu(self):
@@ -604,11 +583,9 @@ class Sx5SystemTestCase(ModuleTestCase):
         toChange["force"] = False
 
         results = system(toChange)
-        #print str(results)
         toChange["clients"] = [{"clientId": "clientsystemChangeNS31"}]
         NnClient=len(toChange["clients"])+1
         results = system(toChange)
-        #print str(results)
         self.assertTrue(results['changed'])
         self.assertEquals(len(results["ansible_facts"]["systemes"]["composants"]), 
                           NnClient, 
@@ -648,10 +625,8 @@ class Sx5SystemTestCase(ModuleTestCase):
         newToChange["force"] = False
 
         results = system(newToChange)
-        print str(results)
         self.assertTrue(results['changed'])
         systemClients = results["ansible_facts"]["systemes"]["composants"]
-        print str(systemClients)
         for toChangeClient in toChange["clients"]:
             clientFound = False
             for systemClient in systemClients:
@@ -689,7 +664,6 @@ class Sx5SystemTestCase(ModuleTestCase):
         system(toDelete)
         toDelete["state"] = "absent"
         results = system(toDelete)
-        #print str(results)
         self.assertTrue(results['changed'])
         self.assertEqual(results['stdout'], 'deleted', 'system has been deleted')
         

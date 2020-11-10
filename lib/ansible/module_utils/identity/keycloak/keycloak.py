@@ -134,17 +134,26 @@ def remove_arguments_with_value_none(argument):
     This is useful when argument_spec include optional keys which dos not need to be
     POST or PUT to Keycloak API.
     :param argument: Dict from which to remove NoneType elements
-    :return: nothing
+    :return: Dict without None values
     """
+
     if type(argument) is dict:
+        newarg = {}
         for key in argument.keys():
-            if argument[key] is None:
-                del argument[key]
-            elif type(argument[key]) is list:
+            if type(argument[key]) is list:
+                newarg[key] = []
                 for element in argument[key]:
-                    remove_arguments_with_value_none(element)
+                    newelement = remove_arguments_with_value_none(element)
+                    if newelement is not None:
+                        newarg[key].append(newelement)
             elif type(argument[key]) is dict:
-                remove_arguments_with_value_none(argument[key])
+                newvalue = remove_arguments_with_value_none(argument[key])
+                if newvalue is not None:
+                    newarg[key] = newvalue
+            elif argument[key] is not None:
+                newarg[key] = argument[key]
+        return newarg
+    return argument
 
 
 def isDictEquals(dict1, dict2, exclude=None):

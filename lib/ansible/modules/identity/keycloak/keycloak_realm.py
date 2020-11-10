@@ -843,8 +843,7 @@ def main():
     newRealmRepresentation["otpPolicyDigits"] = module.params.get('otpPolicyDigits')
     newRealmRepresentation["otpPolicyLookAheadWindow"] = module.params.get('otpPolicyLookAheadWindow')
     newRealmRepresentation["otpPolicyPeriod"] = module.params.get('otpPolicyPeriod')
-    newRealmRepresentation["smtpServer"] = module.params.get('smtpServer')
-    remove_arguments_with_value_none(newRealmRepresentation["smtpServer"])
+    newRealmRepresentation["smtpServer"] = remove_arguments_with_value_none(module.params.get('smtpServer'))
     if module.params.get("supportedLocales") is not None:
         if module.params.get("internationalizationEnabled") is not None:
             newRealmRepresentation["internationalizationEnabled"] = module.params.get("internationalizationEnabled")
@@ -863,8 +862,7 @@ def main():
     if module.params.get("eventsExpiration") is not None:
         newRealmRepresentation["eventsExpiration"] = module.params.get('eventsExpiration')
     # Read Events configuration for the Realm
-    newEventsConfig = module.params.get("eventsConfig")
-    remove_arguments_with_value_none(newEventsConfig)
+    newEventsConfig = remove_arguments_with_value_none(module.params.get("eventsConfig"))
     if module.params.get("browserSecurityHeaders") is not None:
         newRealmRepresentation["browserSecurityHeaders"] = module.params.get("browserSecurityHeaders")
 
