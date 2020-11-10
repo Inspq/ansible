@@ -219,18 +219,18 @@ def main():
                     # Check if the user still exist on the Keycloak server
                     userRepresentation = kc.get_user_by_id(user_id=expiredHabilitation["idUtilisateur"], realm=realm)
                 except Exception as e:
-                    if "msg" in e.message and "HTTP Error 404" in e.message["msg"]:
+                    if "msg" in e.args[0] and "HTTP Error 404" in e.args[0]["msg"]:
                         userRepresentation = None
                     else:
-                        module.fail_json(msg=e.message["msg"])
+                        module.fail_json(msg=e.args[0]["msg"])
                 try:
                     # Get the role to expire if it still exists
                     roleRepresentation = kc.get_role_by_id(roleid=expiredHabilitation["idRole"], realm=realm)
                 except Exception as e:
-                    if "msg" in e.message and "HTTP Error 404" in e.message["msg"]:
+                    if "msg" in e.args[0] and "HTTP Error 404" in e.args[0]["msg"]:
                         roleRepresentation = None
                     else:
-                        module.fail_json(msg=e.message["msg"])
+                        module.fail_json(msg=e.args[0]["msg"])
                 if userRepresentation is not None and roleRepresentation is not None:
                     if roleRepresentation["clientRole"]:  # If it's a client Role
                         # Get the client ID
