@@ -71,7 +71,7 @@ options:
     systemShortName:
         description:
             - System Short Name acronym without espace.
-        required: false
+        required: true
         type: str
     systemName:
         description:
@@ -81,13 +81,15 @@ options:
     clients:
         description:
             - list of OIDC Client ID for the client in Keycloak.
-        required: true
+        required: false
         type: list
+        elements: dict
     clientRoles:
         description:
             - list of role in keycloak.
         type: list
         required: false
+        elements: dict
     sadu_principal:
         description:
             - Principal provisioning services URL.
@@ -98,16 +100,19 @@ options:
             - list of secondary provisioning services URL.
         type: list
         required: false
+        elements: dict
     clientRoles_mapper:
         description:
             - list of role correspondance between keycloak roles end SADU roles.
         required: false
         type: list
+        elements: dict
     pilotRoles:
         description:
             - list of piloting roles in keycloak.
         type: list
         required: false
+        elements: dict
     force:
         default: "no"
         description:
@@ -283,11 +288,11 @@ def main():
             systemName=dict(type='str', required=True),
             systemShortName=dict(type='str', required=True),
             sadu_principal=dict(type='str', required=False),
-            sadu_secondary=dict(type='list', default=[]),
-            clients=dict(type='list', default=[]),
-            clientRoles=dict(type='list', default=[]),
-            pilotRoles=dict(type='list', default=[]),
-            clientRoles_mapper=dict(type='list', default=[]),
+            sadu_secondary=dict(type='list', elements='dict', default=[]),
+            clients=dict(type='list', elements='dict', default=[]),
+            clientRoles=dict(type='list', elements='dict', default=[]),
+            pilotRoles=dict(type='list', elements='dict', default=[]),
+            clientRoles_mapper=dict(type='list', elements='dict', default=[]),
             force=dict(type='bool', default=False),
             state=dict(choices=["absent", "present"], default='present'),
         ),
