@@ -18,9 +18,7 @@
 # along with Ansible.  If not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import absolute_import, division, print_function
-
 __metaclass__ = type
-
 
 ANSIBLE_METADATA = {'metadata_version': '1.1',
                     'status': ['preview'],
@@ -98,7 +96,7 @@ options:
     sadu_secondary:
         description:
             - list of secondary provisioning services URL.
-        type: str
+        type: list
         required: false
     clientRoles_mapper:
         description:
@@ -111,12 +109,11 @@ options:
         type: list
         required: false
     force:
-        choices: [ "yes", "no" ]
         default: "no"
         description:
             - If yes, allows to remove client and recreate it.
         required: false
-        type: str
+        type: bool
     state:
         description:
             - Control if the client must exists or not
@@ -268,6 +265,7 @@ changed:
 '''
 import requests
 import json
+import sys
 from ansible.module_utils.sx5_sp_config_system_utils import loginAndSetHeaders, isDictEquals
 from ansible.module_utils.basic import AnsibleModule
 
@@ -323,13 +321,23 @@ def system(params):
     # Creer un representation du system pour BD SP config
     newSystemDBRepresentation = {}
     if "spRealm" in params and params["spRealm"] is not None:
-        newSystemDBRepresentation["spRealm"] = params['spRealm'].decode("utf-8")
-    newSystemDBRepresentation["systemName"] = params['systemName'].decode("utf-8")
+        if sys.version_info.major == 3:
+            newSystemDBRepresentation["spRealm"] = params['spRealm']
+        else:
+            newSystemDBRepresentation["spRealm"] = params['spRealm'].decode("utf-8")
+    if sys.version_info.major == 3:
+        newSystemDBRepresentation["systemName"] = params['systemName']
+        newSystemDBRepresentation["spConfigUrl"] = params['spConfigUrl']
+    else:
+        newSystemDBRepresentation["systemName"] = params['systemName'].decode("utf-8")
+        newSystemDBRepresentation["spConfigUrl"] = params['spConfigUrl'].decode("utf-8")
     if "systemShortName" in params and params['systemShortName'] is not None:
         newSystemDBRepresentation["systemShortName"] = params['systemShortName']
-    newSystemDBRepresentation["spConfigUrl"] = params['spConfigUrl'].decode("utf-8")
     if "sadu_principal" in params and params['sadu_principal'] is not None:
-        newSystemDBRepresentation["sadu_principal"] = params['sadu_principal'].decode("utf-8")
+        if sys.version_info.major == 3:
+            newSystemDBRepresentation["sadu_principal"] = params['sadu_principal']
+        else:
+            newSystemDBRepresentation["sadu_principal"] = params['sadu_principal'].decode("utf-8")
     if "sadu_secondary" in params and params['sadu_secondary'] is not None:
         newSystemDBRepresentation["sadu_secondary"] = params['sadu_secondary']
     if "clients" in params and params['clients'] is not None:
@@ -346,7 +354,7 @@ def system(params):
     roleSvcBaseUrl = spUrl + "/auth/admin/realms/" + realm + "/roles/"
     try:
         headers = loginAndSetHeaders(spUrl, realm, username, password, clientid, clientSecret)
-    except Exception, e:
+    except Exception as e:
         result = dict(
             stderr='login: ' + str(e),
             rc=1,
@@ -480,7 +488,7 @@ def system(params):
                                 ansible_facts=fact,
                                 rc=0,
                                 changed=changed)
-                    except requests.exceptions.RequestException, e:
+                    except requests.exceptions.RequestException as e:
                         fact = dict(
                             systemes=newSystemDBRepresentation)
                         result = dict(
@@ -488,7 +496,7 @@ def system(params):
                             stderr='Update systemes: ' + newSystemDBRepresentation["systemName"] + ' erreur: ' + str(e),
                             rc=1,
                             changed=changed)
-                    except ValueError, e:
+                    except ValueError as e:
                         fact = dict(
                             systemes=newSystemDBRepresentation)
                         result = dict(
@@ -613,7 +621,7 @@ def system(params):
                                 ansible_facts=fact,
                                 rc=0,
                                 changed=changed)
-                    except requests.exceptions.RequestException, e:
+                    except requests.exceptions.RequestException as e:
                         fact = dict(
                             systemes=newSystemDBRepresentation)
                         result = dict(
@@ -621,7 +629,7 @@ def system(params):
                             stderr='Update systemes: ' + newSystemDBRepresentation["systemName"] + ' erreur: ' + str(e),
                             rc=1,
                             changed=changed)
-                    except ValueError, e:
+                    except ValueError as e:
                         fact = dict(
                             systemes=newSystemDBRepresentation)
                         result = dict(
@@ -629,7 +637,7 @@ def system(params):
                             stderr='Update systemes: ' + newSystemDBRepresentation["systemName"] + ' erreur: ' + str(e),
                             rc=1,
                             changed=changed)
-            except requests.exceptions.RequestException, e:
+            except requests.exceptions.RequestException as e:
                 fact = dict(
                     systemes=newSystemDBRepresentation)
                 result = dict(
@@ -637,7 +645,7 @@ def system(params):
                     stderr='Get systeme: ' + newSystemDBRepresentation["systemName"] + ' erreur: ' + str(e),
                     rc=1,
                     changed=changed)
-            except ValueError, e:
+            except ValueError as e:
                 fact = dict(
                     systemes=newSystemDBRepresentation)
                 result = dict(
@@ -817,7 +825,7 @@ def system(params):
                                 ansible_facts=fact,
                                 rc=0,
                                 changed=changed)
-                        except requests.exceptions.RequestException, e:
+                        except requests.exceptions.RequestException as e:
                             fact = dict(
                                 systemes=newSystemDBRepresentation)
                             result = dict(
@@ -825,7 +833,7 @@ def system(params):
                                 stderr='Update systemes: ' + newSystemDBRepresentation["systemName"] + ' erreur: ' + str(e),
                                 rc=1,
                                 changed=changed)
-                        except ValueError, e:
+                        except ValueError as e:
                             fact = dict(
                                 systemes=newSystemDBRepresentation)
                             result = dict(
@@ -950,7 +958,7 @@ def system(params):
                                 ansible_facts=fact,
                                 rc=0,
                                 changed=changed)
-                    except requests.exceptions.RequestException, e:
+                    except requests.exceptions.RequestException as e:
                         fact = dict(
                             systemes=newSystemDBRepresentation)
                         result = dict(
@@ -958,7 +966,7 @@ def system(params):
                             stderr='Update systemes: ' + newSystemDBRepresentation["systemName"] + ' erreur: ' + str(e),
                             rc=1,
                             changed=changed)
-                    except ValueError, e:
+                    except ValueError as e:
                         fact = dict(
                             systemes=newSystemDBRepresentation)
                         result = dict(
@@ -966,7 +974,7 @@ def system(params):
                             stderr='Update systemes: ' + newSystemDBRepresentation["systemName"] + ' erreur: ' + str(e),
                             rc=1,
                             changed=changed)
-            except requests.exceptions.RequestException, e:
+            except requests.exceptions.RequestException as e:
                 fact = dict(
                     systemes=newSystemDBRepresentation)
                 result = dict(
@@ -974,7 +982,7 @@ def system(params):
                     stderr='Get systeme: ' + newSystemDBRepresentation["systemName"] + ' erreur: ' + str(e),
                     rc=1,
                     changed=changed)
-            except ValueError, e:
+            except ValueError as e:
                 fact = dict(
                     systemes=newSystemDBRepresentation)
                 result = dict(
@@ -997,7 +1005,7 @@ def system(params):
                         stdout='deleted',
                         rc=0,
                         changed=changed)
-                except requests.exceptions.RequestException, e:
+                except requests.exceptions.RequestException as e:
                     fact = dict(
                         systemes=newSystemDBRepresentation)
                     result = dict(
@@ -1005,7 +1013,7 @@ def system(params):
                         stderr='Delete system: ' + newSystemDBRepresentation["systemName"] + ' erreur: ' + str(e),
                         rc=1,
                         changed=changed)
-                except ValueError, e:
+                except ValueError as e:
                     fact = dict(
                         clientSx5=dataResponse)
                     result = dict(
@@ -1018,7 +1026,7 @@ def system(params):
                     stdout='system or realm not fond',
                     rc=0,
                     changed=changed)
-        except Exception, e:
+        except Exception as e:
             result = dict(
                 stderr='Client get in state = absent : ' + str(e),
                 rc=1,
@@ -1104,8 +1112,12 @@ def createOrUpdateClientRoles(pilotClientRoles, clientSvcBaseUrl, roleSvcBaseUrl
             if changeNeeded and desiredState != "absent":
                 # If role must be modified
                 newRoleRepresentation = {}
-                newRoleRepresentation["name"] = newClientRole['name'].decode("utf-8")
-                newRoleRepresentation["description"] = newClientRole['description'].decode("utf-8")
+                if sys.version_info.major == 3:
+                    newRoleRepresentation["name"] = newClientRole['name']
+                    newRoleRepresentation["description"] = newClientRole['description']
+                else:
+                    newRoleRepresentation["name"] = newClientRole['name'].decode("utf-8")
+                    newRoleRepresentation["description"] = newClientRole['description'].decode("utf-8")
                 newRoleRepresentation["composite"] = newClientRole['composite'] if "composite" in newClientRole else False
                 newRoleRepresentation["clientRole"] = newClientRole['clientRole'] if "clientRole" in newClientRole else True
                 data = json.dumps(newRoleRepresentation)
