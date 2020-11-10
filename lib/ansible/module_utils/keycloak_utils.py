@@ -86,7 +86,7 @@ Retour:
             return dict1 == dict2
     except KeyError:
         return False
-    except Exception, e:
+    except Exception as e:
         raise e
 
 def str2bool(value):
@@ -127,9 +127,9 @@ Arguments :
     
         loginData = loginResponse.json()
         accessToken = loginData['access_token']
-    except requests.exceptions.RequestException, e:
+    except requests.exceptions.RequestException as e:
         raise e
-    except ValueError, e:
+    except ValueError as e:
         raise e
 
     return accessToken
@@ -147,9 +147,9 @@ def realmLogin(url, realm, username, password):
         loginResponse = requests.post(url + '/auth/realms/' + realm + '/protocol/openid-connect/token',data=body)
         loginData = loginResponse.json()
         accessToken = loginData['access_token']
-    except requests.exceptions.RequestException, e:
+    except requests.exceptions.RequestException as e:
         raise e
-    except ValueError, e:
+    except ValueError as e:
         raise e
 
     return accessToken
@@ -164,7 +164,7 @@ def loginAndSetHeaders(url, username, password):
     try:
         accessToken = login(url, username, password)
         headers = setHeaders(accessToken)
-    except Exception, e:
+    except Exception as e:
         raise e
     return headers
 def realmLoginAndSetHeaders(url, realm, username, password):
@@ -172,7 +172,7 @@ def realmLoginAndSetHeaders(url, realm, username, password):
     try:
         accessToken = realmLogin(url, realm, username, password)
         headers = setHeaders(accessToken)
-    except Exception, e:
+    except Exception as e:
         raise e
     return headers
 

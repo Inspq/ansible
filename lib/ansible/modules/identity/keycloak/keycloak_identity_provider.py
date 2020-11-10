@@ -427,16 +427,14 @@ def main():
 
     newIdPConfig = None
     if module.params.get('config') is not None:
-        newIdPConfig = module.params.get('config').copy()
-        remove_arguments_with_value_none(newIdPConfig)
+        newIdPConfig = remove_arguments_with_value_none(module.params.get('config'))
         if 'openIdConfigurationUrl' in newIdPConfig:
             del(newIdPConfig['openIdConfigurationUrl'])
 
     if 'providerId' in newIdPRepresentation and newIdPRepresentation["providerId"] == 'google' and 'userIp' in module.params.get("config"):
         newIdPConfig["userIp"] = module.params.get("config")["userIp"]
 
-    newIdPMappers = module.params.get('mappers')
-    remove_arguments_with_value_none(newIdPMappers)
+    newIdPMappers = remove_arguments_with_value_none(module.params.get('mappers'))
 
     if newIdPConfig is not None:
         if (module.params.get('config') is not None and

@@ -6,7 +6,6 @@
 
 from ansible.modules.identity.keycloak import keycloak_client
 from units.modules.utils import AnsibleExitJson, AnsibleFailJson, ModuleTestCase, set_module_args
-from __builtin__ import True
 from ansible.module_utils.identity.keycloak.keycloak import isDictEquals
 
 

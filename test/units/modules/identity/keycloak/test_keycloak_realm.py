@@ -57,7 +57,7 @@ class KeycloakRealmTestCase(ModuleTestCase):
             "port": "25",
             "host": "localhost",
             "replyTo": "root@localhost",
-            "fromDisplayName": "local",
+            "fromDisplayName": None,
             "envelopeFrom": "root@localhost",
             "from": "root@localhost"
         },
@@ -261,6 +261,7 @@ class KeycloakRealmTestCase(ModuleTestCase):
         with self.assertRaises(AnsibleExitJson) as results:
             self.module.main()
         self.assertTrue(results.exception.args[0]['changed'])
+        del toCreate["smtpServer"]["fromDisplayName"]
         self.assertTrue(isDictEquals(toCreate, results.exception.args[0]['realm'], self.realmExcudes), 'Realm created does not comply to specifications.')
         self.assertTrue(results.exception.args[0]["eventsConfig"]["eventsEnabled"], "eventsEnabled: " + str(results.exception.args[0]["eventsConfig"]["eventsEnabled"]))
         self.assertTrue(results.exception.args[0]["eventsConfig"]["adminEventsEnabled"], "adminEventsEnabled: " + str(results.exception.args[0]["eventsConfig"]["adminEventsEnabled"]))

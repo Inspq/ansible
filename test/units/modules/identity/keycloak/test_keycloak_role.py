@@ -287,7 +287,7 @@ class KeycloakRoleTestCase(ModuleTestCase):
                     roleData=json.dumps(clientRole)
                     requests.post(clientSvcBaseUrl + clientRepresentation['id'] + '/roles', headers=self.headers, data=roleData)
                     
-        except requests.exceptions.RequestException, e:
+        except requests.exceptions.RequestException as e:
             print(str(e))
 
         self.module = keycloak_role
@@ -310,7 +310,7 @@ class KeycloakRoleTestCase(ModuleTestCase):
                 if len(getResponse.json()) > 0:
                     clientRepresentation = getResponse.json()[0]
                     requests.delete(clientSvcBaseUrl + clientRepresentation["id"], headers=self.headers)
-        except requests.exceptions.RequestException, e:
+        except requests.exceptions.RequestException as e:
             print(str(e))
         # Delete roles
         self.module = keycloak_role
@@ -380,7 +380,7 @@ class KeycloakRoleTestCase(ModuleTestCase):
                     roleFound = True
                     break
             self.assertFalse(roleFound, 'role ' + toDelete["name"] + ' not deleted')
-        except requests.exceptions.RequestException, e:
+        except requests.exceptions.RequestException as e:
             print(str(e)) 
     
     def test_modify_role_two_client_role_with_same_name(self):
