@@ -41,7 +41,7 @@ def isDictEquals(dict1, dict2, exclude = []):
             return dict1 == dict2
     except KeyError:
         return False
-    except Exception, e:
+    except Exception as e:
         raise e
 
 import requests
@@ -90,9 +90,9 @@ Arguments :
     
         loginData = loginResponse.json()
         accessToken = loginData['access_token']
-    except requests.exceptions.RequestException, e:
+    except requests.exceptions.RequestException as e:
         raise e
-    except ValueError, e:
+    except ValueError as e:
         raise e
 
     return accessToken
@@ -107,6 +107,6 @@ def loginAndSetHeaders(url, realm, username, password, clientid, clientSecret):
     try:
         accessToken = login(url, realm, username, password, clientid, clientSecret)
         headers = setHeaders(accessToken)
-    except Exception, e:
+    except Exception as e:
         raise e
     return headers

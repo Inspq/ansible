@@ -30,6 +30,7 @@ from __future__ import absolute_import, division, print_function
 __metaclass__ = type
 
 import json
+import sys
 # import urllib
 from six.moves.urllib.parse import quote
 from ansible.module_utils.urls import open_url
@@ -1168,8 +1169,12 @@ class KeycloakAPI(object):
                     if changeNeeded and desiredState != "absent":
                         # If role must be modified
                         newRoleRepresentation = {}
-                        newRoleRepresentation["name"] = newClientRole['name'].decode("utf-8")
-                        newRoleRepresentation["description"] = newClientRole['description'].decode("utf-8")
+                        if sys.version_info.major == 3:
+                            newRoleRepresentation["name"] = newClientRole['name']
+                            newRoleRepresentation["description"] = newClientRole['description']
+                        else:
+                            newRoleRepresentation["name"] = newClientRole['name'].decode("utf-8")
+                            newRoleRepresentation["description"] = newClientRole['description'].decode("utf-8")
                         newRoleRepresentation["composite"] = newClientRole['composite'] if "composite" in newClientRole else False
                         newRoleRepresentation["clientRole"] = newClientRole['clientRole'] if "clientRole" in newClientRole else True
                         data = json.dumps(newRoleRepresentation)

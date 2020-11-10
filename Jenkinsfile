@@ -8,7 +8,7 @@ pipeline {
     }
 	environment{
 	    KEYCLOAK_IMAGE='jboss/keycloak'
-	    KEYCLOAK_VERSION='latest'
+	    KEYCLOAK_VERSION='10.0.2'
 	    RHSSO_IMAGE='nexus3.inspq.qc.ca:5000/inspq/rhsso'
 	    RHSSO_VERSION='latest'
 	    THREEEIGHTYNINEDS_IMAGE='minkwe/389ds'
@@ -28,8 +28,7 @@ pipeline {
         stage ('Validation des modules ansibles') {
             steps {
                 sh "python3 bin/ansible-test sanity --test pep8 lib/ansible/module_utils/identity/keycloak/keycloak.py lib/ansible/modules/identity/keycloak/keycloak_user.py lib/ansible/modules/identity/keycloak/keycloak_authentication.py lib/ansible/modules/identity/keycloak/keycloak_client.py lib/ansible/modules/identity/keycloak/keycloak_clienttemplate.py lib/ansible/modules/identity/keycloak/keycloak_component.py lib/ansible/modules/identity/keycloak/keycloak_group.py lib/ansible/modules/identity/keycloak/keycloak_identity_provider.py lib/ansible/modules/identity/keycloak/keycloak_realm.py lib/ansible/modules/identity/keycloak/keycloak_role.py lib/ansible/modules/identity/sx5/sx5_habilitation.py lib/ansible/modules/identity/sx5/sx5_sp_config_system.py lib/ansible/modules/identity/user_provisioning/scim_user.py"            
-                // sh "python3 bin/ansible-test sanity --test validate-modules lib/ansible/module_utils/keycloak.py lib/ansible/modules/identity/keycloak/keycloak_user.py lib/ansible/modules/identity/keycloak/keycloak_authentication.py lib/ansible/modules/identity/keycloak/keycloak_client.py lib/ansible/modules/identity/keycloak/keycloak_clienttemplate.py lib/ansible/modules/identity/keycloak/keycloak_component.py lib/ansible/modules/identity/keycloak/keycloak_group.py lib/ansible/modules/identity/keycloak/keycloak_identity_provider.py lib/ansible/modules/identity/keycloak/keycloak_realm.py lib/ansible/modules/identity/keycloak/keycloak_role.py lib/ansible/modules/identity/sx5/sx5_habilitation.py lib/ansible/modules/identity/sx5/sx5_sp_config_system.py lib/ansible/modules/identity/user_provisioning/scim_user.py"
-                sh "python3 bin/ansible-test sanity --test validate-modules lib/ansible/module_utils/identity/keycloak/keycloak.py lib/ansible/modules/identity/keycloak/keycloak_user.py lib/ansible/modules/identity/keycloak/keycloak_authentication.py lib/ansible/modules/identity/keycloak/keycloak_client.py lib/ansible/modules/identity/keycloak/keycloak_clienttemplate.py lib/ansible/modules/identity/keycloak/keycloak_component.py lib/ansible/modules/identity/keycloak/keycloak_group.py lib/ansible/modules/identity/keycloak/keycloak_identity_provider.py lib/ansible/modules/identity/keycloak/keycloak_realm.py lib/ansible/modules/identity/keycloak/keycloak_role.py lib/ansible/modules/identity/sx5/sx5_habilitation.py lib/ansible/modules/identity/user_provisioning/scim_user.py"
+                sh "python3 bin/ansible-test sanity --test validate-modules lib/ansible/module_utils/identity/keycloak/keycloak.py lib/ansible/modules/identity/keycloak/keycloak_user.py lib/ansible/modules/identity/keycloak/keycloak_authentication.py lib/ansible/modules/identity/keycloak/keycloak_client.py lib/ansible/modules/identity/keycloak/keycloak_clienttemplate.py lib/ansible/modules/identity/keycloak/keycloak_component.py lib/ansible/modules/identity/keycloak/keycloak_group.py lib/ansible/modules/identity/keycloak/keycloak_identity_provider.py lib/ansible/modules/identity/keycloak/keycloak_realm.py lib/ansible/modules/identity/keycloak/keycloak_role.py lib/ansible/modules/identity/sx5/sx5_habilitation.py lib/ansible/modules/identity/sx5/sx5_sp_config_system.py lib/ansible/modules/identity/user_provisioning/scim_user.py"
            	}
         }
         stage ('Tests sécurités des modules ansible sx5') {
@@ -196,7 +195,7 @@ pipeline {
             steps {
                 script {
                     try {
-		                sh "source hacking/env-setup; nosetests --with-xunit --xunit-file=nosetests-scim.xml test/units/module_utils/identity/user_provisioning/test_scim.py test/units/modules/identity/user_provisioning/test_scim_user.py"
+		                sh "source hacking/env-setup; cd test; nosetests --with-xunit --xunit-file=nosetests-scim.xml units/module_utils/identity/user_provisioning/test_scim.py units/modules/identity/user_provisioning/test_scim_user.py"
                     }
                     catch (exc){
                         currentBuild.result = 'UNSTABLE'
