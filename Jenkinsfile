@@ -8,7 +8,7 @@ pipeline {
     }
 	environment{
 	    KEYCLOAK_IMAGE='jboss/keycloak'
-	    KEYCLOAK_VERSION='10.0.2'
+	    KEYCLOAK_VERSION='latest'
 	    RHSSO_IMAGE='nexus3.inspq.qc.ca:5000/inspq/rhsso'
 	    RHSSO_VERSION='latest'
 	    THREEEIGHTYNINEDS_IMAGE='minkwe/389ds'
@@ -80,7 +80,7 @@ pipeline {
                 '''
                 script {
                     try {
-		                sh "source hacking/env-setup && cd tests && python3 -m nose --with-xunit --xunit-file=nosetests-keycloak.xml units/module_utils/identity/keycloak/test_keycloak_utils.py units/modules/identity/keycloak/test_keycloak_authentication.py units/modules/identity/keycloak/test_keycloak_client.py units/modules/identity/keycloak/test_keycloak_group.py units/modules/identity/keycloak/test_keycloak_identity_provider.py units/modules/identity/keycloak/test_keycloak_realm.py units/modules/identity/keycloak/test_keycloak_role.py units/modules/identity/keycloak/test_keycloak_user.py units/modules/identity/keycloak/test_keycloak_component.py"
+		                sh "source hacking/env-setup && cd test && python3 -m nose --with-xunit --xunit-file=nosetests-keycloak.xml units/module_utils/identity/keycloak/test_keycloak_utils.py units/modules/identity/keycloak/test_keycloak_authentication.py units/modules/identity/keycloak/test_keycloak_client.py units/modules/identity/keycloak/test_keycloak_group.py units/modules/identity/keycloak/test_keycloak_identity_provider.py units/modules/identity/keycloak/test_keycloak_realm.py units/modules/identity/keycloak/test_keycloak_role.py units/modules/identity/keycloak/test_keycloak_user.py units/modules/identity/keycloak/test_keycloak_component.py"
                     }
                     catch (exc){
                         currentBuild.result = 'UNSTABLE'
@@ -111,7 +111,7 @@ pipeline {
                 '''
                 script {
                     try {
-		                sh "source hacking/env-setup && cd tests && python3 -m nose --with-xunit --xunit-file=nosetests-rhsso.xml  units/module_utils/identity/keycloak/test_keycloak_utils.py units/modules/identity/keycloak/test_keycloak_authentication.py units/modules/identity/keycloak/test_keycloak_client.py units/modules/identity/keycloak/test_keycloak_group.py units/modules/identity/keycloak/test_keycloak_identity_provider.py units/modules/identity/keycloak/test_keycloak_realm.py units/modules/identity/keycloak/test_keycloak_role.py units/modules/identity/keycloak/test_keycloak_user.py units/modules/identity/keycloak/test_keycloak_component.py"
+		                sh "source hacking/env-setup && cd test && python3 -m nose --with-xunit --xunit-file=nosetests-rhsso.xml  units/module_utils/identity/keycloak/test_keycloak_utils.py units/modules/identity/keycloak/test_keycloak_authentication.py units/modules/identity/keycloak/test_keycloak_client.py units/modules/identity/keycloak/test_keycloak_group.py units/modules/identity/keycloak/test_keycloak_identity_provider.py units/modules/identity/keycloak/test_keycloak_realm.py units/modules/identity/keycloak/test_keycloak_role.py units/modules/identity/keycloak/test_keycloak_user.py units/modules/identity/keycloak/test_keycloak_component.py"
                     }
                     catch (exc){
                         currentBuild.result = 'UNSTABLE'
@@ -142,7 +142,7 @@ pipeline {
                 sh "ansible-playbook -i sx5-sp-config.hosts -e sx5spconfig_image_version=${SX5SPCONFIG_VERSION} deploy-sx5-sp-config.yml"
                 script {
                     try {
-		                sh "source hacking/env-setup && cd tests && python3 -m nose --with-xunit --xunit-file=nosetests-sx5-sp-config.xml units/module_utils/identity/sx5/test_sx5_sp_config_system_utils.py units/modules/identity/sx5/test_sx5_sp_config_system.py"
+		                sh "source hacking/env-setup && cd test && python3 -m nose --with-xunit --xunit-file=nosetests-sx5-sp-config.xml units/module_utils/identity/sx5/test_sx5_sp_config_system_utils.py units/modules/identity/sx5/test_sx5_sp_config_system.py"
                     }
                     catch (exc){
                         currentBuild.result = 'UNSTABLE'
