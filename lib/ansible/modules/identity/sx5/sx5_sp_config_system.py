@@ -48,6 +48,11 @@ options:
             - The password for the user to logon in Keycloak.
         required: true
         type: str
+    spAuthRealm:
+        description:
+            - The Realm for the user to logon in Keycloak.
+        required: false
+        type: str
     spRealm:
         description:
             - The name of the Keycloak realm in which is the client.
@@ -138,7 +143,8 @@ EXAMPLES = '''
         spUrl: http://localhost:8080/auth
         spUsername: admin
         spPassword: admin
-        spRealm: Master
+        spAuthRealm: master
+        spRealm: master
         spConfigUrl: http://localhost:8089/config
         spConfigClient_id: sx5spconfig
         spConfigClient_secret: client_string
@@ -281,6 +287,7 @@ def main():
             spUrl=dict(type='str', required=True),
             spUsername=dict(type='str', required=True),
             spPassword=dict(required=True),
+            spAuthRealm=dict(type='str', required=False),
             spRealm=dict(type='str', required=True),
             spConfigUrl=dict(type='str', required=True),
             spConfigClient_id=dict(type='str', required=True),
@@ -313,12 +320,16 @@ def system(params):
     spUrl = params['spUrl']
     username = params['spUsername']
     password = params['spPassword']
+    realm = params['spRealm']
+    if 'spAuthRealm' in params:
+        authrealm = params['spAuthRealm']
+    else:
+        authrealm = realm
     clientid = params['spConfigClient_id']
     if "spConfigClient_secret" in params and params['spConfigClient_secret'] is not None:
         clientSecret = params['spConfigClient_secret']
     else:
         clientSecret = ''
-    realm = params['spRealm']
     force = params['force']
     spConfigUrl = params['spConfigUrl']
     state = params['state']
@@ -358,7 +369,7 @@ def system(params):
     clientSvcBaseUrl = spUrl + "/auth/admin/realms/" + realm + "/clients/"
     roleSvcBaseUrl = spUrl + "/auth/admin/realms/" + realm + "/roles/"
     try:
-        headers = loginAndSetHeaders(spUrl, realm, username, password, clientid, clientSecret)
+        headers = loginAndSetHeaders(spUrl, authrealm, username, password, clientid, clientSecret)
     except Exception as e:
         result = dict(
             stderr='login: ' + str(e),
