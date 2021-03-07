@@ -412,7 +412,6 @@ class SpConfigSystem(object):
         return clientKc
 
     def addSystemSpConfig(self, result):
-        # pour l'instant, on supprime toujours
         if self.params['force']:
             self.delSystemSpConfig(result, self.params)
         # il faut creer la representation json des role pour habilitation avant les manipulations pour Kc qui vont changer le clientid pour l'id Kc dans les composantes
@@ -666,10 +665,11 @@ class SpConfigSystem(object):
         if spConfigSystem is not None:
             self.inspectResponse( 
                 requests.delete(
-                    params['spConfigUrl'] + "/systemes/" + spConfigSystem["cleUnique"],
+                    self.params['spConfigUrl'] + "/systemes/" + spConfigSystem["cleUnique"],
                     headers = self.headers
                 ), "delSystemSpConfig", 204
             )
+            result['changed'] = True
 
     def run(self):
         
