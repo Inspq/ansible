@@ -1,20 +1,27 @@
 import requests
 
-from ansible.modules.identity.sx5.sx5_sp_config_system import system
+from ansible.modules.identity.sx5.sx5_sp_config_system import SpConfigSystem
 from ansible.modules.identity.keycloak import keycloak_client
 from ansible.module_utils.sx5_sp_config_system_utils import loginAndSetHeaders
 from units.modules.utils import AnsibleExitJson, ModuleTestCase, set_module_args
 
+KC_URL = "http://tcn00qubc02619.isn.rtss.qc.ca"
+SP_URL = KC_URL
+KC_PORT = 10801
+SP_PORT = 18186
+AUTH_URL = "{url}:{port}".format(url = KC_URL, port = KC_PORT)
+SP_CONFIG_URL = "{url}:{port}/config".format(url = SP_URL, port = SP_PORT)
+
 class Sx5SystemTestCase(ModuleTestCase):
     systemsToCreate = [
         {
-            "spUrl": "http://localhost:18081",
+            "spUrl": AUTH_URL,
             "spUsername": "admin",
             "spPassword": "admin",
             "spRealm": "master",
             "spConfigClient_id": "admin-cli", 
             "spConfigClient_secret": "",
-            "spConfigUrl": "http://localhost:18182/config",
+            "spConfigUrl": SP_CONFIG_URL,
             "systemName": "SystemeAReconfigurer",
             "systemShortName": "SAR",
             "clients": [
@@ -75,12 +82,12 @@ class Sx5SystemTestCase(ModuleTestCase):
         "auth_password": "admin",
         "realm": "master",
         "state": "present",
-        "rootUrl": "http://test.com:18182",
+        "rootUrl": "http://test.com:18186",
         "description": "Ceci est un test",
-        "adminUrl": "http://test.com:18182/admin",
+        "adminUrl": "http://test.com:18186/admin",
         "enabled": True,
         "clientAuthenticatorType": "client-secret",
-        "redirectUris": ["http://test.com:18182/secure","http://test1.com:18182/secure"],
+        "redirectUris": ["http://test.com:18186/secure","http://test1.com:18186/secure"],
         "webOrigins": ["*"],
         "bearerOnly": False,
         "publicClient": False,
@@ -272,16 +279,20 @@ class Sx5SystemTestCase(ModuleTestCase):
                 self.module.main()
             
         super(Sx5SystemTestCase, self).tearDown()
+
+    def system(self, params):
+        spConfigSystem = SpConfigSystem(params)
+        spConfigSystem.run()
                         
     def test_create_system(self):
         toCreate = {}
-        toCreate["spUrl"] = "http://localhost:18081"
+        toCreate["spUrl"] = AUTH_URL
         toCreate["spUsername"] = "admin"
         toCreate["spPassword"] = "admin"
         toCreate["spRealm"] = "master"
         toCreate["spConfigClient_id"] = "admin-cli" 
         toCreate["spConfigClient_secret"] = ""
-        toCreate["spConfigUrl"] = "http://localhost:18182/config"
+        toCreate["spConfigUrl"] = SP_CONFIG_URL
         toCreate["systemName"] = "system1"
         toCreate["systemShortName"] = "S1"
         toCreate["clients"] = [{"clientId": "clientsystem11"}]
@@ -299,13 +310,13 @@ class Sx5SystemTestCase(ModuleTestCase):
 
     def test_system_not_changed(self):
         toDoNotChange = {}
-        toDoNotChange["spUrl"] = "http://localhost:18081"
+        toDoNotChange["spUrl"] = AUTH_URL
         toDoNotChange["spUsername"] = "admin"
         toDoNotChange["spPassword"] = "admin"
         toDoNotChange["spRealm"] = "master"
         toDoNotChange["spConfigClient_id"] = "admin-cli" 
         toDoNotChange["spConfigClient_secret"] = ""
-        toDoNotChange["spConfigUrl"] = "http://localhost:18182/config"
+        toDoNotChange["spConfigUrl"] = SP_CONFIG_URL
         toDoNotChange["systemName"] = "system2"
         toDoNotChange["systemShortName"] = "S2"
         toDoNotChange["clients"] = [{"clientId": "clientsystem21"}]
@@ -323,13 +334,13 @@ class Sx5SystemTestCase(ModuleTestCase):
 
     def test_modify_system_no_pilotRoles(self):
         toChange1 = {}
-        toChange1["spUrl"] = "http://localhost:18081"
+        toChange1["spUrl"] = AUTH_URL
         toChange1["spUsername"] = "admin"
         toChange1["spPassword"] = "admin"
         toChange1["spRealm"] = "master"
         toChange1["spConfigClient_id"] = "admin-cli" 
         toChange1["spConfigClient_secret"] = ""
-        toChange1["spConfigUrl"] = "http://localhost:18182/config"
+        toChange1["spConfigUrl"] = SP_CONFIG_URL
         toChange1["systemName"] = "system3"
         toChange1["systemShortName"] = "S3"
         toChange1["clients"] = [{"clientId": "clientsystem31"}]
@@ -356,13 +367,13 @@ class Sx5SystemTestCase(ModuleTestCase):
 
     def test_modify_system_with_pilotRoles(self):
         toChangep = {}
-        toChangep["spUrl"] = "http://localhost:18081"
+        toChangep["spUrl"] = AUTH_URL
         toChangep["spUsername"] = "admin"
         toChangep["spPassword"] = "admin"
         toChangep["spRealm"] = "master"
         toChangep["spConfigClient_id"] = "admin-cli" 
         toChangep["spConfigClient_secret"] = ""
-        toChangep["spConfigUrl"] = "http://localhost:18182/config"
+        toChangep["spConfigUrl"] = SP_CONFIG_URL
         toChangep["systemName"] = "system3"
         toChangep["systemShortName"] = "S3"
         toChangep["clients"] = [{"clientId": "clientsystem31"}]
@@ -390,13 +401,13 @@ class Sx5SystemTestCase(ModuleTestCase):
 
     def test_modify_system_add_clients(self):
         toChange2 = {}
-        toChange2["spUrl"] = "http://localhost:18081"
+        toChange2["spUrl"] = AUTH_URL
         toChange2["spUsername"] = "admin"
         toChange2["spPassword"] = "admin"
         toChange2["spRealm"] = "master"
         toChange2["spConfigClient_id"] = "admin-cli" 
         toChange2["spConfigClient_secret"] = ""
-        toChange2["spConfigUrl"] = "http://localhost:18182/config"
+        toChange2["spConfigUrl"] = SP_CONFIG_URL
         toChange2["systemName"] = "test3"
         toChange2["systemShortName"] = "T3"
         toChange2["clients"] = [{"clientId": "clientsystem32"}]
@@ -411,13 +422,13 @@ class Sx5SystemTestCase(ModuleTestCase):
         results = system(toChange2)
 
         newToChange = {}
-        newToChange["spUrl"] = "http://localhost:18081"
+        newToChange["spUrl"] = AUTH_URL
         newToChange["spUsername"] = "admin"
         newToChange["spPassword"] = "admin"
         newToChange["spRealm"] = "master"
         newToChange["spConfigClient_id"] = "admin-cli" 
         newToChange["spConfigClient_secret"] = ""
-        newToChange["spConfigUrl"] = "http://localhost:18182/config"
+        newToChange["spConfigUrl"] = SP_CONFIG_URL
         newToChange["systemName"] = "test3"
         newToChange["systemShortName"] = "T3"
         newToChange["clients"] = [{"clientId": "clientsystemChange32"}]
@@ -455,12 +466,12 @@ class Sx5SystemTestCase(ModuleTestCase):
         toCreateClient["auth_password"] = "admin"
         toCreateClient["realm"] = "master"
         toCreateClient["state"] = "present"
-        toCreateClient["rootUrl"] = "http://test.com:18182"
+        toCreateClient["rootUrl"] = "http://test.com:18186"
         toCreateClient["description"] = "Ceci est un test"
-        toCreateClient["adminUrl"] = "http://test.com:18182/admin"
+        toCreateClient["adminUrl"] = "http://test.com:18186/admin"
         toCreateClient["enabled"] = True
         toCreateClient["clientAuthenticatorType"] = "client-secret"
-        toCreateClient["redirectUris"] = ["http://test.com:18182/secure","http://test1.com:18182/secure"]
+        toCreateClient["redirectUris"] = ["http://test.com:18186/secure","http://test1.com:18186/secure"]
         toCreateClient["webOrigins"] = ["*"]
         toCreateClient["bearerOnly"] = False
         toCreateClient["publicClient"] = False
@@ -476,13 +487,13 @@ class Sx5SystemTestCase(ModuleTestCase):
 
 
         toCreate1 = {}
-        toCreate1["spUrl"] = "http://localhost:18081"
+        toCreate1["spUrl"] = AUTH_URL
         toCreate1["spUsername"] = "admin"
         toCreate1["spPassword"] = "admin"
         toCreate1["spRealm"] = "master"
         toCreate1["spConfigClient_id"] = "admin-cli" 
         toCreate1["spConfigClient_secret"] = ""
-        toCreate1["spConfigUrl"] = "http://localhost:18182/config"
+        toCreate1["spConfigUrl"] = SP_CONFIG_URL
         toCreate1["systemName"] = "testH"
         toCreate1["systemShortName"] = "TH"
         toCreate1["clients"] = [{"clientId": "habilitationClient6"}]
@@ -496,13 +507,13 @@ class Sx5SystemTestCase(ModuleTestCase):
         toCreate1["force"] = False
         results = system(toCreate1)
         toCreate2 = {}
-        toCreate2["spUrl"] = "http://localhost:18081"
+        toCreate2["spUrl"] = AUTH_URL
         toCreate2["spUsername"] = "admin"
         toCreate2["spPassword"] = "admin"
         toCreate2["spRealm"] = "master"
         toCreate2["spConfigClient_id"] = "admin-cli" 
         toCreate2["spConfigClient_secret"] = ""
-        toCreate2["spConfigUrl"] = "http://localhost:18182/config"
+        toCreate2["spConfigUrl"] = SP_CONFIG_URL
         toCreate2["systemName"] = "test3"
         toCreate2["systemShortName"] = "T3"
         toCreate2["clients"] = [{"clientId": "clientsystem11"}]
@@ -528,13 +539,13 @@ class Sx5SystemTestCase(ModuleTestCase):
 
     def test_create_system_no_sadu(self):
         toCreate = {}
-        toCreate["spUrl"] = "http://localhost:18081"
+        toCreate["spUrl"] = AUTH_URL
         toCreate["spUsername"] = "admin"
         toCreate["spPassword"] = "admin"
         toCreate["spRealm"] = "master"
         toCreate["spConfigClient_id"] = "admin-cli" 
         toCreate["spConfigClient_secret"] = ""
-        toCreate["spConfigUrl"] = "http://localhost:18182/config"
+        toCreate["spConfigUrl"] = SP_CONFIG_URL
         toCreate["systemName"] = "systemNS1"
         toCreate["systemShortName"] = "NS1"
         toCreate["clients"] = [{"clientId": "clientsystemNS1"}]
@@ -548,13 +559,13 @@ class Sx5SystemTestCase(ModuleTestCase):
 
     def test_system_no_sadu_not_changed(self):
         toDoNotChange = {}
-        toDoNotChange["spUrl"] = "http://localhost:18081"
+        toDoNotChange["spUrl"] = AUTH_URL
         toDoNotChange["spUsername"] = "admin"
         toDoNotChange["spPassword"] = "admin"
         toDoNotChange["spRealm"] = "master"
         toDoNotChange["spConfigClient_id"] = "admin-cli" 
         toDoNotChange["spConfigClient_secret"] = ""
-        toDoNotChange["spConfigUrl"] = "http://localhost:18182/config"
+        toDoNotChange["spConfigUrl"] = SP_CONFIG_URL
         toDoNotChange["systemName"] = "systemNS2"
         toDoNotChange["systemShortName"] = "SNS2"
         toDoNotChange["clients"] = [{"clientId": "clientsystemNS21"}]
@@ -568,13 +579,13 @@ class Sx5SystemTestCase(ModuleTestCase):
 
     def test_modify_system_no_sadu(self):
         toChange = {}
-        toChange["spUrl"] = "http://localhost:18081"
+        toChange["spUrl"] = AUTH_URL
         toChange["spUsername"] = "admin"
         toChange["spPassword"] = "admin"
         toChange["spRealm"] = "master"
         toChange["spConfigClient_id"] = "admin-cli" 
         toChange["spConfigClient_secret"] = ""
-        toChange["spConfigUrl"] = "http://localhost:18182/config"
+        toChange["spConfigUrl"] = SP_CONFIG_URL
         toChange["systemName"] = "systemNS3"
         toChange["systemShortName"] = "SNS3"
         toChange["clients"] = [{"clientId": "clientsystemNS31"}]
@@ -593,13 +604,13 @@ class Sx5SystemTestCase(ModuleTestCase):
 
     def test_modify_system_no_sadu_add_clients(self):
         toChange = {}
-        toChange["spUrl"] = "http://localhost:18081"
+        toChange["spUrl"] = AUTH_URL
         toChange["spUsername"] = "admin"
         toChange["spPassword"] = "admin"
         toChange["spRealm"] = "master"
         toChange["spConfigClient_id"] = "admin-cli" 
         toChange["spConfigClient_secret"] = ""
-        toChange["spConfigUrl"] = "http://localhost:18182/config"
+        toChange["spConfigUrl"] = SP_CONFIG_URL
         toChange["systemName"] = "testNS3"
         toChange["systemShortName"] = "TNS3"
         toChange["clients"] = [{"clientId": "clientsystemNS32"}]
@@ -610,13 +621,13 @@ class Sx5SystemTestCase(ModuleTestCase):
         results = system(toChange)
 
         newToChange = {}
-        newToChange["spUrl"] = "http://localhost:18081"
+        newToChange["spUrl"] = AUTH_URL
         newToChange["spUsername"] = "admin"
         newToChange["spPassword"] = "admin"
         newToChange["spRealm"] = "master"
         newToChange["spConfigClient_id"] = "admin-cli" 
         newToChange["spConfigClient_secret"] = ""
-        newToChange["spConfigUrl"] = "http://localhost:18182/config"
+        newToChange["spConfigUrl"] = SP_CONFIG_URL
         newToChange["systemName"] = "testNS3"
         newToChange["systemShortName"] = "TNS3"
         newToChange["clients"] = [{"clientId": "clientsystemChangeNS32"}]
@@ -643,13 +654,13 @@ class Sx5SystemTestCase(ModuleTestCase):
             self.assertTrue(clientFound, newToChangeClient["clientId"] + " not found")
     def test_delete_system(self):
         toDelete = {}
-        toDelete["spUrl"] = "http://localhost:18081"
+        toDelete["spUrl"] = AUTH_URL
         toDelete["spUsername"] = "admin"
         toDelete["spPassword"] = "admin"
         toDelete["spRealm"] = "master"
         toDelete["spConfigClient_id"] = "admin-cli" 
         toDelete["spConfigClient_secret"] = ""
-        toDelete["spConfigUrl"] = "http://localhost:18182/config"
+        toDelete["spConfigUrl"] = SP_CONFIG_URL
         toDelete["systemName"] = "system4"
         toDelete["systemShortName"] = "S4"
         toDelete["clients"] = [{"clientId": "clientsystem41"}]
@@ -683,7 +694,5 @@ class Sx5SystemTestCase(ModuleTestCase):
                 clientFound = True
                 break
         self.assertTrue(clientFound, "Le client " + toModifySystem["clients"][0]["clientId"] + " ne fait pas partie des composants")
-    
-        
-        
-        
+
+
