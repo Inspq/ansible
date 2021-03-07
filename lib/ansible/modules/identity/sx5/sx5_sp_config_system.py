@@ -594,11 +594,10 @@ class SpConfigSystem(object):
 
     def inspectResponse(self, response, msg, *codes):
         status = response.status_code
-        for code in codes:
-            if status == code:
-                if response.text == '':
-                    return None
-                return response.json()
+        if status in codes:
+            if response.text == '':
+                return None
+            return response.json()
         try:
             msg = msg + ' - ' + response.text
         except Exception as e:
