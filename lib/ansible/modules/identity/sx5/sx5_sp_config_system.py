@@ -341,16 +341,9 @@ def main():
 
     try:
         params = completParams(module)
-
+        # quand nous sommes dans Ansible, c'est la switch -vvvv qui control le niveau de logging
         if os.name == 'nt':
             logging.basicConfig(level=logging.DEBUG)
-        elif module._verbosity == 4:
-            logging.basicConfig(level=logging.DEBUG)
-        elif module._verbosity in [2, 3]:
-            logging.basicConfig(level=logging.INFO)
-        else:
-            logging.basicConfig(level=logging.WARNING) 
-        logging.basicConfig(level=logging.DEBUG)
         logger.addFilter(JsonFilter())
         if gelf and params['graylog_host'] != '':
             logger.addHandler(GelfUdpHandler(host=params['graylog_host'], port=params['graylog_port_udp'], debug=True, include_extra_fields=True))
