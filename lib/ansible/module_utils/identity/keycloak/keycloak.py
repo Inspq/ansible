@@ -1130,7 +1130,7 @@ class KeycloakAPI(object):
         except Exception as e:
             self.module.fail_json(msg="Unable to add client roles %s: %s" % (clientRepresentation["id"], str(e)))
 
-    def create_or_update_client_roles(self, client_id, newClientRoles, realm='master'):
+    def create_or_update_client_roles(self, client_id, newClientRoles, realm='master', deleteExtraComponent=True):
         """ Create or update client roles. Client roles can be added, updated or removed depending of the state.
 
         :param newClientRoles: Client roles to be added, updated or removed.
@@ -1229,7 +1229,7 @@ class KeycloakAPI(object):
                         # Composites role
                         if 'composites' in newClientRole and newClientRole['composites'] is not None and len(newClientRole['composites']) > 0:
                             newComposites = newClientRole['composites']
-                            if clientRoleFound and "composites" in clientRole:
+                            if deleteExtraComponent and clientRoleFound and "composites" in clientRole:
                                 rolesToDelete = []
                                 for roleTodelete in clientRole['composites']:
                                     tmprole = {}

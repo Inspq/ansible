@@ -18,6 +18,21 @@
 # along with Ansible.  If not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import absolute_import, division, print_function
+
+import json
+import logging
+import os
+import sys
+from logging import debug
+from multiprocessing.util import debug
+
+import requests
+
+from ansible.module_utils.basic import AnsibleModule
+from ansible.module_utils.identity.keycloak.keycloak import (KeycloakAPI,
+                                                             get_token,
+                                                             isDictEquals)
+
 __metaclass__ = type
 
 ANSIBLE_METADATA = {'metadata_version': '1.1',
@@ -274,12 +289,13 @@ changed:
   returned: always
   type: bool
 '''
-import requests
-import json
-import sys
 
-from ansible.module_utils.identity.keycloak.keycloak import KeycloakAPI, get_token, isDictEquals
-from ansible.module_utils.basic import AnsibleModule
+try:
+    from pygelf import GelfUdpHandler
+    gelf = True
+except ImportError:
+    gelf = False
+logger = logging.getLogger('sx5-sp-config-system')
 
 
 def main():
@@ -303,6 +319,8 @@ def main():
             clientRoles_mapper=dict(type='list', elements='dict', default=[]),
             force=dict(type='bool', default=False),
             state=dict(choices=["absent", "present"], default='present'),
+            graylog_host=dict(type='str', default=''),
+            graylog_port_udp=dict(type='int', default=12300)
         ),
         supports_check_mode=True,
     )
@@ -310,6 +328,19 @@ def main():
 
     try:
         params = completParams(module)
+
+        if os.name == 'nt':
+            logging.basicConfig(level=logging.DEBUG)
+        elif module._verbosity == 4:
+            logging.basicConfig(level=logging.DEBUG)
+        elif module._verbosity in [2, 3]:
+            logging.basicConfig(level=logging.INFO)
+        else:
+            logging.basicConfig(level=logging.WARNING) 
+        logging.basicConfig(level=logging.DEBUG)
+        logger.addFilter(JsonFilter())
+        if gelf and params['graylog_host'] != '':
+            logger.addHandler(GelfUdpHandler(host=params['graylog_host'], port=params['graylog_port_udp'], debug=True, include_extra_fields=True))
         spConfig = SpConfigSystem(params)
         result = spConfig.run()
     except Exception as e:
@@ -318,6 +349,7 @@ def main():
             rc=1,
             changed=False
         )
+        logger.exception(e)
 
     if result['rc'] != 0:
         module.fail_json(msg='non-zero return code', **result)
@@ -338,6 +370,15 @@ def completParams(module):
 
 class SpConfigSystemError(Exception):
     pass
+
+class JsonFilter(logging.Filter):
+    def filter(self, record):
+        if type(record.msg) in [dict, list]:
+            try:
+                record.msg = json.dumps(record.msg, indent = 2)
+            except:
+                pass
+        return True
 
 class MockModule(object):
     def __init__(self, params):
@@ -426,6 +467,7 @@ class SpConfigSystem(object):
 
     # il faut utilise la reponse de sp-config et la modifer en "ajoutant/mettre a jour" avec le parametre ansible
     def roleHabilitationRepresentation(self):
+        logger.info('Creation representation system pour pilotage')
         dataResponseSystemSP = self.inspectResponse(
                 requests.get(
                     self.params['spConfigUrl'] + "/systemes/",
@@ -447,7 +489,7 @@ class SpConfigSystem(object):
                     continue
                 self.fusionnerRole(clientRoles, composant['roles'], pilotRole['roles'])
                 self.roleHabilitationSystemRepresentation(paramHabilitations, system, pilotRole['habilitationClientId'])
-
+        logger.debug(paramHabilitations)
         return paramHabilitations
 
 
@@ -455,6 +497,7 @@ class SpConfigSystem(object):
         
         for role in piloteRoles:
             if self.findRecord(roles, 'spClientRoleId', role['name']) is None:
+                logger.debug('Fusion role pilotage via param : %s', role['name'])
                 roles.append(
                     {
                         "spClientRoleDescription": role['description'],
@@ -465,6 +508,7 @@ class SpConfigSystem(object):
 
         for role in habilitationRoles:
             if self.findRecord(roles, 'spClientRoleId', role['nom']) is None:
+                logger.debug('Fusion role pilotage via sp-config : %s', role['nom'])
                 roles.append(
                     {
                         "spClientRoleDescription": role['description'],
@@ -496,7 +540,6 @@ class SpConfigSystem(object):
     def addSystemKeycloakPilotage(self, result, params):
         if not ("pilotRoles" in params) or params['pilotRoles'] is None:
             return
-        spConfigUrl = self.params['spConfigUrl']
         for pilotRole in params["pilotRoles"]:
             # set roles in Keycloak
             self.createOrUpdateClientRoles(
@@ -510,8 +553,9 @@ class SpConfigSystem(object):
             return
         if len(pilotClientRoles) == 0:
             return
-        result['changed'] = self.kc.create_or_update_client_roles(clientHabilitationId, pilotClientRoles, self.params['spRealm']) or result['changed']
-
+        logger.info('Ajoute system Keycloak client : %s', clientHabilitationId)
+        logger.debug(pilotClientRoles)
+        result['changed'] = self.kc.create_or_update_client_roles(clientHabilitationId, pilotClientRoles, self.params['spRealm'], False) or result['changed']
 
     def addSystemSpConfigBody(self, result, params):       
         spConfigUrl = self.params['spConfigUrl']
@@ -527,6 +571,8 @@ class SpConfigSystem(object):
             }
         # on cree/recree le system seulment s'il n'exists pas/plus
         if spConfigSystem is None:
+            logger.info('Creation system sp-config : %s', bodySystem['nom'])
+            logger.debug(bodySystem)
             spConfigSystem = self.inspectResponse(
                 requests.post(
                     spConfigUrl + "/systemes/",
@@ -537,6 +583,8 @@ class SpConfigSystem(object):
             result['changed'] = True
         elif not isDictEquals(bodySystem,spConfigSystem):
             #on met a jour
+            logger.info('Mise a jour system sp-config: %s', bodySystem['nom'])
+            logger.debug(bodySystem)
             spConfigSystem = self.inspectResponse(
                 requests.put(
                     spConfigUrl + '/systemes/' + bodySystem['cleUnique'],
@@ -561,6 +609,8 @@ class SpConfigSystem(object):
                 ),"get adressesApprovisionnement", 200, 201
             )
             if not isDictEquals(bodyAdrAppr,spAdrAppr):
+                logger.info('Mise a jour adresse approvisionnement sp-config: %s', bodyAdrAppr['cleUnique'])
+                logger.debug(bodyAdrAppr)
                 self.inspectResponse(
                     requests.put(
                         spConfigUrl + "/systemes/" + spConfigSystem["cleUnique"] + "/adressesApprovisionnement",
@@ -582,6 +632,8 @@ class SpConfigSystem(object):
                 ),"get tableCorrespondance", 200, 201
             )
             if not isDictEquals(bodyTableCorrespondance,spTableCorrespondance):
+                logger.info('Mise a jour role mapper sp-config: %s', bodyTableCorrespondance['cleUnique'])
+                logger.debug(bodyTableCorrespondance)
                 self.inspectResponse(
                     requests.put(
                         spConfigUrl + "/systemes/" + spConfigSystem["cleUnique"] + "/tableCorrespondance",
@@ -601,6 +653,7 @@ class SpConfigSystem(object):
             msg = msg + ' - ' + response.text
         except Exception as e:
             pass
+        logger.critical(response.text)
         raise SpConfigSystemError("code {code} - {msg} : {token}".format(code = status, msg = msg, token = self.headers['Authorization']))
 
     def clientRepresentation(self, params):
@@ -663,6 +716,7 @@ class SpConfigSystem(object):
     def delSystemSpConfig(self, result, params):
         spConfigSystem = self.getSystemSpConfig(params['systemShortName'])
         if spConfigSystem is not None:
+            logger.info('Delete system : ' + params['systemShortName'])
             self.inspectResponse( 
                 requests.delete(
                     self.params['spConfigUrl'] + "/systemes/" + spConfigSystem["cleUnique"],
@@ -672,12 +726,14 @@ class SpConfigSystem(object):
             result['changed'] = True
 
     def run(self):
-        
+        logger.info('Debug creation systeme sx5-sp-config')
+        logger.debug(self.params)
         self.systemRepresentation = self.systemDBRepresentation()
         result = dict(
             ansible_facts = self.systemRepresentation,
             rc = 0,
-            changed = False
+            changed = False,
+            diff = dict(before='avant', after='apres')
         )
 
         params = self.params
@@ -690,6 +746,7 @@ class SpConfigSystem(object):
             auth_password = params['spPassword'],
             client_secret = params['spConfigClient_secret']
         )
+        logger.debug(self.headers['Authorization'])
 
         self.kc = KeycloakAPI(MockModule(params), self.headers )
         if params['state'] == 'present':
@@ -697,6 +754,8 @@ class SpConfigSystem(object):
         else:
             self.delSystemSpConfig(result)
         
+        logger.info('Fin creation systeme sx5-sp-config')
+        logger.info(result)
         return result
 
 
