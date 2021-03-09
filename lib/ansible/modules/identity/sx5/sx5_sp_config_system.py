@@ -139,6 +139,17 @@ options:
             - If yes, allows to remove client and recreate it.
         required: false
         type: bool
+    graylog_host:
+        description:
+            - Url for Graylog support.
+        required: false
+        type: str
+    graylog_port_udp:
+        default: 12300
+        description:
+            - UDP port for Graylog support.
+        required: false
+        type: int
     state:
         description:
             - Control if the client must exists or not
@@ -160,6 +171,8 @@ EXAMPLES = '''
         spPassword: admin
         spAuthRealm: master
         spRealm: master
+        graylog_host: tcn00qubc02216.isn.rtss.qc.ca
+        graylog_port_udp: 12300
         spConfigUrl: http://localhost:8089/config
         spConfigClient_id: sx5spconfig
         spConfigClient_secret: client_string
