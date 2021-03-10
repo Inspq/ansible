@@ -438,6 +438,21 @@ class SpConfigSystem(object):
             newSystemDBRepresentation["pilotRoles"] = params['pilotRoles']
         return newSystemDBRepresentation
 
+    def isDictEquals(self, dict1, dict2, result):
+        if isDictEquals(dict1, dict2):
+            return True
+        if 'diff' in result:
+            diffs = result['diff']
+        else:
+            diffs = []
+            result['diff'] = diffs
+        diffs.append(
+            {
+                'before': json.dumps(dict2, indent = 2), 
+                'after': json.dumps(dict1, indent = 2)
+            }
+        )
+
     def getSystemSpConfig(self, systemShortName):
         getResponse = requests.get(
             self.params['spConfigUrl'] + "/systemes/" + systemShortName,
@@ -565,11 +580,12 @@ class SpConfigSystem(object):
 
     def addSystemSpConfigBody(self, result, params):       
         spConfigUrl = self.params['spConfigUrl']
-        clients = self.clientRepresentation(params)
+        spConfigSystem = self.getSystemSpConfig(params['systemShortName'])
+
+        clients = self.clientRepresentation(params, spConfigSystem)
         adresses = self.adresseRepresentation(params)
         rolemappers = self.rolemapperRepresentation(params)
 
-        spConfigSystem = self.getSystemSpConfig(params['systemShortName'])
         bodySystem = {
                 "nom": params["systemName"],
                 "cleUnique": params["systemShortName"],
@@ -587,7 +603,7 @@ class SpConfigSystem(object):
                 ),"post systeme", 201
             )
             result['changed'] = True
-        elif not isDictEquals(bodySystem,spConfigSystem):
+        elif not self.isDictEquals(bodySystem, spConfigSystem, result):
             #on met a jour
             logger.info('Mise a jour system sp-config: %s', bodySystem['nom'])
             logger.debug(bodySystem)
@@ -614,7 +630,7 @@ class SpConfigSystem(object):
                     headers = self.headers
                 ),"get adressesApprovisionnement", 200, 201
             )
-            if not isDictEquals(bodyAdrAppr,spAdrAppr):
+            if not self.isDictEquals(bodyAdrAppr, spAdrAppr, result):
                 logger.info('Mise a jour adresse approvisionnement sp-config: %s', bodyAdrAppr['cleUnique'])
                 logger.debug(bodyAdrAppr)
                 self.inspectResponse(
@@ -637,7 +653,7 @@ class SpConfigSystem(object):
                     headers = self.headers
                 ),"get tableCorrespondance", 200, 201
             )
-            if not isDictEquals(bodyTableCorrespondance,spTableCorrespondance):
+            if not self.isDictEquals(bodyTableCorrespondance, spTableCorrespondance, result):
                 logger.info('Mise a jour role mapper sp-config: %s', bodyTableCorrespondance['cleUnique'])
                 logger.debug(bodyTableCorrespondance)
                 self.inspectResponse(
@@ -659,14 +675,19 @@ class SpConfigSystem(object):
             msg = msg + ' - ' + response.text
         except Exception as e:
             pass
-        logger.critical(response.text)
         raise SpConfigSystemError("code {code} - {msg} : {token}".format(code = status, msg = msg, token = self.headers['Authorization']))
 
-    def clientRepresentation(self, params):
+    def clientRepresentation(self, params, spConfigSystem):
         clients = []
         for clientKeycloak in params["clients"]:
             dataResponseKeycloak = self.getKeycloakClient(clientKeycloak['clientId'])
             clients.append(self.mergeKcClientWithSystemRepresentation(dataResponseKeycloak, params))
+        if spConfigSystem is not None:
+            #si le system exist deja dans SpConfig, il faut ajouter les autres clients(composants dans SpConfig) qui existaient deja, si non, ca va les supprimer
+            for clientSpConfig in spConfigSystem['composants']:
+                if self.findRecord(clients, 'clientId', clientSpConfig['clientId']) is None:
+                    clients.append(clientSpConfig)
+
         return clients
 
     def rolemapperRepresentation(self, params):
@@ -738,8 +759,7 @@ class SpConfigSystem(object):
         result = dict(
             ansible_facts = self.systemRepresentation,
             rc = 0,
-            changed = False,
-            diff = dict(before='avant', after='apres')
+            changed = False
         )
 
         params = self.params
