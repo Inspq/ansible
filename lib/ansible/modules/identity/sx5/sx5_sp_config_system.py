@@ -602,6 +602,7 @@ class SpConfigSystem(object):
         if spConfigSystem is None:
             logger.info('Creation system sp-config : %s', bodySystem['nom'])
             logger.debug(bodySystem)
+            self.addDiff(bodySystem, None, result)
             spConfigSystem = self.inspectResponse(
                 requests.post(
                     spConfigUrl + "/systemes/",
@@ -609,11 +610,11 @@ class SpConfigSystem(object):
                     json = bodySystem
                 ),"post systeme", 201
             )
-            self.addDiff(bodySystem, None, result)
         elif not isDictEquals(bodySystem, spConfigSystem):
             #on met a jour
             logger.info('Mise a jour system sp-config: %s', bodySystem['nom'])
             logger.debug(bodySystem)
+            self.addDiff(bodySystem, spConfigSystem, result)
             spConfigSystem = self.inspectResponse(
                 requests.put(
                     spConfigUrl + '/systemes/' + bodySystem['cleUnique'],
@@ -621,7 +622,7 @@ class SpConfigSystem(object):
                     json = bodySystem
                 ),"put systeme", 200
             )
-            self.addDiff(bodySystem, spConfigSystem, result)
+            
 
 
         
@@ -640,6 +641,7 @@ class SpConfigSystem(object):
             if not isDictEquals(bodyAdrAppr, spAdrAppr):
                 logger.info('Mise a jour adresse approvisionnement sp-config: %s', bodyAdrAppr['cleUnique'])
                 logger.debug(bodyAdrAppr)
+                self.addDiff(bodyAdrAppr, spAdrAppr, result)
                 self.inspectResponse(
                     requests.put(
                         spConfigUrl + "/systemes/" + spConfigSystem["cleUnique"] + "/adressesApprovisionnement",
@@ -647,7 +649,7 @@ class SpConfigSystem(object):
                         json = bodyAdrAppr
                     ),"put adressesApprovisionnement", 200, 201
                 )
-                self.addDiff(bodyAdrAppr, spAdrAppr, result)
+                
 
         if len(rolemappers) > 0:
             bodyTableCorrespondance = {
@@ -663,6 +665,7 @@ class SpConfigSystem(object):
             if not isDictEquals(bodyTableCorrespondance, spTableCorrespondance):
                 logger.info('Mise a jour role mapper sp-config: %s', bodyTableCorrespondance['cleUnique'])
                 logger.debug(bodyTableCorrespondance)
+                self.addDiff(bodyTableCorrespondance, spTableCorrespondance, result)
                 self.inspectResponse(
                     requests.put(
                         spConfigUrl + "/systemes/" + spConfigSystem["cleUnique"] + "/tableCorrespondance",
@@ -670,7 +673,7 @@ class SpConfigSystem(object):
                         json = bodyTableCorrespondance
                     ),"put tableCorrespondance", 200, 201
                 )
-                self.addDiff(bodyTableCorrespondance, spTableCorrespondance, result)
+                
 
     def inspectResponse(self, response, msg, *codes):
         status = response.status_code
@@ -751,13 +754,13 @@ class SpConfigSystem(object):
         spConfigSystem = self.getSystemSpConfig(params['systemShortName'])
         if spConfigSystem is not None:
             logger.info('Delete system : ' + params['systemShortName'])
+            self.addDiff(None, spConfigSystem, result)
             self.inspectResponse( 
                 requests.delete(
                     self.params['spConfigUrl'] + "/systemes/" + spConfigSystem["cleUnique"],
                     headers = self.headers
                 ), "delSystemSpConfig", 204
             )
-            self.addDiff(None, spConfigSystem, result)
 
     def run(self):
         logger.info('Debug creation systeme sx5-sp-config')
