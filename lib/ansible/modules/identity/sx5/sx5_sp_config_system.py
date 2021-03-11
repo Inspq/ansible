@@ -438,9 +438,8 @@ class SpConfigSystem(object):
             newSystemDBRepresentation["pilotRoles"] = params['pilotRoles']
         return newSystemDBRepresentation
 
-    def isDictEquals(self, dict1, dict2, result):
-        if isDictEquals(dict1, dict2):
-            return True
+    def addDiff(self, dict1, dict2, result):
+        result['changed'] = True
         if 'diff' in result:
             diffs = result['diff']
         else:
@@ -576,7 +575,9 @@ class SpConfigSystem(object):
             return
         logger.info('Ajoute system Keycloak client : %s', clientHabilitationId)
         logger.debug(pilotClientRoles)
-        result['changed'] = self.kc.create_or_update_client_roles(clientHabilitationId, pilotClientRoles, self.params['spRealm'], False) or result['changed']
+        if self.kc.create_or_update_client_roles(clientHabilitationId, pilotClientRoles, self.params['spRealm'], False):
+            self.addDiff({'msg': 'create_or_update_client_roles'}, {'msg': ''}, result)
+            result['changed'] = True
 
     def addSystemSpConfigBody(self, result, params):       
         spConfigUrl = self.params['spConfigUrl']
@@ -602,8 +603,8 @@ class SpConfigSystem(object):
                     json = bodySystem
                 ),"post systeme", 201
             )
-            result['changed'] = True
-        elif not self.isDictEquals(bodySystem, spConfigSystem, result):
+            self.addDiff(bodySystem, {}, result)
+        elif not isDictEquals(bodySystem, spConfigSystem):
             #on met a jour
             logger.info('Mise a jour system sp-config: %s', bodySystem['nom'])
             logger.debug(bodySystem)
@@ -614,7 +615,7 @@ class SpConfigSystem(object):
                     json = bodySystem
                 ),"put systeme", 200
             )
-            result['changed'] = True
+            self.addDiff(bodySystem, spConfigSystem, result)
 
 
         
@@ -630,7 +631,7 @@ class SpConfigSystem(object):
                     headers = self.headers
                 ),"get adressesApprovisionnement", 200, 201
             )
-            if not self.isDictEquals(bodyAdrAppr, spAdrAppr, result):
+            if not isDictEquals(bodyAdrAppr, spAdrAppr):
                 logger.info('Mise a jour adresse approvisionnement sp-config: %s', bodyAdrAppr['cleUnique'])
                 logger.debug(bodyAdrAppr)
                 self.inspectResponse(
@@ -640,7 +641,7 @@ class SpConfigSystem(object):
                         json = bodyAdrAppr
                     ),"put adressesApprovisionnement", 200, 201
                 )
-                result['changed'] = True
+                self.addDiff(bodyAdrAppr, spAdrAppr, result)
 
         if len(rolemappers) > 0:
             bodyTableCorrespondance = {
@@ -653,7 +654,7 @@ class SpConfigSystem(object):
                     headers = self.headers
                 ),"get tableCorrespondance", 200, 201
             )
-            if not self.isDictEquals(bodyTableCorrespondance, spTableCorrespondance, result):
+            if not isDictEquals(bodyTableCorrespondance, spTableCorrespondance):
                 logger.info('Mise a jour role mapper sp-config: %s', bodyTableCorrespondance['cleUnique'])
                 logger.debug(bodyTableCorrespondance)
                 self.inspectResponse(
@@ -663,7 +664,7 @@ class SpConfigSystem(object):
                         json = bodyTableCorrespondance
                     ),"put tableCorrespondance", 200, 201
                 )
-                result['changed'] = True
+                self.addDiff(bodyTableCorrespondance, spTableCorrespondance, result)
 
     def inspectResponse(self, response, msg, *codes):
         status = response.status_code
@@ -750,7 +751,7 @@ class SpConfigSystem(object):
                     headers = self.headers
                 ), "delSystemSpConfig", 204
             )
-            result['changed'] = True
+            self.addDiff({}, spConfigSystem, result)
 
     def run(self):
         logger.info('Debug creation systeme sx5-sp-config')
