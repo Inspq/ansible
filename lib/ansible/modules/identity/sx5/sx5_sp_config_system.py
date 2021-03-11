@@ -341,12 +341,18 @@ def main():
 
     try:
         params = completParams(module)
-        # quand nous sommes dans Ansible, c'est la switch -vvvv qui control le niveau de logging
         if os.name == 'nt':
             logging.basicConfig(level=logging.DEBUG)
+        elif module._verbosity == 4:
+            logging.basicConfig(level=logging.DEBUG)
+        elif module._verbosity in [2, 3]:
+            logging.basicConfig(level=logging.INFO)
+        else:
+            logging.basicConfig(level=logging.WARNING) 
         logger.addFilter(JsonFilter())
         if gelf and params['graylog_host'] != '':
             logger.addHandler(GelfUdpHandler(host=params['graylog_host'], port=params['graylog_port_udp'], debug=True, include_extra_fields=True))
+            logger.warning('Allo gelf from sx5-sp-config-system, logging lvl : %s', logger.getEffectiveLevel())
         spConfig = SpConfigSystem(params)
         result = spConfig.run()
     except Exception as e:
@@ -447,8 +453,8 @@ class SpConfigSystem(object):
             result['diff'] = diffs
         diffs.append(
             {
-                'before': json.dumps(dict2, indent = 2), 
-                'after': json.dumps(dict1, indent = 2)
+                'before': dict2, 
+                'after': dict1
             }
         )
 
@@ -576,7 +582,7 @@ class SpConfigSystem(object):
         logger.info('Ajoute system Keycloak client : %s', clientHabilitationId)
         logger.debug(pilotClientRoles)
         if self.kc.create_or_update_client_roles(clientHabilitationId, pilotClientRoles, self.params['spRealm'], False):
-            self.addDiff({'msg': 'create_or_update_client_roles'}, {'msg': ''}, result)
+            self.addDiff('create_or_update_client_roles', '', result)
             result['changed'] = True
 
     def addSystemSpConfigBody(self, result, params):       
@@ -603,7 +609,7 @@ class SpConfigSystem(object):
                     json = bodySystem
                 ),"post systeme", 201
             )
-            self.addDiff(bodySystem, {}, result)
+            self.addDiff(bodySystem, None, result)
         elif not isDictEquals(bodySystem, spConfigSystem):
             #on met a jour
             logger.info('Mise a jour system sp-config: %s', bodySystem['nom'])
@@ -751,7 +757,7 @@ class SpConfigSystem(object):
                     headers = self.headers
                 ), "delSystemSpConfig", 204
             )
-            self.addDiff({}, spConfigSystem, result)
+            self.addDiff(None, spConfigSystem, result)
 
     def run(self):
         logger.info('Debug creation systeme sx5-sp-config')
