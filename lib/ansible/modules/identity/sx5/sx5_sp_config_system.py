@@ -444,19 +444,20 @@ class SpConfigSystem(object):
             newSystemDBRepresentation["pilotRoles"] = params['pilotRoles']
         return newSystemDBRepresentation
 
-    def addDiff(self, dict1, dict2, result):
+    def addDiff(self, title, dict1, dict2, result):
         result['changed'] = True
         if 'diff' in result:
-            diffs = result['diff']
+            diff = result['diff']
         else:
-            diffs = []
-            result['diff'] = diffs
-        diffs.append(
-            {
-                'before': dict2, 
-                'after': dict1
+            diff = {
+                'before': {}, 
+                'after': {}
             }
-        )
+            result['diff'] = diff        
+        
+        diff['before'][title] = dict2
+        diff['after'][title] = dict1
+
 
     def getSystemSpConfig(self, systemShortName):
         getResponse = requests.get(
@@ -582,7 +583,7 @@ class SpConfigSystem(object):
         logger.info('Ajoute system Keycloak client : %s', clientHabilitationId)
         logger.debug(pilotClientRoles)
         if self.kc.create_or_update_client_roles(clientHabilitationId, pilotClientRoles, self.params['spRealm'], False):
-            self.addDiff('create_or_update_client_roles', '', result)
+            self.addDiff('keycloak', 'create_or_update_client_roles', '', result)
             result['changed'] = True
 
     def addSystemSpConfigBody(self, result, params):       
@@ -602,7 +603,7 @@ class SpConfigSystem(object):
         if spConfigSystem is None:
             logger.info('Creation system sp-config : %s', bodySystem['nom'])
             logger.debug(bodySystem)
-            self.addDiff(bodySystem, None, result)
+            self.addDiff('Creation-system-sp-config', bodySystem, None, result)
             spConfigSystem = self.inspectResponse(
                 requests.post(
                     spConfigUrl + "/systemes/",
@@ -614,7 +615,7 @@ class SpConfigSystem(object):
             #on met a jour
             logger.info('Mise a jour system sp-config: %s', bodySystem['nom'])
             logger.debug(bodySystem)
-            self.addDiff(bodySystem, spConfigSystem, result)
+            self.addDiff('Mise-a-jour-system-sp-config', bodySystem, spConfigSystem, result)
             spConfigSystem = self.inspectResponse(
                 requests.put(
                     spConfigUrl + '/systemes/' + bodySystem['cleUnique'],
@@ -641,7 +642,7 @@ class SpConfigSystem(object):
             if not isDictEquals(bodyAdrAppr, spAdrAppr):
                 logger.info('Mise a jour adresse approvisionnement sp-config: %s', bodyAdrAppr['cleUnique'])
                 logger.debug(bodyAdrAppr)
-                self.addDiff(bodyAdrAppr, spAdrAppr, result)
+                self.addDiff('Mise-a-jour-adresse-appro', bodyAdrAppr, spAdrAppr, result)
                 self.inspectResponse(
                     requests.put(
                         spConfigUrl + "/systemes/" + spConfigSystem["cleUnique"] + "/adressesApprovisionnement",
@@ -665,7 +666,7 @@ class SpConfigSystem(object):
             if not isDictEquals(bodyTableCorrespondance, spTableCorrespondance):
                 logger.info('Mise a jour role mapper sp-config: %s', bodyTableCorrespondance['cleUnique'])
                 logger.debug(bodyTableCorrespondance)
-                self.addDiff(bodyTableCorrespondance, spTableCorrespondance, result)
+                self.addDiff('Mise-a-jour-role-mapper', bodyTableCorrespondance, spTableCorrespondance, result)
                 self.inspectResponse(
                     requests.put(
                         spConfigUrl + "/systemes/" + spConfigSystem["cleUnique"] + "/tableCorrespondance",
@@ -754,7 +755,7 @@ class SpConfigSystem(object):
         spConfigSystem = self.getSystemSpConfig(params['systemShortName'])
         if spConfigSystem is not None:
             logger.info('Delete system : ' + params['systemShortName'])
-            self.addDiff(None, spConfigSystem, result)
+            self.addDiff('Delete-system', None, spConfigSystem, result)
             self.inspectResponse( 
                 requests.delete(
                     self.params['spConfigUrl'] + "/systemes/" + spConfigSystem["cleUnique"],
