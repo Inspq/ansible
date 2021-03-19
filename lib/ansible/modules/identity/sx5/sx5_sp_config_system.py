@@ -460,6 +460,8 @@ class SpConfigSystem(object):
 
 
     def getSystemSpConfig(self, systemShortName):
+        if systemShortName == '':
+            raise SpConfigSystemError("getSystemSpConfig systemShortName ne peut pas etre vide")
         getResponse = requests.get(
             self.params['spConfigUrl'] + "/systemes/" + systemShortName,
             headers=self.headers
@@ -503,7 +505,7 @@ class SpConfigSystem(object):
                 requests.get(
                     self.params['spConfigUrl'] + "/systemes/",
                     headers = self.headers
-                ),"get system sp-config", 200
+                ),"get systemes sp-config", 200
             )
         clientRoles = []
         paramHabilitations = {
