@@ -484,9 +484,11 @@ class SpConfigSystem(object):
     def addSystemSpConfig(self, result):
         if self.params['force']:
             self.delSystemSpConfig(result, self.params)
-        # il faut creer la representation json des role pour habilitation avant les manipulations pour Kc qui vont changer le clientid pour l'id Kc dans les composantes
-        roleHabilitationRepresentations = self.roleHabilitationRepresentation()
+        
         self.addSystemSpConfigBody(result, self.params)
+        # il faut creer la representation json des role pour habilitation avant les manipulations pour Kc qui vont changer le clientid pour l'id Kc dans les composantes
+        # mais apres l'ajout du systeme, au cas ou le systeme serait habiltation lui-meme
+        roleHabilitationRepresentations = self.roleHabilitationRepresentation()
         self.addSystemKeycloakPilotage(result, self.params)
         self.addSystemSpConfigPilotageHabilitation(result, roleHabilitationRepresentations)
 
