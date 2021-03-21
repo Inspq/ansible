@@ -500,7 +500,7 @@ class SpConfigSystem(object):
     # il faut utilise la reponse de sp-config et la modifer en "ajoutant/mettre a jour" avec le parametre ansible
     def roleHabilitationRepresentation(self):
         logger.info('Creation representation system pour pilotage')
-        if 'pilotRoles' in self.systemRepresentation and len(self.systemRepresentation['pilotRoles']) == 0:
+        if not 'pilotRoles' in self.systemRepresentation or len(self.systemRepresentation['pilotRoles']) == 0:
             logger.info('Aucun representation system pour pilotage, pilotRoles est vide ou absent')
             return None
         dataResponseSystemSP = self.inspectResponse(
