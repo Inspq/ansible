@@ -88,6 +88,12 @@ options:
             - Sx5-sp-Config Client Secret.
         required: false
         type: str
+    spHabilitationShortName:
+        description:
+            - System Habilitation Short Name acronym without espace.
+        required: false
+        default: sx5habilitation
+        type: str
     systemShortName:
         description:
             - System Short Name acronym without espace.
@@ -133,6 +139,12 @@ options:
         type: list
         required: false
         elements: dict
+    pilotRole:
+        description:
+            - Name for the piloting role in sx5-habilitation.
+        required: false
+        default: sx5-pilote-{{ systemShortName }}
+        type: str
     force:
         default: "no"
         description:
@@ -176,6 +188,7 @@ EXAMPLES = '''
         spConfigUrl: http://localhost:8089/config
         spConfigClient_id: sx5spconfig
         spConfigClient_secret: client_string
+        spHabilitationShortName: sx5habilitation
         systemName: system1
         systemShortName: S1
         sadu_principal: http://localhost:8088/sadu1
@@ -310,6 +323,23 @@ except ImportError:
     gelf = False
 logger = logging.getLogger('sx5-sp-config-system')
 
+ROLES = {
+    'PILOTE_HABILITATION': {
+        'NAME': 'sx5-pilote-sx5habilitation',
+        'DESC': 'Pilote de syst\u00e8me de Gestion des habilitations'
+    },
+    'SUPERADMIN_HABILITATION': {
+        'NAME': 'sx5-habilitation-superadmin',
+        'DESC': 'Super administrateur de Gestion des habilitations'
+    },
+    'UTILISATEUR_HABILITATION': {
+        'NAME': 'sx5-habilitation-utilisateur'
+    },
+    'SYSTEM_HABILITATION': {
+        'DESC': 'R\u00f4le de pilotage {sysname}'
+    }
+}
+
 
 def main():
     module = AnsibleModule(
@@ -322,6 +352,7 @@ def main():
             spConfigUrl=dict(type='str', required=True),
             spConfigClient_id=dict(type='str', required=True),
             spConfigClient_secret=dict(type='str', required=False),
+            spHabilitationShortName=dict(type='str', required=False, default='sx5habilitation'),
             systemName=dict(type='str', required=True),
             systemShortName=dict(type='str', required=True),
             sadu_principal=dict(type='str', required=False),
@@ -377,6 +408,8 @@ def completParams(module):
         params['spAuthRealm'] = params["spRealm"]
     if not ("spConfigClient_secret" in params) or params['spConfigClient_secret'] is None:
         params['spConfigClient_secret'] = ''
+    if 'pilotRole' not in params or params['pilotRole'] is None or params['pilotRole'] == '':
+            params['pilotRole'] = 'sx5-pilote-' + params["systemShortName"]
     return params
 
 
@@ -442,6 +475,7 @@ class SpConfigSystem(object):
             newSystemDBRepresentation["clientRoles"] = params['clientRoles']
         if "pilotRoles" in params and params['pilotRoles'] is not None:
             newSystemDBRepresentation["pilotRoles"] = params['pilotRoles']
+        newSystemDBRepresentation["pilotRole"] = params['pilotRole']
         return newSystemDBRepresentation
 
     def addDiff(self, title, dict1, dict2, result):
@@ -458,6 +492,18 @@ class SpConfigSystem(object):
         diff['before'][title] = dict2
         diff['after'][title] = dict1
 
+    def addDeprecation(self, msg, result):
+        if 'deprecations' in result:
+            deprecations = result['deprecations']
+        else:
+            deprecations = []
+            result['deprecations'] = deprecations 
+        deprecations.append(
+            {
+                'msg': msg,
+                'version:': 'v2.9.4-keycloak-sx5-1'
+            }
+        )
 
     def getSystemSpConfig(self, systemShortName):
         if systemShortName == '':
@@ -488,7 +534,9 @@ class SpConfigSystem(object):
         self.addSystemSpConfigBody(result, self.params)
         # il faut creer la representation json des role pour habilitation avant les manipulations pour Kc qui vont changer le clientid pour l'id Kc dans les composantes
         # mais apres l'ajout du systeme, au cas ou le systeme serait habiltation lui-meme
-        roleHabilitationRepresentations = self.roleHabilitationRepresentation()
+        roleHabilitationRepresentations = self.roleHabilitationRepresentation(result)
+        if roleHabilitationRepresentations is None:
+            roleHabilitationRepresentations = self.roleHabilitationSystemShortName(result)
         self.addSystemKeycloakPilotage(result, self.params)
         self.addSystemSpConfigPilotageHabilitation(result, roleHabilitationRepresentations)
 
@@ -497,33 +545,134 @@ class SpConfigSystem(object):
         if roleHabilitationRepresentations is not None:
             self.addSystemSpConfigBody(result, roleHabilitationRepresentations)
 
+    def roleHabilitationSystemShortName(self, result):
+        logger.info('Creation representation system pour pilotage par la variable SystemShortName')
+        system = self.getSystemSpConfig(self.params['spHabilitationShortName'])
+        if system is None:
+            raise SpConfigSystemError("System Habilitation({shortname}) absent du realm: {realm}, prerequis, playbook sx5-habilitation".format(shortname = self.params['spHabilitationShortName'], realm = self.params['spRealm']))
+        paramHabilitations = self.roleHabilitationSystemRepresentation(system)
+        self.roleHabilitationSystemShortNameKeycloak(system, paramHabilitations, result)
+        self.roleHabilitationSystemShortNameSpConfig(system, paramHabilitations, result)
+        return paramHabilitations
+
+    def roleHabilitationSystemShortNameKeycloak(self, system, paramHabilitations, result):
+        if self.params['spHabilitationShortName'] == self.systemRepresentation['systemShortName']:
+            self.roleHabilitationSystemShortNameKeycloakHabilitation(system, paramHabilitations, result)
+        else:
+            self.roleHabilitationSystemShortNameKeycloakAutre(system, paramHabilitations, result)
+
+    def roleHabilitationSystemShortNameKeycloakHabilitation(self, system, paramHabilitations, result):
+        logger.info('Generer json pour API KC, client Habilitation: %s', self.systemRepresentation['systemShortName'])
+        pilotRoles = self.params['pilotRoles']
+        for composant in system['composants']:
+            pilotRoles.append(
+                {
+                    'habilitationClientId': composant['clientId'],
+                    'roles': [
+                        {
+                            'state': 'present',
+                            'name': ROLES['PILOTE_HABILITATION']['NAME'],
+                            'description': ROLES['PILOTE_HABILITATION']['DESC']
+                        },
+                        {
+                            'name': ROLES['SUPERADMIN_HABILITATION']['NAME'],
+                            'description': ROLES['SUPERADMIN_HABILITATION']['DESC'],
+                            'composite': True,
+                            'composites': [
+                                {
+                                'id': composant['clientId'],
+                                'name': ROLES['PILOTE_HABILITATION']['NAME']
+                                }
+                            ]
+                        }
+                    ]
+                }
+            )
+
+    def roleHabilitationSystemShortNameKeycloakAutre(self, system, paramHabilitations, result):
+        logger.info('Generer json pour API KC: %s', self.systemRepresentation['systemShortName'])
+        pilotRoles = self.params['pilotRoles']
+        for composant in system['composants']:
+            pilotRoles.append(
+                {
+                    'habilitationClientId': composant['clientId'],
+                    'roles': [
+                        {
+                            'description': ROLES['SYSTEM_HABILITATION']['DESC'].format(sysname = self.systemRepresentation['systemName']),
+                            'name': self.params['pilotRole'],
+                            'composite': True,
+                            'composites': [
+                                {
+                                    'id': composant['clientId'],
+                                    'name': ROLES['UTILISATEUR_HABILITATION']['NAME']
+                                }
+                            ]
+                        },
+                        {
+                            "description": ROLES['SUPERADMIN_HABILITATION']['DESC'],
+                            "name": ROLES['SUPERADMIN_HABILITATION']['NAME'],
+                            "composite": True,
+                            "composites": [
+                                {
+                                    "id": composant['clientId'],
+                                    "name": self.params['pilotRole']
+                                }
+                            ]
+                        }
+                    ]
+                }
+            )
+
+
+    def roleHabilitationSystemShortNameSpConfig(self, system, paramHabilitations, result):
+        # Dans sp-config, tous les clients du systeme habilitation sont identiques, on peut donc prendre le premier pour fusionner les roles, ca change rien
+        logger.info('Generer role pour sp-config: %s', self.systemRepresentation['systemShortName'])
+        composant = system['composants'][0]
+        roles = [
+            {
+                'state': 'present',
+                'name': ROLES['PILOTE_HABILITATION']['NAME'],
+                'description': ROLES['PILOTE_HABILITATION']['DESC']
+            },
+            {
+                'state': 'present',
+                'name': ROLES['SUPERADMIN_HABILITATION']['NAME'],
+                'description': ROLES['SUPERADMIN_HABILITATION']['DESC']
+            }
+        ]
+        # le comportement est different si on creer le system sx5habilitation vs tous les autres
+        if self.params['spHabilitationShortName'] != self.systemRepresentation['systemShortName']:
+            roles.append(
+                {
+                    'state': 'present',
+                    'name': self.params['pilotRole'],
+                    'description': ROLES['SYSTEM_HABILITATION']['DESC'].format(sysname = self.systemRepresentation['systemName'])
+                }
+            )
+
+        clientRoles = paramHabilitations['clientRoles']
+        self.fusionnerRole(clientRoles, composant['roles'], roles)
+
     # il faut utilise la reponse de sp-config et la modifer en "ajoutant/mettre a jour" avec le parametre ansible
-    def roleHabilitationRepresentation(self):
+    def roleHabilitationRepresentation(self, result):        
         logger.info('Creation representation system pour pilotage')
         if not 'pilotRoles' in self.systemRepresentation or len(self.systemRepresentation['pilotRoles']) == 0:
             logger.info('Aucun representation system pour pilotage, pilotRoles est vide ou absent')
             return None
-        dataResponseSystemSP = self.inspectResponse(
-                requests.get(
-                    self.params['spConfigUrl'] + "/systemes/",
-                    headers = self.headers
-                ),"get systemes sp-config", 200
-            )
-        clientRoles = []
-        paramHabilitations = {
-            "systemName": '',
-            "systemShortName": '',
-            "force": False,
-            "clients": [],
-            "clientRoles": clientRoles
-        }
+
+        self.addDeprecation("**Deprecated**: le parametre 'pilotRoles' est obselet, voir 'pilotRole' si vous souhaitez changer le nom par defaut du role pilote dans habilitation", result)
+
+        system = self.getSystemSpConfig(self.params['spHabilitationShortName'])
+        if system is None:
+            raise SpConfigSystemError("System Habilitation({shortname}) absent {clientid}@{realm}, prerequis, playbook sx5-habilitation".format(shortname = self.params['spHabilitationShortName'], clientid = clientKeycloak['clientId'], realm = self.params['spRealm']))
+
+        paramHabilitations = self.roleHabilitationSystemRepresentation(system)
+        clientRoles = paramHabilitations['clientRoles']
+        # Dans sp-config, tous les clients du systeme habilitation sont identiques, on peut donc prendre le premier pour fusionner les roles, ca change rien
+        composant = system['composants'][0]
         for pilotRole in self.systemRepresentation['pilotRoles']:
-            for system in dataResponseSystemSP:
-                composant = self.findRecord(system['composants'], 'clientId', pilotRole['habilitationClientId'])
-                if composant is None:
-                    continue
-                self.fusionnerRole(clientRoles, composant['roles'], pilotRole['roles'])
-                self.roleHabilitationSystemRepresentation(paramHabilitations, system, pilotRole['habilitationClientId'])
+            self.fusionnerRole(clientRoles, composant['roles'], pilotRole['roles'])
+            
         logger.debug(paramHabilitations)
         return paramHabilitations
 
@@ -554,16 +703,23 @@ class SpConfigSystem(object):
 
         
     # creer la representation json d'un system avec les info des roles pilot     
-    def roleHabilitationSystemRepresentation(self, paramHabilitations, system, clientId):
-        paramHabilitations['systemName'] = system["nom"]
-        paramHabilitations['systemShortName'] = system["cleUnique"]
-        clients = paramHabilitations['clients']
-        if self.findRecord(clients, 'clientId', clientId) is None:
+    def roleHabilitationSystemRepresentation(self, system):
+        # dans sp-config, les composantes sont des clients kc
+        clients = []
+        for composant in system['composants']:
             clients.append(
                 {
-                    'clientId': clientId
+                    'clientId': composant['clientId']
                 }
             )
+        paramHabilitations = {
+            "systemName": system['nom'],
+            "systemShortName": system['cleUnique'],
+            "force": False,
+            "clients": clients,
+            "clientRoles": []
+        }
+        return paramHabilitations
 
 
     def findRecord(self, jsonArray, key, value):
@@ -631,10 +787,6 @@ class SpConfigSystem(object):
                     json = bodySystem
                 ),"put systeme", 200
             )
-            
-
-
-        
 
         if len(adresses) > 0:
             bodyAdrAppr = {
