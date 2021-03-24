@@ -19,20 +19,6 @@
 
 from __future__ import absolute_import, division, print_function
 
-import json
-import logging
-import os
-import sys
-from logging import debug
-from multiprocessing.util import debug
-
-import requests
-
-from ansible.module_utils.basic import AnsibleModule
-from ansible.module_utils.identity.keycloak.keycloak import (KeycloakAPI,
-                                                             get_token,
-                                                             isDictEquals)
-
 __metaclass__ = type
 
 ANSIBLE_METADATA = {'metadata_version': '1.1',
@@ -67,6 +53,7 @@ options:
         description:
             - The Realm for the user to logon in Keycloak.
         required: false
+        default: master
         type: str
     spRealm:
         description:
@@ -142,8 +129,9 @@ options:
     pilotRole:
         description:
             - Name for the piloting role in sx5-habilitation.
+            - The value sx5-pilote-{{ systemShortName }} will be assigned
+            - to this role if this parameter is not defined
         required: false
-        default: sx5-pilote-{{ systemShortName }}
         type: str
     force:
         default: "no"
@@ -316,6 +304,16 @@ changed:
   type: bool
 '''
 
+from ansible.module_utils.identity.keycloak.keycloak import (KeycloakAPI,
+                                                             get_token,
+                                                             isDictEquals)
+from ansible.module_utils.basic import AnsibleModule
+import requests
+import sys
+import os
+import logging
+import json
+
 try:
     from pygelf import GelfUdpHandler
     gelf = True
@@ -347,12 +345,13 @@ def main():
             spUrl=dict(type='str', required=True),
             spUsername=dict(type='str', required=True),
             spPassword=dict(required=True),
-            spAuthRealm=dict(type='str', required=False),
+            spAuthRealm=dict(type='str', required=False, default='master'),
             spRealm=dict(type='str', required=True),
             spConfigUrl=dict(type='str', required=True),
             spConfigClient_id=dict(type='str', required=True),
             spConfigClient_secret=dict(type='str', required=False),
-            spHabilitationShortName=dict(type='str', required=False, default='sx5habilitation'),
+            spHabilitationShortName=dict(
+                type='str', required=False, default='sx5habilitation'),
             systemName=dict(type='str', required=True),
             systemShortName=dict(type='str', required=True),
             sadu_principal=dict(type='str', required=False),
@@ -360,6 +359,7 @@ def main():
             clients=dict(type='list', elements='dict', default=[]),
             clientRoles=dict(type='list', elements='dict', default=[]),
             pilotRoles=dict(type='list', elements='dict', default=[]),
+            pilotRole=dict(type='str', required=False),
             clientRoles_mapper=dict(type='list', elements='dict', default=[]),
             force=dict(type='bool', default=False),
             state=dict(choices=["absent", "present"], default='present'),
@@ -368,7 +368,6 @@ def main():
         ),
         supports_check_mode=True,
     )
-    
 
     try:
         params = completParams(module)
@@ -379,11 +378,18 @@ def main():
         elif module._verbosity in [2, 3]:
             logging.basicConfig(level=logging.INFO)
         else:
-            logging.basicConfig(level=logging.WARNING) 
+            logging.basicConfig(level=logging.WARNING)
         logger.addFilter(JsonFilter())
         if gelf and params['graylog_host'] != '':
-            logger.addHandler(GelfUdpHandler(host=params['graylog_host'], port=params['graylog_port_udp'], debug=True, include_extra_fields=True))
-            logger.warning('Allo gelf from sx5-sp-config-system, logging lvl : %s', logger.getEffectiveLevel())
+            logger.addHandler(
+                GelfUdpHandler(
+                    host=params['graylog_host'],
+                    port=params['graylog_port_udp'],
+                    debug=True,
+                    include_extra_fields=True))
+            logger.warning(
+                'Allo gelf from sx5-sp-config-system, logging lvl : %s',
+                logger.getEffectiveLevel())
         spConfig = SpConfigSystem(params)
         result = spConfig.run()
     except Exception as e:
@@ -399,6 +405,7 @@ def main():
     else:
         module.exit_json(**result)
 
+
 def completParams(module):
     params = module.params.copy()
     params['spUrl'] = params['spUrl'].rstrip('/')
@@ -406,24 +413,30 @@ def completParams(module):
     params['force'] = module.boolean(module.params['force'])
     if not ('spAuthRealm' in params):
         params['spAuthRealm'] = params["spRealm"]
-    if not ("spConfigClient_secret" in params) or params['spConfigClient_secret'] is None:
+    if not (
+            "spConfigClient_secret" in params) or params['spConfigClient_secret'] is None:
         params['spConfigClient_secret'] = ''
     if 'pilotRole' not in params or params['pilotRole'] is None or params['pilotRole'] == '':
-            params['pilotRole'] = 'sx5-pilote-' + params["systemShortName"]
+        params['pilotRole'] = 'sx5-pilote-' + params["systemShortName"]
+    if 'spHabilitationShortName' not in params or params['spHabilitationShortName'] is None or len(
+            params['spHabilitationShortName']) == 0:
+        params['spHabilitationShortName'] = 'sx5habilitation'
     return params
 
 
 class SpConfigSystemError(Exception):
     pass
 
+
 class JsonFilter(logging.Filter):
     def filter(self, record):
-        if type(record.msg) in [dict, list]:
+        if isinstance(record.msg, dict) or isinstance(record.msg, list):
             try:
-                record.msg = json.dumps(record.msg, indent = 2)
-            except:
+                record.msg = json.dumps(record.msg, indent=2)
+            except BaseException:
                 pass
         return True
+
 
 class MockModule(object):
     def __init__(self, params):
@@ -439,6 +452,7 @@ class MockModule(object):
     def fail_json(self, msg, **kwargs):
         raise SpConfigSystemError(msg)
 
+
 class SpConfigSystem(object):
     def __init__(self, params):
         self.params = params
@@ -451,20 +465,24 @@ class SpConfigSystem(object):
             if sys.version_info.major == 3:
                 newSystemDBRepresentation["spRealm"] = params['spRealm']
             else:
-                newSystemDBRepresentation["spRealm"] = params['spRealm'].decode("utf-8")
+                newSystemDBRepresentation["spRealm"] = params['spRealm'].decode(
+                    "utf-8")
         if sys.version_info.major == 3:
             newSystemDBRepresentation["systemName"] = params['systemName']
             newSystemDBRepresentation["spConfigUrl"] = params['spConfigUrl']
         else:
-            newSystemDBRepresentation["systemName"] = params['systemName'].decode("utf-8")
-            newSystemDBRepresentation["spConfigUrl"] = params['spConfigUrl'].decode("utf-8")
+            newSystemDBRepresentation["systemName"] = params['systemName'].decode(
+                "utf-8")
+            newSystemDBRepresentation["spConfigUrl"] = params['spConfigUrl'].decode(
+                "utf-8")
         if "systemShortName" in params and params['systemShortName'] is not None:
             newSystemDBRepresentation["systemShortName"] = params['systemShortName']
         if "sadu_principal" in params and params['sadu_principal'] is not None:
             if sys.version_info.major == 3:
                 newSystemDBRepresentation["sadu_principal"] = params['sadu_principal']
             else:
-                newSystemDBRepresentation["sadu_principal"] = params['sadu_principal'].decode("utf-8")
+                newSystemDBRepresentation["sadu_principal"] = params['sadu_principal'].decode(
+                    "utf-8")
         if "sadu_secondary" in params and params['sadu_secondary'] is not None:
             newSystemDBRepresentation["sadu_secondary"] = params['sadu_secondary']
         if "clients" in params and params['clients'] is not None:
@@ -475,7 +493,11 @@ class SpConfigSystem(object):
             newSystemDBRepresentation["clientRoles"] = params['clientRoles']
         if "pilotRoles" in params and params['pilotRoles'] is not None:
             newSystemDBRepresentation["pilotRoles"] = params['pilotRoles']
-        newSystemDBRepresentation["pilotRole"] = params['pilotRole']
+        if 'pilotRole' not in params or params['pilotRole'] is None or params['pilotRole'] == '':
+            newSystemDBRepresentation['pilotRole'] = 'sx5-pilote-' + \
+                params["systemShortName"]
+        else:
+            newSystemDBRepresentation["pilotRole"] = params['pilotRole']
         return newSystemDBRepresentation
 
     def addDiff(self, title, dict1, dict2, result):
@@ -484,11 +506,11 @@ class SpConfigSystem(object):
             diff = result['diff']
         else:
             diff = {
-                'before': {}, 
+                'before': {},
                 'after': {}
             }
-            result['diff'] = diff        
-        
+            result['diff'] = diff
+
         diff['before'][title] = dict2
         diff['after'][title] = dict1
 
@@ -497,7 +519,7 @@ class SpConfigSystem(object):
             deprecations = result['deprecations']
         else:
             deprecations = []
-            result['deprecations'] = deprecations 
+            result['deprecations'] = deprecations
         deprecations.append(
             {
                 'msg': msg,
@@ -507,7 +529,8 @@ class SpConfigSystem(object):
 
     def getSystemSpConfig(self, systemShortName):
         if systemShortName == '':
-            raise SpConfigSystemError("getSystemSpConfig systemShortName ne peut pas etre vide")
+            raise SpConfigSystemError(
+                "getSystemSpConfig systemShortName ne peut pas etre vide")
         getResponse = requests.get(
             self.params['spConfigUrl'] + "/systemes/" + systemShortName,
             headers=self.headers
@@ -517,52 +540,78 @@ class SpConfigSystem(object):
         elif getResponse.status_code == 404:
             dataResponse = None
         else:
-            raise SpConfigSystemError("getSystemSpConfig code {code} : {token}".format(code = getResponse.status_code, token = self.headers['Authorization']))
+            raise SpConfigSystemError(
+                "getSystemSpConfig code {code} : {token}".format(
+                    code=getResponse.status_code,
+                    token=self.headers['Authorization']))
         return dataResponse
 
     def getKeycloakClient(self, clientId):
-        # le client dans kc doit avoir ete cree/modife par une task dans la playbook avant
-        clientKc = self.kc.get_client_by_clientid(clientId, self.params['spRealm'])
+        # le client dans kc doit avoir ete cree/modife par une task dans la
+        # playbook avant
+        clientKc = self.kc.get_client_by_clientid(
+            clientId, self.params['spRealm'])
         if clientKc is None:
-            raise SpConfigSystemError("getKeycloakClient client absent {clientid}@{realm} : {token}".format(clientid = clientKeycloak['clientId'], realm = self.params['spRealm'], token = self.headers['Authorization']))
+            raise SpConfigSystemError(
+                "getKeycloakClient client absent {clientid}@{realm} : {token}".format(
+                    clientid=clientId,
+                    realm=self.params['spRealm'],
+                    token=self.headers['Authorization']))
         return clientKc
 
     def addSystemSpConfig(self, result):
         if self.params['force']:
             self.delSystemSpConfig(result, self.params)
-        
-        self.addSystemSpConfigBody(result, self.params)
-        # il faut creer la representation json des role pour habilitation avant les manipulations pour Kc qui vont changer le clientid pour l'id Kc dans les composantes
-        # mais apres l'ajout du systeme, au cas ou le systeme serait habiltation lui-meme
-        roleHabilitationRepresentations = self.roleHabilitationRepresentation(result)
-        if roleHabilitationRepresentations is None:
-            roleHabilitationRepresentations = self.roleHabilitationSystemShortName(result)
-        self.addSystemKeycloakPilotage(result, self.params)
-        self.addSystemSpConfigPilotageHabilitation(result, roleHabilitationRepresentations)
 
-    
-    def addSystemSpConfigPilotageHabilitation(self, result, roleHabilitationRepresentations):
+        self.addSystemSpConfigBody(result, self.params)
+        # il faut creer la representation json des role pour habilitation avant
+        # les manipulations pour Kc qui vont changer le clientid pour l'id Kc
+        # dans les composantes mais apres l'ajout du systeme, au cas ou le
+        # systeme serait habiltation lui-meme
+        roleHabilitationRepresentations = self.roleHabilitationRepresentation(
+            result)
+        if roleHabilitationRepresentations is None:
+            roleHabilitationRepresentations = self.roleHabilitationSystemShortName(
+                result)
+        self.addSystemKeycloakPilotage(result, self.params)
+        self.addSystemSpConfigPilotageHabilitation(
+            result, roleHabilitationRepresentations)
+
+    def addSystemSpConfigPilotageHabilitation(
+            self, result, roleHabilitationRepresentations):
         if roleHabilitationRepresentations is not None:
             self.addSystemSpConfigBody(result, roleHabilitationRepresentations)
 
     def roleHabilitationSystemShortName(self, result):
-        logger.info('Creation representation system pour pilotage par la variable SystemShortName')
+        logger.info(
+            'Creation representation system pour pilotage par la variable SystemShortName')
         system = self.getSystemSpConfig(self.params['spHabilitationShortName'])
         if system is None:
-            raise SpConfigSystemError("System Habilitation({shortname}) absent du realm: {realm}, prerequis, playbook sx5-habilitation".format(shortname = self.params['spHabilitationShortName'], realm = self.params['spRealm']))
+            raise SpConfigSystemError(
+                "System Habilitation({shortname}) absent du realm: {realm}, prerequis, playbook sx5-habilitation".format(
+                    shortname=self.params['spHabilitationShortName'],
+                    realm=self.params['spRealm']))
         paramHabilitations = self.roleHabilitationSystemRepresentation(system)
-        self.roleHabilitationSystemShortNameKeycloak(system, paramHabilitations, result)
-        self.roleHabilitationSystemShortNameSpConfig(system, paramHabilitations, result)
+        self.roleHabilitationSystemShortNameKeycloak(
+            system, paramHabilitations, result)
+        self.roleHabilitationSystemShortNameSpConfig(
+            system, paramHabilitations, result)
         return paramHabilitations
 
-    def roleHabilitationSystemShortNameKeycloak(self, system, paramHabilitations, result):
+    def roleHabilitationSystemShortNameKeycloak(
+            self, system, paramHabilitations, result):
         if self.params['spHabilitationShortName'] == self.systemRepresentation['systemShortName']:
-            self.roleHabilitationSystemShortNameKeycloakHabilitation(system, paramHabilitations, result)
+            self.roleHabilitationSystemShortNameKeycloakHabilitation(
+                system, paramHabilitations, result)
         else:
-            self.roleHabilitationSystemShortNameKeycloakAutre(system, paramHabilitations, result)
+            self.roleHabilitationSystemShortNameKeycloakAutre(
+                system, paramHabilitations, result)
 
-    def roleHabilitationSystemShortNameKeycloakHabilitation(self, system, paramHabilitations, result):
-        logger.info('Generer json pour API KC, client Habilitation: %s', self.systemRepresentation['systemShortName'])
+    def roleHabilitationSystemShortNameKeycloakHabilitation(
+            self, system, paramHabilitations, result):
+        logger.info(
+            'Generer json pour API KC, client Habilitation: %s',
+            self.systemRepresentation['systemShortName'])
         pilotRoles = self.params['pilotRoles']
         for composant in system['composants']:
             pilotRoles.append(
@@ -580,8 +629,8 @@ class SpConfigSystem(object):
                             'composite': True,
                             'composites': [
                                 {
-                                'id': composant['clientId'],
-                                'name': ROLES['PILOTE_HABILITATION']['NAME']
+                                    'id': composant['clientId'],
+                                    'name': ROLES['PILOTE_HABILITATION']['NAME']
                                 }
                             ]
                         }
@@ -589,8 +638,10 @@ class SpConfigSystem(object):
                 }
             )
 
-    def roleHabilitationSystemShortNameKeycloakAutre(self, system, paramHabilitations, result):
-        logger.info('Generer json pour API KC: %s', self.systemRepresentation['systemShortName'])
+    def roleHabilitationSystemShortNameKeycloakAutre(
+            self, system, paramHabilitations, result):
+        logger.info('Generer json pour API KC: %s',
+                    self.systemRepresentation['systemShortName'])
         pilotRoles = self.params['pilotRoles']
         for composant in system['composants']:
             pilotRoles.append(
@@ -598,7 +649,7 @@ class SpConfigSystem(object):
                     'habilitationClientId': composant['clientId'],
                     'roles': [
                         {
-                            'description': ROLES['SYSTEM_HABILITATION']['DESC'].format(sysname = self.systemRepresentation['systemName']),
+                            'description': ROLES['SYSTEM_HABILITATION']['DESC'].format(sysname=self.systemRepresentation['systemName']),
                             'name': self.params['pilotRole'],
                             'composite': True,
                             'composites': [
@@ -623,10 +674,13 @@ class SpConfigSystem(object):
                 }
             )
 
-
-    def roleHabilitationSystemShortNameSpConfig(self, system, paramHabilitations, result):
-        # Dans sp-config, tous les clients du systeme habilitation sont identiques, on peut donc prendre le premier pour fusionner les roles, ca change rien
-        logger.info('Generer role pour sp-config: %s', self.systemRepresentation['systemShortName'])
+    def roleHabilitationSystemShortNameSpConfig(
+            self, system, paramHabilitations, result):
+        # Dans sp-config, tous les clients du systeme habilitation sont
+        # identiques, on peut donc prendre le premier pour fusionner les roles,
+        # ca change rien
+        logger.info('Generer role pour sp-config: %s',
+                    self.systemRepresentation['systemShortName'])
         composant = system['composants'][0]
         roles = [
             {
@@ -640,48 +694,63 @@ class SpConfigSystem(object):
                 'description': ROLES['SUPERADMIN_HABILITATION']['DESC']
             }
         ]
-        # le comportement est different si on creer le system sx5habilitation vs tous les autres
+        # le comportement est different si on creer le system sx5habilitation
+        # vs tous les autres
         if self.params['spHabilitationShortName'] != self.systemRepresentation['systemShortName']:
             roles.append(
                 {
                     'state': 'present',
                     'name': self.params['pilotRole'],
-                    'description': ROLES['SYSTEM_HABILITATION']['DESC'].format(sysname = self.systemRepresentation['systemName'])
+                    'description': ROLES['SYSTEM_HABILITATION']['DESC'].format(sysname=self.systemRepresentation['systemName'])
                 }
             )
 
         clientRoles = paramHabilitations['clientRoles']
         self.fusionnerRole(clientRoles, composant['roles'], roles)
 
-    # il faut utilise la reponse de sp-config et la modifer en "ajoutant/mettre a jour" avec le parametre ansible
-    def roleHabilitationRepresentation(self, result):        
+    # il faut utilise la reponse de sp-config et la modifer en
+    # "ajoutant/mettre a jour" avec le parametre ansible
+    def roleHabilitationRepresentation(self, result):
         logger.info('Creation representation system pour pilotage')
-        if not 'pilotRoles' in self.systemRepresentation or len(self.systemRepresentation['pilotRoles']) == 0:
-            logger.info('Aucun representation system pour pilotage, pilotRoles est vide ou absent')
+        if 'pilotRoles' not in self.systemRepresentation or len(
+                self.systemRepresentation['pilotRoles']) == 0:
+            logger.info(
+                'Aucun representation system pour pilotage, pilotRoles est vide ou absent')
             return None
 
-        self.addDeprecation("**Deprecated**: le parametre 'pilotRoles' est obselet, voir 'pilotRole' si vous souhaitez changer le nom par defaut du role pilote dans habilitation", result)
+        self.addDeprecation(
+            "**Deprecated**: le parametre 'pilotRoles' est obselet, voir 'pilotRole' pour changer le nom par defaut du role pilote dans habilitation",
+            result)
 
         system = self.getSystemSpConfig(self.params['spHabilitationShortName'])
         if system is None:
-            raise SpConfigSystemError("System Habilitation({shortname}) absent {clientid}@{realm}, prerequis, playbook sx5-habilitation".format(shortname = self.params['spHabilitationShortName'], clientid = clientKeycloak['clientId'], realm = self.params['spRealm']))
+            raise SpConfigSystemError(
+                "System Habilitation({shortname}) absent {realm}, prerequis, playbook sx5-habilitation".format(
+                    shortname=self.params['spHabilitationShortName'],
+                    realm=self.params['spRealm']))
 
         paramHabilitations = self.roleHabilitationSystemRepresentation(system)
         clientRoles = paramHabilitations['clientRoles']
-        # Dans sp-config, tous les clients du systeme habilitation sont identiques, on peut donc prendre le premier pour fusionner les roles, ca change rien
+        # Dans sp-config, tous les clients du systeme habilitation sont
+        # identiques, on peut donc prendre le premier pour fusionner les roles,
+        # ca change rien
         composant = system['composants'][0]
         for pilotRole in self.systemRepresentation['pilotRoles']:
-            self.fusionnerRole(clientRoles, composant['roles'], pilotRole['roles'])
-            
+            self.fusionnerRole(
+                clientRoles,
+                composant['roles'],
+                pilotRole['roles'])
+
         logger.debug(paramHabilitations)
         return paramHabilitations
 
-
     def fusionnerRole(self, roles, habilitationRoles, piloteRoles):
-        
+
         for role in piloteRoles:
             if self.findRecord(roles, 'spClientRoleId', role['name']) is None:
-                logger.debug('Fusion role pilotage via param : %s', role['name'])
+                logger.debug(
+                    'Fusion role pilotage via param : %s',
+                    role['name'])
                 roles.append(
                     {
                         "spClientRoleDescription": role['description'],
@@ -692,7 +761,9 @@ class SpConfigSystem(object):
 
         for role in habilitationRoles:
             if self.findRecord(roles, 'spClientRoleId', role['nom']) is None:
-                logger.debug('Fusion role pilotage via sp-config : %s', role['nom'])
+                logger.debug(
+                    'Fusion role pilotage via sp-config : %s',
+                    role['nom'])
                 roles.append(
                     {
                         "spClientRoleDescription": role['description'],
@@ -701,8 +772,8 @@ class SpConfigSystem(object):
                     }
                 )
 
-        
-    # creer la representation json d'un system avec les info des roles pilot     
+    # creer la representation json d'un system avec les info des roles pilot
+
     def roleHabilitationSystemRepresentation(self, system):
         # dans sp-config, les composantes sont des clients kc
         clients = []
@@ -721,7 +792,6 @@ class SpConfigSystem(object):
         }
         return paramHabilitations
 
-
     def findRecord(self, jsonArray, key, value):
         for o in jsonArray:
             if o[key] == value:
@@ -739,18 +809,24 @@ class SpConfigSystem(object):
                 result
             )
 
-    def createOrUpdateClientRoles(self, pilotClientRoles, clientHabilitationId, result):
+    def createOrUpdateClientRoles(
+            self, pilotClientRoles, clientHabilitationId, result):
         if pilotClientRoles is None:
             return
         if len(pilotClientRoles) == 0:
             return
         logger.info('Ajoute system Keycloak client : %s', clientHabilitationId)
         logger.debug(pilotClientRoles)
-        if self.kc.create_or_update_client_roles(clientHabilitationId, pilotClientRoles, self.params['spRealm'], False):
-            self.addDiff('keycloak', 'create_or_update_client_roles', '', result)
+        if self.kc.create_or_update_client_roles(
+                clientHabilitationId, pilotClientRoles, self.params['spRealm'], False):
+            self.addDiff(
+                'keycloak',
+                'create_or_update_client_roles',
+                '',
+                result)
             result['changed'] = True
 
-    def addSystemSpConfigBody(self, result, params):       
+    def addSystemSpConfigBody(self, result, params):
         spConfigUrl = self.params['spConfigUrl']
         spConfigSystem = self.getSystemSpConfig(params['systemShortName'])
 
@@ -759,10 +835,10 @@ class SpConfigSystem(object):
         rolemappers = self.rolemapperRepresentation(params)
 
         bodySystem = {
-                "nom": params["systemName"],
-                "cleUnique": params["systemShortName"],
-                "composants": clients
-            }
+            "nom": params["systemName"],
+            "cleUnique": params["systemShortName"],
+            "composants": clients
+        }
         # on cree/recree le system seulment s'il n'exists pas/plus
         if spConfigSystem is None:
             logger.info('Creation system sp-config : %s', bodySystem['nom'])
@@ -771,21 +847,25 @@ class SpConfigSystem(object):
             spConfigSystem = self.inspectResponse(
                 requests.post(
                     spConfigUrl + "/systemes/",
-                    headers = self.headers,
-                    json = bodySystem
-                ),"post systeme", 201
+                    headers=self.headers,
+                    json=bodySystem
+                ), "post systeme", 201
             )
         elif not isDictEquals(bodySystem, spConfigSystem):
-            #on met a jour
+            # on met a jour
             logger.info('Mise a jour system sp-config: %s', bodySystem['nom'])
             logger.debug(bodySystem)
-            self.addDiff('Mise-a-jour-system-sp-config', bodySystem, spConfigSystem, result)
+            self.addDiff(
+                'Mise-a-jour-system-sp-config',
+                bodySystem,
+                spConfigSystem,
+                result)
             spConfigSystem = self.inspectResponse(
                 requests.put(
                     spConfigUrl + '/systemes/' + bodySystem['cleUnique'],
-                    headers = self.headers,
-                    json = bodySystem
-                ),"put systeme", 200
+                    headers=self.headers,
+                    json=bodySystem
+                ), "put systeme", 200
             )
 
         if len(adresses) > 0:
@@ -795,22 +875,30 @@ class SpConfigSystem(object):
             }
             spAdrAppr = self.inspectResponse(
                 requests.get(
-                    spConfigUrl + "/systemes/" + spConfigSystem["cleUnique"] + "/adressesApprovisionnement",
-                    headers = self.headers
-                ),"get adressesApprovisionnement", 200, 201
+                    spConfigUrl + "/systemes/" +
+                    spConfigSystem["cleUnique"] + "/adressesApprovisionnement",
+                    headers=self.headers
+                ), "get adressesApprovisionnement", 200, 201
             )
             if not isDictEquals(bodyAdrAppr, spAdrAppr):
-                logger.info('Mise a jour adresse approvisionnement sp-config: %s', bodyAdrAppr['cleUnique'])
+                logger.info(
+                    'Mise a jour adresse approvisionnement sp-config: %s',
+                    bodyAdrAppr['cleUnique'])
                 logger.debug(bodyAdrAppr)
-                self.addDiff('Mise-a-jour-adresse-appro', bodyAdrAppr, spAdrAppr, result)
+                self.addDiff(
+                    'Mise-a-jour-adresse-appro',
+                    bodyAdrAppr,
+                    spAdrAppr,
+                    result)
                 self.inspectResponse(
                     requests.put(
-                        spConfigUrl + "/systemes/" + spConfigSystem["cleUnique"] + "/adressesApprovisionnement",
-                        headers = self.headers,
-                        json = bodyAdrAppr
-                    ),"put adressesApprovisionnement", 200, 201
+                        spConfigUrl + "/systemes/" +
+                        spConfigSystem["cleUnique"] +
+                        "/adressesApprovisionnement",
+                        headers=self.headers,
+                        json=bodyAdrAppr
+                    ), "put adressesApprovisionnement", 200, 201
                 )
-                
 
         if len(rolemappers) > 0:
             bodyTableCorrespondance = {
@@ -819,22 +907,30 @@ class SpConfigSystem(object):
             }
             spTableCorrespondance = self.inspectResponse(
                 requests.get(
-                    spConfigUrl + "/systemes/" + spConfigSystem["cleUnique"] + "/tableCorrespondance",
-                    headers = self.headers
-                ),"get tableCorrespondance", 200, 201
+                    spConfigUrl + "/systemes/" +
+                    spConfigSystem["cleUnique"] + "/tableCorrespondance",
+                    headers=self.headers
+                ), "get tableCorrespondance", 200, 201
             )
-            if not isDictEquals(bodyTableCorrespondance, spTableCorrespondance):
-                logger.info('Mise a jour role mapper sp-config: %s', bodyTableCorrespondance['cleUnique'])
+            if not isDictEquals(bodyTableCorrespondance,
+                                spTableCorrespondance):
+                logger.info(
+                    'Mise a jour role mapper sp-config: %s',
+                    bodyTableCorrespondance['cleUnique'])
                 logger.debug(bodyTableCorrespondance)
-                self.addDiff('Mise-a-jour-role-mapper', bodyTableCorrespondance, spTableCorrespondance, result)
+                self.addDiff(
+                    'Mise-a-jour-role-mapper',
+                    bodyTableCorrespondance,
+                    spTableCorrespondance,
+                    result)
                 self.inspectResponse(
                     requests.put(
-                        spConfigUrl + "/systemes/" + spConfigSystem["cleUnique"] + "/tableCorrespondance",
-                        headers = self.headers,
-                        json = bodyTableCorrespondance
-                    ),"put tableCorrespondance", 200, 201
+                        spConfigUrl + "/systemes/" +
+                        spConfigSystem["cleUnique"] + "/tableCorrespondance",
+                        headers=self.headers,
+                        json=bodyTableCorrespondance
+                    ), "put tableCorrespondance", 200, 201
                 )
-                
 
     def inspectResponse(self, response, msg, *codes):
         status = response.status_code
@@ -846,17 +942,24 @@ class SpConfigSystem(object):
             msg = msg + ' - ' + response.text
         except Exception as e:
             pass
-        raise SpConfigSystemError("code {code} - {msg} : {token}".format(code = status, msg = msg, token = self.headers['Authorization']))
+        raise SpConfigSystemError("code {code} - {msg} : {token}".format(
+            code=status, msg=msg, token=self.headers['Authorization']))
 
     def clientRepresentation(self, params, spConfigSystem):
         clients = []
         for clientKeycloak in params["clients"]:
-            dataResponseKeycloak = self.getKeycloakClient(clientKeycloak['clientId'])
-            clients.append(self.mergeKcClientWithSystemRepresentation(dataResponseKeycloak, params))
+            dataResponseKeycloak = self.getKeycloakClient(
+                clientKeycloak['clientId'])
+            clients.append(
+                self.mergeKcClientWithSystemRepresentation(
+                    dataResponseKeycloak, params))
         if spConfigSystem is not None:
-            #si le system exist deja dans SpConfig, il faut ajouter les autres clients(composants dans SpConfig) qui existaient deja, si non, ca va les supprimer
+            # si le system exist deja dans SpConfig, il faut ajouter les autres
+            # clients(composants dans SpConfig) qui existaient deja, si non, ca
+            # va les supprimer
             for clientSpConfig in spConfigSystem['composants']:
-                if self.findRecord(clients, 'clientId', clientSpConfig['clientId']) is None:
+                if self.findRecord(clients, 'clientId',
+                                   clientSpConfig['clientId']) is None:
                     clients.append(clientSpConfig)
 
         return clients
@@ -889,7 +992,8 @@ class SpConfigSystem(object):
                     adresses.append(adresse)
         return adresses
 
-    def mergeKcClientWithSystemRepresentation(self, dataResponseKeycloak, params):
+    def mergeKcClientWithSystemRepresentation(
+            self, dataResponseKeycloak, params):
         dataResponseroles = dataResponseKeycloak['clientRoles']
         clientRoles = params["clientRoles"]
         roles = []
@@ -916,10 +1020,11 @@ class SpConfigSystem(object):
         if spConfigSystem is not None:
             logger.info('Delete system : ' + params['systemShortName'])
             self.addDiff('Delete-system', None, spConfigSystem, result)
-            self.inspectResponse( 
+            self.inspectResponse(
                 requests.delete(
-                    self.params['spConfigUrl'] + "/systemes/" + spConfigSystem["cleUnique"],
-                    headers = self.headers
+                    self.params['spConfigUrl'] + "/systemes/" +
+                    spConfigSystem["cleUnique"],
+                    headers=self.headers
                 ), "delSystemSpConfig", 204
             )
 
@@ -928,29 +1033,30 @@ class SpConfigSystem(object):
         logger.debug(self.params)
         self.systemRepresentation = self.systemDBRepresentation()
         result = dict(
-            ansible_facts = self.systemRepresentation,
-            rc = 0,
-            changed = False
+            ansible_facts=self.systemRepresentation,
+            rc=0,
+            changed=False
         )
 
         params = self.params
+        auth_realm = params['spAuthRealm'] if 'spAuthRealm' in params else 'master'
         self.headers = get_token(
-            base_url = params['spUrl'] + "/auth",
-            validate_certs = True,
-            auth_realm = params['spAuthRealm'],
-            client_id = params['spConfigClient_id'],
-            auth_username = params['spUsername'],
-            auth_password = params['spPassword'],
-            client_secret = params['spConfigClient_secret']
+            base_url=params['spUrl'] + "/auth",
+            validate_certs=True,
+            auth_realm=auth_realm,
+            client_id=params['spConfigClient_id'],
+            auth_username=params['spUsername'],
+            auth_password=params['spPassword'],
+            client_secret=params['spConfigClient_secret']
         )
         logger.debug(self.headers['Authorization'])
 
-        self.kc = KeycloakAPI(MockModule(params), self.headers )
+        self.kc = KeycloakAPI(MockModule(params), self.headers)
         if params['state'] == 'present':
             self.addSystemSpConfig(result)
         else:
-            self.delSystemSpConfig(result)
-        
+            self.delSystemSpConfig(result=result, params=params)
+
         logger.info('Fin creation systeme sx5-sp-config')
         logger.info(result)
         return result

@@ -1,14 +1,14 @@
 import requests
 
-from ansible.modules.identity.sx5.sx5_sp_config_system import SpConfigSystem
+from ansible.modules.identity.sx5 import sx5_sp_config_system
 from ansible.modules.identity.keycloak import keycloak_client
 from ansible.module_utils.sx5_sp_config_system_utils import loginAndSetHeaders
 from units.modules.utils import AnsibleExitJson, ModuleTestCase, set_module_args
 
-KC_URL = "http://tcn00qubc02619.isn.rtss.qc.ca"
+KC_URL = "http://localhost"
 SP_URL = KC_URL
-KC_PORT = 10801
-SP_PORT = 18186
+KC_PORT = 18081
+SP_PORT = 18182
 AUTH_URL = "{url}:{port}".format(url = KC_URL, port = KC_PORT)
 SP_CONFIG_URL = "{url}:{port}/config".format(url = SP_URL, port = SP_PORT)
 
@@ -19,7 +19,29 @@ class Sx5SystemTestCase(ModuleTestCase):
             "spUsername": "admin",
             "spPassword": "admin",
             "spRealm": "master",
-            "spConfigClient_id": "admin-cli", 
+            "spConfigUrl": SP_CONFIG_URL,
+            "systemName": "Gestion des habilitations",
+            "systemShortName": "sx5habilitation",
+            "clients": [
+                {"clientId": "sx5habilitationservices"},
+                {"clientId": "sx5habilitationui"}
+            ],
+            "clientRoles": [
+                {
+                    "spClientRoleId": "sx5-pilote-sx5habilitation",
+                    "spClientRoleName": "sx5-pilote-sx5habilitation",
+                    "spClientRoleDescription": "Pilote de système de Gestion des habilitations"
+                    }
+            ],
+            "state": "present",
+            "force": False
+        },
+        {
+            "spUrl": AUTH_URL,
+            "spUsername": "admin",
+            "spPassword": "admin",
+            "spRealm": "master",
+            "spConfigClient_id": "sx5spconfig", 
             "spConfigClient_secret": "",
             "spConfigUrl": SP_CONFIG_URL,
             "systemName": "SystemeAReconfigurer",
@@ -53,25 +75,6 @@ class Sx5SystemTestCase(ModuleTestCase):
                     "spClientRoleDescription": "toCreate"
                 }
             ],
-            "pilotRoles": [
-                {
-                    "habilitationClientId": "habilitationClient1", 
-                    "roles": [
-                        {
-                            "name": "pilot-system1",
-                            "description": "Role1",
-                            "composite": True,
-                            "composites": [
-                                { 
-                                    "id": "clientasupprimer", 
-                                    "name": "test1"
-                                }
-                            ],
-                            "state": "present"
-                        }
-                    ]
-                }
-            ],
             "state": "present",
             "force": False
         }
@@ -93,7 +96,89 @@ class Sx5SystemTestCase(ModuleTestCase):
         "publicClient": False,
         "force": False
         }
+    spConfigClient = {
+        "clientId": "sx5spconfig",
+        "name": "sx5spconfig",
+        "roles": [
+            {"name":"sp-lecture","description": "Rôle de lecture pour sx5-sp-config","composite": "False"},
+            {
+                "name":"sp-configuration",
+                "description": "Rôle de config pour sx5-sp-config",
+                "composite": True,
+                "composites": [{"id": "sx5spconfig","name": "sp-lecture"}]}
+            ]
+        }
+    
     clientsToCreate = [
+        {
+            "clientId": "sx5habilitationui",
+            "name": "IW de SX5-HABILITATION",
+            "description": "Interface Web d'habilitation des utilisateurs de SX5",
+            "roles": [
+                {
+                    "name":"sx5-habilitation-utilisateur",
+                    "description": "Utilisateur de Gestion des habilitations",
+                    "composite": "False"
+                    },
+                {
+                    "name":"sx5-habilitation-superadmin",
+                    "description": "Super administrateur de Gestion des habilitations",
+                    "composite": True,
+                    "composites": [
+                        {
+                            "id": "sx5habilitationui",
+                            "name": "sx5-habilitation-utilisateur"
+                            }
+                        ]
+                    },
+                {
+                    "name":"sx5-pilote-sx5habilitation",
+                    "description": "Pilote de système de Gestion des habilitations",
+                    "composite": True,
+                    "composites": [
+                        {
+                            "id": "sx5habilitationui",
+                            "name": "sx5-habilitation-utilisateur"
+                            }
+                        ]
+                    }                
+                ]
+            },
+        {
+            "clientId": "sx5habilitationservices",
+            "name": "API REST SX5-HABILITATION ",
+            "description": "API rest d'habilitation des utilisateurs de SX5",
+            "bearerOnly": True,
+            "roles": [
+                {
+                    "name":"sx5-habilitation-utilisateur",
+                    "description": "Utilisateur de Gestion des habilitations",
+                    "composite": "False"
+                    },
+                {
+                    "name":"sx5-habilitation-superadmin",
+                    "description": "Super administrateur de Gestion des habilitations",
+                    "composite": True,
+                    "composites": [
+                        {
+                            "id": "sx5habilitationservices",
+                            "name": "sx5-habilitation-utilisateur"
+                            }
+                        ]
+                    },
+                {
+                    "name":"sx5-pilote-sx5habilitation",
+                    "description": "Pilote de système de Gestion des habilitations",
+                    "composite": True,
+                    "composites": [
+                        {
+                            "id": "sx5habilitationservices",
+                            "name": "sx5-habilitation-utilisateur"
+                            }
+                        ]
+                    }                
+                ]
+            },
         {
             "clientId": "clientsystem11",
             "name": "clientsystem11",
@@ -187,48 +272,6 @@ class Sx5SystemTestCase(ModuleTestCase):
                          ]
             },
         {
-            "clientId": "habilitationClient1",
-            "name": "habilitationClient1",
-            "roles": [{"name":"HRole1","description": "HRole1","composite": "False"},
-                         {"name":"HRole2","description": "HRole2","composite": True,"composites": [{"id": "master-realm","name": "view-users"}]}
-                         ]
-            },
-        {
-            "clientId": "habilitationClient2",
-            "name": "habilitationClient2",
-            "roles": [{"name":"HRole1","description": "HRole1","composite": "False"},
-                         {"name":"HRole2","description": "HRole2","composite": True,"composites": [{"id": "master-realm","name": "view-users"}]}
-                         ]
-            },
-        {
-            "clientId": "habilitationClient3",
-            "name": "habilitationClient3",
-            "roles": [{"name":"HRole1","description": "HRole1","composite": "False"},
-                         {"name":"HRole2","description": "HRole2","composite": True,"composites": [{"id": "master-realm","name": "view-users"}]}
-                         ]
-            },
-        {
-            "clientId": "habilitationClient4",
-            "name": "habilitationClient4",
-            "roles": [{"name":"HRole1","description": "HRole1","composite": "False"},
-                         {"name":"HRole2","description": "HRole2","composite": True,"composites": [{"id": "master-realm","name": "view-users"}]}
-                         ]
-            },
-        {
-            "clientId": "habilitationClient5",
-            "name": "habilitationClient5",
-            "roles": [{"name":"HRole1","description": "HRole1","composite": "False"},
-                         {"name":"HRole2","description": "HRole2","composite": True,"composites": [{"id": "master-realm","name": "view-users"}]}
-                         ]
-            },
-        {
-            "clientId": "habilitationClient6",
-            "name": "habilitationClient6",
-            "roles": [{"name":"HPilot1","description": "HPilot1","composite": "False"},
-                      {"name":"HPilot2","description": "HPilot2","composite": True,"composites": [{"id": "master-realm","name": "view-users"}]}
-                ]
-            },        
-        {
             "clientId": "clientasupprimer",
             "name": "clientasupprimer",
             "roles": [{"name":"test1","description": "test1","composite": "False"}]
@@ -238,6 +281,13 @@ class Sx5SystemTestCase(ModuleTestCase):
             "name": "clientarecreer",
             "roles": [{"name":"test1","description": "test1","composite": "False"}]
             },
+        {
+            "clientId": "habilitationClient6",
+            "name": "habilitationClient6",
+            "roles": [{"name":"HPilot1","description": "HPilot1","composite": "False"},
+                      {"name":"HPilot2","description": "HPilot2","composite": True,"composites": [{"id": "master-realm","name": "view-users"}]}
+                ]
+            }, 
         ]
     clientsToDelete = [
         {
@@ -247,42 +297,68 @@ class Sx5SystemTestCase(ModuleTestCase):
     def setUp(self):
         super(Sx5SystemTestCase, self).setUp()
         toCreateClient = self.clientTemplate.copy()
-        self.module = keycloak_client
+        module = keycloak_client
+        # Créer le client pour spconfig
+        toCreateClient['clientId'] = self.spConfigClient['clientId']
+        toCreateClient["name"] = self.spConfigClient["name"]
+        toCreateClient["roles"] = self.spConfigClient["roles"]
+        set_module_args(toCreateClient)
+        with self.assertRaises(AnsibleExitJson) as results:
+            module.main()
+        self.spConfigClient['clientSecret'] = results.exception.args[0]['clientSecret']['value']
+        # Créer les autres clients
         for theClient in self.clientsToCreate:
             toCreateClient["clientId"] = theClient["clientId"]
             toCreateClient["name"] = theClient["name"]
+            if 'bearerOnly' in theClient:
+                toCreateClient['bearerOnly'] = theClient['bearerOnly']
+            if 'description' in theClient:
+                toCreateClient['description'] = theClient['description']
             toCreateClient["roles"] = theClient["roles"]
             set_module_args(toCreateClient)
             with self.assertRaises(AnsibleExitJson) as results:
-                self.module.main()
+                module.main()
         for systeme in self.systemsToCreate:
-            system(systeme)
+            self.system(systeme)
         toDeleteClient = self.clientTemplate.copy()
         toDeleteClient["state"] = "absent"
         for theClient in self.clientsToDelete:
             toDeleteClient["clientId"] = theClient["clientId"]
             set_module_args(toDeleteClient)
             with self.assertRaises(AnsibleExitJson) as results:
-                self.module.main()
+                module.main()
 
     def tearDown(self):
         for systeme in self.systemsToCreate:
             systemCleanup = systeme.copy()
             systemCleanup["state"] = "absent"
-            system(systemCleanup)
+            self.system(systemCleanup)
+        module = keycloak_client
         toDeleteClient = self.clientTemplate.copy()
         toDeleteClient["state"] = "absent"
         for theClient in self.clientsToCreate:
             toDeleteClient["clientId"] = theClient["clientId"]
             set_module_args(toDeleteClient)
             with self.assertRaises(AnsibleExitJson) as results:
-                self.module.main()
+                module.main()
+        # Supprimer client spconfig
+        toDeleteClient["clientId"] = self.spConfigClient['clientId']
+        set_module_args(toDeleteClient)
+        with self.assertRaises(AnsibleExitJson) as results:
+            module.main()
             
         super(Sx5SystemTestCase, self).tearDown()
 
     def system(self, params):
-        spConfigSystem = SpConfigSystem(params)
-        spConfigSystem.run()
+        self.module = sx5_sp_config_system
+        params['spConfigClient_id'] = self.spConfigClient['clientId']
+        params['spConfigClient_secret'] = self.spConfigClient['clientSecret']
+        set_module_args(params)
+        with self.assertRaises(AnsibleExitJson) as results:
+            self.module.main()
+        return results.exception.args[0]
+        #spConfigSystem = SpConfigSystem(params)
+        #spConfigSystem.run()
                         
     def test_create_system(self):
         toCreate = {}
@@ -290,7 +366,7 @@ class Sx5SystemTestCase(ModuleTestCase):
         toCreate["spUsername"] = "admin"
         toCreate["spPassword"] = "admin"
         toCreate["spRealm"] = "master"
-        toCreate["spConfigClient_id"] = "admin-cli" 
+        toCreate["spConfigClient_id"] = "sx5spconfig" 
         toCreate["spConfigClient_secret"] = ""
         toCreate["spConfigUrl"] = SP_CONFIG_URL
         toCreate["systemName"] = "system1"
@@ -300,21 +376,23 @@ class Sx5SystemTestCase(ModuleTestCase):
         toCreate["sadu_secondary"] = [{"adresse": "http://sadu_secondary1"},{"adresse": "http://sadu_secondary2"}]
         toCreate["clientRoles_mapper"] = [{"spClientRole": "roleInSp11", "eq_sadu_role": "roleSadu11"},{"spClientRole": "roleInSp12", "eq_sadu_role": "roleSadu12"}]
         toCreate["clientRoles"] = [{"spClientRoleId": "test1", "spClientRoleName": "test1", "spClientRoleDescription": "test1"},{"spClientRoleId": "toCreate", "spClientRoleName": "toCreate", "spClientRoleDescription": "toCreate"}]
-        toCreate["pilotRoles"] = [{"habilitationClientId": "habilitationClient1", "roles": [{"name": "pilot-system1", "description": "Role1", "composite": True, "composites": [{ "id": "clientsystem11", "name": "test1"}], "state": "present"}]}]
+        toCreate["pilotRoles"] = [{"habilitationClientId": "sx5habilitationservices", "roles": [{"name": "pilot-system1", "description": "Role1", "composite": True, "composites": [{ "id": "clientsystem11", "name": "test1"}], "state": "present"}]}]
         toCreate["state"] = "present"
         toCreate["force"] = False
     
-        results = system(toCreate)
+        results = self.system(toCreate)
         self.assertTrue(results['changed'])
-        self.assertEquals(results["ansible_facts"]["systemes"]["nom"], toCreate["systemName"], "systemName: " + results["ansible_facts"]["systemes"]["nom"] + " : " + toCreate["systemName"])
-
+        self.assertEquals(results["diff"]["after"]["Creation-system-sp-config"]["nom"],
+                          toCreate["systemName"],
+                          "systemName: " + results["diff"]["after"]["Creation-system-sp-config"]["nom"] + " : " + toCreate["systemName"])
+        
     def test_system_not_changed(self):
         toDoNotChange = {}
         toDoNotChange["spUrl"] = AUTH_URL
         toDoNotChange["spUsername"] = "admin"
         toDoNotChange["spPassword"] = "admin"
         toDoNotChange["spRealm"] = "master"
-        toDoNotChange["spConfigClient_id"] = "admin-cli" 
+        toDoNotChange["spConfigClient_id"] = "sx5spconfig" 
         toDoNotChange["spConfigClient_secret"] = ""
         toDoNotChange["spConfigUrl"] = SP_CONFIG_URL
         toDoNotChange["systemName"] = "system2"
@@ -324,12 +402,12 @@ class Sx5SystemTestCase(ModuleTestCase):
         toDoNotChange["sadu_secondary"] = [{"adresse": "http://sadu_secondary1"},{"adresse": "http://sadu_secondary2"}]
         toDoNotChange["clientRoles_mapper"] = [{"spClientRole": "roleInSp11", "eq_sadu_role": "roleSadu11"},{"spClientRole": "roleInSp12", "eq_sadu_role": "roleSadu12"}]
         toDoNotChange["clientRoles"] = [{"spClientRoleId": "test2", "spClientRoleName": "test2", "spClientRoleDescription": "test2"},{"spClientRoleId": "toDoNotChange", "spClientRoleName": "toDoNotChange", "spClientRoleDescription": "toDoNotChange"}]
-        toDoNotChange["pilotRoles"] = [{"habilitationClientId": "habilitationClient2", "roles": [{"name": "pilot-system1", "description": "Role1", "composite": True, "composites": [{ "id": "clientsystem21", "name": "test2"}], "state": "present"}]}]
+        toDoNotChange["pilotRoles"] = [{"habilitationClientId": "sx5habilitationservices", "roles": [{"name": "pilot-system1", "description": "Role1", "composite": True, "composites": [{ "id": "clientsystem21", "name": "test2"}], "state": "present"}]}]
         toDoNotChange["state"] = "present"
         toDoNotChange["force"] = False
 
-        system(toDoNotChange)
-        results = system(toDoNotChange)
+        self.system(toDoNotChange)
+        results = self.system(toDoNotChange)
         self.assertFalse(results['changed'])
 
     def test_modify_system_no_pilotRoles(self):
@@ -346,24 +424,44 @@ class Sx5SystemTestCase(ModuleTestCase):
         toChange1["clients"] = [{"clientId": "clientsystem31"}]
         toChange1["sadu_principal"] = "http://sadu.dev.inspq.qc.ca"
         toChange1["sadu_secondary"] = [{"adresse": "http://sadu_secondary1"},{"adresse": "http://sadu_secondary2"}]
-        toChange1["clientRoles_mapper"] = [{"spClientRole": "roleInSp11", "eq_sadu_role": "roleSadu11"},{"spClientRole": "roleInSp12", "eq_sadu_role": "roleSadu12"}]
-        toChange1["clientRoles"] = [{"spClientRoleId": "test31", "spClientRoleName": "test31", "spClientRoleDescription": "test31"},{"spClientRoleId": "toChange", "spClientRoleName": "toChange", "spClientRoleDescription": "toChange"}]
+        toChange1["clientRoles_mapper"] = [
+            {
+                "spClientRole": "test31",
+                "eq_sadu_role": "roleSadu11"
+                },
+            {
+                "spClientRole": "toChange", 
+                "eq_sadu_role": "roleSadu12"
+                }
+        ]
+        toChange1["clientRoles"] = [
+            {
+                "spClientRoleId": "test31", 
+                "spClientRoleName": "test31", 
+                "spClientRoleDescription": "test31"
+                },
+            {
+                "spClientRoleId": "toChange", 
+                "spClientRoleName": "toChange", 
+                "spClientRoleDescription": "toChange"
+                }
+            ]
         toChange1["state"] = "present"
         toChange1["force"] = False
 
-        results = system(toChange1)
+        self.system(toChange1)
         toChange1["sadu_principal"] = "http://localhost/test3"
         toChange1["clients"] = [{"clientId": "clientsystemChange31"}]
         NnClient=len(toChange1["clients"])+1
-        results = system(toChange1)
+        results = self.system(toChange1)
         self.assertTrue(results['changed'])
-        for adressesApprovisionnement in results["ansible_facts"]["entreesAdressesApprovisionnement"]["entreesAdressesApprovisionnement"]:
+        for adressesApprovisionnement in results["diff"]["after"]["Mise-a-jour-adresse-appro"]["entreesAdressesApprovisionnement"]:
             if adressesApprovisionnement["principale"]:
                 self.assertEquals(adressesApprovisionnement["adresse"], toChange1["sadu_principal"], "sadu_principal: " + adressesApprovisionnement["adresse"] + " : " + toChange1["sadu_principal"])
         
-        self.assertEquals(len(results["ansible_facts"]["systemes"]["composants"]), 
+        self.assertEquals(len(results["diff"]["after"]["Mise-a-jour-system-sp-config"]["composants"]), 
                           NnClient, 
-                          str(len(results["ansible_facts"]["systemes"]["composants"])) + " : " + str(NnClient))
+                          str(len(results["diff"]["after"]["Mise-a-jour-system-sp-config"]["composants"])) + " : " + str(NnClient))
 
     def test_modify_system_with_pilotRoles(self):
         toChangep = {}
@@ -381,23 +479,23 @@ class Sx5SystemTestCase(ModuleTestCase):
         toChangep["sadu_secondary"] = [{"adresse": "http://sadu_secondary1"},{"adresse": "http://sadu_secondary2"}]
         toChangep["clientRoles_mapper"] = [{"spClientRole": "roleInSp11", "eq_sadu_role": "roleSadu11"},{"spClientRole": "roleInSp12", "eq_sadu_role": "roleSadu12"}]
         toChangep["clientRoles"] = [{"spClientRoleId": "test31", "spClientRoleName": "test31", "spClientRoleDescription": "test31"},{"spClientRoleId": "toChange", "spClientRoleName": "toChange", "spClientRoleDescription": "toChange"}]
-        toChangep["pilotRoles"] = [{"habilitationClientId": "habilitationClient3", "roles": [{"name": "pilot-system1", "description": "Role1", "composite": True, "composites": [{ "id": "clientsystem11", "name": "test1"}], "state": "present"}]}]
+        toChangep["pilotRoles"] = [{"habilitationClientId": "sx5habilitationservices", "roles": [{"name": "pilot-system1", "description": "Role1", "composite": True, "composites": [{ "id": "clientsystem11", "name": "test1"}], "state": "present"}]}]
         toChangep["state"] = "present"
         toChangep["force"] = False
 
-        results = system(toChangep)
+        self.system(toChangep)
         toChangep["sadu_principal"] = "http://localhost/test3"
         toChangep["clients"] = [{"clientId": "clientsystemChange31"}]
         NnClient=len(toChangep["clients"])+1
-        results = system(toChangep)
+        results = self.system(toChangep)
         self.assertTrue(results['changed'])
-        for adressesApprovisionnement in results["ansible_facts"]["entreesAdressesApprovisionnement"]["entreesAdressesApprovisionnement"]:
+        for adressesApprovisionnement in results["diff"]["after"]["Mise-a-jour-adresse-appro"]["entreesAdressesApprovisionnement"]:
             if adressesApprovisionnement["principale"]:
                 self.assertEquals(adressesApprovisionnement["adresse"], toChangep["sadu_principal"], "sadu_principal: " + adressesApprovisionnement["adresse"] + " : " + toChangep["sadu_principal"])
         
-        self.assertEquals(len(results["ansible_facts"]["systemes"]["composants"]), 
+        self.assertEquals(len(results["diff"]["after"]["Mise-a-jour-system-sp-config"]["composants"]), 
                           NnClient, 
-                          str(len(results["ansible_facts"]["systemes"]["composants"])) + " : " + str(NnClient))
+                          str(len(results["diff"]["after"]["Mise-a-jour-system-sp-config"]["composants"])) + " : " + str(NnClient))
 
     def test_modify_system_add_clients(self):
         toChange2 = {}
@@ -415,11 +513,11 @@ class Sx5SystemTestCase(ModuleTestCase):
         toChange2["sadu_secondary"] = [{"adresse": "http://sadu_secondary1"},{"adresse": "http://sadu_secondary2"}]
         toChange2["clientRoles_mapper"] = [{"spClientRole": "roleInSp11", "eq_sadu_role": "roleSadu11"},{"spClientRole": "roleInSp12", "eq_sadu_role": "roleSadu12"}]
         toChange2["clientRoles"] = [{"spClientRoleId": "test32", "spClientRoleName": "test32", "spClientRoleDescription": "test32"},{"spClientRoleId": "toChange", "spClientRoleName": "toChange", "spClientRoleDescription": "toChange"}]
-        toChange2["pilotRoles"] = [{"habilitationClientId": "habilitationClient4", "roles": [{"name": "pilot-system1", "description": "Role1", "composite": True, "composites": [{ "id": "clientsystem11", "name": "test1"}], "state": "present"}]}]
+        toChange2["pilotRoles"] = [{"habilitationClientId": "sx5habilitationservices", "roles": [{"name": "pilot-system1", "description": "Role1", "composite": True, "composites": [{ "id": "clientsystem11", "name": "test1"}], "state": "present"}]}]
         toChange2["state"] = "present"
         toChange2["force"] = False
 
-        results = system(toChange2)
+        self.system(toChange2)
 
         newToChange = {}
         newToChange["spUrl"] = AUTH_URL
@@ -436,13 +534,13 @@ class Sx5SystemTestCase(ModuleTestCase):
         newToChange["sadu_secondary"] = [{"adresse": "http://sadu_secondary1"},{"adresse": "http://sadu_secondary2"}]
         newToChange["clientRoles_mapper"] = [{"spClientRole": "roleInSp11", "eq_sadu_role": "roleSadu11"},{"spClientRole": "roleInSp12", "eq_sadu_role": "roleSadu12"}]
         newToChange["clientRoles"] = [{"spClientRoleId": "test32", "spClientRoleName": "test32", "spClientRoleDescription": "test32"},{"spClientRoleId": "toChange", "spClientRoleName": "toChange", "spClientRoleDescription": "toChange"}]
-        newToChange["pilotRoles"] = [{"habilitationClientId": "habilitationClient4", "roles": [{"name": "pilot-system1", "description": "Role1", "composite": True, "composites": [{ "id": "clientsystem11", "name": "test1"}], "state": "present"}]}]
+        newToChange["pilotRoles"] = [{"habilitationClientId": "sx5habilitationservices", "roles": [{"name": "pilot-system1", "description": "Role1", "composite": True, "composites": [{ "id": "clientsystem11", "name": "test1"}], "state": "present"}]}]
         newToChange["state"] = "present"
         newToChange["force"] = False
 
-        results = system(newToChange)
+        results = self.system(newToChange)
         self.assertTrue(results['changed'])
-        systemClients = results["ansible_facts"]["systemes"]["composants"]
+        systemClients = results["diff"]["after"]["Mise-a-jour-system-sp-config"]["composants"]
         for toChangeClient in toChange2["clients"]:
             clientFound = False
             for systemClient in systemClients:
@@ -459,78 +557,70 @@ class Sx5SystemTestCase(ModuleTestCase):
             self.assertTrue(clientFound, newToChangeClient["clientId"] + " not found")
     
     def test_modify_system_habilitation_clients(self):
-        createHabilitationClient = self.clientsToCreate[18].copy()
-        toCreateClient = {}
-        toCreateClient["auth_keycloak_url"] = "http://localhost:18081/auth"
-        toCreateClient["auth_username"] = "admin"
-        toCreateClient["auth_password"] = "admin"
-        toCreateClient["realm"] = "master"
-        toCreateClient["state"] = "present"
-        toCreateClient["rootUrl"] = "http://test.com:18186"
-        toCreateClient["description"] = "Ceci est un test"
-        toCreateClient["adminUrl"] = "http://test.com:18186/admin"
-        toCreateClient["enabled"] = True
-        toCreateClient["clientAuthenticatorType"] = "client-secret"
-        toCreateClient["redirectUris"] = ["http://test.com:18186/secure","http://test1.com:18186/secure"]
-        toCreateClient["webOrigins"] = ["*"]
-        toCreateClient["bearerOnly"] = False
-        toCreateClient["publicClient"] = False
-        toCreateClient["force"] = False
-        toCreateClient["clientId"] = createHabilitationClient["clientId"]
-        toCreateClient["name"] = createHabilitationClient["name"]
-        toCreateClient["roles"] = createHabilitationClient["roles"]
-        
-        self.module = keycloak_client
-        set_module_args(toCreateClient)
-        with self.assertRaises(AnsibleExitJson) as results:
-            self.module.main()
-
-
         toCreate1 = {}
         toCreate1["spUrl"] = AUTH_URL
         toCreate1["spUsername"] = "admin"
         toCreate1["spPassword"] = "admin"
         toCreate1["spRealm"] = "master"
-        toCreate1["spConfigClient_id"] = "admin-cli" 
-        toCreate1["spConfigClient_secret"] = ""
+        toCreate1['spConfigClient_id'] = self.spConfigClient['clientId']
+        toCreate1['spConfigClient_secret'] = self.spConfigClient['clientSecret']
         toCreate1["spConfigUrl"] = SP_CONFIG_URL
         toCreate1["systemName"] = "testH"
         toCreate1["systemShortName"] = "TH"
         toCreate1["clients"] = [{"clientId": "habilitationClient6"}]
         toCreate1["sadu_principal"] = "http://sadu.dev.inspq.qc.ca"
         toCreate1["sadu_secondary"] = [{"adresse": "http://sadu_secondary1"},{"adresse": "http://sadu_secondary2"}]
-        toCreate1["clientRoles_mapper"] = [{"spClientRole": "roleInSp11", "eq_sadu_role": "roleSadu11"},{"spClientRole": "roleInSp12", "eq_sadu_role": "roleSadu12"}]
-        toCreate1["clientRoles"] = [{"spClientRoleId": "HPilot1", "spClientRoleName": "HPilot1", "spClientRoleDescription": "HPilot1"}]
-        NnClient=len(toCreate1["clientRoles"])+1
-        toCreate1["pilotRoles"] = [{"habilitationClientId": "habilitationClient6", "roles": [{"name": "pilot-system1", "description": "Role1", "composite": True, "composites": [{ "id": "clientsystem11", "name": "test1"}], "state": "present"}]}]
+        toCreate1["clientRoles_mapper"] = [
+            {
+                "spClientRole": "HPilot1",
+                "eq_sadu_role": "roleSadu11"
+                }
+            ]
+        toCreate1["clientRoles"] = [
+            {
+                "spClientRoleId": "HPilot1",
+                "spClientRoleName": "HPilot1",
+                "spClientRoleDescription": "HPilot1"
+                }
+            ]
+        NnClient=len(toCreate1["clientRoles"])
+        toCreate1["pilotRoles"] = [
+            {
+                "habilitationClientId": "sx5habilitationservices", 
+                "roles": [
+                    {
+                        "name": "pilot-system1",
+                        "description": "Role1",
+                        "composite": True,
+                        "composites": [
+                            {
+                                "id": "clientsystem11", 
+                                "name": "test1"}
+                            ],
+                        "state": "present"
+                        }
+                    ]
+                }
+            ]
         toCreate1["state"] = "present"
         toCreate1["force"] = False
-        results = system(toCreate1)
-        toCreate2 = {}
-        toCreate2["spUrl"] = AUTH_URL
-        toCreate2["spUsername"] = "admin"
-        toCreate2["spPassword"] = "admin"
-        toCreate2["spRealm"] = "master"
-        toCreate2["spConfigClient_id"] = "admin-cli" 
-        toCreate2["spConfigClient_secret"] = ""
-        toCreate2["spConfigUrl"] = SP_CONFIG_URL
-        toCreate2["systemName"] = "test3"
-        toCreate2["systemShortName"] = "T3"
-        toCreate2["clients"] = [{"clientId": "clientsystem11"}]
-        toCreate2["sadu_principal"] = "http://sadu.dev.inspq.qc.ca"
-        toCreate2["sadu_secondary"] = [{"adresse": "http://sadu_secondary1"},{"adresse": "http://sadu_secondary2"}]
-        toCreate2["clientRoles_mapper"] = [{"spClientRole": "roleInSp11", "eq_sadu_role": "roleSadu11"},{"spClientRole": "roleInSp12", "eq_sadu_role": "roleSadu12"}]
-        toCreate2["clientRoles"] = [{"spClientRoleId": "test32", "spClientRoleName": "test32", "spClientRoleDescription": "test32"},{"spClientRoleId": "toChange", "spClientRoleName": "toChange", "spClientRoleDescription": "toChange"}]
-        toCreate2["pilotRoles"] = [{"habilitationClientId": "habilitationClient6", "roles": [{"name": "pilot-systemT3", "description": "Role1", "composite": True, "composites": [{ "id": "clientsystem11", "name": "test1"}], "state": "present"}]}]
-        toCreate2["state"] = "present"
-        toCreate2["force"] = False
-        results = system(toCreate2)
-        NnClient=NnClient+1
+        
+        self.system(toCreate1)
+
         headers = loginAndSetHeaders(toCreate1["spUrl"], toCreate1["spRealm"], toCreate1["spUsername"], toCreate1["spPassword"], toCreate1["spConfigClient_id"], toCreate1["spConfigClient_secret"])
         getResponse = requests.get(toCreate1["spConfigUrl"]+"/systemes/"+toCreate1["systemShortName"], headers=headers)
         dataResponse = getResponse.json()
         self.assertEquals(len(dataResponse["composants"][0]["roles"]),NnClient,str(len(dataResponse["composants"][0]["roles"])) + " : " + str(NnClient))
-        results = system(toCreate1)
+
+        newRole = {
+            "spClientRoleId": "HPilot2",
+            "spClientRoleName": "HPilot2",
+            "spClientRoleDescription": "HPilot2"
+            }
+        toCreate1["clientRoles"].append(newRole)
+        NnClient=len(toCreate1["clientRoles"])
+        self.system(toCreate1)
+
         headers = loginAndSetHeaders(toCreate1["spUrl"], toCreate1["spRealm"], toCreate1["spUsername"], toCreate1["spPassword"], toCreate1["spConfigClient_id"], toCreate1["spConfigClient_secret"])
         getResponse = requests.get(toCreate1["spConfigUrl"]+"/systemes/"+toCreate1["systemShortName"], headers=headers)
         dataResponse = getResponse.json()
@@ -553,9 +643,11 @@ class Sx5SystemTestCase(ModuleTestCase):
         toCreate["state"] = "present"
         toCreate["force"] = False
     
-        results = system(toCreate)
+        results = self.system(toCreate)
         self.assertTrue(results['changed'])
-        self.assertEquals(results["ansible_facts"]["systemes"]["nom"], toCreate["systemName"], "systemName: " + results["ansible_facts"]["systemes"]["nom"] + " : " + toCreate["systemName"])
+        self.assertEquals(results["diff"]["after"]["Creation-system-sp-config"]["nom"],
+                          toCreate["systemName"],
+                          "systemName: " + results["diff"]["after"]["Creation-system-sp-config"]["nom"] + " : " + toCreate["systemName"])
 
     def test_system_no_sadu_not_changed(self):
         toDoNotChange = {}
@@ -573,8 +665,8 @@ class Sx5SystemTestCase(ModuleTestCase):
         toDoNotChange["state"] = "present"
         toDoNotChange["force"] = False
 
-        system(toDoNotChange)
-        results = system(toDoNotChange)
+        self.system(toDoNotChange)
+        results = self.system(toDoNotChange)
         self.assertFalse(results['changed'])
 
     def test_modify_system_no_sadu(self):
@@ -593,14 +685,14 @@ class Sx5SystemTestCase(ModuleTestCase):
         toChange["state"] = "present"
         toChange["force"] = False
 
-        results = system(toChange)
+        self.system(toChange)
         toChange["clients"] = [{"clientId": "clientsystemChangeNS31"}]
         NnClient=len(toChange["clients"])+1
-        results = system(toChange)
+        results = self.system(toChange)
         self.assertTrue(results['changed'])
-        self.assertEquals(len(results["ansible_facts"]["systemes"]["composants"]), 
+        self.assertEquals(len(results["diff"]["after"]["Mise-a-jour-system-sp-config"]["composants"]), 
                           NnClient, 
-                          str(len(results["ansible_facts"]["systemes"]["composants"])) + " : " + str(NnClient))
+                          str(len(results["diff"]["after"]["Mise-a-jour-system-sp-config"]["composants"])) + " : " + str(NnClient))
 
     def test_modify_system_no_sadu_add_clients(self):
         toChange = {}
@@ -618,7 +710,7 @@ class Sx5SystemTestCase(ModuleTestCase):
         toChange["state"] = "present"
         toChange["force"] = False
 
-        results = system(toChange)
+        self.system(toChange)
 
         newToChange = {}
         newToChange["spUrl"] = AUTH_URL
@@ -635,9 +727,9 @@ class Sx5SystemTestCase(ModuleTestCase):
         newToChange["state"] = "present"
         newToChange["force"] = False
 
-        results = system(newToChange)
+        results = self.system(newToChange)
         self.assertTrue(results['changed'])
-        systemClients = results["ansible_facts"]["systemes"]["composants"]
+        systemClients = results["diff"]["after"]["Mise-a-jour-system-sp-config"]["composants"]
         for toChangeClient in toChange["clients"]:
             clientFound = False
             for systemClient in systemClients:
@@ -668,26 +760,26 @@ class Sx5SystemTestCase(ModuleTestCase):
         toDelete["sadu_secondary"] = [{"adresse": "http://sadu_secondary1"},{"adresse": "http://sadu_secondary2"}]
         toDelete["clientRoles_mapper"] = [{"spClientRole": "roleInSp11", "eq_sadu_role": "roleSadu11"},{"spClientRole": "roleInSp12", "eq_sadu_role": "roleSadu12"}]
         toDelete["clientRoles"] = [{"spClientRoleId": "test4", "spClientRoleName": "test4", "spClientRoleDescription": "test4"},{"spClientRoleId": "toDelete", "spClientRoleName": "toDelete", "spClientRoleDescription": "toDelete"}]
-        toDelete["pilotRoles"] = [{"habilitationClientId": "habilitationClient5", "roles": [{"name": "pilot-system1", "description": "Role1", "composite": True, "composites": [{ "id": "clientsystem11", "name": "test1"}], "state": "absent"}]}]
+        toDelete["pilotRoles"] = [{"habilitationClientId": "sx5habilitationservices", "roles": [{"name": "pilot-system1", "description": "Role1", "composite": True, "composites": [{ "id": "clientsystem11", "name": "test1"}], "state": "absent"}]}]
         toDelete["state"] = "present"
         toDelete["force"] = False
 
-        system(toDelete)
+        self.system(toDelete)
         toDelete["state"] = "absent"
-        results = system(toDelete)
+        results = self.system(toDelete)
         self.assertTrue(results['changed'])
-        self.assertEqual(results['stdout'], 'deleted', 'system has been deleted')
+        self.assertTrue(results['diff']['after']['Delete-system'] is None, 'system has not been deleted: {}'.format(str(results['diff']['after']['Delete-system'])))
         
     def test_modify_system_clients_for_components(self):
-        toModifySystem = self.systemsToCreate[0].copy()
+        toModifySystem = self.systemsToCreate[1].copy()
         toModifySystem["clients"] = [
                 {
                     "clientId": "clientarecreer"
                 }
             ]
-        results = system(toModifySystem)
+        results = self.system(toModifySystem)
         self.assertTrue(results['changed'])
-        systemClients = results["ansible_facts"]["systemes"]["composants"]
+        systemClients = results["diff"]["after"]["Mise-a-jour-system-sp-config"]["composants"]
         clientFound = False
         for client in systemClients:
             if client["clientId"] == toModifySystem["clients"][0]["clientId"]:
