@@ -21,6 +21,9 @@ docker run -d --rm --name sx5spconfig -p 18182:8080 --link testkc:testkc -e KEYC
 # Pour arrêter et supprimer les conteneurs, lancer la commande docker suivante
 docker stop sx5spconfig testkc testldap
 """
+
+import os
+
 from units.modules.utils import AnsibleExitJson, ModuleTestCase, set_module_args
 from ansible.modules.identity.keycloak import keycloak_user, keycloak_client
 from ansible.modules.identity.sx5 import sx5_habilitation
@@ -31,8 +34,8 @@ from ansible.module_utils.six.moves.urllib.error import HTTPError
 
 KC_URL = "http://localhost"
 SP_URL = KC_URL
-KC_PORT = 18081
-SP_PORT = 18182
+KC_PORT =  int(os.environ['KC_PORT']) if 'KC_PORT' in os.environ else 18081
+SP_PORT =  int(os.environ['SP_PORT']) if 'SP_PORT' in os.environ else 18182
 AUTH_URL = "{url}:{port}".format(url = KC_URL, port = KC_PORT)
 SP_CONFIG_URL = "{url}:{port}/config".format(url = SP_URL, port = SP_PORT)
 
@@ -422,7 +425,7 @@ class Sx5HabilitationTestCase(ModuleTestCase):
             systemToDelete = systemToCreate.copy()
             systemToDelete["state"] = "absent"
             module = sx5_sp_config_system
-            set_module_args(systemToCreate)
+            set_module_args(systemToDelete)
             with self.assertRaises(AnsibleExitJson) as results:
                 module.main()
         self.module = keycloak_user

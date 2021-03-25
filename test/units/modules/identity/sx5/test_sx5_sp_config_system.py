@@ -23,6 +23,7 @@ docker stop sx5spconfig testkc testldap
 """
 
 import requests
+import os
 
 from ansible.modules.identity.sx5 import sx5_sp_config_system
 from ansible.modules.identity.keycloak import keycloak_client
@@ -31,8 +32,8 @@ from units.modules.utils import AnsibleExitJson, ModuleTestCase, set_module_args
 
 KC_URL = "http://localhost"
 SP_URL = KC_URL
-KC_PORT = 18081
-SP_PORT = 18182
+KC_PORT = int(os.environ['KC_PORT']) if 'KC_PORT' in os.environ else 18081
+SP_PORT = int(os.environ['SP_PORT']) if 'SP_PORT' in os.environ else 18182
 AUTH_URL = "{url}:{port}".format(url = KC_URL, port = KC_PORT)
 SP_CONFIG_URL = "{url}:{port}/config".format(url = SP_URL, port = SP_PORT)
 
@@ -104,7 +105,7 @@ class Sx5SystemTestCase(ModuleTestCase):
         }
     ]
     clientTemplate = {
-        "auth_keycloak_url": "http://localhost:18081/auth",
+        "auth_keycloak_url": AUTH_URL + "/auth",
         "auth_username": "admin",
         "auth_password": "admin",
         "realm": "master",
