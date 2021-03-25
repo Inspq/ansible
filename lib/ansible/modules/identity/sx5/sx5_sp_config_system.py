@@ -324,7 +324,7 @@ logger = logging.getLogger('sx5-sp-config-system')
 ROLES = {
     'PILOTE_HABILITATION': {
         'NAME': 'sx5-pilote-sx5habilitation',
-        'DESC': 'Pilote de syst\u00e8me de Gestion des habilitations'
+        'DESC': 'Pilote de système de Gestion des habilitations'
     },
     'SUPERADMIN_HABILITATION': {
         'NAME': 'sx5-habilitation-superadmin',
@@ -334,7 +334,7 @@ ROLES = {
         'NAME': 'sx5-habilitation-utilisateur'
     },
     'SYSTEM_HABILITATION': {
-        'DESC': 'R\u00f4le de pilotage {sysname}'
+        'DESC': 'Rôle de pilotage {sysname}'
     }
 }
 
