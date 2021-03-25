@@ -3,15 +3,18 @@
 """
 # Pour exécuter ce test, les composants Keycloak et sx5_sp_config doivent être fonctionnel.
 # Utiliser les commandes suivantes pour les lancer avec Docker
+export KC_PORT=18081
+export SP_PORT=18182
+export LDAP_PORT=10389
 # Lancer le LDAP (optionnel pour ce test)
 docker pull minkwe/389ds:latest
-docker run -d --rm --name testldap -p 10389:389 minkwe/389ds:latest
+docker run -d --rm --name testldap -p ${LDAP_PORT}:389 minkwe/389ds:latest
 # Lancer un serveur Keycloak
 docker pull jboss/keycloak:latest
-docker run -d --rm --name testkc -p 18081:8080 --link testldap:testldap -e KEYCLOAK_USER=admin -e KEYCLOAK_PASSWORD=admin -e KEYCLOAK_CONFIG=standalone-test.xml jboss/keycloak:latest
+docker run -d --rm --name testkc -p ${KC_PORT}:8080 --link testldap:testldap -e KEYCLOAK_USER=admin -e KEYCLOAK_PASSWORD=admin -e KEYCLOAK_CONFIG=standalone-test.xml jboss/keycloak:latest
 # Lancer sx5_sp_config
 docker pull nexus3.inspq.qc.ca:5000/inspq/sx5-sp-config:latest
-docker run -d --rm --name sx5spconfig -p 18182:8080 --link testkc:testkc -e KEYCLOAK_URL=http://testkc:8080 -e KEYCLOAK_ENABLED=false nexus3.inspq.qc.ca:5000/inspq/sx5-sp-config:latest
+docker run -d --rm --name sx5spconfig -p ${SP_PORT}:8080 --link testkc:testkc -e KEYCLOAK_URL=http://testkc:8080 -e KEYCLOAK_ENABLED=false nexus3.inspq.qc.ca:5000/inspq/sx5-sp-config:latest
 ### sx5_sp_config peut aussi être lancé en mode debug et journaliser dans Graylog avec les options suivantes
 -e DEBUG_PORT=*:8001
 -e GRAYLOG_HOST_BASE=sx5spconfig
