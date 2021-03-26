@@ -1651,6 +1651,127 @@ releases:
     - v2.9.15rc1_summary.yaml
     - zfs-root-snapshot.yml
     release_date: '2020-10-26'
+  2.9.16:
+    codename: Immigrant Song
+    fragments:
+    - v2.9.16_summary.yaml
+    release_date: '2020-12-14'
+  2.9.16rc1:
+    codename: Immigrant Song
+    fragments:
+    - 161-ansible-collection-azure-inventory-fixes.yaml
+    - 211-fix-error-handling-during-tagging-failure.yaml
+    - 32143-pause-background-hangs.yml
+    - 66701-action-plugin-load-network-modules.yaml
+    - 71496-iptables-reorder-comment-position.yml
+    - 71528-systemd-capbpf-workaround.yml
+    - 71528-systemd-improve-unit-searching.yml
+    - 71528-systemd-list-unit-files.yml
+    - 71824-action-fqcns.yml
+    - 72056-support-list-vms-with-status-paused.yaml
+    - 72316-dnf-filtering.yml
+    - 72322-wait-for-handle-errors.yml
+    - 72516-fix-aix-network-facts.yml
+    - 72569-lvol_percentage_fix.yml
+    - 72623-ansible-test-unicode-paths.yml
+    - ansible-doc-has_action.yml
+    - ansible-test-acme-test-plugin.yml
+    - ansible-test-azp-change-detection.yml
+    - ansible-test-centos6-eol.yml
+    - ansible-test-collection-classification.yml
+    - ansible-test-remote-tar-format.yml
+    - backport-ansible.netcommon-135.yaml
+    - cffi-constraint.yml
+    - collections_cb_fix.yml
+    - ensure_local_user_correctness.yml
+    - escalate_priv_before_terminal.yaml
+    - galaxy-servers.yml
+    - play_context_remove_redundant_pwd.yml
+    - ps-sanity-requirements.yml
+    - py26-multiprocess-queue-bug.yml
+    - rhel-7.9.yml
+    - set_mode_if_different-symlink-sticky-dir.yml
+    - v2.9.16rc1_summary.yaml
+    release_date: '2020-12-07'
+  2.9.17:
+    codename: Immigrant Song
+    fragments:
+    - v2.9.17_summary.yaml
+    release_date: '2021-01-18'
+  2.9.17rc1:
+    codename: Immigrant Song
+    fragments:
+    - 65722-unsafe-tuples.yml
+    - 65812-paramiko-attribute-error.yml
+    - 70244-selinux-special-fs.yml
+    - 70690-async-interpreter.yml
+    - 72958-fix-freeform-actions.yml
+    - 72979-fix-inventory-merge-hash-replace.yaml
+    - 72992-user-account-lock-always-changes.yml
+    - ansible-test-coverage-combine-export.yml
+    - ansible-test-venv-system-site-packages.yml
+    - ansible-test-venv-virtualenv-fallback.yml
+    - community.docker-53-docker_image-tag-push.yml
+    - community.docker-55-docker_image-loading.yml
+    - fix-bigiq-device-info.yaml
+    - k8s-support-kubernetes-v12.yml
+    - systemd-preserve-full-unit-name.yml
+    - v2.9.17rc1_summary.yaml
+    release_date: '2021-01-11'
+  2.9.18:
+    codename: Immigrant Song
+    fragments:
+    - ansible-test-cryptography-fix.yml
+    - v2.9.18_summary.yaml
+    release_date: '2021-02-17'
+  2.9.18rc1:
+    codename: Immigrant Song
+    fragments:
+    - 16456-correct-YAML-error-message-when-file-load-failed.yml
+    - 42-postgresql_set_add_message_when_parameter_not_found.yml
+    - 43-postgresql_modules_fix_version_parsing.yml
+    - 46-postgresql_query_fix_decimal_handling.yml
+    - 51-postgresql_query_fix_datetime_timedelta_type_handling.yml
+    - 58466-FIX_win_find-Bug-Get-FileStat_fails_on_large_files.yml
+    - 72615-jinja-import-context-fix.yml
+    - 73167-bhyve-facts.yml
+    - 87-mysql_user_update_valid_privs_frozen_set.yml
+    - ansible-test-pip-bootstrap-s3.yml
+    - ansible-test-pip-bootstrap.yml
+    - ansible-test-pylint-python-3.8.yml
+    - cve_bitbucket_pipeline_variable.yml
+    - inventory-cache-file-missing-warning.yaml
+    - new-nolog-entries.yml
+    - no_log-fallback.yml
+    - pause-do-not-warn-background-with-seconds.yml
+    - psrp-json-loads-bytes.yml
+    - snmp_facts.yml
+    - v2.9.18rc1_summary.yaml
+    release_date: '2021-02-08'
+  2.9.19:
+    codename: Immigrant Song
+    fragments:
+    - v2.9.19_summary.yaml
+    release_date: '2021-03-15'
+  2.9.19rc1:
+    codename: Immigrant Song
+    fragments:
+    - 66322-moved_line_causing_terraform_output_suppression.yml
+    - 72299-fix-check-compatibility.yaml
+    - 73364-default-callback-host-pinned-not-lockstep.yml
+    - 73619-hostname-almalinux-support.yml
+    - 73669-module_defaults-iam_saml_federation.yml
+    - 73670-module_defaults-ec2_vpc_endpoint_service_info.yml
+    - 73709-normalize-configparser.yml
+    - ansible-test-podman-json-format.yml
+    - ansible_test_yamllint_avoid_attribute_exception.yaml
+    - community.cryto-180-openssl-csr-basic-constraint.yml
+    - community.docker-73-docker_image-fix-old-docker-py-version.yml
+    - community.docker-87-docker_image-load-image-ids.yml
+    - community.docker-88-docker_container-healthcheck.yml
+    - support_almalinux.yml
+    - v2.9.19rc1_summary.yaml
+    release_date: '2021-03-08'
   2.9.2:
     codename: Immigrant Song
     fragments:

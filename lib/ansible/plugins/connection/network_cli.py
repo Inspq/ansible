@@ -418,6 +418,8 @@ class Connection(NetworkConnectionBase):
                 self.queue_message('vvvv', 'deauthorizing connection')
 
         self._play_context = play_context
+        if self._paramiko_conn is not None:
+            self._paramiko_conn._play_context = play_context
 
         if hasattr(self, 'reset_history'):
             self.reset_history()
@@ -478,13 +480,13 @@ class Connection(NetworkConnectionBase):
 
             self.receive(prompts=terminal_initial_prompt, answer=terminal_initial_answer, newline=newline, check_all=check_all)
 
-            self.queue_message('vvvv', 'firing event: on_open_shell()')
-            self._terminal.on_open_shell()
-
             if self._play_context.become:
                 self.queue_message('vvvv', 'firing event: on_become')
                 auth_pass = self._play_context.become_pass
                 self._terminal.on_become(passwd=auth_pass)
+
+            self.queue_message('vvvv', 'firing event: on_open_shell()')
+            self._terminal.on_open_shell()
 
             self.queue_message('vvvv', 'ssh connection has completed successfully')
 
