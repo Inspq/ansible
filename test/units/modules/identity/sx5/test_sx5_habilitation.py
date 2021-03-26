@@ -35,7 +35,7 @@ from ansible.module_utils.urls import open_url
 from ansible.modules.identity.sx5 import sx5_sp_config_system
 from ansible.module_utils.six.moves.urllib.error import HTTPError
 
-KC_URL = "http://localhost"
+KC_URL = os.environ['KC_URL'] if 'KC_URL' in os.environ else "http://localhost"
 SP_URL = KC_URL
 KC_PORT =  int(os.environ['KC_PORT']) if 'KC_PORT' in os.environ else 18081
 SP_PORT =  int(os.environ['SP_PORT']) if 'SP_PORT' in os.environ else 18182

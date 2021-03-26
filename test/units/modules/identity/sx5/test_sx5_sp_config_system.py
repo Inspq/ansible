@@ -33,7 +33,7 @@ from ansible.modules.identity.keycloak import keycloak_client
 from ansible.module_utils.sx5_sp_config_system_utils import loginAndSetHeaders
 from units.modules.utils import AnsibleExitJson, ModuleTestCase, set_module_args
 
-KC_URL = "http://localhost"
+KC_URL = os.environ['KC_URL'] if 'KC_URL' in os.environ else "http://localhost"
 SP_URL = KC_URL
 KC_PORT = int(os.environ['KC_PORT']) if 'KC_PORT' in os.environ else 18081
 SP_PORT = int(os.environ['SP_PORT']) if 'SP_PORT' in os.environ else 18182
