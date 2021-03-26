@@ -17,7 +17,7 @@
       hostname: "{{ sx5spconfig_container_name }}"
       image: "{{ sx5spconfig_docker_image }}:{{ sx5spconfig_image_version }}"
       state: started
-      restart_policy: unless-stopped
+      auto_remove: True
       ports:
       - "{{ sx5spconfig_external_port }}:{{ sx5spconfig_internal_port }}"
       env:

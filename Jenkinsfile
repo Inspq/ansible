@@ -214,6 +214,10 @@ pipeline {
         
     }
     post {
+    	always {
+    	    sh "docker stop sx5spconfig testkc testldap || echo 'Container already stopped'"
+    	}
+
         success {
             script {
                 if (currentBuild.getPreviousBuild() != null && currentBuild.getPreviousBuild().getResult().toString() != "SUCCESS") {
