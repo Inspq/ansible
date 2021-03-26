@@ -122,7 +122,7 @@ options:
         description:
             - Duplicate Emails Allowed.
         type: bool
-        required: false
+        default: false
     editUsernameAllowed:
         description:
             - Edit Username Allowed.
@@ -362,6 +362,7 @@ options:
         description:
             - Revoke Refresh Token.
         type: bool
+        default: False
     smtpServer:
         description:
         - SMTP Server.
