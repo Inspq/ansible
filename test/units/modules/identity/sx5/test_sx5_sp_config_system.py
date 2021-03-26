@@ -108,7 +108,7 @@ class Sx5SystemTestCase(ModuleTestCase):
         }
     ]
     clientTemplate = {
-        "auth_keycloak_url": AUTH_URL + "/auth",
+        "auth_keycloak_url": "{url}/auth".format(url=AUTH_URL),
         "auth_username": "admin",
         "auth_password": "admin",
         "realm": "master",
