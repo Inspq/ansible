@@ -214,7 +214,7 @@ class TaskExecutor:
         if self._loader.get_basedir() not in self._job_vars['ansible_search_path']:
             self._job_vars['ansible_search_path'].append(self._loader.get_basedir())
 
-        templar = Templar(loader=self._loader, shared_loader_obj=self._shared_loader_obj, variables=self._job_vars)
+        templar = Templar(loader=self._loader, variables=self._job_vars)
         items = None
         loop_cache = self._job_vars.get('_ansible_loop_cache')
         if loop_cache is not None:
@@ -277,7 +277,7 @@ class TaskExecutor:
         label = None
         loop_pause = 0
         extended = False
-        templar = Templar(loader=self._loader, shared_loader_obj=self._shared_loader_obj, variables=self._job_vars)
+        templar = Templar(loader=self._loader, variables=self._job_vars)
 
         # FIXME: move this to the object itself to allow post_validate to take care of templating (loop_control.post_validate)
         if self._task.loop_control:
@@ -382,12 +382,21 @@ class TaskExecutor:
                     'msg': 'Failed to template loop_control.label: %s' % to_text(e)
                 })
 
-            self._final_q.send_task_result(
+            tr = TaskResult(
                 self._host.name,
                 self._task._uuid,
                 res,
                 task_fields=task_fields,
             )
+            if tr.is_failed() or tr.is_unreachable():
+                self._final_q.send_callback('v2_runner_item_on_failed', tr)
+            elif tr.is_skipped():
+                self._final_q.send_callback('v2_runner_item_on_skipped', tr)
+            else:
+                if getattr(self._task, 'diff', False):
+                    self._final_q.send_callback('v2_on_file_diff', tr)
+                self._final_q.send_callback('v2_runner_item_on_ok', tr)
+
             results.append(res)
             del task_vars[loop_var]
 
@@ -419,7 +428,7 @@ class TaskExecutor:
         if variables is None:
             variables = self._job_vars
 
-        templar = Templar(loader=self._loader, shared_loader_obj=self._shared_loader_obj, variables=variables)
+        templar = Templar(loader=self._loader, variables=variables)
 
         context_validation_error = None
         try:
@@ -673,7 +682,15 @@ class TaskExecutor:
                         result['_ansible_retry'] = True
                         result['retries'] = retries
                         display.debug('Retrying task, attempt %d of %d' % (attempt, retries))
-                        self._final_q.send_task_result(self._host.name, self._task._uuid, result, task_fields=self._task.dump_attrs())
+                        self._final_q.send_callback(
+                            'v2_runner_retry',
+                            TaskResult(
+                                self._host.name,
+                                self._task._uuid,
+                                result,
+                                task_fields=self._task.dump_attrs()
+                            )
+                        )
                         time.sleep(delay)
                         self._handler = self._get_action_handler(connection=self._connection, templar=templar)
         else:
@@ -782,8 +799,8 @@ class TaskExecutor:
                 self._final_q.send_callback(
                     'v2_runner_on_async_poll',
                     TaskResult(
-                        self._host,
-                        async_task,
+                        self._host.name,
+                        async_task,  # We send the full task here, because the controller knows nothing about it, the TE created it
                         async_result,
                         task_fields=self._task.dump_attrs(),
                     ),
@@ -795,6 +812,28 @@ class TaskExecutor:
             else:
                 return dict(failed=True, msg="async task produced unparseable results", async_result=async_result)
         else:
+            # If the async task finished, automatically cleanup the temporary
+            # status file left behind.
+            cleanup_task = Task().load(
+                {
+                    'async_status': {
+                        'jid': async_jid,
+                        'mode': 'cleanup',
+                    },
+                    'environment': self._task.environment,
+                }
+            )
+            cleanup_handler = self._shared_loader_obj.action_loader.get(
+                'ansible.legacy.async_status',
+                task=cleanup_task,
+                connection=self._connection,
+                play_context=self._play_context,
+                loader=self._loader,
+                templar=templar,
+                shared_loader_obj=self._shared_loader_obj,
+            )
+            cleanup_handler.run(task_vars=task_vars)
+            cleanup_handler.cleanup(force=True)
             async_handler.cleanup(force=True)
             return async_result
 
@@ -1020,7 +1059,7 @@ def start_connection(play_context, variables, task_uuid):
     Starts the persistent connection
     '''
     candidate_paths = [C.ANSIBLE_CONNECTION_PATH or os.path.dirname(sys.argv[0])]
-    candidate_paths.extend(os.environ['PATH'].split(os.pathsep))
+    candidate_paths.extend(os.environ.get('PATH', '').split(os.pathsep))
     for dirname in candidate_paths:
         ansible_connection = os.path.join(dirname, 'ansible-connection')
         if os.path.isfile(ansible_connection):

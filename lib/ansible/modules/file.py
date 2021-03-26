@@ -36,9 +36,9 @@ options:
       not exist as the state did not change.
     - If C(directory), all intermediate subdirectories will be created if they
       do not exist. Since Ansible 1.7 they will be created with the supplied permissions.
-    - If C(file), without any other options this works mostly as a 'stat' and will return the current state of C(path).
-      Even with other options (i.e C(mode)), the file will be modified but will NOT be created if it does not exist;
-      see the C(touch) value or the M(ansible.builtin.copy) or M(ansible.builtin.template) module if you want that behavior.
+    - If C(file), with no other options, returns the current state of C(path).
+    - If C(file), even with other options (such as C(mode)), the file will be modified if it exists but will NOT be created if it does not exist.
+      Set to C(touch) or use the M(ansible.builtin.copy) or M(ansible.builtin.template) module if you want to create the file if it does not exist.
     - If C(hard), the hard link will be created or changed.
     - If C(link), the symbolic link will be created or changed.
     - If C(touch) (new in 1.4), an empty file will be created if the C(path) does not
@@ -111,6 +111,8 @@ seealso:
 - module: ansible.builtin.stat
 - module: ansible.builtin.template
 - module: ansible.windows.win_file
+notes:
+- Supports C(check_mode).
 author:
 - Ansible Core Team
 - Michael DeHaan
@@ -118,21 +120,21 @@ author:
 
 EXAMPLES = r'''
 - name: Change file ownership, group and permissions
-  file:
+  ansible.builtin.file:
     path: /etc/foo.conf
     owner: foo
     group: foo
     mode: '0644'
 
 - name: Give insecure permissions to an existing file
-  file:
+  ansible.builtin.file:
     path: /work
     owner: root
     group: root
     mode: '1777'
 
 - name: Create a symbolic link
-  file:
+  ansible.builtin.file:
     src: /file/to/link/to
     dest: /path/to/symlink
     owner: foo
@@ -140,7 +142,7 @@ EXAMPLES = r'''
     state: link
 
 - name: Create two hard links
-  file:
+  ansible.builtin.file:
     src: '/tmp/{{ item.src }}'
     dest: '{{ item.dest }}'
     state: hard
@@ -149,19 +151,19 @@ EXAMPLES = r'''
     - { src: z, dest: k }
 
 - name: Touch a file, using symbolic modes to set the permissions (equivalent to 0644)
-  file:
+  ansible.builtin.file:
     path: /etc/foo.conf
     state: touch
     mode: u=rw,g=r,o=r
 
 - name: Touch the same file, but add/remove some permissions
-  file:
+  ansible.builtin.file:
     path: /etc/foo.conf
     state: touch
     mode: u+rw,g-wx,o-rwx
 
-- name: Touch again the same file, but dont change times this makes the task idempotent
-  file:
+- name: Touch again the same file, but do not change times this makes the task idempotent
+  ansible.builtin.file:
     path: /etc/foo.conf
     state: touch
     mode: u+rw,g-wx,o-rwx
@@ -169,26 +171,26 @@ EXAMPLES = r'''
     access_time: preserve
 
 - name: Create a directory if it does not exist
-  file:
+  ansible.builtin.file:
     path: /etc/some_directory
     state: directory
     mode: '0755'
 
 - name: Update modification and access time of given file
-  file:
+  ansible.builtin.file:
     path: /etc/some_file
     state: file
     modification_time: now
     access_time: now
 
 - name: Set access time based on seconds from epoch value
-  file:
+  ansible.builtin.file:
     path: /etc/another_file
     state: file
     access_time: '{{ "%Y%m%d%H%M.%S" | strftime(stat_var.stat.atime) }}'
 
 - name: Recursively change ownership of a directory
-  file:
+  ansible.builtin.file:
     path: /etc/foo
     state: directory
     recurse: yes
@@ -196,24 +198,24 @@ EXAMPLES = r'''
     group: foo
 
 - name: Remove file (delete file)
-  file:
+  ansible.builtin.file:
     path: /etc/foo.txt
     state: absent
 
 - name: Recursively remove directory
-  file:
+  ansible.builtin.file:
     path: /etc/foo
     state: absent
 
 '''
 RETURN = r'''
 dest:
-    description: Destination file/path, equal to the value passed to I(path)
+    description: Destination file/path, equal to the value passed to I(path).
     returned: state=touch, state=hard, state=link
     type: str
     sample: /path/to/file.txt
 path:
-    description: Destination file/path, equal to the value passed to I(path)
+    description: Destination file/path, equal to the value passed to I(path).
     returned: state=absent, state=directory, state=file
     type: str
     sample: /path/to/file.txt
@@ -683,7 +685,7 @@ def ensure_symlink(path, src, follow, force, timestamps):
     if src is None:
         if follow:
             # use the current target of the link as the source
-            src = to_native(os.path.realpath(b_path), errors='strict')
+            src = to_native(os.readlink(b_path), errors='strict')
             b_src = to_bytes(src, errors='surrogate_or_strict')
 
     if not os.path.islink(b_path) and os.path.isdir(b_path):

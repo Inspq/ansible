@@ -41,6 +41,7 @@ import yaml
 from ansible import __version__ as ansible_version
 from ansible.executor.module_common import REPLACER_WINDOWS
 from ansible.module_utils.common._collections_compat import Mapping
+from ansible.module_utils.common.parameters import DEFAULT_TYPE_VALIDATORS
 from ansible.plugins.loader import fragment_loader
 from ansible.utils.collection_loader._collection_finder import _AnsibleCollectionFinder
 from ansible.utils.plugin_docs import REJECTLIST, add_collection_to_versions_and_dates, add_fragments, get_docstring
@@ -68,6 +69,9 @@ REJECTLIST_DIRS = frozenset(('.git', 'test', '.github', '.idea'))
 INDENT_REGEX = re.compile(r'([\t]*)')
 TYPE_REGEX = re.compile(r'.*(if|or)(\s+[^"\']*|\s+)(?<!_)(?<!str\()type\([^)].*')
 SYS_EXIT_REGEX = re.compile(r'[^#]*sys.exit\s*\(.*')
+NO_LOG_REGEX = re.compile(r'(?:pass(?!ive)|secret|token|key)', re.I)
+
+
 REJECTLIST_IMPORTS = {
     'requests': {
         'new_only': True,
@@ -90,6 +94,25 @@ OS_CALL_REGEX = re.compile(r'os\.call.*')
 
 
 LOOSE_ANSIBLE_VERSION = LooseVersion('.'.join(ansible_version.split('.')[:3]))
+
+
+def is_potential_secret_option(option_name):
+    if not NO_LOG_REGEX.search(option_name):
+        return False
+    # If this is a count, type, algorithm, timeout, filename, or name, it is probably not a secret
+    if option_name.endswith((
+            '_count', '_type', '_alg', '_algorithm', '_timeout', '_name', '_comment',
+            '_bits', '_id', '_identifier', '_period', '_file', '_filename',
+    )):
+        return False
+    # 'key' also matches 'publickey', which is generally not secret
+    if any(part in option_name for part in (
+            'publickey', 'public_key', 'keyusage', 'key_usage', 'keyserver', 'key_server',
+            'keysize', 'key_size', 'keyservice', 'key_service', 'pub_key', 'pubkey',
+            'keyboard', 'secretary',
+    )):
+        return False
+    return True
 
 
 def compare_dates(d1, d2):
@@ -494,7 +517,7 @@ class ModuleValidator(Validator):
                         column=(os_call_match.span()[0] + 1)
                     )
 
-    def _find_blacklist_imports(self):
+    def _find_rejectlist_imports(self):
         for child in self.ast.body:
             names = []
             if isinstance(child, ast.Import):
@@ -508,8 +531,8 @@ class ModuleValidator(Validator):
                         names.extend(grandchild.names)
             for name in names:
                 # TODO: Add line/col
-                for blacklist_import, options in REJECTLIST_IMPORTS.items():
-                    if re.search(blacklist_import, name.name):
+                for rejectlist_import, options in REJECTLIST_IMPORTS.items():
+                    if re.search(rejectlist_import, name.name):
                         new_only = options['new_only']
                         if self._is_new_module() and new_only:
                             self.reporter.error(
@@ -665,6 +688,8 @@ class ModuleValidator(Validator):
                         found_try_except_import = True
                     if isinstance(grandchild, ast.Assign):
                         for target in grandchild.targets:
+                            if not isinstance(target, ast.Name):
+                                continue
                             if target.id.lower().startswith('has_'):
                                 found_has = True
             if found_try_except_import and not found_has:
@@ -1106,7 +1131,7 @@ class ModuleValidator(Validator):
                 self.reporter.error(
                     path=self.object_path,
                     code='deprecation-mismatch',
-                    msg='Module deprecation/removed must agree in documentaiton, by prepending filename with'
+                    msg='Module deprecation/removed must agree in documentation, by prepending filename with'
                         ' "_", and setting DOCUMENTATION.deprecated for deprecation or by removing all'
                         ' documentation for removed'
                 )
@@ -1362,7 +1387,7 @@ class ModuleValidator(Validator):
                 if callable(_type):
                     _type_checker = _type
                 else:
-                    _type_checker = module._CHECK_ARGUMENT_TYPES_DISPATCHER.get(_type)
+                    _type_checker = DEFAULT_TYPE_VALIDATORS.get(_type)
                 try:
                     with CaptureStd():
                         dummy = _type_checker(value)
@@ -1477,6 +1502,22 @@ class ModuleValidator(Validator):
                             msg=msg,
                         )
                         continue
+
+            # Could this a place where secrets are leaked?
+            # If it is type: path we know it's not a secret key as it's a file path.
+            # If it is type: bool it is more likely a flag indicating that something is secret, than an actual secret.
+            if all((
+                    data.get('no_log') is None, is_potential_secret_option(arg),
+                    data.get('type') not in ("path", "bool"), data.get('choices') is None,
+            )):
+                msg = "Argument '%s' in argument_spec could be a secret, though doesn't have `no_log` set" % arg
+                if context:
+                    msg += " found in %s" % " -> ".join(context)
+                self.reporter.error(
+                    path=self.object_path,
+                    code='no-log-needed',
+                    msg=msg,
+                )
 
             if not isinstance(data, dict):
                 msg = "Argument '%s' in argument_spec" % arg
@@ -1691,7 +1732,7 @@ class ModuleValidator(Validator):
             if callable(_type):
                 _type_checker = _type
             else:
-                _type_checker = module._CHECK_ARGUMENT_TYPES_DISPATCHER.get(_type)
+                _type_checker = DEFAULT_TYPE_VALIDATORS.get(_type)
 
             _elements = data.get('elements')
             if (_type == 'list') and not _elements:
@@ -1706,7 +1747,7 @@ class ModuleValidator(Validator):
                 )
             if _elements:
                 if not callable(_elements):
-                    module._CHECK_ARGUMENT_TYPES_DISPATCHER.get(_elements)
+                    DEFAULT_TYPE_VALIDATORS.get(_elements)
                 if _type != 'list':
                     msg = "Argument '%s' in argument_spec" % arg
                     if context:
@@ -1734,8 +1775,6 @@ class ModuleValidator(Validator):
                         msg=msg
                     )
                     continue
-            elif data.get('default') is None and _type == 'bool' and 'options' not in data:
-                arg_default = False
 
             doc_options_args = []
             for alias in sorted(set([arg] + list(aliases))):
@@ -1765,8 +1804,6 @@ class ModuleValidator(Validator):
                 if 'default' in doc_options_arg and not is_empty(doc_options_arg['default']):
                     with CaptureStd():
                         doc_default = _type_checker(doc_options_arg['default'])
-                elif doc_options_arg.get('default') is None and _type == 'bool' and 'suboptions' not in doc_options_arg:
-                    doc_default = False
             except (Exception, SystemExit):
                 msg = "Argument '%s' in documentation" % arg
                 if context:
@@ -2096,7 +2133,7 @@ class ModuleValidator(Validator):
         return existing_doc
 
     @staticmethod
-    def is_blacklisted(path):
+    def is_on_rejectlist(path):
         base_name = os.path.basename(path)
         file_name = os.path.splitext(base_name)[0]
 
@@ -2189,7 +2226,7 @@ class ModuleValidator(Validator):
         if self._python_module() and not self._just_docs() and not end_of_deprecation_should_be_removed_only:
             self._validate_ansible_module_call(docs)
             self._check_for_sys_exit()
-            self._find_blacklist_imports()
+            self._find_rejectlist_imports()
             main = self._find_main_call()
             self._find_module_utils(main)
             self._find_has_import()
@@ -2332,7 +2369,7 @@ def run():
             path = module
             if args.exclude and args.exclude.search(path):
                 continue
-            if ModuleValidator.is_blacklisted(path):
+            if ModuleValidator.is_on_rejectlist(path):
                 continue
             with ModuleValidator(path, collection=args.collection, collection_version=args.collection_version,
                                  analyze_arg_spec=args.arg_spec, base_branch=args.base_branch,
@@ -2356,7 +2393,7 @@ def run():
                 path = os.path.join(root, filename)
                 if args.exclude and args.exclude.search(path):
                     continue
-                if ModuleValidator.is_blacklisted(path):
+                if ModuleValidator.is_on_rejectlist(path):
                     continue
                 with ModuleValidator(path, collection=args.collection, collection_version=args.collection_version,
                                      analyze_arg_spec=args.arg_spec, base_branch=args.base_branch,

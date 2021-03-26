@@ -8,10 +8,10 @@ By default Ansible runs tasks synchronously, holding the connection to the remot
 .. contents::
    :local:
 
-Asynchronous ad-hoc tasks
+Asynchronous ad hoc tasks
 -------------------------
 
-You can execute long-running operations in the background with :ref:`ad-hoc tasks <intro_adhoc>`. For example, to execute ``long_running_operation`` asynchronously in the background, with a timeout (``-B``) of 3600 seconds, and without polling (``-P``)::
+You can execute long-running operations in the background with :ref:`ad hoc tasks <intro_adhoc>`. For example, to execute ``long_running_operation`` asynchronously in the background, with a timeout (``-B``) of 3600 seconds, and without polling (``-P``)::
 
     $ ansible all -B 3600 -P 0 -a "/usr/bin/long_running_operation --do-stuff"
 
@@ -62,6 +62,10 @@ To avoid timeouts on a task, specify its maximum runtime and how frequently you 
   task when run in check mode. See :ref:`check_mode_dry` on how to
   skip a task in check mode.
 
+.. note::
+   When an async task completes with polling enabled, the temporary async job cache
+   file (by default in ~/.ansible_async/) is automatically removed.
+
 Run tasks concurrently: poll = 0
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -86,6 +90,11 @@ To run a playbook task asynchronously::
 
 .. note::
    Using a higher value for ``--forks`` will result in kicking off asynchronous tasks even faster. This also increases the efficiency of polling.
+
+.. note::
+   When running with ``poll: 0``, Ansible will not automatically cleanup the async job cache file.
+   You will need to manually clean this up with the :ref:`async_status <async_status_module>` module
+   with ``mode: cleanup``.
 
 If you need a synchronization point with an async task, you can register it to obtain its job ID and use the :ref:`async_status <async_status_module>` module to observe it in a later task. For example::
 

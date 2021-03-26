@@ -33,6 +33,7 @@ options:
   name:
     description:
       - A package name or package specifier with version, like C(name-1.0).
+      - Comparison operators for package version are valid here C(>), C(<), C(>=), C(<=). Example - C(name>=1.0)
       - If a previous version is specified, the task also needs to turn C(allow_downgrade) on.
         See the C(allow_downgrade) documentation for caveats with downgrading packages.
       - When using state=latest, this can be C('*') which means run C(yum -y update).
@@ -277,6 +278,11 @@ EXAMPLES = '''
     name: httpd
     state: latest
 
+- name: Install Apache >= 2.4
+  yum:
+    name: httpd>=2.4
+    state: present
+
 - name: Install a list of packages (suitable replacement for 2.11 loop deprecation warning)
   yum:
     name:
@@ -364,6 +370,7 @@ EXAMPLES = '''
 '''
 
 from ansible.module_utils.basic import AnsibleModule
+from ansible.module_utils.common.respawn import has_respawned, respawn_module
 from ansible.module_utils._text import to_native, to_text
 from ansible.module_utils.urls import fetch_url
 from ansible.module_utils.yumdnf import YumDnf, yumdnf_argument_spec
@@ -371,6 +378,7 @@ from ansible.module_utils.yumdnf import YumDnf, yumdnf_argument_spec
 import errno
 import os
 import re
+import sys
 import tempfile
 
 try:
@@ -1591,6 +1599,10 @@ class YumModule(YumDnf):
         """
         actually execute the module code backend
         """
+
+        if (not HAS_RPM_PYTHON or not HAS_YUM_PYTHON) and sys.executable != '/usr/bin/python' and not has_respawned():
+            respawn_module('/usr/bin/python')
+            # end of the line for this process; we'll exit here once the respawned module has completed
 
         error_msgs = []
         if not HAS_RPM_PYTHON:

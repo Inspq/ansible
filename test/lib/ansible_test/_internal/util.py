@@ -5,6 +5,7 @@ __metaclass__ = type
 import contextlib
 import errno
 import fcntl
+import hashlib
 import inspect
 import os
 import pkgutil
@@ -53,6 +54,7 @@ from .encoding import (
 
 from .io import (
     open_binary_file,
+    read_binary_file,
     read_text_file,
 )
 
@@ -386,6 +388,14 @@ def common_environment():
         'CFLAGS',
     )
 
+    # FreeBSD Compatibility
+    # This is required to include libyaml support in PyYAML.
+    # The header /usr/local/include/yaml.h isn't in the default include path for the compiler.
+    # It is included here so that tests can take advantage of it, rather than only ansible-test during managed pip installs.
+    # If CFLAGS has been set in the environment that value will take precedence due to being an optional var when calling pass_vars.
+    if os.path.exists('/etc/freebsd-update.conf'):
+        env.update(CFLAGS='-I/usr/local/include/')
+
     env.update(pass_vars(required=required, optional=optional))
 
     return env
@@ -615,7 +625,7 @@ class Display:
         """
         :type message: str
         :type color: str | None
-        :type fd: file
+        :type fd: t.IO[str]
         :type truncate: bool
         """
         if self.redact and self.sensitive:
@@ -771,12 +781,12 @@ def paths_to_dirs(paths):  # type: (t.List[str]) -> t.List[str]
     return sorted(dir_names)
 
 
-def str_to_version(version):  # type: (str) -> t.Tuple[int]
+def str_to_version(version):  # type: (str) -> t.Tuple[int, ...]
     """Return a version tuple from a version string."""
     return tuple(int(n) for n in version.split('.'))
 
 
-def version_to_str(version):  # type: (t.Tuple[int]) -> str
+def version_to_str(version):  # type: (t.Tuple[int, ...]) -> str
     """Return a version string from a version tuple."""
     return '.'.join(str(n) for n in version)
 
@@ -815,13 +825,11 @@ def load_module(path, name):  # type: (str, str) -> None
         return
 
     if sys.version_info >= (3, 4):
-        # noinspection PyUnresolvedReferences
         import importlib.util
 
-        # noinspection PyUnresolvedReferences
         spec = importlib.util.spec_from_file_location(name, path)
-        # noinspection PyUnresolvedReferences
         module = importlib.util.module_from_spec(spec)
+        # noinspection PyUnresolvedReferences
         spec.loader.exec_module(module)
 
         sys.modules[name] = module
@@ -849,6 +857,21 @@ def open_zipfile(path, mode='r'):
     zib_obj = zipfile.ZipFile(path, mode=mode)
     yield zib_obj
     zib_obj.close()
+
+
+def get_hash(path):
+    """
+    :type path: str
+    :rtype: str | None
+    """
+    if not os.path.exists(path):
+        return None
+
+    file_hash = hashlib.sha256()
+
+    file_hash.update(read_binary_file(path))
+
+    return file_hash.hexdigest()
 
 
 display = Display()  # pylint: disable=locally-disabled, invalid-name

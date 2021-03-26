@@ -10,7 +10,7 @@ Here are some commonly asked questions and their answers.
 Where did all the modules go?
 +++++++++++++++++++++++++++++
 
-In July, 2019, we announced that collections would be the `future of Ansible content delivery <https://www.ansible.com/blog/the-future-of-ansible-content-delivery>`_. A collection is a distribution format for Ansible content that can include playbooks, roles, modules, and plugins. In Ansible 2.9 we added support for collections. In Ansible 2.10 we `extracted most modules from the main ansible/ansible repository <https://access.redhat.com/solutions/5295121>`_ and placed them in :ref:`collections <list_of_collections>`. Collections may be maintained by the Ansible team, by the Ansible community, or by Ansible partners. The `ansible/ansible repository <https://github.com/ansible/ansible>`_ now contains the code for basic features and functions, such as copying module code to managed nodes. This code is also known as ``ansible-base``.
+In July, 2019, we announced that collections would be the `future of Ansible content delivery <https://www.ansible.com/blog/the-future-of-ansible-content-delivery>`_. A collection is a distribution format for Ansible content that can include playbooks, roles, modules, and plugins. In Ansible 2.9 we added support for collections. In Ansible 2.10 we `extracted most modules from the main ansible/ansible repository <https://access.redhat.com/solutions/5295121>`_ and placed them in :ref:`collections <list_of_collections>`. Collections may be maintained by the Ansible team, by the Ansible community, or by Ansible partners. The `ansible/ansible repository <https://github.com/ansible/ansible>`_ now contains the code for basic features and functions, such as copying module code to managed nodes. This code is also known as ``ansible-core`` (it was briefly called ``ansible-base`` for version 2.10).
 
 * To learn more about using collections, see :ref:`collections`.
 * To learn more about developing collections, see :ref:`developing_collections`.
@@ -352,7 +352,7 @@ How do I see a list of all of the ansible\_ variables?
 
 Ansible by default gathers "facts" about the machines under management, and these facts can be accessed in playbooks
 and in templates. To see a list of all of the facts that are available about a machine, you can run the ``setup`` module
-as an ad-hoc action:
+as an ad hoc action:
 
 .. code-block:: shell-session
 
@@ -519,7 +519,7 @@ and distribution and local configuration.
 How do I generate encrypted passwords for the user module?
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-Ansible ad-hoc command is the easiest option:
+Ansible ad hoc command is the easiest option:
 
 .. code-block:: shell-session
 
@@ -738,6 +738,21 @@ fails if the remote filename requires quotes to escape spaces or non-ascii chara
     * Modify your ``ansible.cfg`` file: add ``scp_extra_args=-T`` to the ``[ssh_connection]`` section
 
 .. note:: If you see an ``invalid argument`` error when using ``-T``, then your SCP client is not performing filename validation and will not trigger this error.
+
+.. _mfa_support:
+
+Does Ansible support multiple factor authentication 2FA/MFA/biometrics/finterprint/usbkey/OTP/...
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+No, Ansible is designed to execute multiple tasks against multiple targets, minimizing user interaction.
+As with most automation tools, it is not compatible with interactive security systems designed to handle human interaction.
+Most of these systems require a secondary prompt per target, which prevents scaling to thousands of targets.  They also
+tend to have very short expiration periods so it requires frequent reauthorization, also an issue with many hosts and/or
+a long set of tasks.
+
+In such environments we recommend securing around Ansible's execution but still allowing it to use an 'automation user' that does not require such measures.
+This is something that Tower/AWX excels at by allowing administrators to set up RBAC access to inventory, along with managing credentials and job execution.
+
 
 .. _docs_contributions:
 

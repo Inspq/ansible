@@ -97,6 +97,30 @@ requirements file in the format documented with :ref:`collection_requirements_fi
 
    ansible-galaxy collection download -r requirements.yml
 
+You can also download a source collection directory. The collection is built with the mandatory ``galaxy.yml`` file.
+
+.. code-block:: bash
+
+   ansible-galaxy collection download /path/to/collection
+
+   ansible-galaxy collection download git+file:///path/to/collection/.git
+
+You can download multiple source collections from a single namespace by providing the path to the namespace.
+
+.. code-block:: text
+
+   ns/
+   ├── collection1/
+   │   ├── galaxy.yml
+   │   └── plugins/
+   └── collection2/
+       ├── galaxy.yml
+       └── plugins/
+
+.. code-block:: bash
+
+   ansible-galaxy collection install /path/to/ns
+
 All the collections are downloaded by default to the ``./collections`` folder but you can use ``-p`` or
 ``--download-path`` to specify another path:
 
@@ -308,10 +332,41 @@ In a playbook, you can control the collections Ansible searches for modules and 
              option1: value
 
          - debug:
-             msg: '{{ lookup("my_namespace.my_collection.lookup1", 'param1')| my_namespace.my_collection.filter1 }}'
+             msg: '{{ lookup("my_namespace.my_collection.lookup1", "param1")| my_namespace.my_collection.filter1 }}'
 
 The ``collections`` keyword merely creates an ordered 'search path' for non-namespaced plugin and role references. It does not install content or otherwise change Ansible's behavior around the loading of plugins or roles. Note that an FQCN is still required for non-action or module plugins (for example, lookups, filters, tests).
 
+
+Using a playbook from a collection
+==================================
+
+.. versionadded:: 2.11
+
+You can also distribute playbooks in your collection and invoke them using the same semantics you use for plugins:
+
+.. code-block:: shell
+
+    ansible-playbook my_namespace.my_collection.playbook1 -i ./myinventory
+
+From inside a playbook:
+
+.. code-block:: yaml
+
+    - import_playbook: my_namespace.my_collection.playbookX
+
+
+A few recommendations when creating such playbooks, ``hosts:`` should be generic or at least have a variable input.
+
+.. code-block:: yaml
+
+ - hosts: all  # Use --limit or customized inventory to restrict hosts targeted
+
+ - hosts: localhost  # For things you want to restrict to the controller
+
+ - hosts: '{{target|default("webservers")}}'  # Assumes inventory provides a 'webservers' group, but can also use ``-e 'target=host1,host2'``
+
+
+This will have an implied entry in the ``collections:`` keyword of ``my_namespace.my_collection`` just as with roles.
 .. seealso::
 
   :ref:`developing_collections`

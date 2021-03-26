@@ -35,19 +35,22 @@ def test_finder_setup():
 
     # ensure sys.path paths that have an ansible_collections dir are added to the end of the collections paths
     with patch.object(sys, 'path', ['/bogus', default_test_collection_paths[1], '/morebogus', default_test_collection_paths[0]]):
-        f = _AnsibleCollectionFinder(paths=['/explicit', '/other'])
-        assert f._n_collection_paths == ['/explicit', '/other', default_test_collection_paths[1], default_test_collection_paths[0]]
+        with patch('os.path.isdir', side_effect=lambda x: b'bogus' not in x):
+            f = _AnsibleCollectionFinder(paths=['/explicit', '/other'])
+            assert f._n_collection_paths == ['/explicit', '/other', default_test_collection_paths[1], default_test_collection_paths[0]]
 
     configured_paths = ['/bogus']
     playbook_paths = ['/playbookdir']
-    f = _AnsibleCollectionFinder(paths=configured_paths)
-    assert f._n_collection_paths == configured_paths
-    f.set_playbook_paths(playbook_paths)
-    assert f._n_collection_paths == extend_paths(playbook_paths, 'collections') + configured_paths
+    with patch.object(sys, 'path', ['/bogus', '/playbookdir']) and patch('os.path.isdir', side_effect=lambda x: b'bogus' in x):
+        f = _AnsibleCollectionFinder(paths=configured_paths)
+        assert f._n_collection_paths == configured_paths
 
-    # ensure scalar playbook_paths gets listified
-    f.set_playbook_paths(playbook_paths[0])
-    assert f._n_collection_paths == extend_paths(playbook_paths, 'collections') + configured_paths
+        f.set_playbook_paths(playbook_paths)
+        assert f._n_collection_paths == extend_paths(playbook_paths, 'collections') + configured_paths
+
+        # ensure scalar playbook_paths gets listified
+        f.set_playbook_paths(playbook_paths[0])
+        assert f._n_collection_paths == extend_paths(playbook_paths, 'collections') + configured_paths
 
 
 def test_finder_not_interested():
@@ -716,10 +719,31 @@ def test_fqcr_parsing_valid(ref, ref_type, expected_collection,
 
 
 @pytest.mark.parametrize(
+    ('fqcn', 'expected'),
+    (
+        ('ns1.coll2', True),
+        ('ns1#coll2', False),
+        ('def.coll3', False),
+        ('ns4.return', False),
+        ('assert.this', False),
+        ('import.that', False),
+        ('.that', False),
+        ('this.', False),
+        ('.', False),
+        ('', False),
+    ),
+)
+def test_fqcn_validation(fqcn, expected):
+    """Vefiry that is_valid_collection_name validates FQCN correctly."""
+    assert AnsibleCollectionRef.is_valid_collection_name(fqcn) is expected
+
+
+@pytest.mark.parametrize(
     'ref,ref_type,expected_error_type,expected_error_expression',
     [
         ('no_dots_at_all_action', 'action', ValueError, 'is not a valid collection reference'),
         ('no_nscoll.myaction', 'action', ValueError, 'is not a valid collection reference'),
+        ('no_nscoll%myaction', 'action', ValueError, 'is not a valid collection reference'),
         ('ns.coll.myaction', 'bogus', ValueError, 'invalid collection ref_type'),
     ])
 def test_fqcr_parsing_invalid(ref, ref_type, expected_error_type, expected_error_expression):

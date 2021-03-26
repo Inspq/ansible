@@ -30,7 +30,7 @@ This layout organizes most tasks in roles, with a single inventory file for each
     module_utils/             # if any custom module_utils to support modules, put them here (optional)
     filter_plugins/           # if any custom filter plugins, put them here (optional)
 
-    site.yml                  # master playbook
+    site.yml                  # main playbook
     webservers.yml            # playbook for webserver tier
     dbservers.yml             # playbook for dbserver tier
     tasks/                    # task files included from playbooks
@@ -234,7 +234,7 @@ To reconfigure only the first 10 webservers in Boston, and then the next 10::
     ansible-playbook -i production webservers.yml --limit boston[0:9]
     ansible-playbook -i production webservers.yml --limit boston[10:19]
 
-The sample setup also supports basic ad-hoc commands::
+The sample setup also supports basic ad hoc commands::
 
     ansible boston -i production -m ping
     ansible boston -i production -m command -a '/sbin/reboot'

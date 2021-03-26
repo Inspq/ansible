@@ -7,6 +7,7 @@ __metaclass__ = type
 
 import collections
 import datetime
+import functools
 import hashlib
 import json
 import os
@@ -233,11 +234,17 @@ class CollectionVersionMetadata:
         self.dependencies = dependencies
 
 
+@functools.total_ordering
 class GalaxyAPI:
     """ This class is meant to be used as a API client for an Ansible Galaxy server """
 
-    def __init__(self, galaxy, name, url, username=None, password=None, token=None, validate_certs=True,
-                 available_api_versions=None, clear_response_cache=False, no_cache=True):
+    def __init__(
+            self, galaxy, name, url,
+            username=None, password=None, token=None, validate_certs=True,
+            available_api_versions=None,
+            clear_response_cache=False, no_cache=True,
+            priority=float('inf'),
+    ):
         self.galaxy = galaxy
         self.name = name
         self.username = username
@@ -246,6 +253,7 @@ class GalaxyAPI:
         self.api_server = url
         self.validate_certs = validate_certs
         self._available_api_versions = available_api_versions or {}
+        self._priority = priority
 
         b_cache_dir = to_bytes(C.config.get_config_value('GALAXY_CACHE_DIR'), errors='surrogate_or_strict')
         makedirs_safe(b_cache_dir, mode=0o700)
@@ -262,6 +270,38 @@ class GalaxyAPI:
             self._cache = _load_cache(self._b_cache_path)
 
         display.debug('Validate TLS certificates for %s: %s' % (self.api_server, self.validate_certs))
+
+    def __str__(self):
+        # type: (GalaxyAPI) -> str
+        """Render GalaxyAPI as a native string representation."""
+        return to_native(self.name)
+
+    def __unicode__(self):
+        # type: (GalaxyAPI) -> unicode
+        """Render GalaxyAPI as a unicode/text string representation."""
+        return to_text(self.name)
+
+    def __repr__(self):
+        # type: (GalaxyAPI) -> str
+        """Render GalaxyAPI as an inspectable string representation."""
+        return (
+            '<{instance!s} "{name!s}" @ {url!s} with priority {priority!s}>'.
+            format(
+                instance=self, name=self.name,
+                priority=self._priority, url=self.api_server,
+            )
+        )
+
+    def __lt__(self, other_galaxy_api):
+        # type: (GalaxyAPI, GalaxyAPI) -> Union[bool, 'NotImplemented']
+        """Return whether the instance priority is higher than other."""
+        if not isinstance(other_galaxy_api, self.__class__):
+            return NotImplemented
+
+        return (
+            self._priority > other_galaxy_api._priority or
+            self.name < self.name
+        )
 
     @property
     @g_connect(['v1', 'v2', 'v3'])
@@ -348,8 +388,6 @@ class GalaxyAPI:
 
             else:
                 path_cache['results'] = data
-
-            self._set_cache()
 
         return data
 
@@ -719,6 +757,7 @@ class GalaxyAPI:
         error_context_msg = 'Error when getting collection version metadata for %s.%s:%s from %s (%s)' \
                             % (namespace, name, version, self.name, self.api_server)
         data = self._call_galaxy(n_collection_url, error_context_msg=error_context_msg, cache=True)
+        self._set_cache()
 
         return CollectionVersionMetadata(data['namespace']['name'], data['collection']['name'], data['version'],
                                          data['download_url'], data['artifact']['sha256'],
@@ -751,9 +790,15 @@ class GalaxyAPI:
             server_cache = self._cache.setdefault(get_cache_id(versions_url), {})
             modified_cache = server_cache.setdefault('modified', {})
 
-            modified_date = self.get_collection_metadata(namespace, name).modified_str
-            cached_modified_date = modified_cache.get('%s.%s' % (namespace, name), None)
+            try:
+                modified_date = self.get_collection_metadata(namespace, name).modified_str
+            except GalaxyError as err:
+                if err.http_code != 404:
+                    raise
+                # No collection found, return an empty list to keep things consistent with the various APIs
+                return []
 
+            cached_modified_date = modified_cache.get('%s.%s' % (namespace, name), None)
             if cached_modified_date != modified_date:
                 modified_cache['%s.%s' % (namespace, name)] = modified_date
                 if versions_url_info.path in server_cache:
@@ -763,7 +808,14 @@ class GalaxyAPI:
 
         error_context_msg = 'Error when getting available collection versions for %s.%s from %s (%s)' \
                             % (namespace, name, self.name, self.api_server)
-        data = self._call_galaxy(versions_url, error_context_msg=error_context_msg, cache=True)
+
+        try:
+            data = self._call_galaxy(versions_url, error_context_msg=error_context_msg, cache=True)
+        except GalaxyError as err:
+            if err.http_code != 404:
+                raise
+            # v3 doesn't raise a 404 so we need to mimick the empty response from APIs that do.
+            return []
 
         if 'data' in data:
             # v3 automation-hub is the only known API that uses `data`
@@ -790,5 +842,6 @@ class GalaxyAPI:
 
             data = self._call_galaxy(to_native(next_link, errors='surrogate_or_strict'),
                                      error_context_msg=error_context_msg, cache=True)
+        self._set_cache()
 
         return versions

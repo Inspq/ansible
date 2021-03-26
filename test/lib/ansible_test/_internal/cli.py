@@ -75,12 +75,12 @@ from .target import (
     walk_sanity_targets,
 )
 
-from .core_ci import (
-    AWS_ENDPOINTS,
-)
-
 from .cloud import (
     initialize_cloud_plugins,
+)
+
+from .core_ci import (
+    AnsibleCoreCI,
 )
 
 from .data import (
@@ -678,7 +678,7 @@ def key_value(argparse, value):  # type: (argparse_module, str) -> t.Tuple[str, 
     return parts[0], parts[1]
 
 
-# noinspection PyProtectedMember
+# noinspection PyProtectedMember,PyUnresolvedReferences
 def add_coverage_analyze(coverage_subparsers, coverage_common):  # type: (argparse_module._SubParsersAction, argparse_module.ArgumentParser) -> None
     """Add the `coverage analyze` subcommand."""
     analyze = coverage_subparsers.add_parser(
@@ -924,7 +924,6 @@ def add_environments(parser, isolated_delegation=True):
             remote=None,
             remote_stage=None,
             remote_provider=None,
-            remote_aws_region=None,
             remote_terminate=None,
             remote_endpoint=None,
             python_interpreter=None,
@@ -954,18 +953,12 @@ def add_environments(parser, isolated_delegation=True):
     remote.add_argument('--remote-provider',
                         metavar='PROVIDER',
                         help='remote provider to use: %(choices)s',
-                        choices=['default', 'aws', 'azure', 'parallels', 'ibmvpc', 'ibmps'],
+                        choices=['default'] + sorted(AnsibleCoreCI.PROVIDERS.keys()),
                         default='default')
 
     remote.add_argument('--remote-endpoint',
                         metavar='ENDPOINT',
                         help='remote provisioning endpoint to use (default: auto)',
-                        default=None)
-
-    remote.add_argument('--remote-aws-region',
-                        metavar='REGION',
-                        help='remote aws region to use: %(choices)s (default: auto)',
-                        choices=sorted(AWS_ENDPOINTS),
                         default=None)
 
     remote.add_argument('--remote-terminate',
@@ -992,6 +985,9 @@ def add_extra_coverage_options(parser):
     parser.add_argument('--stub',
                         action='store_true',
                         help='generate empty report of all python/powershell source files')
+
+    parser.add_argument('--export',
+                        help='directory to export combined coverage files to')
 
 
 def add_httptester_options(parser, argparse):

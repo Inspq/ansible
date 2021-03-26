@@ -6,11 +6,18 @@ export ANSIBLE_COLLECTIONS_PATH=$PWD/collection_root_user:$PWD/collection_root_s
 export ANSIBLE_GATHERING=explicit
 export ANSIBLE_GATHER_SUBSET=minimal
 export ANSIBLE_HOST_PATTERN_MISMATCH=error
-export ANSIBLE_COLLECTIONS_ON_ANSIBLE_VERSION_MISMATCH=0
+unset ANSIBLE_COLLECTIONS_ON_ANSIBLE_VERSION_MISMATCH
 
 # FUTURE: just use INVENTORY_PATH as-is once ansible-test sets the right dir
 ipath=../../$(basename "${INVENTORY_PATH:-../../inventory}")
 export INVENTORY_PATH="$ipath"
+
+# ensure we can call collection module
+ansible localhost -m testns.testcoll.testmodule
+
+# ensure we can call collection module with ansible_collections in path
+ANSIBLE_COLLECTIONS_PATH=$PWD/collection_root_sys/ansible_collections ansible localhost -m testns.testcoll.testmodule
+
 
 echo "--- validating callbacks"
 # validate FQ callbacks in ansible-playbook
@@ -94,6 +101,9 @@ fi
 # test collection inventories
 ansible-playbook inventory_test.yml -i a.statichost.yml -i redirected.statichost.yml "$@"
 
+# test plugin loader redirect_list
+ansible-playbook test_redirect_list.yml -v "$@"
+
 # test adjacent with --playbook-dir
 export ANSIBLE_COLLECTIONS_PATH=''
 ANSIBLE_INVENTORY_ANY_UNPARSED_IS_FAILED=1 ansible-inventory --list --export --playbook-dir=. -v "$@"
@@ -127,4 +137,3 @@ if [[ "$(grep -wc "dynamic_host_a" "$CACHEFILE")" -ne "0" ]]; then
 fi
 
 ./vars_plugin_tests.sh
-

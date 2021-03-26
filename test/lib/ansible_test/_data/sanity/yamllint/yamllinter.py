@@ -31,10 +31,22 @@ def main():
 class TestConstructor(SafeConstructor):
     """Yaml Safe Constructor that knows about Ansible tags"""
 
+    def construct_yaml_unsafe(self, node):
+        try:
+            constructor = getattr(node, 'id', 'object')
+            if constructor is not None:
+                constructor = getattr(self, 'construct_%s' % constructor)
+        except AttributeError:
+            constructor = self.construct_object
+
+        value = constructor(node)
+
+        return value
+
 
 TestConstructor.add_constructor(
     u'!unsafe',
-    TestConstructor.construct_yaml_str)
+    TestConstructor.construct_yaml_unsafe)
 
 
 TestConstructor.add_constructor(
@@ -69,7 +81,7 @@ class YamlChecker:
 
     def check(self, paths):
         """
-        :type paths: str
+        :type paths: t.List[str]
         """
         config_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'config')
 
@@ -187,7 +199,7 @@ class YamlChecker:
         def check_assignment(statement, doc_types=None):
             """Check the given statement for a documentation assignment."""
             for target in statement.targets:
-                if isinstance(target, ast.Tuple):
+                if not isinstance(target, ast.Name):
                     continue
 
                 if doc_types and target.id not in doc_types:

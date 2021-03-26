@@ -15,6 +15,8 @@ description:
 version_added: "2.7"
 requirements:
 - pypsrp>=0.4.0 (Python library)
+extends_documentation_fragment:
+    - connection_pipelining
 options:
   # transport options
   remote_addr:
@@ -407,6 +409,8 @@ class Connection(ConnectionBase):
         return self
 
     def reset(self):
+        if not self._connected:
+            return
         display.vvvvv("PSRP: Reset Connection", host=self._psrp_host)
         self.runspace = None
         self._connect()
@@ -470,7 +474,7 @@ class Connection(ConnectionBase):
         if rc != 0:
             raise AnsibleError(to_native(stderr))
 
-        put_output = json.loads(stdout)
+        put_output = json.loads(to_text(stdout))
         remote_sha1 = put_output.get("sha1")
 
         if not remote_sha1:

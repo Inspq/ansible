@@ -9,6 +9,8 @@ import os.path
 import pkgutil
 import re
 import sys
+from keyword import iskeyword
+from tokenize import Name as _VALID_IDENTIFIER_REGEX
 
 
 # DO NOT add new non-stdlib import deps here, this loader is used by external tools (eg ansible-test import sanity)
@@ -45,6 +47,21 @@ if not hasattr(__builtins__, 'ModuleNotFoundError'):
     ModuleNotFoundError = ImportError
 
 
+_VALID_IDENTIFIER_STRING_REGEX = re.compile(
+    ''.join((_VALID_IDENTIFIER_REGEX, r'\Z')),
+)
+
+
+try:  # NOTE: py3/py2 compat
+    # py2 mypy can't deal with try/excepts
+    is_python_identifier = str.isidentifier  # type: ignore[attr-defined]
+except AttributeError:  # Python 2
+    def is_python_identifier(tested_str):  # type: (str) -> bool
+        """Determine whether the given string is a Python identifier."""
+        # Ref: https://stackoverflow.com/a/55802320/595220
+        return bool(re.match(_VALID_IDENTIFIER_STRING_REGEX, tested_str))
+
+
 PB_EXTENSIONS = ('.yml', '.yaml')
 
 
@@ -61,19 +78,22 @@ class _AnsibleCollectionFinder:
         # expand any placeholders in configured paths
         paths = [os.path.expanduser(to_native(p, errors='surrogate_or_strict')) for p in paths]
 
+        # add syspaths if needed
         if scan_sys_paths:
-            # append all sys.path entries with an ansible_collections package
-            for path in sys.path:
-                if (
-                        path not in paths and
-                        os.path.isdir(to_bytes(
-                            os.path.join(path, 'ansible_collections'),
-                            errors='surrogate_or_strict',
-                        ))
-                ):
-                    paths.append(path)
+            paths.extend(sys.path)
 
-        self._n_configured_paths = paths
+        good_paths = []
+        # expand any placeholders in configured paths
+        for p in paths:
+
+            # ensure we alway shave ansible_collections
+            if os.path.basename(p) == 'ansible_collections':
+                p = os.path.dirname(p)
+
+            if p not in good_paths and os.path.isdir(to_bytes(os.path.join(p, 'ansible_collections'), errors='surrogate_or_strict')):
+                good_paths.append(p)
+
+        self._n_configured_paths = good_paths
         self._n_cached_collection_paths = None
         self._n_cached_collection_qualified_paths = None
 
@@ -111,8 +131,14 @@ class _AnsibleCollectionFinder:
         path = to_native(path)
         interesting_paths = self._n_cached_collection_qualified_paths
         if not interesting_paths:
-            interesting_paths = [os.path.join(p, 'ansible_collections') for p in
-                                 self._n_collection_paths]
+            interesting_paths = []
+            for p in self._n_collection_paths:
+                if os.path.basename(p) != 'ansible_collections':
+                    p = os.path.join(p, 'ansible_collections')
+
+                if p not in interesting_paths:
+                    interesting_paths.append(p)
+
             interesting_paths.insert(0, self._ansible_pkg_path)
             self._n_cached_collection_qualified_paths = interesting_paths
 
@@ -674,9 +700,8 @@ class AnsibleCollectionRef:
                                                      'terminal', 'test', 'vars', 'playbook'])
 
     # FIXME: tighten this up to match Python identifier reqs, etc
-    VALID_COLLECTION_NAME_RE = re.compile(to_text(r'^(\w+)\.(\w+)$'))
     VALID_SUBDIRS_RE = re.compile(to_text(r'^\w+(\.\w+)*$'))
-    VALID_FQCR_RE = re.compile(to_text(r'^\w+\.\w+\.\w+(\.\w+)*$'))  # can have 0-N included subdirs as well
+    VALID_FQCR_RE = re.compile(to_text(r'^\w+(\.\w+){2,}$'))  # can have 0-N included subdirs as well
 
     def __init__(self, collection_name, subdirs, resource, ref_type):
         """
@@ -843,7 +868,14 @@ class AnsibleCollectionRef:
 
         collection_name = to_text(collection_name)
 
-        return bool(re.match(AnsibleCollectionRef.VALID_COLLECTION_NAME_RE, collection_name))
+        if collection_name.count(u'.') != 1:
+            return False
+
+        return all(
+            # NOTE: keywords and identifiers are different in differnt Pythons
+            not iskeyword(ns_or_name) and is_python_identifier(ns_or_name)
+            for ns_or_name in collection_name.split(u'.')
+        )
 
 
 def _get_collection_playbook_path(playbook):

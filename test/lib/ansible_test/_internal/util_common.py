@@ -5,6 +5,7 @@ __metaclass__ = type
 import atexit
 import contextlib
 import os
+import re
 import shutil
 import sys
 import tempfile
@@ -29,6 +30,7 @@ from .util import (
     read_lines_without_comments,
     ANSIBLE_TEST_DATA_ROOT,
     ApplicationError,
+    cmd_quote,
 )
 
 from .io import (
@@ -47,6 +49,19 @@ from .provider.layout import (
 DOCKER_COMPLETION = {}  # type: t.Dict[str, t.Dict[str, str]]
 REMOTE_COMPLETION = {}  # type: t.Dict[str, t.Dict[str, str]]
 NETWORK_COMPLETION = {}  # type: t.Dict[str, t.Dict[str, str]]
+
+
+class ShellScriptTemplate:
+    """A simple substition template for shell scripts."""
+    def __init__(self, template):  # type: (str) -> None
+        self.template = template
+
+    def substitute(self, **kwargs):
+        """Return a string templated with the given arguments."""
+        kvp = dict((k, cmd_quote(v)) for k, v in kwargs.items())
+        pattern = re.compile(r'#{(?P<name>[^}]+)}')
+        value = pattern.sub(lambda match: kvp[match.group('name')], self.template)
+        return value
 
 
 class ResultType:
@@ -115,13 +130,6 @@ class CommonConfig:
         return os.path.join(ANSIBLE_TEST_DATA_ROOT, 'ansible.cfg')
 
 
-class NetworkPlatformSettings:
-    """Settings required for provisioning a network platform."""
-    def __init__(self, collection, inventory_vars):  # type: (str, t.Type[str, str]) -> None
-        self.collection = collection
-        self.inventory_vars = inventory_vars
-
-
 def get_docker_completion():
     """
     :rtype: dict[str, dict[str, str]]
@@ -153,7 +161,7 @@ def get_parameterized_completion(cache, name):
         if data_context().content.collection:
             context = 'collection'
         else:
-            context = 'ansible-base'
+            context = 'ansible-core'
 
         images = read_lines_without_comments(os.path.join(ANSIBLE_TEST_DATA_ROOT, 'completion', '%s.txt' % name), remove_blank_lines=True)
 
@@ -183,23 +191,6 @@ def docker_qualify_image(name):
     config = get_docker_completion().get(name, {})
 
     return config.get('name', name)
-
-
-def get_network_settings(args, platform, version):  # type: (NetworkIntegrationConfig, str, str) -> NetworkPlatformSettings
-    """Returns settings for the given network platform and version."""
-    platform_version = '%s/%s' % (platform, version)
-    completion = get_network_completion().get(platform_version, {})
-    collection = args.platform_collection.get(platform, completion.get('collection'))
-
-    settings = NetworkPlatformSettings(
-        collection,
-        dict(
-            ansible_connection=args.platform_connection.get(platform, completion.get('connection')),
-            ansible_network_os='%s.%s' % (collection, platform) if collection else platform,
-        )
-    )
-
-    return settings
 
 
 def handle_layout_messages(messages):  # type: (t.Optional[LayoutMessages]) -> None
@@ -276,18 +267,17 @@ def get_python_path(args, interpreter):
     python_path = tempfile.mkdtemp(prefix=prefix, suffix=suffix, dir=root_temp_dir)
     injected_interpreter = os.path.join(python_path, 'python')
 
-    # A symlink is faster than the execv wrapper, but isn't compatible with virtual environments.
-    # Attempt to detect when it is safe to use a symlink by checking the real path of the interpreter.
-    use_symlink = os.path.dirname(os.path.realpath(interpreter)) == os.path.dirname(interpreter)
+    # A symlink is faster than the execv wrapper, but isn't guaranteed to provide the correct result.
+    # There are several scenarios known not to work with symlinks:
+    #
+    # - A virtual environment where the target is a symlink to another directory.
+    # - A pyenv environment where the target is a shell script that changes behavior based on the program name.
+    #
+    # To avoid issues for these and other scenarios, only an exec wrapper is used.
 
-    if use_symlink:
-        display.info('Injecting "%s" as a symlink to the "%s" interpreter.' % (injected_interpreter, interpreter), verbosity=1)
+    display.info('Injecting "%s" as a execv wrapper for the "%s" interpreter.' % (injected_interpreter, interpreter), verbosity=1)
 
-        os.symlink(interpreter, injected_interpreter)
-    else:
-        display.info('Injecting "%s" as a execv wrapper for the "%s" interpreter.' % (injected_interpreter, interpreter), verbosity=1)
-
-        create_interpreter_wrapper(interpreter, injected_interpreter)
+    create_interpreter_wrapper(interpreter, injected_interpreter)
 
     os.chmod(python_path, MODE_DIRECTORY)
 

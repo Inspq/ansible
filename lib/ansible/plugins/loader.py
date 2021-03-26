@@ -134,14 +134,15 @@ class PluginLoadContext(object):
         if not deprecation:
             return self
 
-        warning_text = deprecation.get('warning_text', None)
+        # The `or ''` instead of using `.get(..., '')` makes sure that even if the user explicitly
+        # sets `warning_text` to `~` (None) or `false`, we still get an empty string.
+        warning_text = deprecation.get('warning_text', None) or ''
         removal_date = deprecation.get('removal_date', None)
         removal_version = deprecation.get('removal_version', None)
         # If both removal_date and removal_version are specified, use removal_date
         if removal_date is not None:
             removal_version = None
-        if not warning_text:
-            warning_text = '{0} has been deprecated'.format(name)
+        warning_text = '{0} has been deprecated.{1}{2}'.format(name, ' ' if warning_text else '', warning_text)
 
         display.deprecated(warning_text, date=removal_date, version=removal_version, collection_name=collection_name)
 
@@ -459,7 +460,8 @@ class PluginLoader:
             if tombstone:
                 removal_date = tombstone.get('removal_date')
                 removal_version = tombstone.get('removal_version')
-                warning_text = tombstone.get('warning_text') or '{0} has been removed.'.format(fq_name)
+                warning_text = tombstone.get('warning_text') or ''
+                warning_text = '{0} has been removed.{1}{2}'.format(fq_name, ' ' if warning_text else '', warning_text)
                 removed_msg = display.get_deprecation_message(msg=warning_text, version=removal_version,
                                                               date=removal_date, removed=True,
                                                               collection_name=acr.collection)
@@ -474,6 +476,11 @@ class PluginLoader:
             if redirect:
                 # FIXME: remove once this is covered in debug or whatever
                 display.vv("redirecting (type: {0}) {1} to {2}".format(plugin_type, fq_name, redirect))
+                # The name doing the redirection is added at the beginning of _resolve_plugin_step,
+                # but if the unqualified name is used in conjunction with the collections keyword, only
+                # the unqualified name is in the redirect list.
+                if fq_name not in plugin_load_context.redirect_list:
+                    plugin_load_context.redirect_list.append(fq_name)
                 return plugin_load_context.redirect(redirect)
                 # TODO: non-FQCN case, do we support `.` prefix for current collection, assume it with no dots, require it for subdirs in current, or ?
 
@@ -601,7 +608,12 @@ class PluginLoader:
                         # 'ansible.builtin' should be handled here. This means only internal, or builtin, paths are searched.
                         plugin_load_context = self._find_fq_plugin(candidate_name, suffix, plugin_load_context=plugin_load_context)
 
-                        if candidate_name != plugin_load_context.original_name and candidate_name not in plugin_load_context.redirect_list:
+                        # Pending redirects are added to the redirect_list at the beginning of _resolve_plugin_step.
+                        # Once redirects are resolved, ensure the final FQCN is added here.
+                        # e.g. 'ns.coll.module' is included rather than only 'module' if a collections list is provided:
+                        # - module:
+                        #   collections: ['ns.coll']
+                        if plugin_load_context.resolved and candidate_name not in plugin_load_context.redirect_list:
                             plugin_load_context.redirect_list.append(candidate_name)
 
                     if plugin_load_context.resolved or plugin_load_context.pending_redirect:  # if we got an answer or need to chase down a redirect, return
@@ -964,50 +976,59 @@ class Jinja2Loader(PluginLoader):
 
     The filter and test plugins are Jinja2 plugins encapsulated inside of our plugin format.
     The way the calling code is setup, we need to do a few things differently in the all() method
+
+    We can't use the base class version because of file == plugin assumptions and dedupe logic
     """
     def find_plugin(self, name, collection_list=None):
-        # Nothing using Jinja2Loader use this method.  We can't use the base class version because
-        # we deduplicate differently than the base class
-        if '.' in name:
+
+        if '.' in name:  # NOTE: this is wrong way, use: AnsibleCollectionRef.is_valid_fqcr(name) or collection_list
             return super(Jinja2Loader, self).find_plugin(name, collection_list=collection_list)
 
-        raise AnsibleError('No code should call find_plugin for Jinja2Loaders (Not implemented)')
+        # Nothing is currently using this method
+        raise AnsibleError('No code should call "find_plugin" for Jinja2Loaders (Not implemented)')
 
     def get(self, name, *args, **kwargs):
-        # Nothing using Jinja2Loader use this method.  We can't use the base class version because
-        # we deduplicate differently than the base class
-        if '.' in name:
+
+        if '.' in name:  # NOTE: this is wrong way to detect collection, see note above for example
             return super(Jinja2Loader, self).get(name, *args, **kwargs)
 
-        raise AnsibleError('No code should call find_plugin for Jinja2Loaders (Not implemented)')
+        # Nothing is currently using this method
+        raise AnsibleError('No code should call "get" for Jinja2Loaders (Not implemented)')
 
     def all(self, *args, **kwargs):
         """
         Differences with :meth:`PluginLoader.all`:
 
-        * We do not deduplicate ansible plugin names.  This is because we don't care about our
-          plugin names, here.  We care about the names of the actual jinja2 plugins which are inside
-          of our plugins.
-        * We reverse the order of the list of plugins compared to other PluginLoaders.  This is
+        * Unlike other plugin types, file != plugin, a file can contain multiple plugins (of same type).
+          This is why we do not deduplicate ansible file names at this point, we mostly care about
+          the names of the actual jinja2 plugins which are inside of our files.
+        * We reverse the order of the list of files compared to other PluginLoaders.  This is
           because of how calling code chooses to sync the plugins from the list.  It adds all the
-          Jinja2 plugins from one of our Ansible plugins into a dict.  Then it adds the Jinja2
-          plugins from the next Ansible plugin, overwriting any Jinja2 plugins that had the same
+          Jinja2 plugins from one of our Ansible files into a dict.  Then it adds the Jinja2
+          plugins from the next Ansible file, overwriting any Jinja2 plugins that had the same
           name.  This is an encapsulation violation (the PluginLoader should not know about what
           calling code does with the data) but we're pushing the common code here.  We'll fix
           this in the future by moving more of the common code into this PluginLoader.
         * We return a list.  We could iterate the list instead but that's extra work for no gain because
           the API receiving this doesn't care.  It just needs an iterable
+        * This method will NOT fetch collection plugins, only those that would be expected under 'ansible.legacy'.
         """
-        # We don't deduplicate ansible plugin names.  Instead, calling code deduplicates jinja2
-        # plugin names.
+        # We don't deduplicate ansible file names.
+        # Instead, calling code deduplicates jinja2 plugin names when loading each file.
         kwargs['_dedupe'] = False
 
-        # We have to instantiate a list of all plugins so that we can reverse it.  We reverse it so
-        # that calling code will deduplicate this correctly.
-        plugins = list(super(Jinja2Loader, self).all(*args, **kwargs))
-        plugins.reverse()
+        # TODO: move this to initalization and extract/dedupe plugin names in loader and offset this from
+        # caller. It would have to cache/refresh on add_directory to reevaluate plugin list and dedupe.
+        # Another option is to always prepend 'ansible.legac'y and force the collection path to
+        # load/find plugins, just need to check compatiblity of that approach.
+        # This would also enable get/find_plugin for these type of plugins.
 
-        return plugins
+        # We have to instantiate a list of all files so that we can reverse the list.
+        # We reverse it so that calling code will deduplicate this correctly.
+        files = list(super(Jinja2Loader, self).all(*args, **kwargs))
+        files .reverse()
+
+        return files
 
 
 def _load_plugin_filter():

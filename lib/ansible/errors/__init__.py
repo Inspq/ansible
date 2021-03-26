@@ -53,22 +53,33 @@ class AnsibleError(Exception):
     def __init__(self, message="", obj=None, show_content=True, suppress_extended_error=False, orig_exc=None):
         super(AnsibleError, self).__init__(message)
 
+        self._show_content = show_content
+        self._suppress_extended_error = suppress_extended_error
+        self._message = to_native(message)
+        self.obj = obj
+        self.orig_exc = orig_exc
+
+    @property
+    def message(self):
         # we import this here to prevent an import loop problem,
         # since the objects code also imports ansible.errors
         from ansible.parsing.yaml.objects import AnsibleBaseYAMLObject
 
-        self._obj = obj
-        self._show_content = show_content
-        if obj and isinstance(obj, AnsibleBaseYAMLObject):
+        message = [self._message]
+        if isinstance(self.obj, AnsibleBaseYAMLObject):
             extended_error = self._get_extended_error()
-            if extended_error and not suppress_extended_error:
-                self.message = '%s\n\n%s' % (to_native(message), to_native(extended_error))
-            else:
-                self.message = '%s' % to_native(message)
-        else:
-            self.message = '%s' % to_native(message)
-        if orig_exc:
-            self.orig_exc = orig_exc
+            if extended_error and not self._suppress_extended_error:
+                message.append(
+                    '\n\n%s' % to_native(extended_error)
+                )
+        elif self.orig_exc:
+            message.append('. %s' % to_native(self.orig_exc))
+
+        return ''.join(message)
+
+    @message.setter
+    def message(self, val):
+        self._message = val
 
     def __str__(self):
         return self.message
@@ -89,7 +100,21 @@ class AnsibleError(Exception):
         with open(file_name, 'r') as f:
             lines = f.readlines()
 
+            # In case of a YAML loading error, PyYAML will report the very last line
+            # as the location of the error. Avoid an index error here in order to
+            # return a helpful message.
+            file_length = len(lines)
+            if line_number >= file_length:
+                line_number = file_length - 1
+
+            # If target_line contains only whitespace, move backwards until
+            # actual code is found. If there are several empty lines after target_line,
+            # the error lines would just be blank, which is not very helpful.
             target_line = lines[line_number]
+            while not target_line.strip():
+                line_number -= 1
+                target_line = lines[line_number]
+
             if line_number > 0:
                 prev_line = lines[line_number - 1]
 
@@ -110,7 +135,7 @@ class AnsibleError(Exception):
         error_message = ''
 
         try:
-            (src_file, line_number, col_number) = self._obj.ansible_pos
+            (src_file, line_number, col_number) = self.obj.ansible_pos
             error_message += YAML_POSITION_DETAILS % (src_file, line_number, col_number)
             if src_file not in ('<string>', '<unicode>') and self._show_content:
                 (target_line, prev_line) = self._get_error_lines_from_file(src_file, line_number - 1)

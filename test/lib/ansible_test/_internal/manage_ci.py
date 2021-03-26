@@ -6,6 +6,12 @@ import os
 import tempfile
 import time
 
+from . import types as t
+
+from .io import (
+    read_text_file,
+)
+
 from .util import (
     SubprocessError,
     ApplicationError,
@@ -16,12 +22,14 @@ from .util import (
 
 from .util_common import (
     intercept_command,
-    get_network_settings,
+    get_network_completion,
     run_command,
+    ShellScriptTemplate,
 )
 
 from .core_ci import (
     AnsibleCoreCI,
+    SshKey,
 )
 
 from .ansible_util import (
@@ -29,6 +37,7 @@ from .ansible_util import (
 )
 
 from .config import (
+    NetworkIntegrationConfig,
     ShellConfig,
 )
 
@@ -142,15 +151,17 @@ class ManageWindowsCI:
 
 class ManageNetworkCI:
     """Manage access to a network instance provided by Ansible Core CI."""
-    def __init__(self, core_ci):
+    def __init__(self, args, core_ci):
         """
+        :type args: NetworkIntegrationConfig
         :type core_ci: AnsibleCoreCI
         """
+        self.args = args
         self.core_ci = core_ci
 
     def wait(self):
         """Wait for instance to respond to ansible ping."""
-        settings = get_network_settings(self.core_ci.args, self.core_ci.platform, self.core_ci.version)
+        settings = get_network_settings(self.args, self.core_ci.platform, self.core_ci.version)
 
         extra_vars = [
             'ansible_host=%s' % self.core_ci.connection.hostname,
@@ -204,21 +215,21 @@ class ManagePosixCI:
         for ssh_option in sorted(ssh_options):
             self.ssh_args += ['-o', '%s=%s' % (ssh_option, ssh_options[ssh_option])]
 
+        self.become = None
+
         if self.core_ci.platform == 'freebsd':
-            if self.core_ci.provider == 'aws':
-                self.become = ['su', '-l', 'root', '-c']
-            elif self.core_ci.provider == 'azure':
-                self.become = ['sudo', '-in', 'sh', '-c']
-            else:
-                raise NotImplementedError('provider %s has not been implemented' % self.core_ci.provider)
+            self.become = ['su', '-l', 'root', '-c']
         elif self.core_ci.platform == 'macos':
             self.become = ['sudo', '-in', 'PATH=/usr/local/bin:$PATH', 'sh', '-c']
         elif self.core_ci.platform == 'osx':
             self.become = ['sudo', '-in', 'PATH=/usr/local/bin:$PATH']
-        elif self.core_ci.platform == 'rhel' or self.core_ci.platform == 'centos':
+        elif self.core_ci.platform == 'rhel':
             self.become = ['sudo', '-in', 'bash', '-c']
         elif self.core_ci.platform in ['aix', 'ibmi']:
             self.become = []
+
+        if self.become is None:
+            raise NotImplementedError('provider %s has not been implemented' % self.core_ci.provider)
 
     def setup(self, python_version):
         """Start instance and wait for it to become ready and respond to an ansible ping.
@@ -263,8 +274,19 @@ class ManagePosixCI:
         """Configure remote host for testing.
         :type python_version: str
         """
-        self.upload(os.path.join(ANSIBLE_TEST_DATA_ROOT, 'setup', 'remote.sh'), '/tmp')
-        self.ssh('chmod +x /tmp/remote.sh && /tmp/remote.sh %s %s' % (self.core_ci.platform, python_version))
+        template = ShellScriptTemplate(read_text_file(os.path.join(ANSIBLE_TEST_DATA_ROOT, 'setup', 'remote.sh')))
+        setup_sh = template.substitute(
+            platform=self.core_ci.platform,
+            platform_version=self.core_ci.version,
+            python_version=python_version,
+        )
+
+        ssh_keys_sh = get_ssh_key_setup(self.core_ci.ssh_key)
+
+        setup_sh += ssh_keys_sh
+        shell = setup_sh.splitlines()[0][2:]
+
+        self.ssh(shell, data=setup_sh)
 
     def upload_source(self):
         """Upload and extract source."""
@@ -297,11 +319,12 @@ class ManagePosixCI:
         """
         self.scp(local, '%s@%s:%s' % (self.core_ci.connection.username, self.core_ci.connection.hostname, remote))
 
-    def ssh(self, command, options=None, capture=False):
+    def ssh(self, command, options=None, capture=False, data=None):
         """
         :type command: str | list[str]
         :type options: list[str] | None
         :type capture: bool
+        :type data: str | None
         :rtype: str | None, str | None
         """
         if not options:
@@ -311,12 +334,18 @@ class ManagePosixCI:
             command = ' '.join(cmd_quote(c) for c in command)
 
         command = cmd_quote(command) if self.become else command
+
+        options.append('-q')
+
+        if not data:
+            options.append('-tt')
+
         return run_command(self.core_ci.args,
-                           ['ssh', '-tt', '-q'] + self.ssh_args +
+                           ['ssh'] + self.ssh_args +
                            options +
                            ['-p', str(self.core_ci.connection.port),
                             '%s@%s' % (self.core_ci.connection.username, self.core_ci.connection.hostname)] +
-                           self.become + [command], capture=capture)
+                           self.become + [command], capture=capture, data=data)
 
     def scp(self, src, dst):
         """
@@ -333,3 +362,40 @@ class ManagePosixCI:
                 time.sleep(10)
 
         raise ApplicationError('Failed transfer: %s -> %s' % (src, dst))
+
+
+def get_ssh_key_setup(ssh_key):  # type: (SshKey) -> str
+    """Generate and return a script to configure SSH keys on a host."""
+    template = ShellScriptTemplate(read_text_file(os.path.join(ANSIBLE_TEST_DATA_ROOT, 'setup', 'ssh-keys.sh')))
+
+    ssh_keys_sh = template.substitute(
+        ssh_public_key=ssh_key.pub_contents,
+        ssh_private_key=ssh_key.key_contents,
+        ssh_key_type=ssh_key.KEY_TYPE,
+    )
+
+    return ssh_keys_sh
+
+
+def get_network_settings(args, platform, version):  # type: (NetworkIntegrationConfig, str, str) -> NetworkPlatformSettings
+    """Returns settings for the given network platform and version."""
+    platform_version = '%s/%s' % (platform, version)
+    completion = get_network_completion().get(platform_version, {})
+    collection = args.platform_collection.get(platform, completion.get('collection'))
+
+    settings = NetworkPlatformSettings(
+        collection,
+        dict(
+            ansible_connection=args.platform_connection.get(platform, completion.get('connection')),
+            ansible_network_os='%s.%s' % (collection, platform) if collection else platform,
+        )
+    )
+
+    return settings
+
+
+class NetworkPlatformSettings:
+    """Settings required for provisioning a network platform."""
+    def __init__(self, collection, inventory_vars):  # type: (str, t.Type[str, str]) -> None
+        self.collection = collection
+        self.inventory_vars = inventory_vars

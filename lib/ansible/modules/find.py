@@ -29,7 +29,7 @@ options:
               first letter of any of those words (e.g., "1w").
         type: str
     patterns:
-        default: '*'
+        default: []
         description:
             - One or more (shell or regex) patterns, which type is controlled by C(use_regex) option.
             - The patterns restrict the list of files to be returned to those whose basenames match at
@@ -41,6 +41,7 @@ options:
             - This parameter expects a list, which can be either comma separated or YAML. If any of the
               patterns contain a comma, make sure to put them in a list to avoid splitting the patterns
               in undesirable ways.
+            - Defaults to '*' when C(use_regex=False), or '.*' when C(use_regex=True).
         type: list
         aliases: [ pattern ]
         elements: str
@@ -56,6 +57,7 @@ options:
     contains:
         description:
             - A regular expression or pattern which should be matched against the file content.
+            - Works only when I(file_type) is C(file).
         type: str
     read_whole_file:
         description:
@@ -374,7 +376,7 @@ def main():
     module = AnsibleModule(
         argument_spec=dict(
             paths=dict(type='list', required=True, aliases=['name', 'path'], elements='str'),
-            patterns=dict(type='list', default=['*'], aliases=['pattern'], elements='str'),
+            patterns=dict(type='list', default=[], aliases=['pattern'], elements='str'),
             excludes=dict(type='list', aliases=['exclude'], elements='str'),
             contains=dict(type='str'),
             read_whole_file=dict(type='bool', default=False),
@@ -393,6 +395,16 @@ def main():
     )
 
     params = module.params
+
+    # Set the default match pattern to either a match-all glob or
+    # regex depending on use_regex being set.  This makes sure if you
+    # set excludes: without a pattern pfilter gets something it can
+    # handle.
+    if not params['patterns']:
+        if params['use_regex']:
+            params['patterns'] = ['.*']
+        else:
+            params['patterns'] = ['*']
 
     filelist = []
 
@@ -435,6 +447,8 @@ def main():
                         wpath = npath.rstrip(os.path.sep) + os.path.sep
                         depth = int(fsname.count(os.path.sep)) - int(wpath.count(os.path.sep)) + 1
                         if depth > params['depth']:
+                            # Empty the list used by os.walk to avoid traversing deeper unnecessarily
+                            del(dirs[:])
                             continue
                     if os.path.basename(fsname).startswith('.') and not params['hidden']:
                         continue

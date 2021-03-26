@@ -81,7 +81,7 @@ class AwsCloudProvider(CloudProvider):
         """
         :rtype: AnsibleCoreCI
         """
-        return AnsibleCoreCI(self.args, 'aws', 'sts', persist=False, stage=self.args.remote_stage, provider=self.args.remote_provider)
+        return AnsibleCoreCI(self.args, 'aws', 'aws', persist=False, stage=self.args.remote_stage, provider='aws', internal=True)
 
 
 class AwsCloudEnvironment(CloudEnvironment):
@@ -97,6 +97,7 @@ class AwsCloudEnvironment(CloudEnvironment):
             resource_prefix=self.resource_prefix,
         )
 
+        # noinspection PyTypeChecker
         ansible_vars.update(dict(parser.items('default')))
 
         display.sensitive.add(ansible_vars.get('aws_secret_key'))

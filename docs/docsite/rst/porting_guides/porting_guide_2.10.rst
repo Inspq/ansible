@@ -9,7 +9,7 @@ Ansible 2.10 Porting Guide
 
 .. warning::
 
-         In Ansible 2.10, many plugins and modules have migrated to Collections on `Ansible Galaxy <https://galaxy.ansible.com>`_. Your playbooks should continue to work without any changes. We recommend you start using the fully-qualified collection name (FQCN) in your playbooks as the explicit and authoritative indicator of which collection to use as some collections may contain duplicate module names.
+         In Ansible 2.10, many plugins and modules have migrated to Collections on `Ansible Galaxy <https://galaxy.ansible.com>`_. Your playbooks should continue to work without any changes. We recommend you start using the fully-qualified collection name (FQCN) in your playbooks as the explicit and authoritative indicator of which collection to use as some collections may contain duplicate module names. You can search the `index of all modules <https://docs.ansible.com/ansible/2.10/collections/index_module.html>`_ to find the collection a module has been relocated to.
 
 This section discusses the behavioral changes between Ansible 2.9 and Ansible 2.10.
 
@@ -98,6 +98,276 @@ Porting custom scripts
 
 No notable changes
 
+Porting Guide for v2.10.7
+=========================
+
+Breaking Changes
+----------------
+
+community.general
+~~~~~~~~~~~~~~~~~
+
+- utm_proxy_auth_profile - the ``frontend_cookie_secret`` return value now contains a placeholder string instead of the module's ``frontend_cookie_secret`` parameter (https://github.com/ansible-collections/community.general/pull/1736).
+
+Major Changes
+-------------
+
+- Restricting the version of the community.okd collection to 1.0.0. The previously included version, 1.0.1, had a dependency on kubernetes.core and thus required the installation of an additional collection that was not included in Ansible 2.10. Version 1.0.0 is essentially identical to 1.0.1, except that it uses community.kubernetes, wihch is included in Ansible 2.10.
+
+ovirt.ovirt
+~~~~~~~~~~~
+
+- ovirt_system_option_info - Add new module (https://github.com/oVirt/ovirt-ansible-collection/pull/206).
+
+servicenow.servicenow
+~~~~~~~~~~~~~~~~~~~~~
+
+- add new tests (find with no result, search many)
+- add related tests
+- add support for ServiceNOW table api display_value exclude_reference_link and suppress_pagination_header
+- use new API for pysnow >=0.6.0
+
+Deprecated Features
+-------------------
+
+cisco.nxos
+~~~~~~~~~~
+
+- Deprecated `nxos_bgp` and `nxos_bgp_neighbor` modules in favor of `nxos_bgp_global` resource module.
+
+community.vmware
+~~~~~~~~~~~~~~~~
+
+- vmware_host_firewall_manager - the creation of new rule with no ``allowed_ip`` entry in the ``allowed_hosts`` dictionary won't be allowed after 2.0.0 release.
+
+Porting Guide for v2.10.6
+=========================
+
+Major Changes
+-------------
+
+community.general
+~~~~~~~~~~~~~~~~~
+
+- For community.general 2.0.0, the kubevirt modules will be moved to the `community.kubevirt <https://galaxy.ansible.com/community/kubevirt>`_ collection.
+  A redirection will be inserted so that users using ansible-base 2.10 or newer do not have to change anything.
+
+  If you use Ansible 2.9 and explicitly use kubevirt modules from this collection, you will need to adjust your playbooks and roles to use FQCNs starting with ``community.kubevirt.`` instead of ``community.general.``,
+  for example replace ``community.general.kubevirt_vm`` in a task by ``community.kubevirt.kubevirt_vm``.
+
+  If you use ansible-base and installed ``community.general`` manually and rely on the kubevirt modules, you have to make sure to install the ``community.kubevirt`` collection as well.
+  If you are using FQCNs, for example ``community.general.kubevirt_vm`` instead of ``kubevirt_vm``, it will continue working, but we still recommend to adjust the FQCNs as well.
+
+community.network
+~~~~~~~~~~~~~~~~~
+
+- For community.network 2.0.0, the Cisco NSO modules will be moved to the `cisco.nso <https://galaxy.ansible.com/cisco/nso>`_ collection.
+  A redirection will be inserted so that users using ansible-base 2.10 or newer do not have to change anything.
+
+  If you use Ansible 2.9 and explicitly use Cisco NSO modules from this collection, you will need to adjust your playbooks and roles to use FQCNs starting with ``cisco.nso.`` instead of ``community.network.``,
+  for example replace ``community.network.nso_config`` in a task by ``cisco.nso.nso_config``.
+
+  If you use ansible-base and installed ``community.network`` manually and rely on the Cisco NSO modules, you have to make sure to install the ``cisco.nso`` collection as well.
+  If you are using FQCNs, for example ``community.network.nso_config`` instead of ``nso_config``, it will continue working, but we still recommend to adjust the FQCNs as well.
+- For community.network 2.0.0, the FortiOS modules will be moved to the `community.fortios <https://galaxy.ansible.com/ansible-collections/community.fortios>`_ collection.
+  A redirection will be inserted so that users using ansible-base 2.10 or newer do not have to change anything.
+
+  If you use Ansible 2.9 and explicitly use FortiOS modules from this collection, you will need to adjust your playbooks and roles to use FQCNs starting with ``community.fortios.`` instead of ``community.network.``,
+  for example replace ``community.network.fmgr_device`` in a task by ``community.fortios.fmgr_device``.
+
+  If you use ansible-base and installed ``community.network`` manually and rely on the FortiOS modules, you have to make sure to install the ``community.fortios`` collection as well.
+  If you are using FQCNs, for example ``community.network.fmgr_device`` instead of ``fmgr_device``, it will continue working, but we still recommend to adjust the FQCNs as well.
+
+f5networks.f5_modules
+~~~~~~~~~~~~~~~~~~~~~
+
+- Added async_timeout parameter to bigip_ucs_fetch module to allow customization of module wait for async interface
+- Changed bigip_ucs_fetch module to use asynchronous interface when generating UCS files
+
+Porting Guide for v2.10.5
+=========================
+
+Breaking Changes
+----------------
+
+community.hashi_vault
+~~~~~~~~~~~~~~~~~~~~~
+
+- hashi_vault - the ``VAULT_ADDR`` environment variable is now checked last for the ``url`` parameter. For details on which use cases are impacted, see (https://github.com/ansible-collections/community.hashi_vault/issues/8).
+
+Major Changes
+-------------
+
+community.general
+~~~~~~~~~~~~~~~~~
+
+- For community.general 2.0.0, the Google modules will be moved to the `community.google <https://galaxy.ansible.com/community/google>`_ collection.
+  A redirection will be inserted so that users using ansible-base 2.10 or newer do not have to change anything.
+
+  If you use Ansible 2.9 and explicitly use Google modules from this collection, you will need to adjust your playbooks and roles to use FQCNs starting with ``community.google.`` instead of ``community.general.``,
+  for example replace ``community.general.gcpubsub`` in a task by ``community.google.gcpubsub``.
+
+  If you use ansible-base and installed ``community.general`` manually and rely on the Google modules, you have to make sure to install the ``community.google`` collection as well.
+  If you are using FQCNs, for example ``community.general.gcpubsub`` instead of ``gcpubsub``, it will continue working, but we still recommend to adjust the FQCNs as well.
+- For community.general 2.0.0, the OC connection plugin will be moved to the `community.okd <https://galaxy.ansible.com/community/okd>`_ collection.
+  A redirection will be inserted so that users using ansible-base 2.10 or newer do not have to change anything.
+
+  If you use Ansible 2.9 and explicitly use OC connection plugin from this collection, you will need to adjust your playbooks and roles to use FQCNs ``community.okd.oc`` instead of ``community.general.oc``.
+
+  If you use ansible-base and installed ``community.general`` manually and rely on the OC connection plugin, you have to make sure to install the ``community.okd`` collection as well.
+  If you are using FQCNs, in other words ``community.general.oc`` instead of ``oc``, it will continue working, but we still recommend to adjust this FQCN as well.
+- For community.general 2.0.0, the hashi_vault lookup plugin will be moved to the `community.hashi_vault <https://galaxy.ansible.com/community/hashi_vault>`_ collection.
+  A redirection will be inserted so that users using ansible-base 2.10 or newer do not have to change anything.
+
+  If you use Ansible 2.9 and explicitly use hashi_vault lookup plugin from this collection, you will need to adjust your playbooks and roles to use FQCNs ``community.hashi_vault.hashi_vault`` instead of ``community.general.hashi_vault``.
+
+  If you use ansible-base and installed ``community.general`` manually and rely on the hashi_vault lookup plugin, you have to make sure to install the ``community.hashi_vault`` collection as well.
+  If you are using FQCNs, in other words ``community.general.hashi_vault`` instead of ``hashi_vault``, it will continue working, but we still recommend to adjust this FQCN as well.
+
+netbox.netbox
+~~~~~~~~~~~~~
+
+- nb_inventory - Add ``dns_name`` option that adds ``dns_name`` to the host when ``True`` and device has a primary IP address. (#394)
+- nb_inventory - Add ``status`` as a ``group_by`` option. (398)
+- nb_inventory - Move around ``extracted_primary_ip`` to allow for ``config_context`` or ``custom_field`` to overwite. (#377)
+- nb_inventory - Services are now a list of integers due to NetBox 2.10 changes. (#396)
+- nb_lookup - Allow ID to be passed in and use ``.get`` instead of ``.filter``. (#376)
+- nb_lookup - Allow ``api_endpoint`` and ``token`` to be found via env. (#391)
+
+Deprecated Features
+-------------------
+
+community.aws
+~~~~~~~~~~~~~
+
+- ec2_vpc_igw_info - After 2022-06-22 the ``convert_tags`` parameter default value will change from ``False`` to ``True`` to match the collection standard behavior (https://github.com/ansible-collections/community.aws/pull/318).
+
+community.docker
+~~~~~~~~~~~~~~~~
+
+- docker_container - currently ``published_ports`` can contain port mappings next to the special value ``all``, in which case the port mappings are ignored. This behavior is deprecated for community.docker 2.0.0, at which point it will either be forbidden, or this behavior will be properly implemented similar to how the Docker CLI tool handles this (https://github.com/ansible-collections/community.docker/issues/8, https://github.com/ansible-collections/community.docker/pull/60).
+
+community.hashi_vault
+~~~~~~~~~~~~~~~~~~~~~
+
+- hashi_vault - ``VAULT_ADDR`` environment variable for option ``url`` will have its precedence lowered in 1.0.0; use ``ANSIBLE_HASHI_VAULT_ADDR`` to intentionally override a config value (https://github.com/ansible-collections/community.hashi_vault/issues/8).
+- hashi_vault - ``VAULT_AUTH_METHOD`` environment variable for option ``auth_method`` will be removed in 2.0.0, use ``ANSIBLE_HASHI_VAULT_AUTH_METHOD`` instead (https://github.com/ansible-collections/community.hashi_vault/issues/17).
+- hashi_vault - ``VAULT_ROLE_ID`` environment variable for option ``role_id`` will be removed in 2.0.0, use ``ANSIBLE_HASHI_VAULT_ROLE_ID`` instead (https://github.com/ansible-collections/community.hashi_vault/issues/20).
+- hashi_vault - ``VAULT_SECRET_ID`` environment variable for option ``secret_id`` will be removed in 2.0.0, use ``ANSIBLE_HASHI_VAULT_SECRET_ID`` instead (https://github.com/ansible-collections/community.hashi_vault/issues/20).
+- hashi_vault - ``VAULT_TOKEN_FILE`` environment variable for option ``token_file`` will be removed in 2.0.0, use ``ANSIBLE_HASHI_VAULT_TOKEN_FILE`` instead (https://github.com/ansible-collections/community.hashi_vault/issues/15).
+- hashi_vault - ``VAULT_TOKEN_PATH`` environment variable for option ``token_path`` will be removed in 2.0.0, use ``ANSIBLE_HASHI_VAULT_TOKEN_PATH`` instead (https://github.com/ansible-collections/community.hashi_vault/issues/15).
+
+Porting Guide for v2.10.4
+=========================
+
+Breaking Changes
+----------------
+
+community.hrobot
+~~~~~~~~~~~~~~~~
+
+- firewall - now requires the `ipaddress <https://pypi.org/project/ipaddress/>`_ library (https://github.com/ansible-collections/community.hrobot/pull/2).
+
+Major Changes
+-------------
+
+community.general
+~~~~~~~~~~~~~~~~~
+
+- For community.general 2.0.0, the Hetzner Robot modules will be moved to the `community.hrobot <https://galaxy.ansible.com/community/hrobot>`_ collection.
+  A redirection will be inserted so that users using ansible-base 2.10 or newer do not have to change anything.
+
+  If you use Ansible 2.9 and explicitly use Hetzner Robot modules from this collection, you will need to adjust your playbooks and roles to use FQCNs starting with ``community.hrobot.`` instead of ``community.general.hetzner_``,
+  for example replace ``community.general.hetzner_firewall_info`` in a task by ``community.hrobot.firewall_info``.
+
+  If you use ansible-base and installed ``community.general`` manually and rely on the Hetzner Robot modules, you have to make sure to install the ``community.hrobot`` collection as well.
+  If you are using FQCNs, i.e. ``community.general.hetzner_failover_ip`` instead of ``hetzner_failover_ip``, it will continue working, but we still recommend to adjust the FQCNs as well.
+- For community.general 2.0.0, the ``docker`` modules and plugins will be moved to the `community.docker <https://galaxy.ansible.com/community/docker>`_ collection.
+  A redirection will be inserted so that users using ansible-base 2.10 or newer do not have to change anything.
+
+  If you use Ansible 2.9 and explicitly use ``docker`` content from this collection, you will need to adjust your playbooks and roles to use FQCNs starting with ``community.docker.`` instead of ``community.general.``,
+  for example replace ``community.general.docker_container`` in a task by ``community.docker.docker_container``.
+
+  If you use ansible-base and installed ``community.general`` manually and rely on the ``docker`` content, you have to make sure to install the ``community.docker`` collection as well.
+  If you are using FQCNs, i.e. ``community.general.docker_container`` instead of ``docker_container``, it will continue working, but we still recommend to adjust the FQCNs as well.
+- For community.general 2.0.0, the ``postgresql`` modules and plugins will be moved to the `community.postgresql <https://galaxy.ansible.com/community/postgresql>`_ collection.
+  A redirection will be inserted so that users using ansible-base 2.10 or newer do not have to change anything.
+
+  If you use Ansible 2.9 and explicitly use ``postgresql`` content from this collection, you will need to adjust your playbooks and roles to use FQCNs starting with ``community.postgresql.`` instead of ``community.general.``,
+  for example replace ``community.general.postgresql_info`` in a task by ``community.postgresql.postgresql_info``.
+
+  If you use ansible-base and installed ``community.general`` manually and rely on the ``postgresql`` content, you have to make sure to install the ``community.postgresql`` collection as well.
+  If you are using FQCNs, i.e. ``community.general.postgresql_info`` instead of ``postgresql_info``, it will continue working, but we still recommend to adjust the FQCNs as well.
+- The community.general collection no longer depends on the ansible.posix collection (https://github.com/ansible-collections/community.general/pull/1157).
+
+community.network
+~~~~~~~~~~~~~~~~~
+
+- For community.network 2.0.0, the ``routeros`` modules and plugins will be moved to the `community.routeros <https://galaxy.ansible.com/community/routeros>`_ collection.
+  A redirection will be inserted so that users using ansible-base 2.10 or newer do not have to change anything.
+
+  If you use Ansible 2.9 and explicitly use ``routeros`` content from this collection, you will need to adjust your playbooks and roles to use FQCNs starting with ``community.routeros.`` instead of ``community.network.routeros_``,
+  for example replace ``community.network.routeros_api`` in a task by ``community.routeros.api``.
+
+  If you use ansible-base and installed ``community.network`` manually and rely on the ``routeros`` content, you have to make sure to install the ``community.routeros`` collection as well.
+  If you are using FQCNs, i.e. ``community.network.routeros_command`` instead of ``routeros_command``, it will continue working, but we still recommend to adjust the FQCNs as well.
+- In community.network 2.0.0, the ``fortimanager`` httpapi plugin will be removed and replaced by a redirect to the corresponding plugin in the fortios.fortimanager collection. For Ansible 2.10 and ansible-base 2.10 users, this means that it will continue to work assuming that collection is installed. For Ansible 2.9 users, this means that they have to adjust the FQCN from ``community.network.fortimanager`` to ``fortios.fortimanager.fortimanager`` (https://github.com/ansible-collections/community.network/pull/151).
+
+community.okd
+~~~~~~~~~~~~~
+
+- Add custom k8s module, integrate better Molecule tests (https://github.com/ansible-collections/community.okd/pull/7).
+- Add downstream build scripts to build redhat.openshift (https://github.com/ansible-collections/community.okd/pull/20).
+- Add openshift connection plugin, update inventory plugin to use it (https://github.com/ansible-collections/community.okd/pull/18).
+- Add openshift_process module for template rendering and optional application of rendered resources (https://github.com/ansible-collections/community.okd/pull/44).
+- Add openshift_route module for creating routes from services (https://github.com/ansible-collections/community.okd/pull/40).
+- Initial content migration from community.kubernetes (https://github.com/ansible-collections/community.okd/pull/3).
+- openshift_auth - new module (migrated from k8s_auth in community.kubernetes) (https://github.com/ansible-collections/community.okd/pull/33).
+
+Removed Features
+----------------
+
+community.docker
+~~~~~~~~~~~~~~~~
+
+- docker_container - no longer returns ``ansible_facts`` (https://github.com/ansible-collections/community.docker/pull/1).
+- docker_container - the default of ``networks_cli_compatible`` changed to ``true`` (https://github.com/ansible-collections/community.docker/pull/1).
+- docker_container - the unused option ``trust_image_content`` has been removed (https://github.com/ansible-collections/community.docker/pull/1).
+- docker_image - ``state=build`` has been removed. Use ``present`` instead (https://github.com/ansible-collections/community.docker/pull/1).
+- docker_image - the ``container_limits``, ``dockerfile``, ``http_timeout``, ``nocache``, ``rm``, ``path``, ``buildargs``, ``pull`` have been removed. Use the corresponding suboptions of ``build`` instead (https://github.com/ansible-collections/community.docker/pull/1).
+- docker_image - the ``force`` option has been removed. Use the more specific ``force_*`` options instead (https://github.com/ansible-collections/community.docker/pull/1).
+- docker_image - the ``source`` option is now mandatory (https://github.com/ansible-collections/community.docker/pull/1).
+- docker_image - the ``use_tls`` option has been removed. Use ``tls`` and ``validate_certs`` instead (https://github.com/ansible-collections/community.docker/pull/1).
+- docker_image - the default of the ``build.pull`` option changed to ``false`` (https://github.com/ansible-collections/community.docker/pull/1).
+- docker_image_facts - this alias is on longer availabe, use ``docker_image_info`` instead (https://github.com/ansible-collections/community.docker/pull/1).
+- docker_network - no longer returns ``ansible_facts`` (https://github.com/ansible-collections/community.docker/pull/1).
+- docker_network - the ``ipam_options`` option has been removed. Use ``ipam_config`` instead (https://github.com/ansible-collections/community.docker/pull/1).
+- docker_service - no longer returns ``ansible_facts`` (https://github.com/ansible-collections/community.docker/pull/1).
+- docker_swarm - ``state=inspect`` has been removed. Use ``docker_swarm_info`` instead (https://github.com/ansible-collections/community.docker/pull/1).
+- docker_swarm_service - the ``constraints`` option has been removed. Use ``placement.constraints`` instead (https://github.com/ansible-collections/community.docker/pull/1).
+- docker_swarm_service - the ``limit_cpu`` and ``limit_memory`` options has been removed. Use the corresponding suboptions in ``limits`` instead (https://github.com/ansible-collections/community.docker/pull/1).
+- docker_swarm_service - the ``log_driver`` and ``log_driver_options`` options has been removed. Use the corresponding suboptions in ``logging`` instead (https://github.com/ansible-collections/community.docker/pull/1).
+- docker_swarm_service - the ``reserve_cpu`` and ``reserve_memory`` options has been removed. Use the corresponding suboptions in ``reservations`` instead (https://github.com/ansible-collections/community.docker/pull/1).
+- docker_swarm_service - the ``restart_policy``, ``restart_policy_attempts``, ``restart_policy_delay`` and ``restart_policy_window`` options has been removed. Use the corresponding suboptions in ``restart_config`` instead (https://github.com/ansible-collections/community.docker/pull/1).
+- docker_swarm_service - the ``update_delay``, ``update_parallelism``, ``update_failure_action``, ``update_monitor``, ``update_max_failure_ratio`` and ``update_order`` options has been removed. Use the corresponding suboptions in ``update_config`` instead (https://github.com/ansible-collections/community.docker/pull/1).
+- docker_volume - no longer returns ``ansible_facts`` (https://github.com/ansible-collections/community.docker/pull/1).
+- docker_volume - the ``force`` option has been removed. Use ``recreate`` instead (https://github.com/ansible-collections/community.docker/pull/1).
+
+Deprecated Features
+-------------------
+
+community.general
+~~~~~~~~~~~~~~~~~
+
+- django_manage - the parameter ``liveserver`` relates to a no longer maintained third-party module for django. It is now deprecated, and will be remove in community.general 3.0.0 (https://github.com/ansible-collections/community.general/pull/1154).
+- proxmox - the default of the new ``proxmox_default_behavior`` option will change from ``compatibility`` to ``no_defaults`` in community.general 4.0.0. Set the option to an explicit value to avoid a deprecation warning (https://github.com/ansible-collections/community.general/pull/850).
+- proxmox_kvm - the default of the new ``proxmox_default_behavior`` option will change from ``compatibility`` to ``no_defaults`` in community.general 4.0.0. Set the option to an explicit value to avoid a deprecation warning (https://github.com/ansible-collections/community.general/pull/850).
+- syspatch - deprecate the redundant ``apply`` argument (https://github.com/ansible-collections/community.general/pull/360).
+
+community.network
+~~~~~~~~~~~~~~~~~
+
+- Deprecate connection=local support for network platforms using persistent framework (https://github.com/ansible-collections/community.network/pull/120).
 
 Porting Guide for v2.10.2
 =========================
@@ -112,6 +382,11 @@ Ansible-base
 
 Major Changes
 -------------
+
+f5networks.f5_modules
+~~~~~~~~~~~~~~~~~~~~~
+
+- Add phone home Teem integration into all modules, functionality can be disabled by setting up F5_TEEM environment variable or no_f5_teem provider parameter
 
 ovirt.ovirt
 ~~~~~~~~~~~

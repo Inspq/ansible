@@ -114,7 +114,8 @@ All fields in the ``DOCUMENTATION`` block are lower-case. All fields are require
 :version_added:
 
   * The version of Ansible when the module was added.
-  * This is a string, and not a float, for example, ``version_added: '2.1'``
+  * This is a string, and not a float, for example, ``version_added: '2.1'``.
+  * In collections, this must be the collection version the module was added to, not the Ansible version. For example, ``version_added: 1.0.0``.
 
 :author:
 
@@ -182,6 +183,7 @@ All fields in the ``DOCUMENTATION`` block are lower-case. All fields are require
 
     * Only needed if this option was extended after initial Ansible release, in other words, this is greater than the top level `version_added` field.
     * This is a string, and not a float, for example, ``version_added: '2.3'``.
+    * In collections, this must be the collection version the option was added to, not the Ansible version. For example, ``version_added: 1.0.0``.
 
   :suboptions:
 
@@ -196,7 +198,7 @@ All fields in the ``DOCUMENTATION`` block are lower-case. All fields are require
 :seealso:
 
   * A list of references to other modules, documentation or Internet resources
-  * In Ansible 2.10 and later, references to modules must use  the FQCN or ``ansible.builtin`` for modules in ``ansible-base``.
+  * In Ansible 2.10 and later, references to modules must use  the FQCN or ``ansible.builtin`` for modules in ``ansible-core``.
   * A reference can be one of the following formats:
 
 
@@ -241,7 +243,7 @@ content in a uniform way:
 
 * ``I()`` for option names. For example: ``Required if I(state=present).``  This is italicized in
   the documentation.
-* ``C()`` for files and option values. For example: ``If not set the environment variable C(ACME_PASSWORD) will be used.``  This displays with a mono-space font in the documentation.
+* ``C()`` for files, option values, and inline code. For example: ``If not set the environment variable C(ACME_PASSWORD) will be used.`` or ``Use C(var | foo.bar.my_filter) to transform C(var) into the required format.``  This displays with a mono-space font in the documentation.
 * ``B()`` currently has no standardized usage.  It is displayed in boldface in the documentation.
 * ``HORIZONTALLINE`` is used sparingly as a separator in long descriptions.  It becomes a horizontal rule (the ``<hr>`` html tag) in the documentation.
 
@@ -253,8 +255,8 @@ content in a uniform way:
 .. note::
     - To refer to a group of modules in a collection, use ``R()``.  When a collection is not the right granularity, use ``C(..)``:
 
-        -``Refer to the R(community.kubernetes collection, plugins_in_community.kubernetes) for information on managing kubernetes clusters.``
-        -``The C(win_*) modules (spread across several collections) allow you to manage various aspects of windows hosts.``
+        - ``Refer to the R(community.kubernetes collection, plugins_in_community.kubernetes) for information on managing kubernetes clusters.``
+        - ``The C(win_*) modules (spread across several collections) allow you to manage various aspects of windows hosts.``
 
 
 .. note::
@@ -339,7 +341,7 @@ Per playbook best practices, each example should include a ``name:`` line::
 
 The ``name:`` line should be capitalized and not include a trailing dot.
 
-Use a fully qualified collection name (FQCN) as a part of the module's name like in the example above. For modules in ``ansible-base``, use the ``ansible.builtin.`` identifier, for example ``ansible.builtin.debug``.
+Use a fully qualified collection name (FQCN) as a part of the module's name like in the example above. For modules in ``ansible-core``, use the ``ansible.builtin.`` identifier, for example ``ansible.builtin.debug``.
 
 If your examples use boolean options, use yes/no values. Since the documentation generates boolean values as yes/no, having the examples use these values as well makes the module documentation more consistent.
 
@@ -372,7 +374,7 @@ Otherwise, for each value returned, provide the following fields. All fields are
     Only needed if this return was extended after initial Ansible release, in other words, this is greater than the top level `version_added` field.
     This is a string, and not a float, for example, ``version_added: '2.3'``.
   :contains:
-    Optional. To describe nested return values, set ``type: complex``, ``type: dict``, or ``type: list``/``elements: dict`` and repeat the elements above for each sub-field.
+    Optional. To describe nested return values, set ``type: dict``, or ``type: list``/``elements: dict``, or if you really have to, ``type: complex``, and repeat the elements above for each sub-field.
 
 Here are two example ``RETURN`` sections, one with three simple fields and one with a complex nested field::
 
@@ -398,12 +400,13 @@ Here are two example ``RETURN`` sections, one with three simple fields and one w
     packages:
         description: Information about package requirements.
         returned: success
-        type: complex
+        type: dict
         contains:
             missing:
                 description: Packages that are missing from the system.
                 returned: success
                 type: list
+                elements: str
                 sample:
                     - libmysqlclient-dev
                     - libxml2-dev
@@ -411,6 +414,7 @@ Here are two example ``RETURN`` sections, one with three simple fields and one w
                 description: Packages that are installed but at bad versions.
                 returned: success
                 type: list
+                elements: dict
                 sample:
                     - package: libxml2-dev
                       version: 2.9.4+dfsg1-2

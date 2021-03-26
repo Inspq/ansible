@@ -58,9 +58,10 @@ class Local(CIProvider):
 
     def generate_resource_prefix(self):  # type: () -> str
         """Return a resource prefix specific to this CI provider."""
-        node = re.sub(r'[^a-zA-Z0-9]+', '-', platform.node().split('.')[0]).lower()
-
-        prefix = 'ansible-test-%s-%d' % (node, random.randint(10000000, 99999999))
+        prefix = 'ansible-test-%d-%s' % (
+            random.randint(10000000, 99999999),
+            platform.node().split('.')[0],
+        )
 
         return prefix
 
@@ -120,12 +121,12 @@ class Local(CIProvider):
 
     def supports_core_ci_auth(self, context):  # type: (AuthContext) -> bool
         """Return True if Ansible Core CI is supported."""
-        path = self._get_aci_key_path(context)
+        path = self._get_aci_key_path()
         return os.path.exists(path)
 
     def prepare_core_ci_auth(self, context):  # type: (AuthContext) -> t.Dict[str, t.Any]
         """Return authentication details for Ansible Core CI."""
-        path = self._get_aci_key_path(context)
+        path = self._get_aci_key_path()
         auth_key = read_text_file(path).strip()
 
         request = dict(
@@ -143,12 +144,8 @@ class Local(CIProvider):
         """Return details about git in the current environment."""
         return None  # not yet implemented for local
 
-    def _get_aci_key_path(self, context):  # type: (AuthContext) -> str
+    def _get_aci_key_path(self):  # type: () -> str
         path = os.path.expanduser('~/.ansible-core-ci.key')
-
-        if context.region:
-            path += '.%s' % context.region
-
         return path
 
 

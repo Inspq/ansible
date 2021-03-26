@@ -25,6 +25,7 @@ options:
         When using state=latest, this can be '*' which means run: dnf -y update.
         You can also pass a url or a local path to a rpm file.
         To operate on several packages this can accept a comma separated string of packages or a list of packages."
+      - Comparison operators for package version are valid here C(>), C(<), C(>=), C(<=). Example - C(name>=1.0)
     required: true
     aliases:
         - pkg
@@ -250,6 +251,11 @@ EXAMPLES = '''
     name: httpd
     state: latest
 
+- name: Install Apache >= 2.4
+  dnf:
+    name: httpd>=2.4
+    state: present
+
 - name: Install the latest version of Apache and MariaDB
   dnf:
     name:
@@ -318,6 +324,15 @@ import os
 import re
 import sys
 
+from ansible.module_utils._text import to_native, to_text
+from ansible.module_utils.urls import fetch_file
+from ansible.module_utils.six import PY2, text_type
+from distutils.version import LooseVersion
+
+from ansible.module_utils.basic import AnsibleModule
+from ansible.module_utils.common.respawn import has_respawned, probe_interpreters_for_module, respawn_module
+from ansible.module_utils.yumdnf import YumDnf, yumdnf_argument_spec
+
 try:
     import dnf
     import dnf.cli
@@ -328,14 +343,6 @@ try:
     HAS_DNF = True
 except ImportError:
     HAS_DNF = False
-
-from ansible.module_utils._text import to_native, to_text
-from ansible.module_utils.urls import fetch_file
-from ansible.module_utils.six import PY2, text_type
-from distutils.version import LooseVersion
-
-from ansible.module_utils.basic import AnsibleModule
-from ansible.module_utils.yumdnf import YumDnf, yumdnf_argument_spec
 
 
 class DnfModule(YumDnf):
@@ -503,40 +510,31 @@ class DnfModule(YumDnf):
         return rc
 
     def _ensure_dnf(self):
-        if not HAS_DNF:
-            if PY2:
-                package = 'python2-dnf'
-            else:
-                package = 'python3-dnf'
+        if HAS_DNF:
+            return
 
-            if self.module.check_mode:
-                self.module.fail_json(
-                    msg="`{0}` is not installed, but it is required"
-                    "for the Ansible dnf module.".format(package),
-                    results=[],
-                )
+        system_interpreters = ['/usr/libexec/platform-python',
+                               '/usr/bin/python3',
+                               '/usr/bin/python2',
+                               '/usr/bin/python']
 
-            rc, stdout, stderr = self.module.run_command(['dnf', 'install', '-y', package])
-            global dnf
-            try:
-                import dnf
-                import dnf.cli
-                import dnf.const
-                import dnf.exceptions
-                import dnf.subject
-                import dnf.util
-            except ImportError:
-                self.module.fail_json(
-                    msg="Could not import the dnf python module using {0} ({1}). "
-                        "Please install `{2}` package or ensure you have specified the "
-                        "correct ansible_python_interpreter.".format(sys.executable, sys.version.replace('\n', ''),
-                                                                     package),
-                    results=[],
-                    cmd='dnf install -y {0}'.format(package),
-                    rc=rc,
-                    stdout=stdout,
-                    stderr=stderr,
-                )
+        if not has_respawned():
+            # probe well-known system Python locations for accessible bindings, favoring py3
+            interpreter = probe_interpreters_for_module(system_interpreters, 'dnf')
+
+            if interpreter:
+                # respawn under the interpreter where the bindings should be found
+                respawn_module(interpreter)
+                # end of the line for this module, the process will exit here once the respawned module completes
+
+        # done all we can do, something is just broken (auto-install isn't useful anymore with respawn, so it was removed)
+        self.module.fail_json(
+            msg="Could not import the dnf python module using {0} ({1}). "
+                "Please install `python3-dnf` or `python2-dnf` package or ensure you have specified the "
+                "correct ansible_python_interpreter. (attempted {2})"
+                .format(sys.executable, sys.version.replace('\n', ''), system_interpreters),
+            results=[]
+        )
 
     def _configure_base(self, base, conf_file, disable_gpg_check, installroot='/'):
         """Configure the dnf Base object."""
@@ -1149,21 +1147,11 @@ class DnfModule(YumDnf):
                                 response['results'].append(handled_remove_error)
                         continue
 
-                    installed_pkg = list(map(str, installed.filter(name=pkg_spec).run()))
-                    if installed_pkg:
-                        candidate_pkg = self._packagename_dict(installed_pkg[0])
-                        installed_pkg = installed.filter(name=candidate_pkg['name']).run()
-                    else:
-                        candidate_pkg = self._packagename_dict(pkg_spec)
-                        installed_pkg = installed.filter(nevra=pkg_spec).run()
-                    if installed_pkg:
-                        installed_pkg = installed_pkg[0]
-                        evr_cmp = self._compare_evr(
-                            installed_pkg.epoch, installed_pkg.version, installed_pkg.release,
-                            candidate_pkg['epoch'], candidate_pkg['version'], candidate_pkg['release'],
-                        )
-                        if evr_cmp == 0:
-                            self.base.remove(pkg_spec)
+                    installed_pkg = dnf.subject.Subject(pkg_spec).get_best_query(
+                        sack=self.base.sack).installed().run()
+
+                    for pkg in installed_pkg:
+                        self.base.remove(str(pkg))
 
                 # Like the dnf CLI we want to allow recursive removal of dependent
                 # packages

@@ -40,7 +40,7 @@
 - name: assert install existing without --force - {{ test_name }}
   assert:
     that:
-    - '"Skipping ''namespace1.name1'' as it is already installed" in install_existing_no_force.stdout'
+    - '"Nothing to do. All requested collections are already installed" in install_existing_no_force.stdout'
 
 - name: install existing with --force - {{ test_name }}
   command: ansible-galaxy collection install namespace1.name1 -s '{{ test_name }}' --force {{ galaxy_verbosity }}
@@ -94,7 +94,7 @@
     - (install_prerelease_actual.content | b64decode | from_json).collection_info.version == '1.1.0-beta.1'
 
 - name: install multiple collections with dependencies - {{ test_name }}
-  command: ansible-galaxy collection install parent_dep.parent_collection namespace2.name -s {{ test_name }} {{ galaxy_verbosity }}
+  command: ansible-galaxy collection install parent_dep.parent_collection:1.0.0 namespace2.name -s {{ test_name }} {{ galaxy_verbosity }}
   args:
     chdir: '{{ galaxy_dir }}/ansible_collections'
   environment:
@@ -129,7 +129,9 @@
 - name: expect failure with dep resolution failure
   command:  ansible-galaxy collection install fail_namespace.fail_collection -s {{ test_name }} {{ galaxy_verbosity }}
   register: fail_dep_mismatch
-  failed_when: '"Cannot meet dependency requirement ''fail_dep2.name:<0.0.5'' for collection fail_namespace.fail_collection" not in fail_dep_mismatch.stderr'
+  failed_when:
+  - '"Could not satisfy the following requirements" not in fail_dep_mismatch.stderr'
+  - '" fail_dep2.name:<0.0.5 (dependency of fail_namespace.fail_collection:2.1.2)" not in fail_dep_mismatch.stderr'
 
 - name: Find artifact url for namespace3.name
   uri:
@@ -301,44 +303,39 @@
     - (install_req_actual.results[0].content | b64decode | from_json).collection_info.version == '1.0.0'
     - (install_req_actual.results[1].content | b64decode | from_json).collection_info.version == '1.0.0'
 
-- name: install cache.cache at the current latest version
-  command: ansible-galaxy collection install cache.cache -s '{{ test_name }}' -vvv
-  environment:
-    ANSIBLE_COLLECTIONS_PATH: '{{ galaxy_dir }}/ansible_collections'
-
-- set_fact:
-    cache_version_build: '{{ (cache_version_build | int) + 1 }}'
-
-- name: publish update for cache.cache test
-  setup_collections:
-    server: galaxy_ng
-    collections:
-    - namespace: cache
-      name: cache
-      version: 1.0.{{ cache_version_build }}
-    wait: yes
-
-- name: make sure the cache version list is ignored on a collection version change
-  command: ansible-galaxy collection install cache.cache -s '{{ test_name }}' --force -vvv
-  register: install_cached_update
-  environment:
-    ANSIBLE_COLLECTIONS_PATH: '{{ galaxy_dir }}/ansible_collections'
-
-- name: get result of install collections with ansible-galaxy install - {{ test_name }}
-  slurp:
-    path: '{{ galaxy_dir }}/ansible_collections/cache/cache/MANIFEST.json'
-  register: install_cached_update_actual
-
-- name: assert install collections with ansible-galaxy install - {{ test_name }}
-  assert:
-    that:
-    - '"Installing ''cache.cache:1.0.{{ cache_version_build }}'' to" in install_cached_update.stdout'
-    - (install_cached_update_actual.content | b64decode | from_json).collection_info.version == '1.0.' ~ cache_version_build
-
-- name: remove test collection install directory - {{ test_name }}
-  file:
-    path: '{{ galaxy_dir }}/ansible_collections'
-    state: absent
+# Uncomment once pulp container is at pulp>=0.5.0
+#- name: install cache.cache at the current latest version
+#  command: ansible-galaxy collection install cache.cache -s '{{ test_name }}' -vvv
+#  environment:
+#    ANSIBLE_COLLECTIONS_PATH: '{{ galaxy_dir }}/ansible_collections'
+#
+#- set_fact:
+#    cache_version_build: '{{ (cache_version_build | int) + 1 }}'
+#
+#- name: publish update for cache.cache test
+#  setup_collections:
+#    server: galaxy_ng
+#    collections:
+#    - namespace: cache
+#      name: cache
+#      version: 1.0.{{ cache_version_build }}
+#
+#- name: make sure the cache version list is ignored on a collection version change - {{ test_name }}
+#  command: ansible-galaxy collection install cache.cache -s '{{ test_name }}' --force -vvv
+#  register: install_cached_update
+#  environment:
+#    ANSIBLE_COLLECTIONS_PATH: '{{ galaxy_dir }}/ansible_collections'
+#
+#- name: get result of cache version list is ignored on a collection version change - {{ test_name }}
+#  slurp:
+#    path: '{{ galaxy_dir }}/ansible_collections/cache/cache/MANIFEST.json'
+#  register: install_cached_update_actual
+#
+#- name: assert cache version list is ignored on a collection version change - {{ test_name }}
+#  assert:
+#    that:
+#    - '"Installing ''cache.cache:1.0.{{ cache_version_build }}'' to" in install_cached_update.stdout'
+#    - (install_cached_update_actual.content | b64decode | from_json).collection_info.version == '1.0.' ~ cache_version_build
 
 - name: install collection with symlink - {{ test_name }}
   command: ansible-galaxy collection install symlink.symlink -s '{{ test_name }}' {{ galaxy_verbosity }}
@@ -380,3 +377,81 @@
     - install_symlink_actual.results[4].stat.lnk_target == 'docs'
     - install_symlink_actual.results[5].stat.islnk
     - install_symlink_actual.results[5].stat.lnk_target == '../REÅDMÈ.md'
+
+- name: remove install directory for the next test because parent_dep.parent_collection was installed - {{ test_name }}
+  file:
+    path: '{{ galaxy_dir }}/ansible_collections'
+    state: absent
+
+- name: install collection and dep compatible with multiple requirements - {{ test_name }}
+  command: ansible-galaxy collection install parent_dep.parent_collection parent_dep2.parent_collection
+  environment:
+    ANSIBLE_COLLECTIONS_PATHS: '{{ galaxy_dir }}/ansible_collections'
+  register: install_req
+
+- name: assert install collections with ansible-galaxy install - {{ test_name }}
+  assert:
+    that:
+    - '"Installing ''parent_dep.parent_collection:1.0.0'' to" in install_req.stdout'
+    - '"Installing ''parent_dep2.parent_collection:1.0.0'' to" in install_req.stdout'
+    - '"Installing ''child_dep.child_collection:0.5.0'' to" in install_req.stdout'
+
+- name: install a collection to a directory that contains another collection with no metadata
+  block:
+
+    # Collections are usable in ansible without a galaxy.yml or MANIFEST.json
+    - name: create a collection directory
+      file:
+        state: directory
+        path: '{{ galaxy_dir }}/ansible_collections/unrelated_namespace/collection_without_metadata/plugins'
+
+    - name: install a collection to the same installation directory - {{ test_name }}
+      command: ansible-galaxy collection install namespace1.name1
+      environment:
+        ANSIBLE_COLLECTIONS_PATHS: '{{ galaxy_dir }}/ansible_collections'
+      register: install_req
+
+    - name: assert installed collections with ansible-galaxy install - {{ test_name }}
+      assert:
+        that:
+          - '"Installing ''namespace1.name1:1.0.9'' to" in install_req.stdout'
+
+- name: remove test collection install directory - {{ test_name }}
+  file:
+    path: '{{ galaxy_dir }}/ansible_collections'
+    state: absent
+
+
+- name: download collections with pre-release dep - {{ test_name }}
+  command: ansible-galaxy collection download dep_with_beta.parent namespace1.name1:1.1.0-beta.1 -p '{{ galaxy_dir }}/scratch'
+
+- name: install collection with concrete pre-release dep - {{ test_name }}
+  command: ansible-galaxy collection install -r '{{ galaxy_dir }}/scratch/requirements.yml'
+  args:
+    chdir: '{{ galaxy_dir }}/scratch'
+  environment:
+    ANSIBLE_COLLECTIONS_PATHS: '{{ galaxy_dir }}/ansible_collections'
+  register: install_concrete_pre
+
+- name: get result of install collections with concrete pre-release dep - {{ test_name }}
+  slurp:
+    path: '{{ galaxy_dir }}/ansible_collections/{{ collection }}/MANIFEST.json'
+  register: install_concrete_pre_actual
+  loop_control:
+    loop_var: collection
+  loop:
+  - namespace1/name1
+  - dep_with_beta/parent
+
+- name: assert install collections with ansible-galaxy install - {{ test_name }}
+  assert:
+    that:
+    - '"Installing ''namespace1.name1:1.1.0-beta.1'' to" in install_concrete_pre.stdout'
+    - '"Installing ''dep_with_beta.parent:1.0.0'' to" in install_concrete_pre.stdout'
+    - (install_concrete_pre_actual.results[0].content | b64decode | from_json).collection_info.version == '1.1.0-beta.1'
+    - (install_concrete_pre_actual.results[1].content | b64decode | from_json).collection_info.version == '1.0.0'
+
+- name: remove collection dir after round of testing - {{ test_name }}
+  file:
+    path: '{{ galaxy_dir }}/ansible_collections'
+    state: absent

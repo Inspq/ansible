@@ -89,6 +89,7 @@ class ActionBase(with_metaclass(ABCMeta, object)):
         * Module parameters.  These are stored in self._task.args
         """
 
+        # does not default to {'changed': False, 'failed': False}, as it breaks async
         result = {}
 
         if tmp is not None:
@@ -1148,7 +1149,7 @@ class ActionBase(with_metaclass(ABCMeta, object)):
 
     def _parse_returned_data(self, res):
         try:
-            filtered_output, warnings = _filter_non_json_lines(res.get('stdout', u''))
+            filtered_output, warnings = _filter_non_json_lines(res.get('stdout', u''), objects_only=True)
             for w in warnings:
                 display.warning(w)
 

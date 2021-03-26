@@ -504,7 +504,7 @@ The ``network_in_network`` filter returns whether an address or a network passed
 
 To check whether multiple addresses belong to a network, use the ``reduce_on_network`` filter::
 
-    # {{ '192.168.0.0/24' | ansible.netcommon.reduce_on_network( ['192.168.0.34', '10.3.0.3', '192.168.2.34'] ) }}
+    # {{ ['192.168.0.34', '10.3.0.3', '192.168.2.34'] | ansible.netcommon.reduce_on_network( '192.168.0.0/24' ) }}
     ['192.168.0.34']
 
 
@@ -715,7 +715,7 @@ Generate an IPv6 address in Stateless Configuration (SLAAC)
 
 the filter ``slaac()`` generates an IPv6 address for a given network and a MAC Address in Stateless Configuration::
 
-    # {{ fdcf:1894:23b5:d38c:0000:0000:0000:0000 | slaac('c2:31:b3:83:bf:2b') }}
+    # {{ 'fdcf:1894:23b5:d38c:0000:0000:0000:0000' | slaac('c2:31:b3:83:bf:2b') }}
     fdcf:1894:23b5:d38c:c031:b3ff:fe83:bf2b
 
 .. seealso::

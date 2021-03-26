@@ -157,7 +157,7 @@ def _gitinfo():
 def version(prog=None):
     """ return ansible version """
     if prog:
-        result = [" ".join((prog, __version__))]
+        result = ["{0} [core {1}] ".format(prog, __version__)]
     else:
         result = [__version__]
 
@@ -221,7 +221,8 @@ def add_basedir_options(parser):
     """Add options for commands which can set a playbook basedir"""
     parser.add_argument('--playbook-dir', default=C.config.get_config_value('PLAYBOOK_DIR'), dest='basedir', action='store',
                         help="Since this tool does not use playbooks, use this as a substitute playbook directory."
-                             "This sets the relative path for many features including roles/ group_vars/ etc.")
+                             "This sets the relative path for many features including roles/ group_vars/ etc.",
+                        type=unfrack_path())
 
 
 def add_check_options(parser):
@@ -249,6 +250,8 @@ def add_connect_options(parser):
                                help="connection type to use (default=%s)" % C.DEFAULT_TRANSPORT)
     connect_group.add_argument('-T', '--timeout', default=C.DEFAULT_TIMEOUT, type=int, dest='timeout',
                                help="override the connection timeout in seconds (default=%s)" % C.DEFAULT_TIMEOUT)
+
+    # ssh only
     connect_group.add_argument('--ssh-common-args', default='', dest='ssh_common_args',
                                help="specify common arguments to pass to sftp/scp/ssh (e.g. ProxyCommand)")
     connect_group.add_argument('--sftp-extra-args', default='', dest='sftp_extra_args',

@@ -9,7 +9,7 @@ Ansible Vault encrypts variables and files so you can protect sensitive content 
 .. warning::
     * Encryption with Ansible Vault ONLY protects 'data at rest'.  Once the content is decrypted ('data in use'), play and plugin authors are responsible for avoiding any secret disclosure, see :ref:`no_log <keep_secret_data>` for details on hiding output and :ref:`vault_securing_editor` for security considerations on editors you use with Ansible Vault.
 
-You can use encrypted variables and files in ad-hoc commands and playbooks by supplying the passwords you used to encrypt them. You can modify your ``ansible.cfg`` file to specify the location of a password file or to always prompt for the password.
+You can use encrypted variables and files in ad hoc commands and playbooks by supplying the passwords you used to encrypt them. You can modify your ``ansible.cfg`` file to specify the location of a password file or to always prompt for the password.
 
 .. contents::
    :local:
@@ -42,7 +42,7 @@ If you use multiple vault passwords, you can differentiate one password from ano
 
 When you pass a vault ID as an option to the :ref:`ansible-vault` command, you add a label (a hint or nickname) to the encrypted content. This label documents which password you used to encrypt it. The encrypted variable or file includes the vault ID label in plain text in the header. The vault ID is the last element before the encrypted content. For example::
 
-    my_encrytped_var: !vault |
+    my_encrypted_var: !vault |
               $ANSIBLE_VAULT;1.2;AES256;dev
               30613233633461343837653833666333643061636561303338373661313838333565653635353162
               3263363434623733343538653462613064333634333464660a663633623939393439316636633863
@@ -83,14 +83,7 @@ You can memorize your vault password, or manually copy vault passwords from any 
 Storing passwords in files
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-To store a vault password in a file, enter the password as a string on a single line in the file. Make sure the permissions on the file are appropriate. Do not add password files to source control. If you have multiple passwords, you can store them all in a single file, as long as they all have vault IDs. For each password, create a separate line and enter the vault ID, a space, then the password as a string. For example:
-
-.. code-block:: text
-
-   dev my_dev_pass
-   test my_test_pass
-   prod my_prod_pass
-
+To store a vault password in a file, enter the password as a string on a single line in the file. Make sure the permissions on the file are appropriate. Do not add password files to source control.
 
 .. _vault_password_client_scripts:
 
@@ -206,11 +199,11 @@ The command above creates this content::
               6664656334373166630a363736393262666465663432613932613036303963343263623137386239
               6330
 
-To encrypt the string 'letmein' read from stdin, add the vault ID 'test' using the 'test' vault password stored in `a_password_file`, and name the variable 'test_db_password':
+To encrypt the string 'letmein' read from stdin, add the vault ID 'dev' using the 'dev' vault password stored in `a_password_file`, and name the variable 'db_password':
 
 .. code-block:: bash
 
-    echo -n 'letmein' | ansible-vault encrypt_string --vault-id test@a_password_file --stdin-name 'test_db_password'
+    echo -n 'letmein' | ansible-vault encrypt_string --vault-id dev@a_password_file --stdin-name 'db_password'
 
 .. warning::
 
