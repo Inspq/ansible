@@ -215,7 +215,9 @@ pipeline {
     }
     post {
     	always {
-    	    sh "docker stop sx5spconfig testkc testldap || echo 'Container already stopped'"
+    		script {
+				sh "docker stop sx5spconfig testkc testldap 2>/dev/null && echo 'Container stopped' || echo 'Container already stopped'"   
+    		}
     	}
 
         success {
