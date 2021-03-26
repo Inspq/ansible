@@ -35,7 +35,7 @@ pipeline {
             steps {
                 script {
                     try{
-                        sh "docker run -u root --rm -v ${WORKSPACE}/lib/ansible/modules/identity/sx5:/app nexus3.inspq.qc.ca:5000/inspq/bandit:SNAPSHOT bandit -r -s B608 ./"
+                        sh "docker run -u root --rm -v ${WORKSPACE}/lib/ansible/modules/identity/sx5:/app nexus3.inspq.qc.ca:5000/inspq/bandit:SNAPSHOT bandit -r -s B608,B110 ./"
                     }
                     catch (exc){
                         currentBuild.result = 'UNSTABLE'
@@ -214,6 +214,12 @@ pipeline {
         
     }
     post {
+    	always {
+    		script {
+				sh "docker stop sx5spconfig testkc testldap 2>/dev/null && echo 'Container stopped' || echo 'Container already stopped'"   
+    		}
+    	}
+
         success {
             script {
                 if (currentBuild.getPreviousBuild() != null && currentBuild.getPreviousBuild().getResult().toString() != "SUCCESS") {

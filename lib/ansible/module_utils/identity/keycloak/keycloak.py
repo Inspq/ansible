@@ -1049,6 +1049,40 @@ class KeycloakAPI(object):
         except Exception as e:
             self.module.fail_json(msg="Unable to get client's %s roles in realm %s: %s" % (client_id, realm, str(e)))
 
+    def get_client_roles_with_composites(self, client_id, realm='master'):
+        """ Get all client's roles
+
+        :param client_id: id of the client
+        :return: Client's roles representation
+        """
+        try:
+            client_roles_url = URL_CLIENT_ROLES.format(url=self.baseurl,
+                                                       realm=realm,
+                                                       id=client_id)
+            # clientSvcBaseUrl = URL_CLIENTS.format(url=self.baseurl, realm=realm)
+            clientRolesRepresentation = json.load(open_url(client_roles_url,
+                                                           method='GET',
+                                                           headers=self.restheaders))
+            for clientRole in clientRolesRepresentation:
+                if clientRole["composite"]:
+                    clientRole["composites"] = json.load(
+                        open_url(
+                            client_roles_url + '/' + clientRole['name'] + '/composites',
+                            method='GET',
+                            headers=self.restheaders))
+                    # pas besoin a date, en commentaire juste pour des raison de performance
+                    # for roleComposite in clientRole["composites"]:
+                    #     if roleComposite['clientRole']:
+                    #         roleCompositeClient = json.load(
+                    #             open_url(
+                    #                 clientSvcBaseUrl + '/' + roleComposite['containerId'],
+                    #                 method='GET',
+                    #                 headers=self.restheaders))
+                    #         roleComposite["clientId"] = roleCompositeClient["clientId"]
+            return clientRolesRepresentation
+        except Exception as e:
+            self.module.fail_json(msg="Unable to get client's %s roles in realm %s: %s" % (client_id, realm, str(e)))
+
     def get_client_role_by_name(self, client_id, name, realm='master'):
         """ Get client role by name
         :param client_id: id of the client
@@ -1096,7 +1130,7 @@ class KeycloakAPI(object):
         except Exception as e:
             self.module.fail_json(msg="Unable to add client roles %s: %s" % (clientRepresentation["id"], str(e)))
 
-    def create_or_update_client_roles(self, client_id, newClientRoles, realm='master'):
+    def create_or_update_client_roles(self, client_id, newClientRoles, realm='master', deleteExtraComponent=True):
         """ Create or update client roles. Client roles can be added, updated or removed depending of the state.
 
         :param newClientRoles: Client roles to be added, updated or removed.
@@ -1141,7 +1175,7 @@ class KeycloakAPI(object):
                                         newComposite['clientRole'] = False
                                         break
                     clientRoleFound = False
-                    clientRoles = self.get_client_roles(client_id=id_client, realm=realm)
+                    clientRoles = self.get_client_roles_with_composites(client_id=id_client, realm=realm)
                     if len(clientRoles) > 0:
                         # Check if role to be created already exist for the client
                         for clientRole in clientRoles:
@@ -1195,7 +1229,7 @@ class KeycloakAPI(object):
                         # Composites role
                         if 'composites' in newClientRole and newClientRole['composites'] is not None and len(newClientRole['composites']) > 0:
                             newComposites = newClientRole['composites']
-                            if clientRoleFound and "composites" in clientRole:
+                            if deleteExtraComponent and clientRoleFound and "composites" in clientRole:
                                 rolesToDelete = []
                                 for roleTodelete in clientRole['composites']:
                                     tmprole = {}

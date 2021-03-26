@@ -241,7 +241,7 @@ def main():
                         # Delete the realm role user mapping
                         kc.delete_user_realm_role(user_id=expiredHabilitation["idUtilisateur"], role=roleRepresentation, realm=realm)
                         deleteExpiredHabilitationsInKc.append(expiredHabilitation)
-                # Delete expired habilitation form spconfig
+                # Delete expired habilitation from spconfig
                 deleteHabilitation(url=spConfigUrl, user_id=expiredHabilitation["idUtilisateur"], role_id=expiredHabilitation["idRole"], headers=headers)
                 deleteExpiredHabilitations.append(expiredHabilitation)
                 changed = True
