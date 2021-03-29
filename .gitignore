@@ -190,4 +190,5 @@ local.properties
 .sts4-cache/
 
 # End of https://www.gitignore.io/api/eclipse
-
+lib/ansible_base.egg-info
+lib/ansible_core.egg-info
