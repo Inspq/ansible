@@ -30,7 +30,8 @@ import os
 
 from ansible.modules.identity.sx5 import sx5_sp_config_system
 from ansible.modules.identity.keycloak import keycloak_client
-from ansible.module_utils.sx5_sp_config_system_utils import loginAndSetHeaders
+#from ansible.module_utils.sx5_sp_config_system_utils import loginAndSetHeaders
+from ansible.module_utils.identity.keycloak.keycloak import KeycloakAPI, get_token
 from units.modules.utils import AnsibleExitJson, ModuleTestCase, set_module_args
 
 KC_URL = os.environ['KC_URL'] if 'KC_URL' in os.environ else "http://localhost"
@@ -316,6 +317,16 @@ class Sx5SystemTestCase(ModuleTestCase):
                       {"name":"HPilot2","description": "HPilot2","composite": True,"composites": [{"id": "master-realm","name": "view-users"}]}
                 ]
             }, 
+        {
+            "clientId": "testclientSADU",
+            "name": "testClientSADU",
+            "roles": [
+                {
+                    "name":"user-provisioning",
+                    "description": "Can provision user",
+                    "composite": "False"}
+                ]
+            }
         ]
     clientsToDelete = [
         {
@@ -324,6 +335,7 @@ class Sx5SystemTestCase(ModuleTestCase):
     ]
     def setUp(self):
         super(Sx5SystemTestCase, self).setUp()
+        
         toCreateClient = self.clientTemplate.copy()
         module = keycloak_client
         # Créer le client pour spconfig
@@ -437,6 +449,83 @@ class Sx5SystemTestCase(ModuleTestCase):
         self.system(toDoNotChange)
         results = self.system(toDoNotChange)
         self.assertFalse(results['changed'])
+
+    def test_create_system_with_sadu_using_pilot_role_and_pilot_sadu_roles(self):
+        toCreate = {}
+        toCreate["spUrl"] = AUTH_URL
+        toCreate["spUsername"] = "admin"
+        toCreate["spPassword"] = "admin"
+        toCreate["spRealm"] = "master"
+        toCreate["spConfigClient_id"] = "sx5spconfig" 
+        toCreate["spConfigClient_secret"] = ""
+        toCreate["spConfigUrl"] = SP_CONFIG_URL
+        toCreate["systemName"] = "system_with_sadu_and_sadu_role"
+        toCreate["systemShortName"] = "SysWithSADU"
+        toCreate["clients"] = [{"clientId": "clientsystem11"}]
+        toCreate["sadu_principal"] = "http://sadu.dev.inspq.qc.ca"
+        toCreate["sadu_secondary"] = [{"adresse": "http://sadu_secondary1"},{"adresse": "http://sadu_secondary2"}]
+        toCreate["clientRoles_mapper"] = [{"spClientRole": "roleInSp11", "eq_sadu_role": "roleSadu11"},{"spClientRole": "roleInSp12", "eq_sadu_role": "roleSadu12"}]
+        toCreate["clientRoles"] = [{"spClientRoleId": "test1", "spClientRoleName": "test1", "spClientRoleDescription": "test1"},{"spClientRoleId": "toCreate", "spClientRoleName": "toCreate", "spClientRoleDescription": "toCreate"}]
+        toCreate["pilotRole"] = "Pilote-SysWithSADU"
+        toCreate["pilotSaduRoles"] = [
+            {
+                "id": "testclientSADU",
+                "name": "user-provisioning"
+                }
+            ]
+        toCreate["state"] = "present"
+        toCreate["force"] = False
+    
+        results = self.system(toCreate)
+        self.assertTrue(results['changed'])
+        self.assertEquals(results["diff"]["after"]["Creation-system-sp-config"]["nom"],
+                          toCreate["systemName"],
+                          "systemName: " + results["diff"]["after"]["Creation-system-sp-config"]["nom"] + " : " + toCreate["systemName"])
+        self.assertTrue('keycloak' in results["diff"]["after"], "No change has been made in keycloak")
+        self.assertEquals(
+            results["diff"]["after"]["keycloak"],
+            "create_or_update_client_roles",
+            "Change in keycloak is {change} but should be create_or_update_client_roles".format(
+                change=results["diff"]["after"]["keycloak"]))
+        # Check that habilitation pilot role composites have SADU client role
+        headers = get_token(
+            base_url="{}/auth".format(toCreate["spUrl"]),
+            auth_realm=toCreate["spRealm"],
+            auth_username=toCreate["spUsername"],
+            auth_password=toCreate["spPassword"],
+            client_id=self.spConfigClient['clientId'],
+            client_secret=self.spConfigClient['clientSecret'],
+            validate_certs=False)
+        kc = KeycloakAPI(
+            module=None,
+            auth_keycloak_url="{}/auth".format(toCreate["spUrl"]),
+            auth_client_id=self.spConfigClient['clientId'],
+            auth_username=toCreate["spUsername"],
+            auth_password=toCreate["spPassword"],
+            auth_realm='master',
+            auth_client_secret=self.spConfigClient['clientSecret'],
+            validate_certs=False,
+            connection_header=headers)
+        sx5habilitationservice_client = kc.get_client_by_clientid(
+            client_id="sx5habilitationservices",
+            realm=toCreate["spRealm"])
+        sadu_client = kc.get_client_by_clientid(
+            client_id="testclientSADU",
+            realm=toCreate["spRealm"])
+        habilitation_services_roles = kc.get_client_roles_with_composites(
+            client_id=sx5habilitationservice_client["id"],
+            realm=toCreate["spRealm"])
+        roleSaduFound = False
+        for role in habilitation_services_roles:
+            if role['composite'] and 'composites' in role:
+                for composite in role['composites']:
+                    if composite['name'] == toCreate["pilotSaduRoles"][0]['name'] and composite['containerId'] == sadu_client["id"]:
+                        roleSaduFound = True
+                        break
+            
+        self.assertTrue(roleSaduFound,
+                        "Role {} as not been found in habilitation".format(
+                            str(toCreate["pilotSaduRoles"][0])))
 
     def test_modify_system_no_pilotRoles(self):
         toChange1 = {}
@@ -635,7 +724,15 @@ class Sx5SystemTestCase(ModuleTestCase):
         
         self.system(toCreate1)
 
-        headers = loginAndSetHeaders(toCreate1["spUrl"], toCreate1["spRealm"], toCreate1["spUsername"], toCreate1["spPassword"], toCreate1["spConfigClient_id"], toCreate1["spConfigClient_secret"])
+        headers = get_token(
+            base_url="{}/auth".format(toCreate1["spUrl"]),
+            auth_realm=toCreate1["spRealm"],
+            auth_username=toCreate1["spUsername"],
+            auth_password=toCreate1["spPassword"],
+            client_id=self.spConfigClient['clientId'],
+            client_secret=self.spConfigClient['clientSecret'],
+            validate_certs=False)
+
         getResponse = requests.get(toCreate1["spConfigUrl"]+"/systemes/"+toCreate1["systemShortName"], headers=headers)
         dataResponse = getResponse.json()
         self.assertEquals(len(dataResponse["composants"][0]["roles"]),NnClient,str(len(dataResponse["composants"][0]["roles"])) + " : " + str(NnClient))
@@ -649,7 +746,7 @@ class Sx5SystemTestCase(ModuleTestCase):
         NnClient=len(toCreate1["clientRoles"])
         self.system(toCreate1)
 
-        headers = loginAndSetHeaders(toCreate1["spUrl"], toCreate1["spRealm"], toCreate1["spUsername"], toCreate1["spPassword"], toCreate1["spConfigClient_id"], toCreate1["spConfigClient_secret"])
+        #headers = get_token(toCreate1["spUrl"], toCreate1["spRealm"], toCreate1["spUsername"], toCreate1["spPassword"], toCreate1["spConfigClient_id"], toCreate1["spConfigClient_secret"])
         getResponse = requests.get(toCreate1["spConfigUrl"]+"/systemes/"+toCreate1["systemShortName"], headers=headers)
         dataResponse = getResponse.json()
         self.assertEquals(len(dataResponse["composants"][0]["roles"]),NnClient,str(len(dataResponse["composants"][0]["roles"])) + " : " + str(NnClient))
