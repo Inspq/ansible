@@ -267,7 +267,7 @@ EXAMPLES = '''
           spClientRoleDescription: roleDescription2
         pilotRole: pilote-system1
         pilotSaduRoles:
-        - id: sadu_clientid 
+        - id: sadu_clientid
           name: sadu_client_role
         state: present
         force: yes
@@ -305,17 +305,16 @@ changed:
   type: bool
 '''
 
+import copy
+import json
+import logging
+import os
+import sys
+import requests
+from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils.identity.keycloak.keycloak import (KeycloakAPI,
                                                              get_token,
                                                              isDictEquals)
-from ansible.module_utils.basic import AnsibleModule
-import requests
-import sys
-import os
-import logging
-import json
-import copy
-
 
 try:
     from pygelf import GelfUdpHandler
@@ -367,7 +366,11 @@ def main():
             pilotRoles=dict(type='list', elements='dict', default=[]),
             pilotRole=dict(type='str', required=False),
             clientRoles_mapper=dict(type='list', elements='dict', default=[]),
-            pilotSaduRoles=dict(type='list', elements='dict', default=[], options=pilot_sadu_roles_options),
+            pilotSaduRoles=dict(
+                type='list',
+                elements='dict',
+                default=[],
+                options=pilot_sadu_roles_options),
             force=dict(type='bool', default=False),
             state=dict(choices=["absent", "present"], default='present'),
             graylog_host=dict(type='str', default=''),
@@ -629,7 +632,7 @@ class SpConfigSystem(object):
                 'name': ROLES['PILOTE_HABILITATION']['NAME'],
                 'description': ROLES['PILOTE_HABILITATION']['DESC']
             }
-            
+
             roleSuperAdmin = {
                 'name': ROLES['SUPERADMIN_HABILITATION']['NAME'],
                 'description': ROLES['SUPERADMIN_HABILITATION']['DESC'],
@@ -641,7 +644,7 @@ class SpConfigSystem(object):
                     }
                 ]
             }
-            roles.append(rolePilot)            
+            roles.append(rolePilot)
             roles.append(roleSuperAdmin)
             pilotRoles.append(
                 {
@@ -656,7 +659,7 @@ class SpConfigSystem(object):
                     self.systemRepresentation['systemShortName'])
         pilotRoles = self.params['pilotRoles']
         for composant in system['composants']:
-            clientRolesForComposant =[]
+            clientRolesForComposant = []
             rolePiloteSysteme = {
                 'description': ROLES['SYSTEM_HABILITATION']['DESC'].format(sysname=self.systemRepresentation['systemName']),
                 'name': self.params['pilotRole'],
@@ -685,7 +688,7 @@ class SpConfigSystem(object):
                 ]
             }
             clientRolesForComposant.append(roleSuperAdmin)
-            
+
             pilotRoles.append(
                 {
                     'habilitationClientId': composant['clientId'],
