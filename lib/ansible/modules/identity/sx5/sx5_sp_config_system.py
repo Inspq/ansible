@@ -133,6 +133,22 @@ options:
             - to this role if this parameter is not defined
         required: false
         type: str
+    pilotSaduRoles:
+        description:
+            - List of client roles to assign for pilots to be able to provision
+            - users when assigning habilitations using SADU.
+        required: false
+        type: list
+        elements : dict
+        suboptions:
+            id:
+                description:
+                    - Client ID for SADU.
+                type: str
+            name:
+                description:
+                    - The name of the role for SADU provisioning.
+                type: str
     force:
         default: "no"
         description:
@@ -249,25 +265,10 @@ EXAMPLES = '''
         - spClientRoleId: roleId2
           spClientRoleName: roleName2
           spClientRoleDescription: roleDescription2
-        pilotRoles:
-        - habilitationClientId: habilitationClient1
-          roles:
-          - name: "rolesName"
-            description: "Role1"
-            composite: true
-            composites:
-              - id: existinqClient
-                name: role1ofclient
-            state: present
-        - habilitationClientId: habilitationClient2
-          roles:
-          - name: "rolesName"
-            description: "Role2"
-            composite: true
-            composites:
-              - id: existinqClient
-                name: role1ofclient
-            state: present
+        pilotRole: pilote-system1
+        pilotSaduRoles:
+        - id: sadu_clientid 
+          name: sadu_client_role
         state: present
         force: yes
 
@@ -313,6 +314,8 @@ import sys
 import os
 import logging
 import json
+import copy
+
 
 try:
     from pygelf import GelfUdpHandler
@@ -340,6 +343,9 @@ ROLES = {
 
 
 def main():
+    pilot_sadu_roles_options = dict(
+        id=dict(type='str'),
+        name=dict(type='str'))
     module = AnsibleModule(
         argument_spec=dict(
             spUrl=dict(type='str', required=True),
@@ -361,6 +367,7 @@ def main():
             pilotRoles=dict(type='list', elements='dict', default=[]),
             pilotRole=dict(type='str', required=False),
             clientRoles_mapper=dict(type='list', elements='dict', default=[]),
+            pilotSaduRoles=dict(type='list', elements='dict', default=[], options=pilot_sadu_roles_options),
             force=dict(type='bool', default=False),
             state=dict(choices=["absent", "present"], default='present'),
             graylog_host=dict(type='str', default=''),
@@ -498,6 +505,8 @@ class SpConfigSystem(object):
                 params["systemShortName"]
         else:
             newSystemDBRepresentation["pilotRole"] = params['pilotRole']
+        if 'pilotSaduRoles' in params:
+            newSystemDBRepresentation['pilotSaduRoles'] = params['pilotSaduRoles']
         return newSystemDBRepresentation
 
     def addDiff(self, title, dict1, dict2, result):
@@ -614,27 +623,30 @@ class SpConfigSystem(object):
             self.systemRepresentation['systemShortName'])
         pilotRoles = self.params['pilotRoles']
         for composant in system['composants']:
+            roles = []
+            rolePilot = {
+                'state': 'present',
+                'name': ROLES['PILOTE_HABILITATION']['NAME'],
+                'description': ROLES['PILOTE_HABILITATION']['DESC']
+            }
+            
+            roleSuperAdmin = {
+                'name': ROLES['SUPERADMIN_HABILITATION']['NAME'],
+                'description': ROLES['SUPERADMIN_HABILITATION']['DESC'],
+                'composite': True,
+                'composites': [
+                    {
+                        'id': composant['clientId'],
+                        'name': ROLES['PILOTE_HABILITATION']['NAME']
+                    }
+                ]
+            }
+            roles.append(rolePilot)            
+            roles.append(roleSuperAdmin)
             pilotRoles.append(
                 {
                     'habilitationClientId': composant['clientId'],
-                    'roles': [
-                        {
-                            'state': 'present',
-                            'name': ROLES['PILOTE_HABILITATION']['NAME'],
-                            'description': ROLES['PILOTE_HABILITATION']['DESC']
-                        },
-                        {
-                            'name': ROLES['SUPERADMIN_HABILITATION']['NAME'],
-                            'description': ROLES['SUPERADMIN_HABILITATION']['DESC'],
-                            'composite': True,
-                            'composites': [
-                                {
-                                    'id': composant['clientId'],
-                                    'name': ROLES['PILOTE_HABILITATION']['NAME']
-                                }
-                            ]
-                        }
-                    ]
+                    'roles': roles
                 }
             )
 
@@ -644,33 +656,40 @@ class SpConfigSystem(object):
                     self.systemRepresentation['systemShortName'])
         pilotRoles = self.params['pilotRoles']
         for composant in system['composants']:
+            clientRolesForComposant =[]
+            rolePiloteSysteme = {
+                'description': ROLES['SYSTEM_HABILITATION']['DESC'].format(sysname=self.systemRepresentation['systemName']),
+                'name': self.params['pilotRole'],
+                'composite': True,
+                'composites': [
+                    {
+                        'id': composant['clientId'],
+                        'name': ROLES['UTILISATEUR_HABILITATION']['NAME']
+                    }
+                ]
+            }
+            # Si on a des rôles du sadu à attribuer aux roles de pilotages
+            if 'pilotSaduRoles' in self.params and self.params['pilotSaduRoles'] is not None:
+                for pilotSaduRole in self.params['pilotSaduRoles']:
+                    rolePiloteSysteme['composites'].append(pilotSaduRole)
+            clientRolesForComposant.append(rolePiloteSysteme)
+            roleSuperAdmin = {
+                "description": ROLES['SUPERADMIN_HABILITATION']['DESC'],
+                "name": ROLES['SUPERADMIN_HABILITATION']['NAME'],
+                "composite": True,
+                "composites": [
+                    {
+                        "id": composant['clientId'],
+                        "name": self.params['pilotRole']
+                    }
+                ]
+            }
+            clientRolesForComposant.append(roleSuperAdmin)
+            
             pilotRoles.append(
                 {
                     'habilitationClientId': composant['clientId'],
-                    'roles': [
-                        {
-                            'description': ROLES['SYSTEM_HABILITATION']['DESC'].format(sysname=self.systemRepresentation['systemName']),
-                            'name': self.params['pilotRole'],
-                            'composite': True,
-                            'composites': [
-                                {
-                                    'id': composant['clientId'],
-                                    'name': ROLES['UTILISATEUR_HABILITATION']['NAME']
-                                }
-                            ]
-                        },
-                        {
-                            "description": ROLES['SUPERADMIN_HABILITATION']['DESC'],
-                            "name": ROLES['SUPERADMIN_HABILITATION']['NAME'],
-                            "composite": True,
-                            "composites": [
-                                {
-                                    "id": composant['clientId'],
-                                    "name": self.params['pilotRole']
-                                }
-                            ]
-                        }
-                    ]
+                    'roles': clientRolesForComposant
                 }
             )
 
@@ -682,28 +701,28 @@ class SpConfigSystem(object):
         logger.info('Generer role pour sp-config: %s',
                     self.systemRepresentation['systemShortName'])
         composant = system['composants'][0]
-        roles = [
-            {
-                'state': 'present',
-                'name': ROLES['PILOTE_HABILITATION']['NAME'],
-                'description': ROLES['PILOTE_HABILITATION']['DESC']
-            },
-            {
-                'state': 'present',
-                'name': ROLES['SUPERADMIN_HABILITATION']['NAME'],
-                'description': ROLES['SUPERADMIN_HABILITATION']['DESC']
-            }
-        ]
+        roles = []
+        rolePiloteHabilitation = {
+            'state': 'present',
+            'name': ROLES['PILOTE_HABILITATION']['NAME'],
+            'description': ROLES['PILOTE_HABILITATION']['DESC']
+        }
+        rolePiloteSysteme = {
+            'state': 'present',
+            'name': self.params['pilotRole'],
+            'description': ROLES['SYSTEM_HABILITATION']['DESC'].format(sysname=self.systemRepresentation['systemName'])
+        }
+        roleSuperAdmin = {
+            'state': 'present',
+            'name': ROLES['SUPERADMIN_HABILITATION']['NAME'],
+            'description': ROLES['SUPERADMIN_HABILITATION']['DESC']
+        }
+        roles.append(rolePiloteHabilitation)
+        roles.append(roleSuperAdmin)
         # le comportement est different si on creer le system sx5habilitation
         # vs tous les autres
         if self.params['spHabilitationShortName'] != self.systemRepresentation['systemShortName']:
-            roles.append(
-                {
-                    'state': 'present',
-                    'name': self.params['pilotRole'],
-                    'description': ROLES['SYSTEM_HABILITATION']['DESC'].format(sysname=self.systemRepresentation['systemName'])
-                }
-            )
+            roles.append(rolePiloteSysteme)
 
         clientRoles = paramHabilitations['clientRoles']
         self.fusionnerRole(clientRoles, composant['roles'], roles)
@@ -817,8 +836,11 @@ class SpConfigSystem(object):
             return
         logger.info('Ajoute system Keycloak client : %s', clientHabilitationId)
         logger.debug(pilotClientRoles)
+        # Copier la liste des rôles clients dans une structure temporaire
+        # car la méthode create_or_update_client_roles peut la polluer
+        pilotClientRolesCopy = copy.deepcopy(pilotClientRoles)
         if self.kc.create_or_update_client_roles(
-                clientHabilitationId, pilotClientRoles, self.params['spRealm'], False):
+                clientHabilitationId, pilotClientRolesCopy, self.params['spRealm'], False):
             self.addDiff(
                 'keycloak',
                 'create_or_update_client_roles',

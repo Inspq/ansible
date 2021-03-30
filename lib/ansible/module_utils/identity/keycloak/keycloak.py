@@ -281,12 +281,54 @@ def get_token(base_url, validate_certs, auth_realm, client_id,
             'Could not obtain access token from %s' % auth_url)
 
 
+class KeycloakModule(object):
+    params = {}
+
+    def __init__(self,
+                 auth_keycloak_url=None,
+                 auth_client_id=None,
+                 auth_username=None,
+                 auth_password=None,
+                 auth_realm=None,
+                 auth_client_secret=None,
+                 validate_certs=True):
+        self.params['auth_keycloak_url'] = auth_keycloak_url
+        self.params['auth_client_id'] = auth_client_id
+        self.params['auth_username'] = auth_username
+        self.params['auth_password'] = auth_password
+        self.params['auth_realm'] = auth_realm
+        self.params['auth_client_secret'] = auth_client_secret
+        self.params['validate_certs'] = validate_certs
+
+    def fail_json(self, msg):
+        raise KeycloakError(msg)
+
+
 class KeycloakAPI(object):
     """ Keycloak API access; Keycloak uses OAuth 2.0 to protect its API, an access token for which
         is obtained through OpenID connect
     """
-    def __init__(self, module, connection_header):
-        self.module = module
+    def __init__(self,
+                 module,
+                 connection_header=None,
+                 auth_keycloak_url=None,
+                 auth_client_id=None,
+                 auth_username=None,
+                 auth_password=None,
+                 auth_realm=None,
+                 auth_client_secret=None,
+                 validate_certs=True):
+        if module is not None:
+            self.module = module
+        else:
+            self.module = KeycloakModule(
+                auth_keycloak_url=auth_keycloak_url,
+                auth_client_id=auth_client_id,
+                auth_username=auth_username,
+                auth_password=auth_password,
+                auth_realm=auth_realm,
+                auth_client_secret=auth_client_secret,
+                validate_certs=validate_certs)
         self.baseurl = self.module.params.get('auth_keycloak_url')
         self.validate_certs = self.module.params.get('validate_certs')
         self.restheaders = connection_header
