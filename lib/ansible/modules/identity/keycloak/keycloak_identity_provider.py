@@ -139,6 +139,19 @@ options:
                 - 'true'
                 - 'false'
             default: 'true'
+        syncMode:
+            description:
+                - Strategy of how to update user information from the idp through mappers:
+                - When choosing legacy, the current behavior is kept,
+                - import will never update user data,
+                - while force will always update user data when possible.
+                - See also the documentation for Identity Provider Mappers for more details.
+            type: str
+            choices:
+                - IMPORT
+                - LEGACY
+                - FORCE
+            default: LEGACY
   mappers:
     description:
     - List of mappers for the Identity provider.
@@ -324,6 +337,11 @@ def main():
             "type": "str",
             "default": "true",
             "choices": ["true", "false"]
+        },
+        "syncMode": {
+            "type": "str",
+            "default": "LEGACY",
+            "choices": ["LEGACY", "IMPORT", "FORCE"]
         }
     }
     mapperconfig_args = {
