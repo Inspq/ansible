@@ -141,7 +141,7 @@ options:
             default: 'true'
         syncMode:
             description:
-                - Strategy of how to update user information from the idp through mappers:
+                - Strategy of how to update user information from the idp through mappers.
                 - When choosing legacy, the current behavior is kept,
                 - import will never update user data,
                 - while force will always update user data when possible.
