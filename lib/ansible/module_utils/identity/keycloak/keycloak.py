@@ -31,6 +31,7 @@ __metaclass__ = type
 
 import json
 import sys
+import copy
 # import urllib
 from six.moves.urllib.parse import quote
 from ansible.module_utils.urls import open_url
@@ -1189,7 +1190,8 @@ class KeycloakAPI(object):
             changed = False
             # Manage the roles
             if newClientRoles is not None:
-                for newClientRole in newClientRoles:
+                for ncr in newClientRoles:
+                    newClientRole = copy.deepcopy(ncr)
                     changeNeeded = False
                     desiredState = "present"
                     # If state key is included in the client role representation, save its value and remove the key from the representation.
