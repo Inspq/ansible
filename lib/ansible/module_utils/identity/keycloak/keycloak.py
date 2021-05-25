@@ -3052,13 +3052,35 @@ class KeycloakAPI(object):
             self.module.fail_json(msg='Could not get role mappings for user %s, client %s in realm %s: %s'
                                       % (user_id, client_id, realm, str(e)))
 
-    def get_user_client_roles(self, user_id, realm='master'):
+    def get_user_client_roles(self, user_id, realm='master', include_id=False):
         """
         Get client roles for a user.
         :param user_id: User ID
         :param realm: Realm
         :return: Representation of the client roles.
         """
+        try:
+            all_client_roles = []
+            clients = self.get_clients(realm=realm)
+            for client in clients:
+                client_roles = self.get_user_client_role_mappings(user_id=user_id, client_id=client["id"], realm=realm)
+                if client_roles: 
+                    new_client_role = {}
+                    new_client_role["clientId"] = client["clientId"]
+                    roles = []
+                    for clientMapping in client_roles:
+                        if include_id:
+                            roles.append({"id": clientMapping["id"], "name": clientMapping["name"]})
+                        else:
+                            roles.append(clientMapping["name"])
+                    new_client_role["roles"] = roles
+                    all_client_roles.append(new_client_role)
+            return all_client_roles
+        except Exception as e:
+            self.module.fail_json(msg='Could not get role mappings for user %s in realm %s: %s'
+                                      % (user_id, realm, str(e)))    
+        """
+        Old implementation does not work With Keycloak 13
         try:
             clientRoles = []
             role_mappings_url = URL_USER_ROLE_MAPPINGS.format(
@@ -3082,6 +3104,7 @@ class KeycloakAPI(object):
         except Exception as e:
             self.module.fail_json(msg='Could not get role mappings for user %s in realm %s: %s'
                                       % (user_id, realm, str(e)))
+        """
 
     def get_user_client_roles_with_id(self, user_id, realm='master'):
         """
@@ -3090,6 +3113,9 @@ class KeycloakAPI(object):
         :param realm: Realm
         :return: Representation of the client roles.
         """
+        self.get_user_client_roles(user_id=user_id, realm=realm, include_id=True)
+        """
+        Old implementation does not work with Keycloak 13
         try:
             clientRoles = []
             role_mappings_url = URL_USER_ROLE_MAPPINGS.format(
@@ -3113,6 +3139,7 @@ class KeycloakAPI(object):
         except Exception as e:
             self.module.fail_json(msg='Could not get role mappings for user %s in realm %s: %s'
                                       % (user_id, realm, str(e)))
+        """
 
     def delete_user_realm_roles(self, user_id, roles=None, realm='master'):
         """

@@ -43,7 +43,6 @@ class KeycloakRealmTestCase(ModuleTestCase):
         'quickLoginCheckMilliSeconds':  1000,
         'maxDeltaTimeSeconds':  43200,
         'failureFactor':  30,
-        'defaultRoles':  [ "offline_access", "uma_authorization" ],
         'requiredCredentials':  [ "password" ],
         'passwordPolicy':  "hashIterations(20000)",
         'otpPolicyType':  "totp",
@@ -113,7 +112,6 @@ class KeycloakRealmTestCase(ModuleTestCase):
         'quickLoginCheckMilliSeconds':  1000,
         'maxDeltaTimeSeconds':  43200,
         'failureFactor':  30,
-        'defaultRoles':  [ "offline_access", "uma_authorization" ],
         'requiredCredentials':  [ "password" ],
         'passwordPolicy':  "hashIterations(20000)",
         'otpPolicyType':  "totp",
@@ -187,7 +185,6 @@ class KeycloakRealmTestCase(ModuleTestCase):
         'quickLoginCheckMilliSeconds':  1000,
         'maxDeltaTimeSeconds':  43200,
         'failureFactor':  30,
-        'defaultRoles':  [ "offline_access", "uma_authorization" ],
         'requiredCredentials':  [ "password" ],
         'passwordPolicy':  "hashIterations(20000)",
         'otpPolicyType':  "totp",
@@ -231,7 +228,14 @@ class KeycloakRealmTestCase(ModuleTestCase):
         'state': 'present',
         'force': False
     }        
-    realmExcudes = ["auth_keycloak_url","auth_username","auth_password","state","force","eventsConfig","_ansible_keep_remote_files","_ansible_remote_tmp"]
+    realmExcudes = [
+        "auth_keycloak_url",
+        "auth_username",
+        "auth_password",
+        "state","force",
+        "eventsConfig",
+        "_ansible_keep_remote_files",
+        "_ansible_remote_tmp"]
     def setUp(self):
         super(KeycloakRealmTestCase, self).setUp()
         self.module = keycloak_realm
