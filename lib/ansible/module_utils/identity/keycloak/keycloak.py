@@ -3064,7 +3064,7 @@ class KeycloakAPI(object):
             clients = self.get_clients(realm=realm)
             for client in clients:
                 client_roles = self.get_user_client_role_mappings(user_id=user_id, client_id=client["id"], realm=realm)
-                if client_roles: 
+                if client_roles:
                     new_client_role = {}
                     new_client_role["clientId"] = client["clientId"]
                     roles = []
@@ -3078,7 +3078,7 @@ class KeycloakAPI(object):
             return all_client_roles
         except Exception as e:
             self.module.fail_json(msg='Could not get role mappings for user %s in realm %s: %s'
-                                      % (user_id, realm, str(e)))    
+                                      % (user_id, realm, str(e)))
         """
         Old implementation does not work With Keycloak 13
         try:
