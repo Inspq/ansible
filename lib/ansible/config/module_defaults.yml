@@ -452,11 +452,17 @@ groupings:
   - aws
   rds_param_group:
   - aws
+  rds_snapshot:
+  - aws
   rds_snapshot_facts:
   - aws
   rds_snapshot_info:
   - aws
   rds_subnet_group:
+  - aws
+  rds_option_group:
+  - aws
+  rds_option_group_info:
   - aws
   redshift:
   - aws
@@ -499,6 +505,22 @@ groupings:
   sts_assume_role:
   - aws
   sts_session_token:
+  - aws
+  wafv2_ip_set:
+  - aws
+  wafv2_ip_set_info:
+  - aws
+  wafv2_resources:
+  - aws
+  wafv2_resources_info:
+  - aws
+  wafv2_rule_group:
+  - aws
+  wafv2_rule_group_info:
+  - aws
+  wafv2_web_acl:
+  - aws
+  wafv2_web_acl_info:
   - aws
   gcp_compute_address:
   - gcp

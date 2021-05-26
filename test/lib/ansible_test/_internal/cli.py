@@ -39,6 +39,7 @@ from .executor import (
     Delegate,
     generate_pip_install,
     check_startup,
+    configure_pypi_proxy,
 )
 
 from .config import (
@@ -125,6 +126,7 @@ def main():
         display.info('MAXFD: %d' % MAXFD, verbosity=2)
 
         try:
+            configure_pypi_proxy(config)
             args.func(config)
             delegate_args = None
         except Delegate as ex:
@@ -182,6 +184,15 @@ def parse_args():
                         action='count',
                         default=0,
                         help='display more output')
+
+    common.add_argument('--pypi-proxy',
+                        action='store_true',
+                        help=argparse.SUPPRESS)  # internal use only
+
+    common.add_argument('--pypi-endpoint',
+                        metavar='URI',
+                        default=None,
+                        help=argparse.SUPPRESS)  # internal use only
 
     common.add_argument('--color',
                         metavar='COLOR',
@@ -505,6 +516,9 @@ def parse_args():
     coverage_combine.set_defaults(func=command_coverage_combine,
                                   config=CoverageConfig)
 
+    coverage_combine.add_argument('--export',
+                                  help='directory to export combined coverage files to')
+
     add_extra_coverage_options(coverage_combine)
 
     coverage_erase = coverage_subparsers.add_parser('erase',
@@ -759,9 +773,6 @@ def add_extra_coverage_options(parser):
     parser.add_argument('--stub',
                         action='store_true',
                         help='generate empty report of all python/powershell source files')
-
-    parser.add_argument('--export',
-                        help='directory to export combined coverage files to')
 
 
 def add_httptester_options(parser, argparse):

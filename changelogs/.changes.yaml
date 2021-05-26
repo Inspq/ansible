@@ -1822,6 +1822,63 @@ releases:
     - win_iis_webapppool-check-mode.yaml
     - windows-coverage-encoding.yaml
     release_date: '2019-12-04'
+  2.9.20:
+    codename: Immigrant Song
+    fragments:
+    - v2.9.20_summary.yaml
+    release_date: '2021-04-12'
+  2.9.20rc1:
+    codename: Immigrant Song
+    fragments:
+    - 471-no_log.yml
+    - 57399-finalize-task-in-strategy.yml
+    - 73840_apt-policy-rc-d.yml
+    - 73876-ansible_test-units.yml
+    - 74113-module_defaults-rds_snapshot.yml
+    - 74125-backport_nmcli_module-slave_bridge_error.yml
+    - ansible-test-fix-coverage-export.yml
+    - community.aws-475-no_log-missing.yml
+    - community.docker-103-docker_swarm-no_log.yml
+    - community.general-2018-missing-no_log-again.yml
+    - community.network-223-no_log-missing.yml
+    - fix_find_default.yml
+    - more-no_log-fixes.yml
+    - optional_module_utils.yml
+    - rds-aws-mod-defaults.yml
+    - v2.9.20rc1_summary.yaml
+    - wafv2-mod-defaults.yml
+    release_date: '2021-04-05'
+  2.9.21:
+    codename: Immigrant Song
+    fragments:
+    - v2.9.21_summary.yaml
+    release_date: '2021-05-03'
+  2.9.21rc1:
+    codename: Immigrant Song
+    fragments:
+    - 72411-fips-mode-ansible-test.yml
+    - ansible-test-connection-units-init.yml
+    - ansible-test-docker-network-detect.yml
+    - ansible-test-opensuse-15-2.yml
+    - ansible-test-pypi-container-no-publish.yml
+    - ansible-test-pypi-test-container.yml
+    - v2.9.21rc1_summary.yaml
+    - validate-modules_found_try_except_import_fails_module_attribute.yaml
+    release_date: '2021-04-27'
+  2.9.22:
+    codename: Immigrant Song
+    fragments:
+    - ansible-test-constraints-websocket-client.yml
+    - v2.9.22_summary.yaml
+    release_date: '2021-05-24'
+  2.9.22rc1:
+    codename: Immigrant Song
+    fragments:
+    - ansible-test-azp-build-api.yml
+    - ansible-test-markupsafe-constraint.yml
+    - jinja2_decorator_renames.yml
+    - v2.9.22rc1_summary.yaml
+    release_date: '2021-05-17'
   2.9.3:
     codename: Immigrant Song
     fragments:

@@ -112,6 +112,7 @@ docs/docsite/_themes/sphinx_rtd_theme/__init__.py metaclass-boilerplate
 docs/docsite/rst/conf.py future-import-boilerplate
 docs/docsite/rst/conf.py metaclass-boilerplate
 docs/docsite/rst/dev_guide/testing/sanity/no-smart-quotes.rst no-smart-quotes
+docs/docsite/rst/user_guide/playbooks_python_version.rst docs-build
 examples/scripts/ConfigureRemotingForAnsible.ps1 pslint:PSCustomUseLiteralPath
 examples/scripts/upgrade_to_ps3.ps1 pslint:PSCustomUseLiteralPath
 examples/scripts/upgrade_to_ps3.ps1 pslint:PSUseApprovedVerbs
@@ -1162,9 +1163,7 @@ lib/ansible/modules/cloud/azure/azure_rm_resourcegroup.py validate-modules:param
 lib/ansible/modules/cloud/azure/azure_rm_resourcegroup_info.py validate-modules:parameter-type-not-in-doc
 lib/ansible/modules/cloud/azure/azure_rm_roleassignment.py validate-modules:parameter-type-not-in-doc
 lib/ansible/modules/cloud/azure/azure_rm_roleassignment_info.py validate-modules:parameter-type-not-in-doc
-lib/ansible/modules/cloud/azure/azure_rm_roledefinition.py validate-modules:invalid-argument-spec
 lib/ansible/modules/cloud/azure/azure_rm_roledefinition.py validate-modules:parameter-type-not-in-doc
-lib/ansible/modules/cloud/azure/azure_rm_roledefinition.py validate-modules:missing-suboption-docs
 lib/ansible/modules/cloud/azure/azure_rm_roledefinition_info.py validate-modules:parameter-type-not-in-doc
 lib/ansible/modules/cloud/azure/azure_rm_route.py validate-modules:parameter-type-not-in-doc
 lib/ansible/modules/cloud/azure/azure_rm_routetable.py validate-modules:parameter-type-not-in-doc
