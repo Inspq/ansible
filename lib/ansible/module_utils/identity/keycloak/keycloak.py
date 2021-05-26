@@ -3079,32 +3079,6 @@ class KeycloakAPI(object):
         except Exception as e:
             self.module.fail_json(msg='Could not get role mappings for user %s in realm %s: %s'
                                       % (user_id, realm, str(e)))
-        """
-        Old implementation does not work With Keycloak 13
-        try:
-            clientRoles = []
-            role_mappings_url = URL_USER_ROLE_MAPPINGS.format(
-                url=self.baseurl,
-                realm=realm,
-                id=user_id)
-            userMappings = json.load(
-                open_url(
-                    role_mappings_url,
-                    method='GET',
-                    headers=self.restheaders))
-            for clientMapping in userMappings["clientMappings"].keys():
-                clientRole = {}
-                clientRole["clientId"] = userMappings["clientMappings"][clientMapping]["client"]
-                roles = []
-                for role in userMappings["clientMappings"][clientMapping]["mappings"]:
-                    roles.append(role["name"])
-                clientRole["roles"] = roles
-                clientRoles.append(clientRole)
-            return clientRoles
-        except Exception as e:
-            self.module.fail_json(msg='Could not get role mappings for user %s in realm %s: %s'
-                                      % (user_id, realm, str(e)))
-        """
 
     def get_user_client_roles_with_id(self, user_id, realm='master'):
         """
@@ -3114,32 +3088,6 @@ class KeycloakAPI(object):
         :return: Representation of the client roles.
         """
         self.get_user_client_roles(user_id=user_id, realm=realm, include_id=True)
-        """
-        Old implementation does not work with Keycloak 13
-        try:
-            clientRoles = []
-            role_mappings_url = URL_USER_ROLE_MAPPINGS.format(
-                url=self.baseurl,
-                realm=realm,
-                id=user_id)
-            userMappings = json.load(
-                open_url(
-                    role_mappings_url,
-                    method='GET',
-                    headers=self.restheaders))
-            for clientMapping in userMappings["clientMappings"].keys():
-                clientRole = {}
-                clientRole["clientId"] = userMappings["clientMappings"][clientMapping]["client"]
-                roles = []
-                for role in userMappings["clientMappings"][clientMapping]["mappings"]:
-                    roles.append({"id": role["id"], "name": role["name"]})
-                clientRole["roles"] = roles
-                clientRoles.append(clientRole)
-            return clientRoles
-        except Exception as e:
-            self.module.fail_json(msg='Could not get role mappings for user %s in realm %s: %s'
-                                      % (user_id, realm, str(e)))
-        """
 
     def delete_user_realm_roles(self, user_id, roles=None, realm='master'):
         """
