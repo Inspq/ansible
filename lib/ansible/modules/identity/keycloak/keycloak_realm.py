@@ -96,11 +96,6 @@ options:
             - If multiple locales are supported, which one will be used as default language.
         required: false
         type: str
-    defaultRoles:
-        description:
-            - Default roles.
-        default: [ "offline_access", "uma_authorization" ]
-        type: list
     directGrantFlow:
         description:
             - Direct Grant Flow.
@@ -122,7 +117,7 @@ options:
         description:
             - Duplicate Emails Allowed.
         type: bool
-        required: false
+        default: false
     editUsernameAllowed:
         description:
             - Edit Username Allowed.
@@ -362,6 +357,7 @@ options:
         description:
             - Revoke Refresh Token.
         type: bool
+        default: False
     smtpServer:
         description:
         - SMTP Server.
@@ -696,7 +692,6 @@ def main():
         bruteForceProtected=dict(type='bool', default=False),
         clientAuthenticationFlow=dict(type='str', default="clients"),
         defaultLocale=dict(type="str"),
-        defaultRoles=dict(type='list', default=["offline_access", "uma_authorization"]),
         directGrantFlow=dict(type='str', default="direct grant"),
         displayName=dict(type='str', required=True, aliases=['name']),
         displayNameHtml=dict(type='str', required=True, aliases=['namehtml']),
@@ -834,7 +829,6 @@ def main():
     newRealmRepresentation["quickLoginCheckMilliSeconds"] = module.params.get('quickLoginCheckMilliSeconds')
     newRealmRepresentation["maxDeltaTimeSeconds"] = module.params.get('maxDeltaTimeSeconds')
     newRealmRepresentation["failureFactor"] = module.params.get('failureFactor')
-    newRealmRepresentation["defaultRoles"] = module.params.get('defaultRoles')
     newRealmRepresentation["requiredCredentials"] = module.params.get('requiredCredentials')
     newRealmRepresentation["passwordPolicy"] = module.params.get('passwordPolicy')
     newRealmRepresentation["otpPolicyType"] = module.params.get('otpPolicyType')
