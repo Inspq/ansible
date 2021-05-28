@@ -14,7 +14,7 @@ from ansible.module_utils._text import to_native, to_text
 from ansible.module_utils.distro import LinuxDistribution
 from ansible.utils.display import Display
 from ansible.utils.plugin_docs import get_versioned_doclink
-from distutils.version import LooseVersion
+from ansible.module_utils.compat.version import LooseVersion
 from traceback import format_exc
 
 display = Display()
@@ -82,7 +82,9 @@ def discover_interpreter(action, interpreter_name, discovery_mode, task_vars):
         display.debug(u"found interpreters: {0}".format(found_interpreters), host=host)
 
         if not found_interpreters:
-            action._discovery_warnings.append(u'No python interpreters found for host {0} (tried {1})'.format(host, bootstrap_python_list))
+            if not is_silent:
+                action._discovery_warnings.append(u'No python interpreters found for '
+                                                  u'host {0} (tried {1})'.format(host, bootstrap_python_list))
             # this is lame, but returning None or throwing an exception is uglier
             return u'/usr/bin/python'
 

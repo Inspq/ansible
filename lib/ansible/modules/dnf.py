@@ -26,6 +26,8 @@ options:
         You can also pass a url or a local path to a rpm file.
         To operate on several packages this can accept a comma separated string of packages or a list of packages."
       - Comparison operators for package version are valid here C(>), C(<), C(>=), C(<=). Example - C(name>=1.0)
+      - You can also pass an absolute path for a binary which is provided by the package to install.
+        See examples for more information.
     required: true
     aliases:
         - pkg
@@ -228,6 +230,12 @@ options:
     type: bool
     default: "no"
     version_added: "2.11"
+  cacheonly:
+    description:
+      - Tells dnf to run entirely from system cache; does not download or update metadata.
+    type: bool
+    default: "no"
+    version_added: "2.12"
 notes:
   - When used with a `loop:` each package will be processed individually, it is much more efficient to pass the list directly to the `name` option.
   - Group removal doesn't work if the group was installed with Ansible because
@@ -289,6 +297,11 @@ EXAMPLES = '''
     name: /usr/local/src/nginx-release-centos-6-0.el6.ngx.noarch.rpm
     state: present
 
+- name: Install Package based upon the file it provides
+  dnf:
+    name: /usr/bin/cowsay
+    state: present
+
 - name: Install the 'Development tools' package group
   dnf:
     name: '@Development tools'
@@ -327,7 +340,7 @@ import sys
 from ansible.module_utils._text import to_native, to_text
 from ansible.module_utils.urls import fetch_file
 from ansible.module_utils.six import PY2, text_type
-from distutils.version import LooseVersion
+from ansible.module_utils.compat.version import LooseVersion
 
 from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils.common.respawn import has_respawned, probe_interpreters_for_module, respawn_module
@@ -609,6 +622,9 @@ class DnfModule(YumDnf):
             if self.download_dir:
                 conf.destdir = self.download_dir
 
+        if self.cacheonly:
+            conf.cacheonly = True
+
         # Default in dnf upstream is true
         conf.clean_requirements_on_remove = self.autoremove
 
@@ -782,7 +798,7 @@ class DnfModule(YumDnf):
         except dnf.exceptions.DepsolveError as e:
             return {
                 'failed': True,
-                'msg': "Depsolve Error occured for package {0}.".format(pkg_spec),
+                'msg': "Depsolve Error occurred for package {0}.".format(pkg_spec),
                 'failure': " ".join((pkg_spec, to_native(e))),
                 'rc': 1,
                 "results": []
@@ -794,15 +810,19 @@ class DnfModule(YumDnf):
             else:
                 return {
                     'failed': True,
-                    'msg': "Unknown Error occured for package {0}.".format(pkg_spec),
+                    'msg': "Unknown Error occurred for package {0}.".format(pkg_spec),
                     'failure': " ".join((pkg_spec, to_native(e))),
                     'rc': 1,
                     "results": []
                 }
 
     def _whatprovides(self, filepath):
+        self.base.read_all_repos()
         available = self.base.sack.query().available()
-        pkg_spec = available.filter(provides=filepath).run()
+        # Search in file
+        files_filter = available.filter(file=filepath)
+        # And Search in provides
+        pkg_spec = files_filter.union(available.filter(provides=filepath)).run()
 
         if pkg_spec:
             return pkg_spec[0].name
@@ -817,14 +837,13 @@ class DnfModule(YumDnf):
                 filenames.append(name)
             elif name.endswith(".rpm"):
                 filenames.append(name)
-            elif name.startswith("@") or ('/' in name):
+            elif name.startswith('/'):
                 # like "dnf install /usr/bin/vi"
-                if '/' in name:
-                    pkg_spec = self._whatprovides(name)
-                    if pkg_spec:
-                        pkg_specs.append(pkg_spec)
-                        continue
-
+                pkg_spec = self._whatprovides(name)
+                if pkg_spec:
+                    pkg_specs.append(pkg_spec)
+                    continue
+            elif name.startswith("@") or ('/' in name):
                 if not already_loaded_comps:
                     self.base.read_comps()
                     already_loaded_comps = True
@@ -854,7 +873,7 @@ class DnfModule(YumDnf):
                         self.base.package_upgrade(pkg)
                 except Exception as e:
                     self.module.fail_json(
-                        msg="Error occured attempting update_only operation: {0}".format(to_native(e)),
+                        msg="Error occurred attempting update_only operation: {0}".format(to_native(e)),
                         results=[],
                         rc=1,
                     )
@@ -874,7 +893,7 @@ class DnfModule(YumDnf):
             except IOError as e:
                 if to_text("Can not load RPM file") in to_text(e):
                     self.module.fail_json(
-                        msg="Error occured attempting remote rpm install of package: {0}. {1}".format(filename, to_native(e)),
+                        msg="Error occurred attempting remote rpm install of package: {0}. {1}".format(filename, to_native(e)),
                         results=[],
                         rc=1,
                     )
@@ -890,7 +909,7 @@ class DnfModule(YumDnf):
                         self.base.package_install(pkg)
                 except Exception as e:
                     self.module.fail_json(
-                        msg="Error occured attempting remote rpm operation: {0}".format(to_native(e)),
+                        msg="Error occurred attempting remote rpm operation: {0}".format(to_native(e)),
                         results=[],
                         rc=1,
                     )
@@ -940,7 +959,7 @@ class DnfModule(YumDnf):
             try:
                 self.base.upgrade_all()
             except dnf.exceptions.DepsolveError as e:
-                failure_response['msg'] = "Depsolve Error occured attempting to upgrade all packages"
+                failure_response['msg'] = "Depsolve Error occurred attempting to upgrade all packages"
                 self.module.fail_json(**failure_response)
         else:
             pkg_specs, group_specs, module_specs, filenames = self._parse_spec_group_file()
@@ -989,7 +1008,7 @@ class DnfModule(YumDnf):
                         else:
                             response['results'].append("Group {0} installed.".format(group))
                     except dnf.exceptions.DepsolveError as e:
-                        failure_response['msg'] = "Depsolve Error occured attempting to install group: {0}".format(group)
+                        failure_response['msg'] = "Depsolve Error occurred attempting to install group: {0}".format(group)
                         self.module.fail_json(**failure_response)
                     except dnf.exceptions.Error as e:
                         # In dnf 2.0 if all the mandatory packages in a group do
@@ -1001,7 +1020,7 @@ class DnfModule(YumDnf):
                     try:
                         self.base.environment_install(environment, dnf.const.GROUP_PACKAGE_TYPES)
                     except dnf.exceptions.DepsolveError as e:
-                        failure_response['msg'] = "Depsolve Error occured attempting to install environment: {0}".format(environment)
+                        failure_response['msg'] = "Depsolve Error occurred attempting to install environment: {0}".format(environment)
                         self.module.fail_json(**failure_response)
                     except dnf.exceptions.Error as e:
                         failure_response['failures'].append(" ".join((environment, to_native(e))))
@@ -1069,7 +1088,7 @@ class DnfModule(YumDnf):
                             # If not already installed, try to install.
                             self.base.environment_install(environment, dnf.const.GROUP_PACKAGE_TYPES)
                     except dnf.exceptions.DepsolveError as e:
-                        failure_response['msg'] = "Depsolve Error occured attempting to install environment: {0}".format(environment)
+                        failure_response['msg'] = "Depsolve Error occurred attempting to install environment: {0}".format(environment)
                     except dnf.exceptions.Error as e:
                         failure_response['failures'].append(" ".join((environment, to_native(e))))
 
@@ -1233,7 +1252,7 @@ class DnfModule(YumDnf):
                     self.module.exit_json(**response)
                 self.module.exit_json(**response)
         except dnf.exceptions.DepsolveError as e:
-            failure_response['msg'] = "Depsolve Error occured: {0}".format(to_native(e))
+            failure_response['msg'] = "Depsolve Error occurred: {0}".format(to_native(e))
             self.module.fail_json(**failure_response)
         except dnf.exceptions.Error as e:
             if to_text("already installed") in to_text(e):
@@ -1241,7 +1260,7 @@ class DnfModule(YumDnf):
                 response['results'].append("Package already installed: {0}".format(to_native(e)))
                 self.module.exit_json(**response)
             else:
-                failure_response['msg'] = "Unknown Error occured: {0}".format(to_native(e))
+                failure_response['msg'] = "Unknown Error occurred: {0}".format(to_native(e))
                 self.module.fail_json(**failure_response)
 
     @staticmethod

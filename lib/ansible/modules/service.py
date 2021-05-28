@@ -16,6 +16,14 @@ short_description:  Manage services
 description:
     - Controls services on remote hosts. Supported init systems include BSD init,
       OpenRC, SysV, Solaris SMF, systemd, upstart.
+    - This module acts as a proxy to the underlying service manager module. While all arguments will be passed to the
+      underlying module, not all modules support the same arguments. This documentation only covers the minimum intersection
+      of module arguments that all service manager modules support.
+    - This module is a proxy for multiple more specific service manager modules
+      (such as M(ansible.builtin.systemd) and M(ansible.builtin.sysvinit)).
+      This allows management of a heterogeneous environment of machines without creating a specific task for
+      each service manager. The module to be executed is determined by the I(use) option, which defaults to the
+      service manager discovered by M(ansible.builtin.setup).  If `setup` was not yet run, this module may run it.
     - For Windows targets, use the M(ansible.windows.win_service) module instead.
 options:
     name:
@@ -144,7 +152,7 @@ import time
 # that don't belong on production boxes.  Since our Solaris code doesn't
 # depend on LooseVersion, do not import it on Solaris.
 if platform.system() != 'SunOS':
-    from distutils.version import LooseVersion
+    from ansible.module_utils.compat.version import LooseVersion
 
 from ansible.module_utils._text import to_bytes, to_text
 from ansible.module_utils.basic import AnsibleModule
@@ -1355,8 +1363,8 @@ class SunOSService(Service):
         # Support for synchronous restart/refresh is only supported on
         # Oracle Solaris >= 11.2
         for line in open('/etc/release', 'r').readlines():
-            m = re.match(r'\s+Oracle Solaris (\d+\.\d+).*', line.rstrip())
-            if m and m.groups()[0] >= 11.2:
+            m = re.match(r'\s+Oracle Solaris (\d+)\.(\d+).*', line.rstrip())
+            if m and m.groups() >= ('11', '2'):
                 return True
 
     def get_service_status(self):

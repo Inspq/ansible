@@ -417,7 +417,7 @@ else:
 # Do this instead of getting site-packages from distutils.sysconfig so we work when we
 # haven't been installed
 site_packages = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
-CORE_LIBRARY_PATH_RE = re.compile(r'%s/(?P<path>ansible/modules/.*)\.(py|ps1)$' % site_packages)
+CORE_LIBRARY_PATH_RE = re.compile(r'%s/(?P<path>ansible/modules/.*)\.(py|ps1)$' % re.escape(site_packages))
 COLLECTION_PATH_RE = re.compile(r'/(?P<path>ansible_collections/[^/]+/[^/]+/plugins/modules/.*)\.(py|ps1)$')
 
 # Detect new-style Python modules by looking for required imports:
@@ -1418,9 +1418,14 @@ def get_action_args_with_defaults(action, args, defaults, templar, redirected_na
                     tmp_args.update((module_defaults.get('group/%s' % group_name) or {}).copy())
 
         # handle specific action defaults
-        for action in redirected_names:
-            if action in module_defaults:
-                tmp_args.update(module_defaults[action].copy())
+        for redirected_action in redirected_names:
+            legacy = None
+            if redirected_action.startswith('ansible.legacy.') and action == redirected_action:
+                legacy = redirected_action.split('ansible.legacy.')[-1]
+            if legacy and legacy in module_defaults:
+                tmp_args.update(module_defaults[legacy].copy())
+            if redirected_action in module_defaults:
+                tmp_args.update(module_defaults[redirected_action].copy())
 
     # direct args override all
     tmp_args.update(args)

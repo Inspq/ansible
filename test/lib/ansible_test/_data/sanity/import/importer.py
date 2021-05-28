@@ -144,7 +144,7 @@ def main():
                 if not self.restrict_to_module_paths:
                     return None  # for non-modules, everything in the ansible namespace is allowed
 
-                if fullname in ('ansible.module_utils.basic', 'ansible.module_utils.common.removed'):
+                if fullname in ('ansible.module_utils.basic',):
                     return self  # intercept loading so we can modify the result
 
                 if is_name_in_namepace(fullname, ['ansible.module_utils', self.name]):
@@ -184,14 +184,6 @@ def main():
                 module.AnsibleModule = ImporterAnsibleModule
                 # no-op for _load_params since it may be called before instantiating AnsibleModule
                 module._load_params = lambda *args, **kwargs: {}  # pylint: disable=protected-access
-
-                return module
-
-            if fullname == 'ansible.module_utils.common.removed':
-                module = self.__load_module(fullname)
-
-                # no-op for removed_module since it is called in place of AnsibleModule instantiation
-                module.removed_module = lambda *args, **kwargs: None
 
                 return module
 
@@ -238,6 +230,8 @@ def main():
         capture_normal = Capture()
         capture_main = Capture()
 
+        run_module_ok = False
+
         try:
             with monitor_sys_modules(path, messages):
                 with restrict_imports(path, name, messages, restrict_to_module_paths):
@@ -245,13 +239,19 @@ def main():
                         import_module(name)
 
             if run_main:
+                run_module_ok = is_ansible_module
+
                 with monitor_sys_modules(path, messages):
                     with restrict_imports(path, name, messages, restrict_to_module_paths):
                         with capture_output(capture_main):
                             runpy.run_module(name, run_name='__main__', alter_sys=True)
         except ImporterAnsibleModuleException:
             # module instantiated AnsibleModule without raising an exception
-            pass
+            if not run_module_ok:
+                if is_ansible_module:
+                    report_message(path, 0, 0, 'module-guard', "AnsibleModule instantiation not guarded by `if __name__ == '__main__'`", messages)
+                else:
+                    report_message(path, 0, 0, 'non-module', "AnsibleModule instantiated by import of non-module", messages)
         except BaseException as ex:  # pylint: disable=locally-disabled, broad-except
             # intentionally catch all exceptions, including calls to sys.exit
             exc_type, _exc, exc_tb = sys.exc_info()
@@ -472,6 +472,7 @@ def main():
 
         with warnings.catch_warnings():
             warnings.simplefilter('error')
+
             if sys.version_info[0] == 2:
                 warnings.filterwarnings(
                     "ignore",
@@ -481,6 +482,7 @@ def main():
                     "ignore",
                     "Python 2 is no longer supported by the Python core team. Support for it is now deprecated in cryptography,"
                     " and will be removed in the next release.")
+
             if sys.version_info[:2] == (3, 5):
                 warnings.filterwarnings(
                     "ignore",
@@ -488,10 +490,42 @@ def main():
                 warnings.filterwarnings(
                     "ignore",
                     "Python 3.5 support will be dropped in the next release of cryptography. Please upgrade your Python.")
-            warnings.filterwarnings(
-                "ignore",
-                "The _yaml extension module is now located at yaml._yaml and its location is subject to change.  To use the "
-                "LibYAML-based parser and emitter, import from `yaml`: `from yaml import CLoader as Loader, CDumper as Dumper`.")
+
+            if sys.version_info >= (3, 10):
+                # Temporary solution for Python 3.10 until find_spec is implemented in RestrictedModuleLoader.
+                # That implementation is dependent on find_spec being added to the controller's collection loader first.
+                # The warning text is: main.<locals>.RestrictedModuleLoader.find_spec() not found; falling back to find_module()
+                warnings.filterwarnings(
+                    "ignore",
+                    r"main\.<locals>\.RestrictedModuleLoader\.find_spec\(\) not found; falling back to find_module\(\)",
+                )
+                # Temporary solution for Python 3.10 until exec_module is implemented in RestrictedModuleLoader.
+                # That implementation is dependent on exec_module being added to the controller's collection loader first.
+                # The warning text is: main.<locals>.RestrictedModuleLoader.exec_module() not found; falling back to load_module()
+                warnings.filterwarnings(
+                    "ignore",
+                    r"main\.<locals>\.RestrictedModuleLoader\.exec_module\(\) not found; falling back to load_module\(\)",
+                )
+
+                # Temporary solution for Python 3.10 until find_spec is implemented in the controller's collection loader.
+                warnings.filterwarnings(
+                    "ignore",
+                    r"_Ansible.*Finder\.find_spec\(\) not found; falling back to find_module\(\)",
+                )
+                # Temporary solution for Python 3.10 until exec_module is implemented in the controller's collection loader.
+                warnings.filterwarnings(
+                    "ignore",
+                    r"_Ansible.*Loader\.exec_module\(\) not found; falling back to load_module\(\)",
+                )
+
+                # Temporary solution until there is a vendored copy of distutils.version in module_utils.
+                # Some of our dependencies such as packaging.tags also import distutils, which we have no control over
+                # The warning text is: The distutils package is deprecated and slated for removal in Python 3.12.
+                # Use setuptools or check PEP 632 for potential alternatives
+                warnings.filterwarnings(
+                    "ignore",
+                    r"The distutils package is deprecated and slated for removal in Python 3\.12\. .*",
+                )
 
             try:
                 yield

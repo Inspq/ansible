@@ -293,17 +293,23 @@ To get a list combining the elements of other lists use ``zip``::
 
     - name: Give me list combo of two lists
       ansible.builtin.debug:
-       msg: "{{ [1,2,3,4,5] | zip(['a','b','c','d','e','f']) | list }}"
+       msg: "{{ [1,2,3,4,5,6] | zip(['a','b','c','d','e','f']) | list }}"
+
+    # => [[1, "a"], [2, "b"], [3, "c"], [4, "d"], [5, "e"], [6, "f"]]
 
     - name: Give me shortest combo of two lists
       ansible.builtin.debug:
         msg: "{{ [1,2,3] | zip(['a','b','c','d','e','f']) | list }}"
+
+    # => [[1, "a"], [2, "b"], [3, "c"]]
 
 To always exhaust all lists use ``zip_longest``::
 
     - name: Give me longest combo of three lists , fill with X
       ansible.builtin.debug:
         msg: "{{ [1,2,3] | zip_longest(['a','b','c','d','e','f'], [21, 22, 23], fillvalue='X') | list }}"
+
+    # => [[1, "a", 21], [2, "b", 22], [3, "c", 23], ["X", "d", "X"], ["X", "e", "X"], ["X", "f", "X"]]
 
 Similarly to the output of the ``items2dict`` filter mentioned above, these filters can be used to construct a ``dict``::
 
@@ -640,11 +646,11 @@ To get permutations of a list::
 
     - name: Give me largest permutations (order matters)
       ansible.builtin.debug:
-        msg: "{{ [1,2,3,4,5] | permutations | list }}"
+        msg: "{{ [1,2,3,4,5] | ansible.builtin.permutations | list }}"
 
     - name: Give me permutations of sets of three
       ansible.builtin.debug:
-        msg: "{{ [1,2,3,4,5] | permutations(3) | list }}"
+        msg: "{{ [1,2,3,4,5] | ansible.builtin.permutations(3) | list }}"
 
 combinations
 ^^^^^^^^^^^^
@@ -652,7 +658,7 @@ Combinations always require a set size::
 
     - name: Give me combinations for sets of two
       ansible.builtin.debug:
-        msg: "{{ [1,2,3,4,5] | combinations(2) | list }}"
+        msg: "{{ [1,2,3,4,5] | ansible.builtin.combinations(2) | list }}"
 
 Also see the :ref:`zip_filter`
 
@@ -848,7 +854,7 @@ To get a random item from a list::
     "{{ ['a','b','c'] | random }}"
     # => 'c'
 
-To get a random number between 0 and a specified number::
+To get a random number between 0 (inclusive) and a specified integer (exclusive)::
 
     "{{ 60 | random }} * * * * root /script/from/cron"
     # => '21 * * * * root /script/from/cron'
@@ -921,10 +927,12 @@ To get the maximum value in a list of objects::
 Flatten a list (same thing the `flatten` lookup does)::
 
     {{ [3, [4, 2] ] | flatten }}
+    # => [3, 4, 2]
 
 Flatten only the first level of a list (akin to the `items` lookup)::
 
     {{ [3, [4, [2]] ] | flatten(levels=1) }}
+    # => [3, 4, [2]]
 
 
 .. versionadded:: 2.11
@@ -932,7 +940,7 @@ Flatten only the first level of a list (akin to the `items` lookup)::
 Preserve nulls in a list, by default flatten removes them. ::
 
     {{ [3, None, [4, [2]] ] | flatten(levels=1, skip_nulls=False) }}
-
+    # => [3, None, 4, [2]]
 
 
 .. _set_theory_filters:
@@ -989,21 +997,26 @@ You can calculate logs, powers, and roots of numbers with Ansible filters. Jinja
 
 Get the logarithm (default is e)::
 
-    {{ myvar | log }}
+    {{ 8 | log }}
+    # => 2.0794415416798357
 
 Get the base 10 logarithm::
 
-    {{ myvar | log(10) }}
+    {{ 8 | log(10) }}
+    # => 0.9030899869919435
 
 Give me the power of 2! (or 5)::
 
-    {{ myvar | pow(2) }}
-    {{ myvar | pow(5) }}
+    {{ 8 | pow(5) }}
+    # => 32768.0
 
 Square root, or the 5th::
 
-    {{ myvar | root }}
-    {{ myvar | root(5) }}
+    {{ 8 | root }}
+    # => 2.8284271247461903
+
+    {{ 8 | root(5) }}
+    # => 1.5157165665103982
 
 
 Managing network interactions
@@ -1035,6 +1048,7 @@ IP address filter can also be used to extract specific information from an IP
 address. For example, to get the IP address itself from a CIDR, you can use::
 
   {{ '192.0.2.1/24' | ansible.netcommon.ipaddr('address') }}
+  # => 192.168.0.1
 
 More information about ``ipaddr`` filter and complete usage guide can be found
 in :ref:`playbooks_filters_ipaddr`.
@@ -1236,7 +1250,7 @@ is an XPath expression used to get the attributes of the ``vlan`` tag in output 
     </rpc-reply>
 
 .. note::
-  For more information on supported XPath expressions, see `XPath Support <https://docs.python.org/2/library/xml.etree.elementtree.html#xpath-support>`_.
+  For more information on supported XPath expressions, see `XPath Support <https://docs.python.org/3/library/xml.etree.elementtree.html#xpath-support>`_.
 
 Network VLAN filters
 --------------------
@@ -1281,14 +1295,17 @@ Encrypting and checksumming strings and passwords
 To get the sha1 hash of a string::
 
     {{ 'test1' | hash('sha1') }}
+    # => "b444ac06613fc8d63795be9ad0beaf55011936ac"
 
 To get the md5 hash of a string::
 
     {{ 'test1' | hash('md5') }}
+    # => "5a105e8b9d40e1329780d62ea2265d8a"
 
 Get a string checksum::
 
     {{ 'test2' | checksum }}
+    # => "109f4b3c50d7b0df729d299bc6f8e9ef9066971f"
 
 Other hashes (platform dependent)::
 
@@ -1297,22 +1314,40 @@ Other hashes (platform dependent)::
 To get a sha512 password hash (random salt)::
 
     {{ 'passwordsaresecret' | password_hash('sha512') }}
+    # => "$6$UIv3676O/ilZzWEE$ktEfFF19NQPF2zyxqxGkAceTnbEgpEKuGBtk6MlU4v2ZorWaVQUMyurgmHCh2Fr4wpmQ/Y.AlXMJkRnIS4RfH/"
 
 To get a sha256 password hash with a specific salt::
 
     {{ 'secretpassword' | password_hash('sha256', 'mysecretsalt') }}
+    # => "$5$mysecretsalt$ReKNyDYjkKNqRVwouShhsEqZ3VOE8eoVO4exihOfvG4"
 
 An idempotent method to generate unique hashes per system is to use a salt that is consistent between runs::
 
     {{ 'secretpassword' | password_hash('sha512', 65534 | random(seed=inventory_hostname) | string) }}
+    # => "$6$43927$lQxPKz2M2X.NWO.gK.t7phLwOKQMcSq72XxDZQ0XzYV6DlL1OD72h417aj16OnHTGxNzhftXJQBcjbunLEepM0"
 
-Hash types available depend on the control system running Ansible, 'hash' depends on hashlib, password_hash depends on passlib (https://passlib.readthedocs.io/en/stable/lib/passlib.hash.html).
+Hash types available depend on the control system running Ansible, 'hash' depends on `hashlib <https://docs.python.org/3.8/library/hashlib.html>`_, password_hash depends on `passlib <https://passlib.readthedocs.io/en/stable/lib/passlib.hash.html>`_. The `crypt <https://docs.python.org/3.8/library/crypt.html>`_ is used as a fallback if ``passlib`` is not installed.
 
 .. versionadded:: 2.7
 
 Some hash types allow providing a rounds parameter::
 
     {{ 'secretpassword' | password_hash('sha256', 'mysecretsalt', rounds=10000) }}
+    # => "$5$rounds=10000$mysecretsalt$Tkm80llAxD4YHll6AgNIztKn0vzAACsuuEfYeGP7tm7"
+
+Hash type 'blowfish' (BCrypt) provides the facility to specify the version of the BCrypt algorithm
+
+.. code-block:: jinja
+
+    {{ 'secretpassword' | password_hash('blowfish', '1234567890123456789012', ident='2b') }}
+    # => "$2b$12$123456789012345678901uuJ4qFdej6xnWjOQT.FStqfdoY8dYUPC"
+
+.. note::
+    The parameter is only available for `blowfish (BCrypt) <https://passlib.readthedocs.io/en/stable/lib/passlib.hash.bcrypt.html#passlib.hash.bcrypt>`_.
+    Other hash types will simply ignore this parameter.
+    Valid values for this parameter are: ['2', '2a', '2y', '2b']
+
+.. versionadded:: 2.12
 
 .. _other_useful_filters:
 
@@ -1464,40 +1499,61 @@ The ``urlsplit`` filter extracts the fragment, hostname, netloc, password, path,
 Searching strings with regular expressions
 ------------------------------------------
 
-To search a string with a regex, use the "regex_search" filter::
+To search in a string or extract parts of a string with a regular expression, use the ``regex_search`` filter::
 
-    # search for "foo" in "foobar"
-    {{ 'foobar' | regex_search('(foo)') }}
+    # Extracts the database name from a string
+    {{ 'server1/database42' | regex_search('database[0-9]+') }}
+    # => 'database42'
 
-    # will return empty if it cannot find a match
-    {{ 'ansible' | regex_search('(foobar)') }}
+    # Returns an empty string if it cannot find a match
+    {{ 'ansible' | regex_search('foobar') }}
+    # => ''
 
-    # case insensitive search in multiline mode
-    {{ 'foo\nBAR' | regex_search("^bar", multiline=True, ignorecase=True) }}
+    # Example for a case insensitive search in multiline mode
+    {{ 'foo\nBAR' | regex_search('^bar', multiline=True, ignorecase=True) }}
+    # => 'BAR'
+
+    # Extracts server and database id from a string
+    {{ 'server1/database42' | regex_search('server([0-9]+)/database([0-9]+)', '\\1', '\\2') }}
+    # => ['1', '42']
+
+    # Extracts dividend and divisor from a division
+    {{ '21/42' | regex_search('(?P<dividend>[0-9]+)/(?P<divisor>[0-9]+)', '\\g<dividend>', '\\g<divisor>') }}
+    # => ['21', '42']
 
 
-To search for all occurrences of regex matches, use the "regex_findall" filter::
+To extract all occurrences of regex matches in a string, use the ``regex_findall`` filter::
 
-    # Return a list of all IPv4 addresses in the string
+    # Returns a list of all IPv4 addresses in the string
     {{ 'Some DNS servers are 8.8.8.8 and 8.8.4.4' | regex_findall('\\b(?:[0-9]{1,3}\\.){3}[0-9]{1,3}\\b') }}
+    # => ['8.8.8.8', '8.8.4.4']
+
+    # Returns all lines that end with "ar"
+    {{ 'CAR\ntar\nfoo\nbar\n' | regex_findall('^.ar$', multiline=True, ignorecase=True) }}
+    # => ['CAR', 'tar', 'bar']
 
 
-To replace text in a string with regex, use the "regex_replace" filter::
+To replace text in a string with regex, use the ``regex_replace`` filter::
 
-    # convert "ansible" to "able"
+    # Convert "ansible" to "able"
     {{ 'ansible' | regex_replace('^a.*i(.*)$', 'a\\1') }}
+    # => 'able'
 
-    # convert "foobar" to "bar"
+    # Convert "foobar" to "bar"
     {{ 'foobar' | regex_replace('^f.*o(.*)$', '\\1') }}
+    # => 'bar'
 
-    # convert "localhost:80" to "localhost, 80" using named groups
+    # Convert "localhost:80" to "localhost, 80" using named groups
     {{ 'localhost:80' | regex_replace('^(?P<host>.+):(?P<port>\\d+)$', '\\g<host>, \\g<port>') }}
+    # => 'localhost, 80'
 
-    # convert "localhost:80" to "localhost"
+    # Convert "localhost:80" to "localhost"
     {{ 'localhost:80' | regex_replace(':80') }}
+    # => 'localhost'
 
-    # change a multiline string
-    {{ var | regex_replace('^', '#CommentThis#', multiline=True) }}
+    # Comment all lines that end with "ar"
+    {{ 'CAR\ntar\nfoo\nbar\n' | regex_replace('^(.ar)$', '#\\1', multiline=True, ignorecase=True) }}
+    # => '#CAR\n#tar\nfoo\n#bar\n'
 
 .. note::
    If you want to match the whole string and you are using ``*`` make sure to always wraparound your regular expression with the start/end anchors. For example ``^(.*)$`` will always match only one result, while ``(.*)`` on some Python versions will match the whole string and an empty string at the end, which means it will make two replacements::
@@ -1521,18 +1577,18 @@ To replace text in a string with regex, use the "regex_replace" filter::
       {{ hosts | map('regex_replace', '(.*)', '\\1:80') | list }}
 
 .. note::
-   Prior to ansible 2.0, if "regex_replace" filter was used with variables inside YAML arguments (as opposed to simpler 'key=value' arguments), then you needed to escape backreferences (for example, ``\\1``) with 4 backslashes (``\\\\``) instead of 2 (``\\``).
+   Prior to ansible 2.0, if ``regex_replace`` filter was used with variables inside YAML arguments (as opposed to simpler 'key=value' arguments), then you needed to escape backreferences (for example, ``\\1``) with 4 backslashes (``\\\\``) instead of 2 (``\\``).
 
 .. versionadded:: 2.0
 
-To escape special characters within a standard Python regex, use the "regex_escape" filter (using the default re_type='python' option)::
+To escape special characters within a standard Python regex, use the ``regex_escape`` filter (using the default ``re_type='python'`` option)::
 
     # convert '^f.*o(.*)$' to '\^f\.\*o\(\.\*\)\$'
     {{ '^f.*o(.*)$' | regex_escape() }}
 
 .. versionadded:: 2.8
 
-To escape special characters within a POSIX basic regex, use the "regex_escape" filter with the re_type='posix_basic' option::
+To escape special characters within a POSIX basic regex, use the ``regex_escape`` filter with the ``re_type='posix_basic'`` option::
 
     # convert '^f.*o(.*)$' to '\^f\.\*o(\.\*)\$'
     {{ '^f.*o(.*)$' | regex_escape('posix_basic') }}
@@ -1594,12 +1650,12 @@ To get the root and extension of a path or file name (new in version 2.0)::
     # with path == 'nginx.conf' the return would be ('nginx', '.conf')
     {{ path | splitext }}
 
-The ``splitext`` filter returns a string. The individual components can be accessed by using the ``first`` and ``last`` filters::
+The ``splitext`` filter always returns a pair of strings. The individual components can be accessed by using the ``first`` and ``last`` filters::
 
     # with path == 'nginx.conf' the return would be 'nginx'
     {{ path | splitext | first }}
 
-    # with path == 'nginx.conf' the return would be 'conf'
+    # with path == 'nginx.conf' the return would be '.conf'
     {{ path | splitext | last }}
 
 To join one or more path components::
@@ -1622,9 +1678,9 @@ To concatenate a list into a string::
 
 To split a sting into a list::
 
-.. versionadded:: 2.11
-
     {{ csv_string | split(",") }}
+    
+.. versionadded:: 2.11
 
 To work with Base64 encoded strings::
 
@@ -1655,7 +1711,7 @@ To create a namespaced UUIDv5 using the default Ansible namespace '361E6D51-FAEC
 
 .. versionadded:: 1.9
 
-To make use of one attribute from each item in a list of complex variables, use the :func:`Jinja2 map filter <jinja2:map>`::
+To make use of one attribute from each item in a list of complex variables, use the :func:`Jinja2 map filter <jinja2:jinja-filters.map>`::
 
     # get a comma-separated list of the mount points (for example, "/,/mnt/stuff") on a host
     {{ ansible_mounts | map(attribute='mount') | join(',') }}
@@ -1683,12 +1739,15 @@ To format a date using a string (like with the shell date command), use the "str
 
     # Display year-month-day
     {{ '%Y-%m-%d' | strftime }}
+    # => "2021-03-19"
 
     # Display hour:min:sec
     {{ '%H:%M:%S' | strftime }}
+    # => "21:51:04"
 
     # Use ansible_date_time.epoch fact
     {{ '%Y-%m-%d %H:%M:%S' | strftime(ansible_date_time.epoch) }}
+    # => "2021-03-19 21:54:09"
 
     # Use arbitrary epoch value
     {{ '%Y-%m-%d' | strftime(0) }}          # => 1970-01-01
@@ -1701,18 +1760,19 @@ Getting Kubernetes resource names
 
 .. note::
 
-	These filters have migrated to the `community.kubernetes <https://galaxy.ansible.com/community/kubernetes>`_ collection. Follow the installation instructions to install that collection.
+	These filters have migrated to the `kuberernetes.core <https://galaxy.ansible.com/kubernetes/core>`_ collection. Follow the installation instructions to install that collection.
 
 Use the "k8s_config_resource_name" filter to obtain the name of a Kubernetes ConfigMap or Secret,
 including its hash::
 
-    {{ configmap_resource_definition | community.kubernetes.k8s_config_resource_name }}
+    {{ configmap_resource_definition | kuberernetes.core.k8s_config_resource_name }}
 
 This can then be used to reference hashes in Pod specifications::
 
     my_secret:
       kind: Secret
-      name: my_secret_name
+      metadata:
+        name: my_secret_name
 
     deployment_resource:
       kind: Deployment
@@ -1722,7 +1782,7 @@ This can then be used to reference hashes in Pod specifications::
             containers:
             - envFrom:
                 - secretRef:
-                    name: {{ my_secret | community.kubernetes.k8s_config_resource_name }}
+                    name: {{ my_secret | kuberernetes.core.k8s_config_resource_name }}
 
 .. versionadded:: 2.8
 

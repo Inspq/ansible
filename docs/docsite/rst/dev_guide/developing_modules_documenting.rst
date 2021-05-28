@@ -233,10 +233,8 @@ Linking and other format macros within module documentation
 
 You can link from your module documentation to other module docs, other resources on docs.ansible.com, and resources elsewhere on the internet with the help of some pre-defined macros. The correct formats for these macros are:
 
-* ``L()`` for links with a heading. For example: ``See L(Ansible Tower,https://www.ansible.com/products/tower).`` As of Ansible 2.10, do not use ``L()`` for relative links between Ansible documentation and collection documentation.
-* ``U()`` for URLs. For example: ``See U(https://www.ansible.com/products/tower) for an overview.``
-* ``R()`` for cross-references with a heading (added in Ansible 2.10). For example: ``See R(Cisco IOS Platform Guide,ios_platform_options)``.  Use the RST anchor for the cross-reference. See :ref:`adding_anchors_rst` for details.
-* ``M()`` for module names. For example: ``See also M(ansible.builtin.yum) or M(community.general.apt_rpm)``.
+* ``L()`` for links with a heading. For example: ``See L(Ansible Automation Platform,https://www.ansible.com/products/automation-platform).`` As of Ansible 2.10, do not use ``L()`` for relative links between Ansible documentation and collection documentation.
+* ``U()`` for URLs. For example: ``See U(https://www.ansible.com/products/automation-platform) for an overview.``
 
 There are also some macros which do not create links but we use them to display certain types of
 content in a uniform way:
@@ -249,15 +247,12 @@ content in a uniform way:
 
 .. note::
 
-  For links between modules and documentation within a collection, you can use any of the options above. For links outside of your collection, use ``R()`` if available. Otherwise, use ``U()`` or ``L()`` with full URLs (not relative links). For modules, use ``M()`` with the FQCN or ``ansible.builtin`` as shown in the example. If you are creating your own documentation site, you will need to use the `intersphinx extension <https://www.sphinx-doc.org/en/master/usage/extensions/intersphinx.html>`_ to convert ``R()`` and ``M()`` to the correct links.
-
+  For links between modules and documentation within a collection, you can use either of the options above. Use ``U()`` or ``L()`` with full URLs (not relative links).
 
 .. note::
-    - To refer to a group of modules in a collection, use ``R()``.  When a collection is not the right granularity, use ``C(..)``:
+    - When a collection is not the right granularity, use ``C(..)``:
 
-        - ``Refer to the R(community.kubernetes collection, plugins_in_community.kubernetes) for information on managing kubernetes clusters.``
         - ``The C(win_*) modules (spread across several collections) allow you to manage various aspects of windows hosts.``
-
 
 .. note::
 
@@ -268,7 +263,7 @@ content in a uniform way:
 Documentation fragments
 -----------------------
 
-If you are writing multiple related modules, they may share common documentation, such as authentication details, file mode settings, ``notes:`` or ``seealso:`` entries. Rather than duplicate that information in each module's ``DOCUMENTATION`` block, you can save it once as a doc_fragment plugin and use it in each module's documentation. In Ansible, shared documentation fragments are contained in a ``ModuleDocFragment`` class in `lib/ansible/plugins/doc_fragments/ <https://github.com/ansible/ansible/tree/devel/lib/ansible/plugins/doc_fragments>`_ or the equivalent directory in a collection. To include a documentation fragment, add ``extends_documentation_fragment: FRAGMENT_NAME`` in your module documentation. Use the fully qualified collection name for the FRAGMENT_NAME (for example, ``community.kubernetes.k8s_auth_options``).
+If you are writing multiple related modules, they may share common documentation, such as authentication details, file mode settings, ``notes:`` or ``seealso:`` entries. Rather than duplicate that information in each module's ``DOCUMENTATION`` block, you can save it once as a doc_fragment plugin and use it in each module's documentation. In Ansible, shared documentation fragments are contained in a ``ModuleDocFragment`` class in `lib/ansible/plugins/doc_fragments/ <https://github.com/ansible/ansible/tree/devel/lib/ansible/plugins/doc_fragments>`_ or the equivalent directory in a collection. To include a documentation fragment, add ``extends_documentation_fragment: FRAGMENT_NAME`` in your module documentation. Use the fully qualified collection name for the FRAGMENT_NAME (for example, ``kubernetes.core.k8s_auth_options``).
 
 Modules should only use items from a doc fragment if the module will implement all of the interface documented there in a manner that behaves the same as the existing modules which import that fragment. The goal is that items imported from the doc fragment will behave identically when used in another module that imports the doc fragment.
 

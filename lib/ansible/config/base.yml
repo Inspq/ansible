@@ -3,12 +3,16 @@
 ---
 ALLOW_WORLD_READABLE_TMPFILES:
   name: Allow world-readable temporary files
-  default: False
   description:
     - This setting has been moved to the individual shell plugins as a plugin option :ref:`shell_plugins`.
     - The existing configuration settings are still accepted with the shell plugin adding additional options, like variables.
     - This message will be removed in 2.14.
   type: boolean
+  default: False
+  deprecated:  # (kept for autodetection and removal, deprecation is irrelevant since w/o settings this can never show runtime msg)
+      why: moved to shell plugins
+      version: "2.14"
+      alternatives: 'world_readable_tmp'
 ANSIBLE_CONNECTION_PATH:
   name: Path of ansible-connection script
   default: null
@@ -175,7 +179,8 @@ CACHE_PLUGIN_TIMEOUT:
   type: integer
   yaml: {key: facts.cache.timeout}
 COLLECTIONS_SCAN_SYS_PATH:
-  name: enable/disable scanning sys.path for installed collections
+  name: Scan PYTHONPATH for installed collections
+  description: A boolean to enable or disable scanning the sys.path for installed collections
   default: true
   type: boolean
   env:
@@ -330,20 +335,6 @@ COLOR_WARN:
   env: [{name: ANSIBLE_COLOR_WARN}]
   ini:
   - {key: warn, section: colors}
-CONDITIONAL_BARE_VARS:
-  name: Allow bare variable evaluation in conditionals
-  default: False
-  type: boolean
-  description:
-    - With this setting on (True), running conditional evaluation 'var' is treated differently than 'var.subkey' as the first is evaluated
-      directly while the second goes through the Jinja2 parser. But 'false' strings in 'var' get evaluated as booleans.
-    - With this setting off they both evaluate the same but in cases in which 'var' was 'false' (a string) it won't get evaluated as a boolean anymore.
-    - Currently this setting defaults to 'True' but will soon change to 'False' and the setting itself will be removed in the future.
-    - Expect that this setting eventually will be deprecated after 2.12
-  env: [{name: ANSIBLE_CONDITIONAL_BARE_VARS}]
-  ini:
-  - {key: conditional_bare_variables, section: defaults}
-  version_added: "2.8"
 COVERAGE_REMOTE_OUTPUT:
   name: Sets the output directory and filename prefix to generate coverage run info.
   description:
@@ -491,7 +482,7 @@ DEFAULT_BECOME_EXE:
   - {key: become_exe, section: privilege_escalation}
 DEFAULT_BECOME_FLAGS:
   name: Set 'become' executable options
-  default: ''
+  default: ~
   description: Flags to pass to the privilege escalation executable.
   env: [{name: ANSIBLE_BECOME_FLAGS}]
   ini:
@@ -583,7 +574,7 @@ CALLBACKS_ENABLED:
     deprecated:
       why: normalizing names to new standard
       version: "2.15"
-      alternatives: 'callback_enabled'
+      alternatives: 'callbacks_enabled'
   - key: callbacks_enabled
     section: defaults
     version_added: '2.11'
@@ -706,19 +697,6 @@ DEFAULT_GATHER_TIMEOUT:
   - {key: gather_timeout, section: defaults}
   type: integer
   yaml: {key: defaults.gather_timeout}
-DEFAULT_HANDLER_INCLUDES_STATIC:
-  name: Make handler M(ansible.builtin.include) static
-  default: False
-  description:
-    - "Since 2.0 M(ansible.builtin.include) can be 'dynamic', this setting (if True) forces that if the include appears in a ``handlers`` section to be 'static'."
-  env: [{name: ANSIBLE_HANDLER_INCLUDES_STATIC}]
-  ini:
-  - {key: handler_includes_static, section: defaults}
-  type: boolean
-  deprecated:
-    why: include itself is deprecated and this setting will not matter in the future
-    version: "2.12"
-    alternatives: none as its already built into the decision between include_tasks and import_tasks
 DEFAULT_HASH_BEHAVIOUR:
   name: Hash merge behaviour
   default: replace
@@ -890,7 +868,7 @@ DEFAULT_MANAGED_STR:
   yaml: {key: defaults.ansible_managed}
 DEFAULT_MODULE_ARGS:
   name: Adhoc default arguments
-  default: ''
+  default: ~
   description:
     - This sets the default arguments to pass to the ``ansible`` adhoc binary if no ``-a`` is specified.
   env: [{name: ANSIBLE_MODULE_ARGS}]
@@ -1011,7 +989,6 @@ DEFAULT_REMOTE_PORT:
   yaml: {key: defaults.remote_port}
 DEFAULT_REMOTE_USER:
   name: Login/Remote User
-  default:
   description:
     - Sets the login user for the target machines
     - "When blank it uses the connection plugin's default, normally the user currently executing Ansible."
@@ -1105,20 +1082,6 @@ DEFAULT_SYSLOG_FACILITY:
   env: [{name: ANSIBLE_SYSLOG_FACILITY}]
   ini:
   - {key: syslog_facility, section: defaults}
-DEFAULT_TASK_INCLUDES_STATIC:
-  name: Task include static
-  default: False
-  description:
-    - The `include` tasks can be static or dynamic, this toggles the default expected behaviour if autodetection fails and it is not explicitly set in task.
-  env: [{name: ANSIBLE_TASK_INCLUDES_STATIC}]
-  ini:
-  - {key: task_includes_static, section: defaults}
-  type: boolean
-  version_added: "2.1"
-  deprecated:
-    why: include itself is deprecated and this setting will not matter in the future
-    version: "2.12"
-    alternatives: None, as its already built into the decision between include_tasks and import_tasks
 DEFAULT_TERMINAL_PLUGIN_PATH:
   name: Terminal Plugins Path
   default: ~/.ansible/plugins/terminal:/usr/share/ansible/plugins/terminal
@@ -1197,7 +1160,6 @@ DEFAULT_VAULT_IDENTITY:
   yaml: {key: defaults.vault_identity}
 DEFAULT_VAULT_ENCRYPT_IDENTITY:
   name: Vault id to use for encryption
-  default:
   description: 'The vault_id to use for encrypting by default. If multiple vault_ids are provided, this specifies which to use for encryption. The --encrypt-vault-id cli option overrides the configured value.'
   env: [{name: ANSIBLE_VAULT_ENCRYPT_IDENTITY}]
   ini:
@@ -1297,7 +1259,7 @@ DISPLAY_SKIPPED_HOSTS:
   type: boolean
 DOCSITE_ROOT_URL:
   name: Root docsite URL
-  default: https://docs.ansible.com/ansible/
+  default: https://docs.ansible.com/ansible-core/
   description: Root docsite URL used to generate docs URLs in warning/error text;
                must be an absolute URL with valid scheme and trailing slash.
   ini:
@@ -1376,7 +1338,6 @@ GALAXY_IGNORE_CERTS:
   type: boolean
 GALAXY_ROLE_SKELETON:
   name: Galaxy role or collection skeleton directory
-  default:
   description: Role or collection skeleton directory to use as a template for the ``init`` action in ``ansible-galaxy``, same as ``--role-skeleton``.
   env: [{name: ANSIBLE_GALAXY_ROLE_SKELETON}]
   ini:
@@ -1495,7 +1456,9 @@ INTERPRETER_PYTHON_DISTRO_MAP:
     centos: &rhelish
       '6': /usr/bin/python
       '8': /usr/libexec/platform-python
+      '9': /usr/bin/python3
     debian:
+      '8': /usr/bin/python
       '10': /usr/bin/python3
     fedora:
       '23': /usr/bin/python3
@@ -1565,33 +1528,53 @@ INVENTORY_ANY_UNPARSED_IS_FAILED:
 INVENTORY_CACHE_ENABLED:
   name: Inventory caching enabled
   default: False
-  description: Toggle to turn on inventory caching
+  description:
+    - Toggle to turn on inventory caching.
+    - This setting has been moved to the individual inventory plugins as a plugin option :ref:`inventory_plugins`.
+    - The existing configuration settings are still accepted with the inventory plugin adding additional options from inventory configuration.
+    - This message will be removed in 2.16.
   env: [{name: ANSIBLE_INVENTORY_CACHE}]
   ini:
   - {key: cache, section: inventory}
   type: bool
 INVENTORY_CACHE_PLUGIN:
   name: Inventory cache plugin
-  description: The plugin for caching inventory. If INVENTORY_CACHE_PLUGIN is not provided CACHE_PLUGIN can be used instead.
+  description:
+    - The plugin for caching inventory.
+    - This setting has been moved to the individual inventory plugins as a plugin option :ref:`inventory_plugins`.
+    - The existing configuration settings are still accepted with the inventory plugin adding additional options from inventory and fact cache configuration.
+    - This message will be removed in 2.16.
   env: [{name: ANSIBLE_INVENTORY_CACHE_PLUGIN}]
   ini:
   - {key: cache_plugin, section: inventory}
 INVENTORY_CACHE_PLUGIN_CONNECTION:
   name: Inventory cache plugin URI to override the defaults section
-  description: The inventory cache connection. If INVENTORY_CACHE_PLUGIN_CONNECTION is not provided CACHE_PLUGIN_CONNECTION can be used instead.
+  description:
+    - The inventory cache connection.
+    - This setting has been moved to the individual inventory plugins as a plugin option :ref:`inventory_plugins`.
+    - The existing configuration settings are still accepted with the inventory plugin adding additional options from inventory and fact cache configuration.
+    - This message will be removed in 2.16.
   env: [{name: ANSIBLE_INVENTORY_CACHE_CONNECTION}]
   ini:
   - {key: cache_connection, section: inventory}
 INVENTORY_CACHE_PLUGIN_PREFIX:
   name: Inventory cache plugin table prefix
-  description: The table prefix for the cache plugin. If INVENTORY_CACHE_PLUGIN_PREFIX is not provided CACHE_PLUGIN_PREFIX can be used instead.
+  description:
+    - The table prefix for the cache plugin.
+    - This setting has been moved to the individual inventory plugins as a plugin option :ref:`inventory_plugins`.
+    - The existing configuration settings are still accepted with the inventory plugin adding additional options from inventory and fact cache configuration.
+    - This message will be removed in 2.16.
   env: [{name: ANSIBLE_INVENTORY_CACHE_PLUGIN_PREFIX}]
-  default: ansible_facts
+  default: ansible_inventory_
   ini:
   - {key: cache_prefix, section: inventory}
 INVENTORY_CACHE_TIMEOUT:
   name: Inventory cache plugin expiration timeout
-  description: Expiration timeout for the inventory cache plugin data. If INVENTORY_CACHE_TIMEOUT is not provided CACHE_TIMEOUT can be used instead.
+  description:
+    - Expiration timeout for the inventory cache plugin data.
+    - This setting has been moved to the individual inventory plugins as a plugin option :ref:`inventory_plugins`.
+    - The existing configuration settings are still accepted with the inventory plugin adding additional options from inventory and fact cache configuration.
+    - This message will be removed in 2.16.
   default: 3600
   env: [{name: ANSIBLE_INVENTORY_CACHE_TIMEOUT}]
   ini:

@@ -14,17 +14,11 @@ import tempfile
 import traceback
 from collections import namedtuple
 
-from yaml import load as yaml_load
-try:
-    # use C version if possible for speedup
-    from yaml import CSafeLoader as SafeLoader
-except ImportError:
-    from yaml import SafeLoader
-
 from ansible.config.data import ConfigData
 from ansible.errors import AnsibleOptionsError, AnsibleError
 from ansible.module_utils._text import to_text, to_bytes, to_native
 from ansible.module_utils.common._collections_compat import Mapping, Sequence
+from ansible.module_utils.common.yaml import yaml_load
 from ansible.module_utils.six import PY3, string_types
 from ansible.module_utils.six.moves import configparser
 from ansible.module_utils.parsing.convert_bool import boolean
@@ -98,7 +92,7 @@ def ensure_type(value, value_type, origin=None):
 
         elif value_type == 'list':
             if isinstance(value, string_types):
-                value = [x.strip() for x in value.split(',')]
+                value = [unquote(x.strip()) for x in value.split(',')]
             elif not isinstance(value, Sequence):
                 errmsg = 'list'
 
@@ -315,7 +309,7 @@ class ConfigManager(object):
         yml_file = to_bytes(yml_file)
         if os.path.exists(yml_file):
             with open(yml_file, 'rb') as config_def:
-                return yaml_load(config_def, Loader=SafeLoader) or {}
+                return yaml_load(config_def) or {}
         raise AnsibleError(
             "Missing base YAML definition file (bad install?): %s" % to_native(yml_file))
 
@@ -349,7 +343,7 @@ class ConfigManager(object):
             # FIXME: this should eventually handle yaml config files
             # elif ftype == 'yaml':
             #     with open(cfile, 'rb') as config_stream:
-            #         self._parsers[cfile] = yaml.safe_load(config_stream)
+            #         self._parsers[cfile] = yaml_load(config_stream)
             else:
                 raise AnsibleOptionsError("Unsupported configuration file type: %s" % to_native(ftype))
 
@@ -552,7 +546,15 @@ class ConfigManager(object):
 
             # deal with restricted values
             if value is not None and 'choices' in defs[config] and defs[config]['choices'] is not None:
-                if value not in defs[config]['choices']:
+                invalid_choices = True  # assume the worst!
+                if defs[config].get('type') == 'list':
+                    # for a list type, compare all values in type are allowed
+                    invalid_choices = not all(choice in defs[config]['choices'] for choice in value)
+                else:
+                    # these should be only the simple data types (string, int, bool, float, etc) .. ignore dicts for now
+                    invalid_choices = value not in defs[config]['choices']
+
+                if invalid_choices:
                     raise AnsibleOptionsError('Invalid value "%s" for configuration option "%s", valid values are: %s' %
                                               (value, to_native(_get_entry(plugin_type, plugin_name, config)), defs[config]['choices']))
 

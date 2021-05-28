@@ -5,7 +5,6 @@
 from __future__ import (absolute_import, division, print_function)
 __metaclass__ = type
 
-import datetime
 import json
 import pkgutil
 import os
@@ -24,8 +23,9 @@ from ansible.cli.arguments import option_helpers as opt_help
 from ansible.collections.list import list_collection_dirs
 from ansible.errors import AnsibleError, AnsibleOptionsError, AnsibleParserError
 from ansible.module_utils._text import to_native, to_text
-from ansible.module_utils.common._collections_compat import Container, Sequence
+from ansible.module_utils.common._collections_compat import Sequence
 from ansible.module_utils.common.json import AnsibleJSONEncoder
+from ansible.module_utils.common.yaml import yaml_dump
 from ansible.module_utils.compat import importlib
 from ansible.module_utils.six import iteritems, string_types
 from ansible.parsing.plugin_docs import read_docstub
@@ -37,7 +37,6 @@ from ansible.utils.collection_loader._collection_finder import _get_collection_n
 from ansible.utils.display import Display
 from ansible.utils.plugin_docs import (
     REJECTLIST,
-    remove_current_collection_from_versions_and_dates,
     get_docstring,
     get_versioned_doclink,
 )
@@ -54,6 +53,7 @@ def jdump(text):
     try:
         display.display(json.dumps(text, cls=AnsibleJSONEncoder, sort_keys=True, indent=4))
     except TypeError as e:
+        display.vvv(traceback.format_exc())
         raise AnsibleError('We could not convert all the documentation into JSON as there was a conversion issue: %s' % to_native(e))
 
 
@@ -78,15 +78,46 @@ class RoleMixin(object):
     Note: The methods for actual display of role data are not present here.
     """
 
-    ROLE_ARGSPEC_FILE = 'main.yml'
+    # Potential locations of the role arg spec file in the meta subdir, with main.yml
+    # having the lowest priority.
+    ROLE_ARGSPEC_FILES = ['argument_specs' + e for e in C.YAML_FILENAME_EXTENSIONS] + ["main" + e for e in C.YAML_FILENAME_EXTENSIONS]
 
     def _load_argspec(self, role_name, collection_path=None, role_path=None):
+        """Load the role argument spec data from the source file.
+
+        :param str role_name: The name of the role for which we want the argspec data.
+        :param str collection_path: Path to the collection containing the role. This
+            will be None for standard roles.
+        :param str role_path: Path to the standard role. This will be None for
+            collection roles.
+
+        We support two files containing the role arg spec data: either meta/main.yml
+        or meta/argument_spec.yml. The argument_spec.yml file will take precedence
+        over the meta/main.yml file, if it exists. Data is NOT combined between the
+        two files.
+
+        :returns: A dict of all data underneath the ``argument_specs`` top-level YAML
+            key in the argspec data file. Empty dict is returned if there is no data.
+        """
+
         if collection_path:
-            path = os.path.join(collection_path, 'roles', role_name, 'meta', self.ROLE_ARGSPEC_FILE)
+            meta_path = os.path.join(collection_path, 'roles', role_name, 'meta')
         elif role_path:
-            path = os.path.join(role_path, 'meta', self.ROLE_ARGSPEC_FILE)
+            meta_path = os.path.join(role_path, 'meta')
         else:
             raise AnsibleError("A path is required to load argument specs for role '%s'" % role_name)
+
+        path = None
+
+        # Check all potential spec files
+        for specfile in self.ROLE_ARGSPEC_FILES:
+            full_path = os.path.join(meta_path, specfile)
+            if os.path.exists(full_path):
+                path = full_path
+                break
+
+        if path is None:
+            return {}
 
         try:
             with open(path, 'r') as f:
@@ -110,18 +141,25 @@ class RoleMixin(object):
         """
         found = set()
         found_names = set()
+
         for path in role_paths:
             if not os.path.isdir(path):
                 continue
-            # Check each subdir for a meta/main.yml file
+
+            # Check each subdir for an argument spec file
             for entry in os.listdir(path):
                 role_path = os.path.join(path, entry)
-                full_path = os.path.join(role_path, 'meta', self.ROLE_ARGSPEC_FILE)
-                if os.path.exists(full_path):
-                    if name_filters is None or entry in name_filters:
-                        if entry not in found_names:
-                            found.add((entry, role_path))
-                        found_names.add(entry)
+
+                # Check all potential spec files
+                for specfile in self.ROLE_ARGSPEC_FILES:
+                    full_path = os.path.join(role_path, 'meta', specfile)
+                    if os.path.exists(full_path):
+                        if name_filters is None or entry in name_filters:
+                            if entry not in found_names:
+                                found.add((entry, role_path))
+                            found_names.add(entry)
+                        # select first-found
+                        break
         return found
 
     def _find_all_collection_roles(self, name_filters=None, collection_filter=None):
@@ -147,19 +185,23 @@ class RoleMixin(object):
             roles_dir = os.path.join(path, 'roles')
             if os.path.exists(roles_dir):
                 for entry in os.listdir(roles_dir):
-                    full_path = os.path.join(roles_dir, entry, 'meta', self.ROLE_ARGSPEC_FILE)
-                    if os.path.exists(full_path):
-                        if name_filters is None:
-                            found.add((entry, collname, path))
-                        else:
-                            # Name filters might contain a collection FQCN or not.
-                            for fqcn in name_filters:
-                                if len(fqcn.split('.')) == 3:
-                                    (ns, col, role) = fqcn.split('.')
-                                    if '.'.join([ns, col]) == collname and entry == role:
+
+                    # Check all potential spec files
+                    for specfile in self.ROLE_ARGSPEC_FILES:
+                        full_path = os.path.join(roles_dir, entry, 'meta', specfile)
+                        if os.path.exists(full_path):
+                            if name_filters is None:
+                                found.add((entry, collname, path))
+                            else:
+                                # Name filters might contain a collection FQCN or not.
+                                for fqcn in name_filters:
+                                    if len(fqcn.split('.')) == 3:
+                                        (ns, col, role) = fqcn.split('.')
+                                        if '.'.join([ns, col]) == collname and entry == role:
+                                            found.add((entry, collname, path))
+                                    elif fqcn == entry:
                                         found.add((entry, collname, path))
-                                elif fqcn == entry:
-                                    found.add((entry, collname, path))
+                            break
         return found
 
     def _build_summary(self, role, collection, argspec):
@@ -284,6 +326,13 @@ class RoleMixin(object):
         return result
 
 
+def _doclink(url):
+    # assume that if it is relative, it is for docsite, ignore rest
+    if not url.startswith(("http", "..")):
+        url = get_versioned_doclink(url)
+    return url
+
+
 class DocCLI(CLI, RoleMixin):
     ''' displays information on modules installed in Ansible libraries.
         It displays a terse listing of plugins and their short descriptions,
@@ -305,10 +354,10 @@ class DocCLI(CLI, RoleMixin):
     _RULER = re.compile(r"\bHORIZONTALLINE\b")
 
     # rst specific
-    _REFTAG = re.compile(r":ref:")
-    _TERM = re.compile(r":term:")
-    _NOTES = re.compile(r".. note:")
-    _SEEALSO = re.compile(r"^\s*.. seealso:.*$", re.MULTILINE)
+    _RST_NOTE = re.compile(r".. note::")
+    _RST_SEEALSO = re.compile(r".. seealso::")
+    _RST_ROLES = re.compile(r":\w+?:`")
+    _RST_DIRECTIVES = re.compile(r".. \w+?::")
 
     def __init__(self, args):
 
@@ -318,19 +367,25 @@ class DocCLI(CLI, RoleMixin):
     @classmethod
     def tty_ify(cls, text):
 
+        # general formatting
         t = cls._ITALIC.sub(r"`\1'", text)    # I(word) => `word'
         t = cls._BOLD.sub(r"*\1*", t)         # B(word) => *word*
         t = cls._MODULE.sub("[" + r"\1" + "]", t)       # M(word) => [word]
-        t = cls._URL.sub(r"\1", t)                      # U(word) => word
-        t = cls._LINK.sub(r"\1 <\2>", t)                # L(word, url) => word <url>
-        t = cls._REF.sub(r"\1", t)                      # R(word, sphinx-ref) => word
-        t = cls._CONST.sub("`" + r"\1" + "'", t)        # C(word) => `word'
+        t = cls._REF.sub(r"\1", t)            # R(word, sphinx-ref) => word
+        t = cls._CONST.sub(r"`\1'", t)        # C(word) => `word'
         t = cls._RULER.sub("\n{0}\n".format("-" * 13), t)   # HORIZONTALLINE => -------
 
-        t = cls._REFTAG.sub(r"", t)  # remove rst :ref:
-        t = cls._TERM.sub(r"", t)  # remove rst :term:
-        t = cls._NOTES.sub(r" Note:", t)  # nicer note
-        t = cls._SEEALSO.sub(r"", t)  # remove seealso
+        # remove rst
+        t = cls._RST_SEEALSO.sub(r"See website for:", t)   # seealso is special and need to break
+        t = cls._RST_NOTE.sub(r"Note:", t)                 # .. note:: to note:
+        t = cls._RST_ROLES.sub(r"website for `", t)        # remove :ref: and other tags
+        t = cls._RST_DIRECTIVES.sub(r"", t)                # remove .. stuff:: in general
+
+        # handle docsite refs
+        # U(word) => word
+        t = re.sub(cls._URL, lambda m: r"%s" % _doclink(m.group(1)), t)
+        # L(word, url) => word <url>
+        t = re.sub(cls._LINK, lambda m: r"%s <%s>" % (m.group(1), _doclink(m.group(2))), t)
 
         return t
 
@@ -780,7 +835,8 @@ class DocCLI(CLI, RoleMixin):
             try:
                 text = DocCLI.get_man_text(doc, collection_name, plugin_type)
             except Exception as e:
-                raise AnsibleError("Unable to retrieve documentation from '%s' due to: %s" % (plugin, to_native(e)))
+                display.vvv(traceback.format_exc())
+                raise AnsibleError("Unable to retrieve documentation from '%s' due to: %s" % (plugin, to_native(e)), orig_exc=e)
 
         return text
 
@@ -874,6 +930,7 @@ class DocCLI(CLI, RoleMixin):
                 pfiles[plugin] = filename
 
             except Exception as e:
+                display.vvv(traceback.format_exc())
                 raise AnsibleError("Failed reading docs at %s: %s" % (plugin, to_native(e)), orig_exc=e)
 
         return pfiles
@@ -921,9 +978,7 @@ class DocCLI(CLI, RoleMixin):
 
     @staticmethod
     def _dump_yaml(struct, indent):
-        return DocCLI.tty_ify('\n'.join([indent + line for line in
-                                         yaml.dump(struct, default_flow_style=False,
-                                                   Dumper=AnsibleDumper).split('\n')]))
+        return DocCLI.tty_ify('\n'.join([indent + line for line in yaml.dump(struct, default_flow_style=False, Dumper=AnsibleDumper).split('\n')]))
 
     @staticmethod
     def add_fields(text, fields, limit, opt_indent, return_values=False, base_indent=''):
@@ -1051,6 +1106,11 @@ class DocCLI(CLI, RoleMixin):
                 DocCLI.add_fields(text, doc.pop('options'), limit, opt_indent)
                 text.append('')
 
+            if doc.get('attributes'):
+                text.append("ATTRIBUTES:\n")
+                text.append(DocCLI._dump_yaml(doc.pop('attributes'), opt_indent))
+                text.append('')
+
             # generic elements we will handle identically
             for k in ('author',):
                 if k not in doc:
@@ -1115,6 +1175,11 @@ class DocCLI(CLI, RoleMixin):
             DocCLI.add_fields(text, doc.pop('options'), limit, opt_indent)
             text.append('')
 
+        if doc.get('attributes', False):
+            text.append("ATTRIBUTES:\n")
+            text.append(DocCLI._dump_yaml(doc.pop('attributes'), opt_indent))
+            text.append('')
+
         if doc.get('notes', False):
             text.append("NOTES:")
             for note in doc['notes']:
@@ -1177,7 +1242,7 @@ class DocCLI(CLI, RoleMixin):
             if isinstance(doc['plainexamples'], string_types):
                 text.append(doc.pop('plainexamples').strip())
             else:
-                text.append(yaml.dump(doc.pop('plainexamples'), indent=2, default_flow_style=False))
+                text.append(yaml_dump(doc.pop('plainexamples'), indent=2, default_flow_style=False))
             text.append('')
             text.append('')
 

@@ -55,7 +55,7 @@ The Python equivalent code would be:
 There are several ways to do it in Ansible, this is just one example:
 
 .. code-block:: YAML+Jinja
- :emphasize-lines: 3
+ :emphasize-lines: 4
  :caption: Way to extract matching keys from a list of dictionaries
 
   tasks:
@@ -110,7 +110,7 @@ In this case, we want to find the mount point for a given path across our machin
 
 .. code-block:: YAML+Jinja
  :caption: Use selectattr to filter mounts into list I can then sort and select the last from
- :emphasize-lines: 7
+ :emphasize-lines: 8
 
    - hosts: all
      gather_facts: True
@@ -131,7 +131,7 @@ The special ``omit`` variable ONLY works with module options, but we can still u
 
 .. code-block:: YAML+Jinja
  :caption: Inline list filtering when feeding a module option
- :emphasize-lines: 3, 7
+ :emphasize-lines: 3, 6
 
     - name: Enable a list of Windows features, by name
       ansible.builtin.set_fact:
@@ -230,7 +230,7 @@ These example produces ``{"a": "b", "c": "d"}``
 
   vars:
       single_list: [ 'a', 'b', 'c', 'd' ]
-      mydict: "{{ dict(single_list | slice(2) | list) }}"
+      mydict: "{{ dict(single_list | slice(2)) }}"
 
 
 .. code-block:: YAML+Jinja
@@ -240,7 +240,7 @@ These example produces ``{"a": "b", "c": "d"}``
       list_of_pairs: [ ['a', 'b'], ['c', 'd'] ]
       mydict: "{{ dict(list_of_pairs) }}"
 
-Both end up being the same thing, with the ``slice(2) | list`` transforming ``single_list`` to the same structure as ``list_of_pairs``.
+Both end up being the same thing, with ``slice(2)`` transforming ``single_list`` to a ``list_of_pairs`` generator.
 
 
 

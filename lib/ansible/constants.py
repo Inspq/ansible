@@ -5,18 +5,18 @@
 from __future__ import (absolute_import, division, print_function)
 __metaclass__ = type
 
-import os
 import re
 
 from ast import literal_eval
 from jinja2 import Template
 from string import ascii_letters, digits
 
-from ansible.config.manager import ConfigManager, ensure_type, get_ini_config_value
+from ansible.config.manager import ConfigManager, ensure_type
 from ansible.module_utils._text import to_text
 from ansible.module_utils.common.collections import Sequence
-from ansible.module_utils.parsing.convert_bool import boolean, BOOLEANS_TRUE
+from ansible.module_utils.parsing.convert_bool import BOOLEANS_TRUE
 from ansible.module_utils.six import string_types
+from ansible.release import __version__
 from ansible.utils.fqcn import add_internal_fqcns
 
 
@@ -30,7 +30,7 @@ def _warning(msg):
         sys.stderr.write(' [WARNING] %s\n' % (msg))
 
 
-def _deprecated(msg, version='2.8'):
+def _deprecated(msg, version):
     ''' display is not guaranteed here, nor it being the full class, but try anyways, fallback to sys.stderr.write '''
     try:
         from ansible.utils.display import Display
@@ -52,11 +52,11 @@ class _DeprecatedSequenceConstant(Sequence):
         self._version = version
 
     def __len__(self):
-        _deprecated(self._msg, version=self._version)
+        _deprecated(self._msg, self._version)
         return len(self._value)
 
     def __getitem__(self, y):
-        _deprecated(self._msg, version=self._version)
+        _deprecated(self._msg, self._version)
         return self._value[y]
 
 
@@ -77,7 +77,6 @@ _ACTION_SETUP = add_internal_fqcns(('setup', ))
 _ACTION_HAS_CMD = add_internal_fqcns(('command', 'shell', 'script'))
 _ACTION_ALLOWS_RAW_ARGS = _ACTION_HAS_CMD + add_internal_fqcns(('raw', ))
 _ACTION_ALL_INCLUDES = _ACTION_INCLUDE + _ACTION_INCLUDE_TASKS + _ACTION_INCLUDE_ROLE
-_ACTION_ALL_IMPORT_PLAYBOOKS = _ACTION_INCLUDE + _ACTION_IMPORT_PLAYBOOK
 _ACTION_ALL_INCLUDE_IMPORT_TASKS = _ACTION_INCLUDE + _ACTION_INCLUDE_TASKS + _ACTION_IMPORT_TASKS
 _ACTION_ALL_PROPER_INCLUDE_IMPORT_ROLES = _ACTION_INCLUDE_ROLE + _ACTION_IMPORT_ROLE
 _ACTION_ALL_PROPER_INCLUDE_IMPORT_TASKS = _ACTION_INCLUDE_TASKS + _ACTION_IMPORT_TASKS

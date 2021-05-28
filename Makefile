@@ -11,7 +11,7 @@
 #   make deb ------------------ produce a DEB
 #   make docs ----------------- rebuild the manpages (results are checked in)
 #   make gettext -------------- produce POT files for docs
-#   make generate-po ---------- generate language specfic po file
+#   make generate-po ---------- generate language specific po file
 #   make needs-translation ---- generate list of file with unstranlated or fuzzy string for a specific language
 #   make tests ---------------- run the tests (see https://docs.ansible.com/ansible/devel/dev_guide/testing_units.html for requirements)
 
@@ -34,7 +34,7 @@ else
 ASCII2MAN = @echo "ERROR: rst2man from docutils command is not installed but is required to build $(MANPAGES)" && exit 1
 endif
 
-PYTHON=python
+PYTHON ?= python
 GENERATE_CLI = hacking/build-ansible.py generate-man
 
 # fetch version from project release.py as single source-of-truth
@@ -154,7 +154,6 @@ clean:
 	rm -f ./docs/man/man1/*
 	@echo "Cleaning up output from test runs"
 	rm -rf test/test_data
-	rm -rf shippable/
 	rm -rf logs/
 	rm -rf .cache/
 	rm -f test/units/.coverage*

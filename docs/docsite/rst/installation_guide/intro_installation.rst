@@ -119,11 +119,11 @@ Installing Ansible with ``pip``
 
 	If you have Ansible 2.9 or older installed or Ansible 3, see :ref:`pip_upgrade`.
 
-Once ``pip`` is installed, you can install Ansible [1]_::
+Once ``pip`` is installed, you can install Ansible::
 
     $ python -m pip install --user ansible
 
-In order to use the ``paramiko`` connection plugin or modules that require ``paramiko``, install the required module [2]_::
+In order to use the ``paramiko`` connection plugin or modules that require ``paramiko``, install the required module [1]_::
 
     $ python -m pip install --user paramiko
 
@@ -188,7 +188,7 @@ As explained by the message, to upgrade you must first remove the version of Ans
     $ pip install ansible
 
 
-Upgrading from Ansible 3 or ansible-core 2.10 
+Upgrading from Ansible 3 or ansible-core 2.10
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 ``ansible-base`` only exists for version 2.10 and in Ansible 3. In 2.11 and later, the package is called ``ansible-core``.  Before installing ``ansible-core`` or Ansible 4, you must uninstall ``ansible-base`` if you have installed Ansible 3 or ``ansible-base`` 2.10.
@@ -575,7 +575,7 @@ As of Ansible 2.9, you can add shell completion of the Ansible command line util
 
 You can install ``python-argcomplete`` from EPEL on Red Hat Enterprise based distributions, and or from the standard OS repositories for many other distributions.
 
-For more information about installation and configuration, see the `argcomplete documentation <https://argcomplete.readthedocs.io/en/latest/>`_.
+For more information about installation and configuration, see the `argcomplete documentation <https://kislyuk.github.io/argcomplete/>`_.
 
 Installing ``argcomplete`` on RHEL, CentOS, or Fedora
 -----------------------------------------------------
@@ -647,7 +647,7 @@ You should place the above commands into your shells profile file such as ``~/.p
 Using ``argcomplete`` with zsh or tcsh
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-See the `argcomplete documentation <https://argcomplete.readthedocs.io/en/latest/>`_.
+See the `argcomplete documentation <https://kislyuk.github.io/argcomplete/>`_.
 
 
 .. seealso::
@@ -663,5 +663,4 @@ See the `argcomplete documentation <https://argcomplete.readthedocs.io/en/latest
    `irc.freenode.net <http://irc.freenode.net>`_
        #ansible IRC chat channel
 
-.. [1] If you have issues with the "pycrypto" package install on macOS, then you may need to try ``CC=clang sudo -E pip install pycrypto``.
-.. [2] ``paramiko`` was included in Ansible's ``requirements.txt`` prior to 2.8.
+.. [1] ``paramiko`` was included in Ansible's ``requirements.txt`` prior to 2.8.

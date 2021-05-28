@@ -50,6 +50,7 @@ from ansible.playbook.task_include import TaskInclude
 from ansible.plugins import loader as plugin_loader
 from ansible.template import Templar
 from ansible.utils.display import Display
+from ansible.utils.unsafe_proxy import wrap_var
 from ansible.utils.vars import combine_vars
 from ansible.vars.clean import strip_internal_keys, module_response_deepcopy
 
@@ -250,7 +251,7 @@ class StrategyBase:
         if not refresh and all((self._hosts_cache, self._hosts_cache_all)):
             return
 
-        if Templar(None).is_template(play.hosts):
+        if not play.finalized and Templar(None).is_template(play.hosts):
             _pattern = 'all'
         else:
             _pattern = play.hosts or 'all'
@@ -548,9 +549,7 @@ class StrategyBase:
                         # if we're using run_once, we have to fail every host here
                         for h in self._inventory.get_hosts(iterator._play.hosts):
                             if h.name not in self._tqm._unreachable_hosts:
-                                state, _ = iterator.get_next_task_for_host(h, peek=True)
                                 iterator.mark_host_failed(h)
-                                state, new_task = iterator.get_next_task_for_host(h, peek=True)
                     else:
                         iterator.mark_host_failed(original_host)
 
@@ -572,7 +571,7 @@ class StrategyBase:
                         self._variable_manager.set_nonpersistent_facts(
                             original_host.name,
                             dict(
-                                ansible_failed_task=original_task.serialize(),
+                                ansible_failed_task=wrap_var(original_task.serialize()),
                                 ansible_failed_result=task_result._result,
                             ),
                         )
@@ -663,7 +662,7 @@ class StrategyBase:
                         self._add_group(original_host, result_item)
                         post_process_whens(result_item, original_task, handler_templar)
 
-                    if 'ansible_facts' in result_item:
+                    if 'ansible_facts' in result_item and original_task.action not in C._ACTION_DEBUG:
                         # if delegated fact and we are delegating facts, we need to change target host for them
                         if original_task.delegate_to is not None and original_task.delegate_facts:
                             host_list = self.get_delegated_hosts(result_item, original_task)
@@ -923,20 +922,6 @@ class StrategyBase:
                 raise AnsibleError("included task files must contain a list of tasks")
 
             ti_copy = self._copy_included_file(included_file)
-            # pop tags out of the include args, if they were specified there, and assign
-            # them to the include. If the include already had tags specified, we raise an
-            # error so that users know not to specify them both ways
-            tags = included_file._task.vars.pop('tags', [])
-            if isinstance(tags, string_types):
-                tags = tags.split(',')
-            if len(tags) > 0:
-                if len(included_file._task.tags) > 0:
-                    raise AnsibleParserError("Include tasks should not specify tags in more than one way (both via args and directly on the task). "
-                                             "Mixing tag specify styles is prohibited for whole import hierarchy, not only for single import statement",
-                                             obj=included_file._task._ds)
-                display.deprecated("You should not specify tags in the include parameters. All tags should be specified using the task-level option",
-                                   version='2.12', collection_name='ansible.builtin')
-                included_file._task.tags = tags
 
             block_list = load_list_of_blocks(
                 data,

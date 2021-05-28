@@ -198,7 +198,7 @@ There are three ways to add tags to roles:
 
   #. Add the same tag or tags to all tasks in the role by setting tags under ``roles``. See examples in this section.
   #. Add the same tag or tags to all tasks in the role by setting tags on a static ``import_role`` in your playbook. See examples in :ref:`tags_on_imports`.
-  #. Add a tag or tags to to individual tasks or blocks within the role itself. This is the only approach that allows you to select or skip some tasks within the role. To select or skip tasks within the role, you must have tags set on individual tasks or blocks, use the dynamic ``include_role`` in your playbook, and add the same tag or tags to the include. When you use this approach, and then run your playbook with ``--tags foo``, Ansible runs the include itself plus any tasks in the role that also have the tag ``foo``. See :ref:`tags_on_includes` for details.
+  #. Add a tag or tags to individual tasks or blocks within the role itself. This is the only approach that allows you to select or skip some tasks within the role. To select or skip tasks within the role, you must have tags set on individual tasks or blocks, use the dynamic ``include_role`` in your playbook, and add the same tag or tags to the include. When you use this approach, and then run your playbook with ``--tags foo``, Ansible runs the include itself plus any tasks in the role that also have the tag ``foo``. See :ref:`tags_on_includes` for details.
 
 When you incorporate a role in your playbook statically with the ``roles`` keyword, Ansible adds any tags you define to all the tasks in the role. For example:
 
@@ -331,8 +331,8 @@ Once you have added tags to your tasks, includes, blocks, plays, roles, and impo
 :ref:`ansible-playbook` offers five tag-related command-line options:
 
 * ``--tags all`` - run all tasks, ignore tags (default behavior)
-* ``--tags [tag1, tag2]`` - run only tasks with the tags ``tag1`` and ``tag2``
-* ``--skip-tags [tag3, tag4]`` - run all tasks except those with the tags ``tag3`` and ``tag4``
+* ``--tags [tag1, tag2]`` - run only tasks with either the tag ``tag1`` or the tag ``tag2``
+* ``--skip-tags [tag3, tag4]`` - run all tasks except those with either the tag ``tag3`` or the tag ``tag4``
 * ``--tags tagged`` - run only tasks with at least one tag
 * ``--tags untagged`` - run only tasks with no tags
 

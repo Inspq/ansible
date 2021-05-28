@@ -5,7 +5,6 @@ from __future__ import (absolute_import, division, print_function)
 __metaclass__ = type
 
 import os
-import re
 import pty
 import time
 import json
@@ -20,7 +19,7 @@ from ansible.errors import AnsibleError, AnsibleParserError, AnsibleUndefinedVar
 from ansible.executor.task_result import TaskResult
 from ansible.executor.module_common import get_action_args_with_defaults
 from ansible.module_utils.parsing.convert_bool import boolean
-from ansible.module_utils.six import iteritems, string_types, binary_type
+from ansible.module_utils.six import iteritems, binary_type
 from ansible.module_utils.six.moves import xrange
 from ansible.module_utils._text import to_text, to_native
 from ansible.module_utils.connection import write_to_file_descriptor
@@ -480,8 +479,8 @@ class TaskExecutor:
         if self._loop_eval_error is not None:
             raise self._loop_eval_error  # pylint: disable=raising-bad-type
 
-        # if we ran into an error while setting up the PlayContext, raise it now
-        if context_validation_error is not None:
+        # if we ran into an error while setting up the PlayContext, raise it now, unless is known issue with delegation
+        if context_validation_error is not None and not (self._task.delegate_to and isinstance(context_validation_error, AnsibleUndefinedVariable)):
             raise context_validation_error  # pylint: disable=raising-bad-type
 
         # if this task is a TaskInclude, we just return now with a success code so the
@@ -538,6 +537,12 @@ class TaskExecutor:
 
         plugin_vars = self._set_connection_options(cvars, templar)
         templar.available_variables = orig_vars
+
+        # TODO: eventually remove this block as this should be a 'consequence' of 'forced_local' modules
+        # special handling for python interpreter for network_os, default to ansible python unless overriden
+        if 'ansible_network_os' in cvars and 'ansible_python_interpreter' not in cvars:
+            # this also avoids 'python discovery'
+            cvars['ansible_python_interpreter'] = sys.executable
 
         # get handler
         self._handler = self._get_action_handler(connection=self._connection, templar=templar)
@@ -632,7 +637,7 @@ class TaskExecutor:
                     failed_when_result = False
                 return failed_when_result
 
-            if 'ansible_facts' in result:
+            if 'ansible_facts' in result and self._task.action not in C._ACTION_DEBUG:
                 if self._task.action in C._ACTION_WITH_CLEAN_FACTS:
                     vars_copy.update(result['ansible_facts'])
                 else:
@@ -704,7 +709,7 @@ class TaskExecutor:
         if self._task.register:
             variables[self._task.register] = result = wrap_var(result)
 
-        if 'ansible_facts' in result:
+        if 'ansible_facts' in result and self._task.action not in C._ACTION_DEBUG:
             if self._task.action in C._ACTION_WITH_CLEAN_FACTS:
                 variables.update(result['ansible_facts'])
             else:
@@ -727,6 +732,11 @@ class TaskExecutor:
             result["_ansible_delegated_vars"] = {'ansible_delegated_host': self._task.delegate_to}
             for k in plugin_vars:
                 result["_ansible_delegated_vars"][k] = cvars.get(k)
+
+            # note: here for callbacks that rely on this info to display delegation
+            for requireshed in ('ansible_host', 'ansible_port', 'ansible_user', 'ansible_connection'):
+                if requireshed not in result["_ansible_delegated_vars"] and requireshed in cvars:
+                    result["_ansible_delegated_vars"][requireshed] = cvars.get(requireshed)
 
         # and return
         display.debug("attempt loop complete, returning result")

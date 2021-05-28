@@ -22,6 +22,7 @@ from .util import (
     read_lines_without_comments,
     MAXFD,
     ANSIBLE_TEST_DATA_ROOT,
+    SUPPORTED_PYTHON_VERSIONS,
 )
 
 from .delegation import (
@@ -30,15 +31,26 @@ from .delegation import (
 )
 
 from .executor import (
-    command_posix_integration,
-    command_network_integration,
-    command_windows_integration,
-    command_shell,
-    SUPPORTED_PYTHON_VERSIONS,
     ApplicationWarning,
     Delegate,
     generate_pip_install,
-    check_startup,
+    configure_pypi_proxy,
+)
+
+from .commands.integration.posix import (
+    command_posix_integration,
+)
+
+from .commands.integration.network import (
+    command_network_integration,
+)
+
+from .commands.integration.windows import (
+    command_windows_integration,
+)
+
+from .commands.shell import (
+    command_shell,
 )
 
 from .config import (
@@ -50,19 +62,19 @@ from .config import (
     ShellConfig,
 )
 
-from .env import (
+from .commands.env import (
     EnvConfig,
     command_env,
     configure_timeout,
 )
 
-from .sanity import (
+from .commands.sanity import (
     command_sanity,
     sanity_init,
     sanity_get_tests,
 )
 
-from .units import (
+from .commands.units import (
     command_units,
 )
 
@@ -75,7 +87,7 @@ from .target import (
     walk_sanity_targets,
 )
 
-from .cloud import (
+from .commands.integration.cloud import (
     initialize_cloud_plugins,
 )
 
@@ -94,55 +106,58 @@ from .util_common import (
     CommonConfig,
 )
 
-from .coverage.combine import (
+from .commands.coverage.combine import (
     command_coverage_combine,
+    CoverageCombineConfig,
 )
 
-from .coverage.erase import (
+from .commands.coverage.erase import (
     command_coverage_erase,
+    CoverageEraseConfig,
 )
 
-from .coverage.html import (
+from .commands.coverage.html import (
     command_coverage_html,
+    CoverageHtmlConfig,
 )
 
-from .coverage.report import (
+from .commands.coverage.report import (
     command_coverage_report,
     CoverageReportConfig,
 )
 
-from .coverage.xml import (
+from .commands.coverage.xml import (
     command_coverage_xml,
+    CoverageXmlConfig,
 )
 
-from .coverage.analyze.targets.generate import (
+from .commands.coverage.analyze.targets.generate import (
     command_coverage_analyze_targets_generate,
     CoverageAnalyzeTargetsGenerateConfig,
 )
 
-from .coverage.analyze.targets.expand import (
+from .commands.coverage.analyze.targets.expand import (
     command_coverage_analyze_targets_expand,
     CoverageAnalyzeTargetsExpandConfig,
 )
 
-from .coverage.analyze.targets.filter import (
+from .commands.coverage.analyze.targets.filter import (
     command_coverage_analyze_targets_filter,
     CoverageAnalyzeTargetsFilterConfig,
 )
 
-from .coverage.analyze.targets.combine import (
+from .commands.coverage.analyze.targets.combine import (
     command_coverage_analyze_targets_combine,
     CoverageAnalyzeTargetsCombineConfig,
 )
 
-from .coverage.analyze.targets.missing import (
+from .commands.coverage.analyze.targets.missing import (
     command_coverage_analyze_targets_missing,
     CoverageAnalyzeTargetsMissingConfig,
 )
 
-from .coverage import (
+from .commands.coverage import (
     COVERAGE_GROUPS,
-    CoverageConfig,
 )
 
 if t.TYPE_CHECKING:
@@ -162,7 +177,6 @@ def main():
         display.redact = config.redact
         display.color = config.color
         display.info_stderr = config.info_stderr
-        check_startup()
         check_delegation_args(config)
         configure_timeout(config)
 
@@ -170,11 +184,12 @@ def main():
         display.info('MAXFD: %d' % MAXFD, verbosity=2)
 
         try:
+            configure_pypi_proxy(config)
             args.func(config)
             delegate_args = None
         except Delegate as ex:
             # save delegation args for use once we exit the exception handler
-            delegate_args = (ex.exclude, ex.require, ex.integration_targets)
+            delegate_args = (ex.exclude, ex.require)
 
         if delegate_args:
             # noinspection PyTypeChecker
@@ -235,6 +250,15 @@ def parse_args():
                         action='count',
                         default=0,
                         help='display more output')
+
+    common.add_argument('--pypi-proxy',
+                        action='store_true',
+                        help=argparse.SUPPRESS)  # internal use only
+
+    common.add_argument('--pypi-endpoint',
+                        metavar='URI',
+                        default=None,
+                        help=argparse.SUPPRESS)  # internal use only
 
     common.add_argument('--color',
                         metavar='COLOR',
@@ -313,7 +337,7 @@ def parse_args():
                       help='base branch used for change detection')
 
     add_changes(test, argparse)
-    add_environments(test)
+    add_environments(test, argparse)
 
     integration = argparse.ArgumentParser(add_help=False, parents=[test])
 
@@ -412,7 +436,6 @@ def parse_args():
                                    config=PosixIntegrationConfig)
 
     add_extra_docker_options(posix_integration)
-    add_httptester_options(posix_integration, argparse)
 
     network_integration = subparsers.add_parser('network-integration',
                                                 parents=[integration],
@@ -458,7 +481,6 @@ def parse_args():
                                      config=WindowsIntegrationConfig)
 
     add_extra_docker_options(windows_integration, integration=False)
-    add_httptester_options(windows_integration, argparse)
 
     windows_integration.add_argument('--windows',
                                      metavar='VERSION',
@@ -553,13 +575,16 @@ def parse_args():
                        action='store_true',
                        help='direct to shell with no setup')
 
-    add_environments(shell)
+    add_environments(shell, argparse)
     add_extra_docker_options(shell)
-    add_httptester_options(shell, argparse)
 
     coverage_common = argparse.ArgumentParser(add_help=False, parents=[common])
 
-    add_environments(coverage_common, isolated_delegation=False)
+    add_environments(coverage_common, argparse, isolated_delegation=False)
+
+    coverage_common_isolated_delegation = argparse.ArgumentParser(add_help=False, parents=[common])
+
+    add_environments(coverage_common_isolated_delegation, argparse)
 
     coverage = subparsers.add_parser('coverage',
                                      help='code coverage management and reporting')
@@ -570,11 +595,14 @@ def parse_args():
     add_coverage_analyze(coverage_subparsers, coverage_common)
 
     coverage_combine = coverage_subparsers.add_parser('combine',
-                                                      parents=[coverage_common],
+                                                      parents=[coverage_common_isolated_delegation],
                                                       help='combine coverage data and rewrite remote paths')
 
     coverage_combine.set_defaults(func=command_coverage_combine,
-                                  config=CoverageConfig)
+                                  config=CoverageCombineConfig)
+
+    coverage_combine.add_argument('--export',
+                                  help='directory to export combined coverage files to')
 
     add_extra_coverage_options(coverage_combine)
 
@@ -583,10 +611,10 @@ def parse_args():
                                                     help='erase coverage data files')
 
     coverage_erase.set_defaults(func=command_coverage_erase,
-                                config=CoverageConfig)
+                                config=CoverageEraseConfig)
 
     coverage_report = coverage_subparsers.add_parser('report',
-                                                     parents=[coverage_common],
+                                                     parents=[coverage_common_isolated_delegation],
                                                      help='generate console coverage report')
 
     coverage_report.set_defaults(func=command_coverage_report,
@@ -608,20 +636,20 @@ def parse_args():
     add_extra_coverage_options(coverage_report)
 
     coverage_html = coverage_subparsers.add_parser('html',
-                                                   parents=[coverage_common],
+                                                   parents=[coverage_common_isolated_delegation],
                                                    help='generate html coverage report')
 
     coverage_html.set_defaults(func=command_coverage_html,
-                               config=CoverageConfig)
+                               config=CoverageHtmlConfig)
 
     add_extra_coverage_options(coverage_html)
 
     coverage_xml = coverage_subparsers.add_parser('xml',
-                                                  parents=[coverage_common],
+                                                  parents=[coverage_common_isolated_delegation],
                                                   help='generate xml coverage report')
 
     coverage_xml.set_defaults(func=command_coverage_xml,
-                              config=CoverageConfig)
+                              config=CoverageXmlConfig)
 
     add_extra_coverage_options(coverage_xml)
 
@@ -882,9 +910,10 @@ def add_changes(parser, argparse):
     changes.add_argument('--changed-path', metavar='PATH', action='append', help=argparse.SUPPRESS)
 
 
-def add_environments(parser, isolated_delegation=True):
+def add_environments(parser, argparse, isolated_delegation=True):
     """
     :type parser: argparse.ArgumentParser
+    :type argparse: argparse
     :type isolated_delegation: bool
     """
     parser.add_argument('--requirements',
@@ -920,6 +949,7 @@ def add_environments(parser, isolated_delegation=True):
 
     if not isolated_delegation:
         environments.set_defaults(
+            containers=None,
             docker=None,
             remote=None,
             remote_stage=None,
@@ -930,6 +960,9 @@ def add_environments(parser, isolated_delegation=True):
         )
 
         return
+
+    parser.add_argument('--containers',
+                        help=argparse.SUPPRESS)  # internal use only
 
     environments.add_argument('--docker',
                               metavar='IMAGE',
@@ -985,35 +1018,6 @@ def add_extra_coverage_options(parser):
     parser.add_argument('--stub',
                         action='store_true',
                         help='generate empty report of all python/powershell source files')
-
-    parser.add_argument('--export',
-                        help='directory to export combined coverage files to')
-
-
-def add_httptester_options(parser, argparse):
-    """
-    :type parser: argparse.ArgumentParser
-    :type argparse: argparse
-    """
-    group = parser.add_mutually_exclusive_group()
-
-    group.add_argument('--httptester',
-                       metavar='IMAGE',
-                       default='quay.io/ansible/http-test-container:1.3.0',
-                       help='docker image to use for the httptester container')
-
-    group.add_argument('--disable-httptester',
-                       dest='httptester',
-                       action='store_const',
-                       const='',
-                       help='do not use the httptester container')
-
-    parser.add_argument('--inject-httptester',
-                        action='store_true',
-                        help=argparse.SUPPRESS)  # internal use only
-
-    parser.add_argument('--httptester-krb5-password',
-                        help=argparse.SUPPRESS)  # internal use only
 
 
 def add_extra_docker_options(parser, integration=True):
@@ -1108,9 +1112,8 @@ def complete_remote_shell(prefix, parsed_args, **_):
 
     images = sorted(get_remote_completion().keys())
 
-    # 2008 doesn't support SSH so we do not add to the list of valid images
     windows_completion_path = os.path.join(ANSIBLE_TEST_DATA_ROOT, 'completion', 'windows.txt')
-    images.extend(["windows/%s" % i for i in read_lines_without_comments(windows_completion_path, remove_blank_lines=True) if i != '2008'])
+    images.extend(["windows/%s" % i for i in read_lines_without_comments(windows_completion_path, remove_blank_lines=True)])
 
     return [i for i in images if i.startswith(prefix)]
 

@@ -89,7 +89,7 @@ options:
             - On macOS systems, this value has to be cleartext. Beware of security issues.
             - To create a disabled account on Linux systems, set this to C('!') or C('*').
             - To create a disabled account on OpenBSD, set this to C('*************').
-            - See L(FAQ entry,https://docs.ansible.com/ansible/latest/reference_appendices/faq.html#how-do-i-generate-encrypted-passwords-for-the-user-module)
+            - See L(FAQ entry, reference_appendices/faq.html#how-do-i-generate-encrypted-passwords-for-the-user-module)
               for details on various ways to generate these password values.
         type: str
     state:
@@ -250,6 +250,14 @@ options:
             - Supported on Linux only.
         type: int
         version_added: "2.11"
+    umask:
+        description:
+            - Sets the umask of the user.
+            - Does nothing when used with other platforms.
+            - Currently supported on Linux.
+            - Requires C(local) is omitted or False.
+        type: str
+        version_added: "2.12"
 
 notes:
   - There are specific requirements per platform on user management utilities. However
@@ -529,6 +537,10 @@ class User(object):
         self.role = module.params['role']
         self.password_expire_max = module.params['password_expire_max']
         self.password_expire_min = module.params['password_expire_min']
+        self.umask = module.params['umask']
+
+        if self.umask is not None and self.local:
+            module.fail_json(msg="'umask' can not be used with 'local'")
 
         if module.params['groups'] is not None:
             self.groups = ','.join(module.params['groups'])
@@ -673,13 +685,8 @@ class User(object):
             cmd.append(self.comment)
 
         if self.home is not None:
-            # If the specified path to the user home contains parent directories that
-            # do not exist and create_home is True first create the parent directory
-            # since useradd cannot create it.
             if self.create_home:
-                parent = os.path.dirname(self.home)
-                if not os.path.isdir(parent):
-                    self.create_homedir(self.home)
+                self.create_homedir(self.home)
             cmd.append('-d')
             cmd.append(self.home)
 
@@ -701,15 +708,7 @@ class User(object):
             else:
                 cmd.append(self.password)
 
-        if self.create_home:
-            if not self.local:
-                cmd.append('-m')
-
-            if self.skeleton is not None:
-                cmd.append('-k')
-                cmd.append(self.skeleton)
-        else:
-            cmd.append('-M')
+        cmd.append('-M')
 
         if self.system:
             cmd.append('-r')
@@ -1234,18 +1233,26 @@ class User(object):
                     os.makedirs(path)
                 except OSError as e:
                     self.module.exit_json(failed=True, msg="%s" % to_native(e))
-            # get umask from /etc/login.defs and set correct home mode
-            if os.path.exists(self.LOGIN_DEFS):
-                with open(self.LOGIN_DEFS, 'r') as f:
-                    for line in f:
-                        m = re.match(r'^UMASK\s+(\d+)$', line)
-                        if m:
-                            umask = int(m.group(1), 8)
-                            mode = 0o777 & ~umask
-                            try:
-                                os.chmod(path, mode)
-                            except OSError as e:
-                                self.module.exit_json(failed=True, msg="%s" % to_native(e))
+            umask_string = None
+            # If an umask was set take it from there
+            if self.umask is not None:
+                umask_string = self.umask
+            else:
+                # try to get umask from /etc/login.defs
+                if os.path.exists(self.LOGIN_DEFS):
+                    with open(self.LOGIN_DEFS, 'r') as f:
+                        for line in f:
+                            m = re.match(r'^UMASK\s+(\d+)$', line)
+                            if m:
+                                umask_string = m.group(1)
+            # set correct home mode if we have a umask
+            if umask_string is not None:
+                umask = int(umask_string, 8)
+                mode = 0o777 & ~umask
+                try:
+                    os.chmod(path, mode)
+                except OSError as e:
+                    self.module.exit_json(failed=True, msg="%s" % to_native(e))
 
     def chown_homedir(self, uid, gid, path):
         try:
@@ -1357,6 +1364,10 @@ class FreeBsdUser(User):
                 cmd.append('-k')
                 cmd.append(self.skeleton)
 
+            if self.umask is not None:
+                cmd.append('-K')
+                cmd.append('UMASK=' + self.umask)
+
         if self.shell is not None:
             cmd.append('-s')
             cmd.append(self.shell)
@@ -1433,6 +1444,10 @@ class FreeBsdUser(User):
             if self.skeleton is not None:
                 cmd.append('-k')
                 cmd.append(self.skeleton)
+
+            if self.umask is not None:
+                cmd.append('-K')
+                cmd.append('UMASK=' + self.umask)
 
         if self.group is not None:
             if not self.group_exists(self.group):
@@ -1613,6 +1628,10 @@ class OpenBSDUser(User):
                 cmd.append('-k')
                 cmd.append(self.skeleton)
 
+            if self.umask is not None:
+                cmd.append('-K')
+                cmd.append('UMASK=' + self.umask)
+
         cmd.append(self.name)
         return self.execute_command(cmd)
 
@@ -1785,6 +1804,10 @@ class NetBSDUser(User):
             if self.skeleton is not None:
                 cmd.append('-k')
                 cmd.append(self.skeleton)
+
+            if self.umask is not None:
+                cmd.append('-K')
+                cmd.append('UMASK=' + self.umask)
 
         cmd.append(self.name)
         return self.execute_command(cmd)
@@ -1970,6 +1993,10 @@ class SunOS(User):
             if self.skeleton is not None:
                 cmd.append('-k')
                 cmd.append(self.skeleton)
+
+            if self.umask is not None:
+                cmd.append('-K')
+                cmd.append('UMASK=' + self.umask)
 
         if self.profile is not None:
             cmd.append('-P')
@@ -2576,6 +2603,10 @@ class AIX(User):
                 cmd.append('-k')
                 cmd.append(self.skeleton)
 
+            if self.umask is not None:
+                cmd.append('-K')
+                cmd.append('UMASK=' + self.umask)
+
         cmd.append(self.name)
         (rc, out, err) = self.execute_command(cmd)
 
@@ -2901,6 +2932,10 @@ class BusyBox(User):
             cmd.append('-k')
             cmd.append(self.skeleton)
 
+        if self.umask is not None:
+            cmd.append('-K')
+            cmd.append('UMASK=' + self.umask)
+
         if self.system:
             cmd.append('-S')
 
@@ -3046,6 +3081,7 @@ def main():
             profile=dict(type='str'),
             authorization=dict(type='str'),
             role=dict(type='str'),
+            umask=dict(type='str'),
         ),
         supports_check_mode=True,
     )

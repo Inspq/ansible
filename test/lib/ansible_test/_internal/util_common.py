@@ -53,7 +53,7 @@ NETWORK_COMPLETION = {}  # type: t.Dict[str, t.Dict[str, str]]
 
 class ShellScriptTemplate:
     """A simple substition template for shell scripts."""
-    def __init__(self, template):  # type: (str) -> None
+    def __init__(self, template):  # type: (t.Text) -> None
         self.template = template
 
     def substitute(self, **kwargs):
@@ -219,7 +219,7 @@ def named_temporary_file(args, prefix, suffix, directory, content):
     :rtype: str
     """
     if args.explain:
-        yield os.path.join(directory, '%stemp%s' % (prefix, suffix))
+        yield os.path.join(directory or '/tmp', '%stemp%s' % (prefix, suffix))
     else:
         with tempfile.NamedTemporaryFile(prefix=prefix, suffix=suffix, dir=directory) as tempfile_fd:
             tempfile_fd.write(to_bytes(content))
@@ -427,7 +427,7 @@ def intercept_command(args, cmd, target_name, env, capture=False, data=None, cwd
     env['ANSIBLE_TEST_PYTHON_VERSION'] = version
     env['ANSIBLE_TEST_PYTHON_INTERPRETER'] = interpreter
 
-    if args.coverage and not disable_coverage:
+    if not disable_coverage and args.coverage:
         # add the necessary environment variables to enable code coverage collection
         env.update(get_coverage_environment(args, target_name, version, temp_path, module_coverage,
                                             remote_temp_path=remote_temp_path))

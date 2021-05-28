@@ -1,34 +1,17 @@
 # (c) 2012, Jeroen Hoekx <jeroen@hoekx.be>
-#
-# This file is part of Ansible
-#
-# Ansible is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# Ansible is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with Ansible.  If not, see <http://www.gnu.org/licenses/>.
+# GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
 # Make coding more python3-ish
 from __future__ import (absolute_import, division, print_function)
 __metaclass__ = type
 
 import base64
-import crypt
 import glob
 import hashlib
-import itertools
 import json
 import ntpath
 import os.path
 import re
-import string
 import sys
 import time
 import uuid
@@ -41,11 +24,12 @@ from random import Random, SystemRandom, shuffle
 from jinja2.filters import environmentfilter, do_groupby as _do_groupby
 
 from ansible.errors import AnsibleError, AnsibleFilterError, AnsibleFilterTypeError
-from ansible.module_utils.six import iteritems, string_types, integer_types, reraise, text_type
-from ansible.module_utils.six.moves import reduce, shlex_quote
+from ansible.module_utils.six import string_types, integer_types, reraise, text_type
+from ansible.module_utils.six.moves import shlex_quote
 from ansible.module_utils._text import to_bytes, to_native, to_text
 from ansible.module_utils.common.collections import is_sequence
 from ansible.module_utils.common._collections_compat import Mapping
+from ansible.module_utils.common.yaml import yaml_load, yaml_load_all
 from ansible.parsing.ajson import AnsibleJSONEncoder
 from ansible.parsing.yaml.dumper import AnsibleDumper
 from ansible.template import recursive_check_defined
@@ -99,7 +83,7 @@ def to_datetime(string, format="%Y-%m-%d %H:%M:%S"):
 
 
 def strftime(string_format, second=None):
-    ''' return a date string using string. See https://docs.python.org/2/library/time.html#time.strftime for format '''
+    ''' return a date string using string. See https://docs.python.org/3/library/time.html#time.strftime for format '''
     if second is not None:
         try:
             second = float(second)
@@ -211,13 +195,19 @@ def regex_escape(string, re_type='python'):
 
 def from_yaml(data):
     if isinstance(data, string_types):
-        return yaml.safe_load(data)
+        # The ``text_type`` call here strips any custom
+        # string wrapper class, so that CSafeLoader can
+        # read the data
+        return yaml_load(text_type(to_text(data, errors='surrogate_or_strict')))
     return data
 
 
 def from_yaml_all(data):
     if isinstance(data, string_types):
-        return yaml.safe_load_all(data)
+        # The ``text_type`` call here strips any custom
+        # string wrapper class, so that CSafeLoader can
+        # read the data
+        return yaml_load_all(text_type(to_text(data, errors='surrogate_or_strict')))
     return data
 
 
@@ -265,7 +255,7 @@ def get_hash(data, hashtype='sha1'):
     return h.hexdigest()
 
 
-def get_encrypted_password(password, hashtype='sha512', salt=None, salt_size=None, rounds=None):
+def get_encrypted_password(password, hashtype='sha512', salt=None, salt_size=None, rounds=None, ident=None):
     passlib_mapping = {
         'md5': 'md5_crypt',
         'blowfish': 'bcrypt',
@@ -275,7 +265,7 @@ def get_encrypted_password(password, hashtype='sha512', salt=None, salt_size=Non
 
     hashtype = passlib_mapping.get(hashtype, hashtype)
     try:
-        return passlib_or_crypt(password, hashtype, salt=salt, salt_size=salt_size, rounds=rounds)
+        return passlib_or_crypt(password, hashtype, salt=salt, salt_size=salt_size, rounds=rounds, ident=ident)
     except AnsibleError as e:
         reraise(AnsibleFilterError, AnsibleFilterError(to_native(e), orig_exc=e), sys.exc_info()[2])
 

@@ -33,11 +33,9 @@ options:
   name:
     description:
       - Description of a crontab entry or, if env is set, the name of environment variable.
-      - Required if I(state=absent).
-      - Note that if name is not set and I(state=present), then a
-        new crontab entry will always be created, regardless of existing ones.
-      - This parameter will always be required in future releases.
+      - This parameter is always required as of ansible-core 2.12.
     type: str
+    required: yes
   user:
     description:
       - The specific user whose crontab should be modified.
@@ -59,12 +57,14 @@ options:
   cron_file:
     description:
       - If specified, uses this file instead of an individual user's crontab.
+        The assumption is that this file is exclusively managed by the module,
+        do not use if the file contains multiple entries, NEVER use for /etc/crontab.
       - If this is a relative path, it is interpreted with respect to I(/etc/cron.d).
-      - If it is absolute, it will typically be C(/etc/crontab).
       - Many linux distros expect (and some require) the filename portion to consist solely
         of upper- and lower-case letters, digits, underscores, and hyphens.
-      - To use the I(cron_file) parameter you must specify the I(user) as well.
-    type: str
+      - Using this parameter requires you to specify the I(user) as well, unless I(state) is not I(present).
+      - Either this parameter or I(name) is required
+    type: path
   backup:
     description:
       - If set, create a backup of the crontab before it is modified.
@@ -98,12 +98,6 @@ options:
     type: str
     default: "*"
     aliases: [ dow ]
-  reboot:
-    description:
-      - If the job should be run at reboot. This option is deprecated. Users should use I(special_time).
-    version_added: "1.0"
-    type: bool
-    default: no
   special_time:
     description:
       - Special time specification nickname.
@@ -240,6 +234,7 @@ class CronTab(object):
         self.cron_cmd = self.module.get_bin_path('crontab', required=True)
 
         if cron_file:
+
             if os.path.isabs(cron_file):
                 self.cron_file = cron_file
                 self.b_cron_file = to_bytes(cron_file, errors='surrogate_or_strict')
@@ -291,7 +286,10 @@ class CronTab(object):
         if len(self.lines) == 0:
             return True
         else:
-            return False
+            for line in self.lines:
+                if line.strip():
+                    return False
+            return True
 
     def write(self, backup_file=None):
         """
@@ -562,10 +560,10 @@ def main():
 
     module = AnsibleModule(
         argument_spec=dict(
-            name=dict(type='str'),
+            name=dict(type='str', required=True),
             user=dict(type='str'),
             job=dict(type='str', aliases=['value']),
-            cron_file=dict(type='str'),
+            cron_file=dict(type='path'),
             state=dict(type='str', default='present', choices=['present', 'absent']),
             backup=dict(type='bool', default=False),
             minute=dict(type='str', default='*'),
@@ -573,7 +571,6 @@ def main():
             day=dict(type='str', default='*', aliases=['dom']),
             month=dict(type='str', default='*'),
             weekday=dict(type='str', default='*', aliases=['dow']),
-            reboot=dict(type='bool', default=False),
             special_time=dict(type='str', choices=["reboot", "yearly", "annually", "monthly", "weekly", "daily", "hourly"]),
             disabled=dict(type='bool', default=False),
             env=dict(type='bool', default=False),
@@ -582,7 +579,6 @@ def main():
         ),
         supports_check_mode=True,
         mutually_exclusive=[
-            ['reboot', 'special_time'],
             ['insertafter', 'insertbefore'],
         ],
     )
@@ -598,7 +594,6 @@ def main():
     day = module.params['day']
     month = module.params['month']
     weekday = module.params['weekday']
-    reboot = module.params['reboot']
     special_time = module.params['special_time']
     disabled = module.params['disabled']
     env = module.params['env']
@@ -611,6 +606,10 @@ def main():
     warnings = list()
 
     if cron_file:
+
+        if cron_file == '/etc/crontab':
+            module.fail_json(msg="Will not manage /etc/crontab via cron_file, see documentation.")
+
         cron_file_basename = os.path.basename(cron_file)
         if not re.search(r'^[A-Z0-9_-]+$', cron_file_basename, re.I):
             warnings.append('Filename portion of cron_file ("%s") should consist' % cron_file_basename +
@@ -621,17 +620,6 @@ def main():
     crontab = CronTab(module, user, cron_file)
 
     module.debug('cron instantiated - name: "%s"' % name)
-
-    if not name:
-        module.deprecate(
-            msg="The 'name' parameter will be required in future releases.",
-            version='2.12', collection_name='ansible.builtin'
-        )
-    if reboot:
-        module.deprecate(
-            msg="The 'reboot' parameter will be removed in future releases. Use 'special_time' option instead.",
-            version='2.12', collection_name='ansible.builtin'
-        )
 
     if module._diff:
         diff = dict()
@@ -646,46 +634,28 @@ def main():
 
     # --- user input validation ---
 
-    if env and not name:
-        module.fail_json(msg="You must specify 'name' while working with environment variables (env=yes)")
-
-    if (special_time or reboot) and \
+    if special_time and \
        (True in [(x != '*') for x in [minute, hour, day, month, weekday]]):
         module.fail_json(msg="You must specify time and date fields or special time.")
 
     # cannot support special_time on solaris
-    if (special_time or reboot) and platform.system() == 'SunOS':
+    if special_time and platform.system() == 'SunOS':
         module.fail_json(msg="Solaris does not support special_time=... or @reboot")
 
-    if cron_file and do_install:
-        if not user:
+    if do_install:
+        if cron_file and not user:
             module.fail_json(msg="To use cron_file=... parameter you must specify user=... as well")
 
-    if job is None and do_install:
-        module.fail_json(msg="You must specify 'job' to install a new cron job or variable")
+        if job is None:
+            module.fail_json(msg="You must specify 'job' to install a new cron job or variable")
 
-    if (insertafter or insertbefore) and not env and do_install:
-        module.fail_json(msg="Insertafter and insertbefore parameters are valid only with env=yes")
-
-    if reboot:
-        special_time = "reboot"
+        if (insertafter or insertbefore) and not env:
+            module.fail_json(msg="Insertafter and insertbefore parameters are valid only with env=yes")
 
     # if requested make a backup before making a change
     if backup and not module.check_mode:
         (backuph, backup_file) = tempfile.mkstemp(prefix='crontab')
         crontab.write(backup_file)
-
-    if crontab.cron_file and not do_install:
-        if module._diff:
-            diff['after'] = ''
-            diff['after_header'] = '/dev/null'
-        else:
-            diff = dict()
-        if module.check_mode:
-            changed = os.path.isfile(crontab.cron_file)
-        else:
-            changed = crontab.remove_job_file()
-        module.exit_json(changed=changed, cron_file=cron_file, state=state, diff=diff)
 
     if env:
         if ' ' in name:
@@ -729,6 +699,17 @@ def main():
             if len(old_job) > 0:
                 crontab.remove_job(name)
                 changed = True
+                if crontab.cron_file and crontab.is_empty():
+                    if module._diff:
+                        diff['after'] = ''
+                        diff['after_header'] = '/dev/null'
+                    else:
+                        diff = dict()
+                    if module.check_mode:
+                        changed = os.path.isfile(crontab.cron_file)
+                    else:
+                        changed = crontab.remove_job_file()
+                    module.exit_json(changed=changed, cron_file=cron_file, state=state, diff=diff)
 
     # no changes to env/job, but existing crontab needs a terminating newline
     if not changed and crontab.n_existing != '':

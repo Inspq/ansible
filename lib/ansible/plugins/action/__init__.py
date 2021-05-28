@@ -14,11 +14,10 @@ import random
 import re
 import stat
 import tempfile
-import time
 from abc import ABCMeta, abstractmethod
 
 from ansible import constants as C
-from ansible.errors import AnsibleError, AnsibleConnectionFailure, AnsibleActionSkip, AnsibleActionFail, AnsiblePluginRemovedError
+from ansible.errors import AnsibleError, AnsibleConnectionFailure, AnsibleActionSkip, AnsibleActionFail, AnsibleAuthenticationFailure
 from ansible.executor.module_common import modify_module
 from ansible.executor.interpreter_discovery import discover_interpreter, InterpreterDiscoveryRequiredError
 from ansible.module_utils.common._collections_compat import Sequence
@@ -32,6 +31,7 @@ from ansible.utils.collection_loader import resource_from_fqcr
 from ansible.utils.display import Display
 from ansible.utils.unsafe_proxy import wrap_var, AnsibleUnsafeText
 from ansible.vars.clean import remove_internal_keys
+from ansible.utils.plugin_docs import get_versioned_doclink
 
 display = Display()
 
@@ -576,6 +576,9 @@ class ActionBase(with_metaclass(ABCMeta, object)):
             setfacl_mode = 'r-x'
             # Apple patches their "file_cmds" chmod with ACL support
             chmod_acl_mode = '{0} allow read,execute'.format(become_user)
+            # POSIX-draft ACL specification. Solaris, maybe others.
+            # See chmod(1) on something Solaris-based for syntax details.
+            posix_acl_mode = 'A+user:{0}:rx:allow'.format(become_user)
         else:
             chmod_mode = 'rX'
             # TODO: this form fails silently on freebsd.  We currently
@@ -584,6 +587,8 @@ class ActionBase(with_metaclass(ABCMeta, object)):
             setfacl_mode = 'r-X'
             # Apple
             chmod_acl_mode = '{0} allow read'.format(become_user)
+            # POSIX-draft
+            posix_acl_mode = 'A+user:{0}:r:allow'.format(become_user)
 
         # Step 3a: Are we able to use setfacl to add user ACLs to the file?
         res = self._remote_set_user_facl(
@@ -624,11 +629,35 @@ class ActionBase(with_metaclass(ABCMeta, object)):
         # macOS chmod's +a flag takes its own argument. As a slight hack, we
         # pass that argument as the first element of remote_paths. So we end
         # up running `chmod +a [that argument] [file 1] [file 2] ...`
-        res = self._remote_chmod([chmod_acl_mode] + remote_paths, '+a')
+        try:
+            res = self._remote_chmod([chmod_acl_mode] + list(remote_paths), '+a')
+        except AnsibleAuthenticationFailure as e:
+            # Solaris-based chmod will return 5 when it sees an invalid mode,
+            # and +a is invalid there. Because it returns 5, which is the same
+            # thing sshpass returns on auth failure, our sshpass code will
+            # assume that auth failed. If we don't handle that case here, none
+            # of the other logic below will get run. This is fairly hacky and a
+            # corner case, but probably one that shows up pretty often in
+            # Solaris-based environments (and possibly others).
+            pass
+        else:
+            if res['rc'] == 0:
+                return remote_paths
+
+        # Step 3e: Try Solaris/OpenSolaris/OpenIndiana-sans-setfacl chmod
+        # Similar to macOS above, Solaris 11.4 drops setfacl and takes file ACLs
+        # via chmod instead. OpenSolaris and illumos-based distros allow for
+        # using either setfacl or chmod, and compatibility depends on filesystem.
+        # It should be possible to debug this branch by installing OpenIndiana
+        # (use ZFS) and going unpriv -> unpriv.
+        res = self._remote_chmod(remote_paths, posix_acl_mode)
         if res['rc'] == 0:
             return remote_paths
 
-        # Step 3e: Common group
+        # we'll need this down here
+        become_link = get_versioned_doclink('user_guide/become.html')
+
+        # Step 3f: Common group
         # Otherwise, we're a normal user. We failed to chown the paths to the
         # unprivileged user, but if we have a common group with them, we should
         # be able to chown it to that.
@@ -646,9 +675,8 @@ class ActionBase(with_metaclass(ABCMeta, object)):
         if group is not None:
             res = self._remote_chgrp(remote_paths, group)
             if res['rc'] == 0:
-                # If ALLOW_WORLD_READABLE_TMPFILES is set, we should warn the
-                # user that something might go weirdly here.
-                if C.ALLOW_WORLD_READABLE_TMPFILES:
+                # warn user that something might go weirdly here.
+                if self.get_shell_option('world_readable_temp'):
                     display.warning(
                         'Both common_remote_group and '
                         'allow_world_readable_tmpfiles are set. chgrp was '
@@ -658,9 +686,8 @@ class ActionBase(with_metaclass(ABCMeta, object)):
                         'group of which the unprivileged become user is not a '
                         'member. In this situation, '
                         'allow_world_readable_tmpfiles is a no-op. See this '
-                        'URL for more details: '
-                        'https://docs.ansible.com/ansible/become.html'
-                        '#becoming-an-unprivileged-user')
+                        'URL for more details: %s'
+                        '#risks-of-becoming-an-unprivileged-user' % become_link)
                 if execute:
                     group_mode = 'g+rwx'
                 else:
@@ -670,17 +697,14 @@ class ActionBase(with_metaclass(ABCMeta, object)):
                     return remote_paths
 
         # Step 4: World-readable temp directory
-        if self.get_shell_option(
-                'world_readable_temp',
-                C.ALLOW_WORLD_READABLE_TMPFILES):
+        if self.get_shell_option('world_readable_temp'):
             # chown and fs acls failed -- do things this insecure way only if
             # the user opted in in the config file
             display.warning(
                 'Using world-readable permissions for temporary files Ansible '
                 'needs to create when becoming an unprivileged user. This may '
-                'be insecure. For information on securing this, see '
-                'https://docs.ansible.com/ansible/user_guide/become.html'
-                '#risks-of-becoming-an-unprivileged-user')
+                'be insecure. For information on securing this, see %s'
+                '#risks-of-becoming-an-unprivileged-user' % become_link)
             res = self._remote_chmod(remote_paths, 'a+%s' % chmod_mode)
             if res['rc'] == 0:
                 return remote_paths
@@ -693,11 +717,10 @@ class ActionBase(with_metaclass(ABCMeta, object)):
         raise AnsibleError(
             'Failed to set permissions on the temporary files Ansible needs '
             'to create when becoming an unprivileged user '
-            '(rc: %s, err: %s}). For information on working around this, see '
-            'https://docs.ansible.com/ansible/become.html'
-            '#becoming-an-unprivileged-user' % (
+            '(rc: %s, err: %s}). For information on working around this, see %s'
+            '#risks-of-becoming-an-unprivileged-user' % (
                 res['rc'],
-                to_native(res['stderr'])))
+                to_native(res['stderr']), become_link))
 
     def _remote_chmod(self, paths, mode, sudoable=False):
         '''
@@ -1173,7 +1196,8 @@ class ActionBase(with_metaclass(ABCMeta, object)):
 
             # try to figure out if we are missing interpreter
             if self._used_interpreter is not None:
-                match = re.compile('%s: (?:No such file or directory|not found)' % self._used_interpreter.lstrip('!#'))
+                interpreter = re.escape(self._used_interpreter.lstrip('!#'))
+                match = re.compile('%s: (?:No such file or directory|not found)' % interpreter)
                 if match.search(data['module_stderr']) or match.search(data['module_stdout']):
                     data['msg'] = "The module failed to execute correctly, you probably need to set the interpreter."
 

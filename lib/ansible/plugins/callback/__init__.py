@@ -21,9 +21,7 @@ __metaclass__ = type
 
 import difflib
 import json
-import os
 import sys
-import warnings
 
 from copy import deepcopy
 
@@ -98,6 +96,21 @@ class CallbackBase(AnsiblePlugin):
 
         # load from config
         self._plugin_options = C.config.get_plugin_options(get_plugin_class(self), self._load_name, keys=task_keys, variables=var_options, direct=direct)
+
+    @staticmethod
+    def host_label(result):
+        """Return label for the hostname (& delegated hostname) of a task
+        result.
+        """
+        label = "%s" % result._host.get_name()
+        if result._task.delegate_to and result._task.delegate_to != result._host.get_name():
+            # show delegated host
+            label += " -> %s" % result._task.delegate_to
+            # in case we have 'extra resolution'
+            ahost = result._result.get('_ansible_delegated_vars', {}).get('ansible_host', result._task.delegate_to)
+            if result._task.delegate_to != ahost:
+                label += "(%s)" % ahost
+        return label
 
     def _run_is_verbose(self, result, verbosity=0):
         return ((self._display.verbosity > verbosity or result._result.get('_ansible_verbose_always', False) is True)

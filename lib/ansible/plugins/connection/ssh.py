@@ -19,6 +19,9 @@ DOCUMENTATION = '''
     extends_documentation_fragment:
         - connection_pipelining
     version_added: historical
+    notes:
+        - Many options default to 'None' here but that only means we don't override the ssh tool's defaults and/or configuration.
+          For example, if you specify the port in this plugin it will override any C(Port) entry in your C(.ssh/config).
     options:
       host:
           description: Hostname/ip to connect to.
@@ -74,8 +77,6 @@ DOCUMENTATION = '''
           vars:
               - name: ansible_ssh_args
                 version_added: '2.7'
-          cli:
-              - name: ssh_args
       ssh_common_args:
           description: Common extra args for all ssh CLI tools
           ini:
@@ -181,7 +182,6 @@ DOCUMENTATION = '''
       port:
           description: Remote port to connect to.
           type: int
-          default: 22
           ini:
             - section: defaults
               key: remote_port
@@ -599,7 +599,7 @@ class Connection(ConnectionBase):
             were added.  It will be displayed with a high enough verbosity.
         .. note:: This function does its work via side-effect.  The b_command list has the new arguments appended.
         """
-        display.vvvvv(u'SSH: %s: (%s)' % (explanation, ')('.join(to_text(a) for a in b_args)), host=self._play_context.remote_addr)
+        display.vvvvv(u'SSH: %s: (%s)' % (explanation, ')('.join(to_text(a) for a in b_args)), host=self.host)
         b_command += b_args
 
     def _build_command(self, binary, subsystem, *other_args):
@@ -1230,7 +1230,7 @@ class Connection(ConnectionBase):
 
         super(Connection, self).exec_command(cmd, in_data=in_data, sudoable=sudoable)
 
-        display.vvv(u"ESTABLISH SSH CONNECTION FOR USER: {0}".format(self.user), host=self._play_context.remote_addr)
+        display.vvv(u"ESTABLISH SSH CONNECTION FOR USER: {0}".format(self.user), host=self.host)
 
         if getattr(self._shell, "_IS_WINDOWS", False):
             # Become method 'runas' is done in the wrapper that is executed,

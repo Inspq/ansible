@@ -21,7 +21,7 @@ __metaclass__ = type
 
 import re
 import operator as py_operator
-from distutils.version import LooseVersion, StrictVersion
+from ansible.module_utils.compat.version import LooseVersion, StrictVersion
 
 from ansible import errors
 from ansible.module_utils._text import to_native, to_text
@@ -167,6 +167,12 @@ def version_compare(value, version, operator='eq', strict=None, version_type=Non
 
     if strict is not None and version_type is not None:
         raise errors.AnsibleFilterError("Cannot specify both 'strict' and 'version_type'")
+
+    if not value:
+        raise errors.AnsibleFilterError("Input version value cannot be empty")
+
+    if not version:
+        raise errors.AnsibleFilterError("Version parameter to compare against cannot be empty")
 
     Version = LooseVersion
     if strict:

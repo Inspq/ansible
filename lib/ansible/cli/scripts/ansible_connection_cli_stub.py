@@ -4,7 +4,6 @@
 from __future__ import (absolute_import, division, print_function)
 
 __metaclass__ = type
-__requires__ = ['ansible_core']
 
 
 import fcntl
@@ -121,6 +120,7 @@ class ConnectionProcess(object):
 
     def run(self):
         try:
+            log_messages = self.connection.get_option('persistent_log_messages')
             while not self.connection._conn_closed:
                 signal.signal(signal.SIGALRM, self.connect_timeout)
                 signal.signal(signal.SIGTERM, self.handler)
@@ -134,7 +134,6 @@ class ConnectionProcess(object):
                     data = recv_data(s)
                     if not data:
                         break
-                    log_messages = self.connection.get_option('persistent_log_messages')
 
                     if log_messages:
                         display.display("jsonrpc request: %s" % data, log_only=True)

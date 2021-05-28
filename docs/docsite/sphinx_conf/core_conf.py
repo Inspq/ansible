@@ -65,7 +65,7 @@ master_doc = 'index'
 
 # General substitutions.
 project = 'Ansible'
-copyright = "2021 Red Hat, Inc."
+copyright = "Ansible project contributors."
 
 # The default replacements for |version| and |release|, also used in various
 # other places throughout the built documents.
@@ -167,10 +167,10 @@ html_context = {
     'github_root_dir': 'devel/lib/ansible',
     'github_cli_version': 'devel/lib/ansible/cli/',
     'current_version': version,
-    'latest_version': '2.10',
+    'latest_version': '2.11',
     # list specifically out of order to make latest work
-    'available_versions': ('2.10', 'devel',),
-    'css_files': ('_static/ansible.css',  # overrides to the standard theme
+    'available_versions': ('2.11', '2.10', 'devel',),
+    'css_files': ('_static/core.css',  # overrides to the standard theme
                   ),
 }
 
@@ -299,6 +299,7 @@ autoclass_content = 'both'
 intersphinx_mapping = {'python': ('https://docs.python.org/2/', (None, '../python2.inv')),
                        'python3': ('https://docs.python.org/3/', (None, '../python3.inv')),
                        'jinja2': ('http://jinja.palletsprojects.com/', (None, '../jinja2.inv')),
+                       'ansible_3': ('https://docs.ansible.com/ansible/3/', (None, '../ansible_3.inv')),
                        'ansible_2_10': ('https://docs.ansible.com/ansible/2.10/', (None, '../ansible_2_10.inv')),
                        'ansible_2_9': ('https://docs.ansible.com/ansible/2.9/', (None, '../ansible_2_9.inv')),
                        'ansible_2_8': ('https://docs.ansible.com/ansible/2.8/', (None, '../ansible_2_8.inv')),
