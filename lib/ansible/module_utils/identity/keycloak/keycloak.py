@@ -35,6 +35,7 @@ import copy
 # import urllib
 from six.moves.urllib.parse import quote
 from ansible.module_utils.urls import open_url
+from uuid import UUID
 
 from ansible.module_utils.six.moves.urllib.parse import urlencode
 from ansible.module_utils.six.moves.urllib.error import HTTPError
@@ -280,6 +281,34 @@ def get_token(base_url, validate_certs, auth_realm, client_id,
     except KeyError:
         raise KeycloakError(
             'Could not obtain access token from %s' % auth_url)
+
+
+def is_valid_uuid(uuid_to_test, version=4):
+    """
+    Check if uuid_to_test is a valid UUID.
+
+     Parameters
+    ----------
+    uuid_to_test : str
+    version : {1, 2, 3, 4}
+
+     Returns
+    -------
+    `True` if uuid_to_test is a valid UUID, otherwise `False`.
+
+     Examples
+    --------
+    >>> is_valid_uuid('c9bf9e57-1685-4c89-bafb-ff5af830be8a')
+    True
+    >>> is_valid_uuid('c9bf9e58')
+    False
+    """
+
+    try:
+        uuid_obj = UUID(uuid_to_test, version=version)
+    except ValueError:
+        return False
+    return str(uuid_obj) == uuid_to_test
 
 
 class KeycloakModule(object):
@@ -1201,17 +1230,20 @@ class KeycloakAPI(object):
                     if 'composites' in newClientRole and newClientRole['composites'] is not None:
                         newComposites = newClientRole['composites']
                         for newComposite in newComposites:
-                            if "id" in newComposite and newComposite["id"] is not None:
+                            role_client = None
+                            if "id" in newComposite and newComposite["id"] is not None and not is_valid_uuid(uuid_to_test=newComposite["id"]):
                                 # Get the id of client for this role
                                 role_client = self.get_client_by_clientid(client_id=newComposite["id"], realm=realm)
                                 if role_client is None:
                                     self.module.fail_json(msg="Unable to create or update client roles, client %s does not exist" % (newComposite["id"]))
-                                else:
-                                    for role in self.get_client_roles(client_id=role_client["id"], realm=realm):
-                                        if role["name"] == newComposite["name"]:
-                                            newComposite['id'] = role['id']
-                                            newComposite['clientRole'] = True
-                                            break
+                            elif 'containerId' in newComposite:
+                                role_client = self.get_client_by_id(id=newComposite["containerId"], realm=realm)
+                            if role_client is not None:
+                                for role in self.get_client_roles(client_id=role_client["id"], realm=realm):
+                                    if role["name"] == newComposite["name"]:
+                                        newComposite['id'] = role['id']
+                                        newComposite['clientRole'] = True
+                                        break
                             else:
                                 for realmRole in self.get_realm_roles(realm=realm):
                                     if realmRole["name"] == newComposite["name"]:
@@ -1242,7 +1274,7 @@ class KeycloakAPI(object):
                                             changeNeeded = True
                                             break
                                         for existingComposite in clientRole['composites']:
-                                            if isDictEquals(newComposite, existingComposite):
+                                            if isDictEquals(newComposite, existingComposite, ['clientId']):
                                                 compositeFound = True
                                                 break
                                         if not compositeFound:
@@ -1284,7 +1316,11 @@ class KeycloakAPI(object):
                                     headers=self.restheaders,
                                     data=json.dumps(rolesToDelete))
                             data = json.dumps(newClientRole["composites"])
-                            open_url(clientRolesUrl + '/' + newClientRole['name'] + '/composites', method='POST', headers=self.restheaders, data=data)
+                            try:
+                                composites_url = clientRolesUrl + '/' + newClientRole['name'] + '/composites'
+                                open_url(composites_url, method='POST', headers=self.restheaders, data=data)
+                            except Exception as e:
+                                self.module.fail_json(msg="Unable to create or update client roles composites %s: %s" % (composites_url, str(e)))
                     elif changeNeeded and desiredState == "absent" and clientRoleFound:
                         open_url(clientRolesUrl + '/' + newClientRole['name'], method='DELETE', headers=self.restheaders)
                         changed = True

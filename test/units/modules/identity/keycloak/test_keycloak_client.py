@@ -34,7 +34,19 @@ class KeycloakClientTestCase(ModuleTestCase):
             "name": "basetestname",
             "description": "Base testing",
             "publicClient": False,
-            "force": False
+            "force": False,
+            "roles": [
+                {
+                    "name":"test1",
+                    "description": "test1",
+                    "composite": False
+                },
+                {
+                    "name":"test2",
+                    "description": "test2",
+                    "composite": False,
+                }
+            ]
         },
         {
             "auth_keycloak_url": "http://localhost:18081/auth",
@@ -71,7 +83,19 @@ class KeycloakClientTestCase(ModuleTestCase):
                     "name":"test2",
                     "description": "test2",
                     "composite": True,
-                    "composites": []
+                    "composites": [
+                        {
+                            "id": "basetest",
+                            "name": "test1"
+                        },
+                        {
+                            "id": "basetest",
+                            "name": "test2"
+                        },
+                        {
+                            "name": "admin"
+                        }
+                    ]                    
                 }
             ],
             "protocolMappers": [
@@ -522,6 +546,14 @@ class KeycloakClientTestCase(ModuleTestCase):
             self.module.main()
         self.assertFalse(results.exception.args[0]['changed'])
 
+    def test_client_with_client_composite_roles_not_changed_without_client_roles_parameter(self):
+        toModifyClient = self.testClients[1].copy()
+        del toModifyClient['roles']
+        del toModifyClient["protocolMappers"]
+        set_module_args(toModifyClient)
+        with self.assertRaises(AnsibleExitJson) as results:
+            self.module.main()
+        self.assertFalse(results.exception.args[0]['changed'])
 
     def test_modify_client(self):
         toModifyClient = self.testClients[1].copy()
