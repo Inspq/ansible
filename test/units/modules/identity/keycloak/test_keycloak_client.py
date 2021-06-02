@@ -616,6 +616,14 @@ class KeycloakClientTestCase(ModuleTestCase):
                     },
                     {
                         "name": "admin"
+                    },
+                    {
+                        "id": "master-realm",
+                        "name": "create-client"
+                    },
+                    {
+                        "id": "master-realm",
+                        "name": "manage-clients"
                     }
                 ]
             }

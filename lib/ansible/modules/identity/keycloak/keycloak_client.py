@@ -771,7 +771,7 @@ end_state:
 '''
 
 from ansible.module_utils.identity.keycloak.keycloak import KeycloakAPI, camel, \
-    keycloak_argument_spec, get_token, KeycloakError
+    keycloak_argument_spec, get_token, KeycloakError, isDictEquals
 from ansible.module_utils.basic import AnsibleModule
 
 
@@ -1018,7 +1018,7 @@ def main():
 
             if client_secret is not None:
                 result['clientSecret'] = client_secret
-            if before_client == after_client:
+            if before_client == after_client or (isDictEquals(after_client, before_client) and isDictEquals(before_client, after_client)):
                 result['changed'] = False
             if module._diff:
                 result['diff'] = dict(before=sanitize_cr(before_client),
