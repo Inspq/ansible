@@ -82,7 +82,8 @@ Vagrantfile
 /lib/ansible.egg-info/
 # First used in the `devel` branch during Ansible 2.10 development.
 /lib/ansible_base.egg-info/
-/shippable/
+# First used in the `devel` branch during Ansible 2.11 development.
+/lib/ansible_core.egg-info/
 /test/integration/cloud-config-*.*
 !/test/integration/cloud-config-*.*.template
 .python-version
@@ -111,3 +112,5 @@ test/units/.coverage.*
 /SYMLINK_CACHE.json
 changelogs/.plugin-cache.yaml
 .ansible-test-timeout.json
+.settings
+nosetests*
