@@ -32,6 +32,7 @@ __metaclass__ = type
 import json
 import sys
 import copy
+import time
 # import urllib
 from six.moves.urllib.parse import quote
 from ansible.module_utils.urls import open_url
@@ -2726,8 +2727,13 @@ class KeycloakAPI(object):
         composites = self.get_realm_role_composites(
             name=name,
             realm=realm)
+        oldtime = time.time() - 60
         for composite in composites:
             if composite["clientRole"]:
+                if oldtime + 45 < time.time():
+                    # Get a new access token, actual might be expired
+                    self.get_new_access_token()
+                    oldtime = time.time()
                 composite["clientId"] = self.get_client_by_id(
                     id=composite["containerId"],
                     realm=realm)["clientId"]
