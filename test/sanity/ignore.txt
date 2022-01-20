@@ -428,3 +428,17 @@ test/units/utils/collection_loader/fixtures/collections_masked/ansible_collectio
 test/units/utils/collection_loader/fixtures/collections_masked/ansible_collections/testns/__init__.py empty-init  # testing that collections don't need inits
 test/units/utils/collection_loader/fixtures/collections_masked/ansible_collections/testns/testcoll/__init__.py empty-init  # testing that collections don't need inits
 test/units/utils/collection_loader/test_collection_loader.py pylint:undefined-variable  # magic runtime local var splatting
+lib/ansible/modules/identity/keycloak/keycloak_component.py validate-modules:parameter-invalid
+lib/ansible/modules/identity/keycloak/keycloak_identity_provider.py validate-modules:parameter-invalid
+lib/ansible/modules/identity/keycloak/keycloak_user.py validate-modules:parameter-list-no-elements
+lib/ansible/modules/identity/keycloak/keycloak_role.py validate-modules:parameter-list-no-elements
+lib/ansible/modules/identity/keycloak/keycloak_realm.py validate-modules:parameter-list-no-elements
+lib/ansible/modules/identity/keycloak/keycloak_identity_provider.py validate-modules:parameter-list-no-elements
+lib/ansible/modules/identity/keycloak/keycloak_group.py validate-modules:parameter-list-no-elements
+lib/ansible/modules/identity/keycloak/keycloak_component.py validate-modules:parameter-list-no-elements
+lib/ansible/modules/identity/keycloak/keycloak_client.py validate-modules:doc-elements-mismatch
+lib/ansible/modules/identity/keycloak/keycloak_client.py validate-modules:parameter-list-no-elements
+lib/ansible/modules/identity/keycloak/keycloak_authentication.py validate-modules:parameter-list-no-elements
+lib/ansible/modules/identity/user_provisioning/scim_user.py validate-modules:parameter-list-no-elements
+lib/ansible/modules/identity/keycloak/keycloak_clienttemplate.py validate-modules:doc-elements-mismatch
+
