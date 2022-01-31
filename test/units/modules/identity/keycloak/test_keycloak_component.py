@@ -13,7 +13,7 @@
 
 from ansible.modules.identity.keycloak import keycloak_component
 from units.modules.utils import AnsibleExitJson, ModuleTestCase, set_module_args
-
+import unittest
 class KeycloakComponentTestCase(ModuleTestCase):
     testComponents = [
         {
@@ -715,3 +715,6 @@ class KeycloakComponentTestCase(ModuleTestCase):
         self.assertEquals(subComponent["config"]["user.model.attribute"][0], 
                      toModify["subComponents"]["org.keycloak.storage.ldap.mappers.LDAPStorageMapper"][3]["config"]["user.model.attribute"][0],
                      "user.model.attribute: " + subComponent["config"]["user.model.attribute"][0] + ": " + toModify["subComponents"]["org.keycloak.storage.ldap.mappers.LDAPStorageMapper"][3]["config"]["user.model.attribute"][0])
+
+if __name__ == '__main__':
+    unittest.main()
