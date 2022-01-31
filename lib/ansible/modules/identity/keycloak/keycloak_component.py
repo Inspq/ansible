@@ -93,6 +93,8 @@ options:
                     - READ_ONLY
                     - WRITABLE
                     - UNSYNCED
+                default:
+                    - WRITABLE
             rdnLDAPAttribute:
                 description:
                     - Name of LDAP attribute, which is used as RDN (top attribute) of typical user DN.
@@ -474,6 +476,8 @@ EXAMPLES = '''
           - "CN=keycloak,OU=USERS,DC=server,DC=com"
           bindCredential:
           - "UnTresLongMotDePasseQuePersonneNeConnait"
+          editMode:
+          - "WRITABLE"
           changedSyncPeriod:
           - "86400"
           fullSyncPeriod:
@@ -539,6 +543,8 @@ EXAMPLES = '''
           - "CN=keycloak,OU=USERS,DC=server,DC=com"
           bindCredential:
           - "UnTresLongMotDePasseQuePersonneNeConnait"
+          editMode:
+          - "WRITABLE"
           changedSyncPeriod:
           - "86400"
           fullSyncPeriod:
@@ -613,7 +619,7 @@ def main():
     config_spec = dict(
         vendor=dict(type='list', choices=['ad', 'tivoli', 'edirectory', 'rhds', 'other']),
         usernameLDAPAttribute=dict(type='list'),
-        editMode=dict(type='list', choices=['READ_ONLY', 'WRITABLE', 'UNSYNCED']),
+        editMode=dict(type='list', choices=['READ_ONLY', 'WRITABLE', 'UNSYNCED'], default=['WRITABLE']),
         rdnLDAPAttribute=dict(type='list'),
         uuidLDAPAttribute=dict(type='list'),
         userObjectClasses=dict(type='list'),
