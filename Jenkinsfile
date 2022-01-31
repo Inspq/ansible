@@ -8,7 +8,7 @@ pipeline {
     }
 	environment{
 	    KEYCLOAK_IMAGE='jboss/keycloak'
-	    KEYCLOAK_VERSION='15.0.2'
+	    KEYCLOAK_VERSION='latest'
 	    RHSSO_IMAGE='nexus3.inspq.qc.ca:5000/inspq/rhsso'
 	    RHSSO_VERSION='latest'
 	    THREEEIGHTYNINEDS_IMAGE='minkwe/389ds'
