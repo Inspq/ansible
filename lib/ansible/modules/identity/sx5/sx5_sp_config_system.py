@@ -964,7 +964,7 @@ class SpConfigSystem(object):
                 return None
             return response.json()
         try:
-            msg = msg + ' - ' + response.text
+            msg = msg + ' - ' + response.text.encode('utf-8')
         except Exception as e:
             pass
         raise SpConfigSystemError("code {code} - {msg} : {token}".format(

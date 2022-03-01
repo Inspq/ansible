@@ -32,6 +32,7 @@ __metaclass__ = type
 import json
 import sys
 import copy
+import time
 # import urllib
 from six.moves.urllib.parse import quote
 from ansible.module_utils.urls import open_url
@@ -1665,19 +1666,27 @@ class KeycloakAPI(object):
         try:
             changed = False
             if "authenticationExecutions" in config:
+                # Get existing executions on the Keycloak server for this alias
+                existingExecutions = json.load(
+                    open_url(
+                        URL_AUTHENTICATION_FLOW_EXECUTIONS.format(
+                            url=self.baseurl,
+                            realm=realm,
+                            flowalias=quote(config["alias"])),
+                        method='GET',
+                        headers=self.restheaders))
                 for newExecutionIndex, newExecution in enumerate(config["authenticationExecutions"], start=0):
-                    # Get existing executions on the Keycloak server for this alias
-                    existingExecutions = json.load(
-                        open_url(
-                            URL_AUTHENTICATION_FLOW_EXECUTIONS.format(
-                                url=self.baseurl,
-                                realm=realm,
-                                flowalias=quote(config["alias"])),
-                            method='GET',
-                            headers=self.restheaders))
                     executionFound = False
                     for i, existingExecution in enumerate(existingExecutions, start=0):
-                        if "providerId" in existingExecution and existingExecution["providerId"] == newExecution["providerId"]:
+                        if "providerId" in existingExecution \
+                        and "providerId" in newExecution \
+                        and existingExecution["providerId"] == newExecution["providerId"]:
+                            executionFound = True
+                            existingExecutionIndex = i
+                            break
+                        elif "displayName" in existingExecution \
+                        and "displayName" in newExecution \
+                        and existingExecution["displayName"].lower() == newExecution["displayName"].lower():
                             executionFound = True
                             existingExecutionIndex = i
                             break
@@ -1723,15 +1732,22 @@ class KeycloakAPI(object):
                                 headers=self.restheaders))
                         executionFound = False
                         for i, existingExecution in enumerate(existingExecutions, start=0):
-                            if "providerId" in existingExecution and existingExecution["providerId"] == newExecution["providerId"]:
+                            if "providerId" in existingExecution \
+                            and "providerId" in newExecution \
+                            and existingExecution["providerId"] == newExecution["providerId"]:
+                                executionFound = True
+                                existingExecutionIndex = i
+                                break
+                            elif "displayName" in existingExecution \
+                            and "displayName" in newExecution \
+                            and existingExecution["displayName"].lower() == newExecution["displayName"].lower():
                                 executionFound = True
                                 existingExecutionIndex = i
                                 break
                         if executionFound:
                             # Update the existing execution
                             updatedExec = {}
-                            updatedExec["id"] = existingExecution["id"]
-                            for key in newExecution:
+                            for key in existingExecution:
                                 # create the execution configuration
                                 if key == "authenticationConfig":
                                     # Add the autenticatorConfig to the execution
@@ -1743,8 +1759,8 @@ class KeycloakAPI(object):
                                         method='POST',
                                         headers=self.restheaders,
                                         data=json.dumps(newExecution["authenticationConfig"]))
-                                else:
-                                    updatedExec[key] = newExecution[key]
+                                elif key not in updatedExec:
+                                    updatedExec[key] = newExecution[key] if key in newExecution else existingExecution[key]
                             open_url(
                                 URL_AUTHENTICATION_FLOW_EXECUTIONS.format(
                                     url=self.baseurl,
@@ -2726,8 +2742,13 @@ class KeycloakAPI(object):
         composites = self.get_realm_role_composites(
             name=name,
             realm=realm)
+        oldtime = time.time() - 60
         for composite in composites:
             if composite["clientRole"]:
+                if oldtime + 45 < time.time():
+                    # Get a new access token, actual might be expired
+                    self.get_new_access_token()
+                    oldtime = time.time()
                 composite["clientId"] = self.get_client_by_id(
                     id=composite["containerId"],
                     realm=realm)["clientId"]
