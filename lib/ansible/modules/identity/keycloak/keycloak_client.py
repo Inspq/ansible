@@ -789,6 +789,18 @@ def sanitize_cr(clientrep):
             result['attributes']['saml.signing.private.key'] = 'no_log'
     return result
 
+def update_authentication_flow_binding_overrides(module, kc, realm, new_param_value):
+    if 'direct_grant' in new_param_value and new_param_value['direct_grant']:
+        new_param_value['direct_grant'] = get_authentication_flow_by_alias(module, kc, realm, new_param_value['direct_grant'])
+    if 'browser' in new_param_value and new_param_value['browser']:
+        new_param_value['browser'] = get_authentication_flow_by_alias(module, kc, realm, new_param_value['browser'])
+    return new_param_value
+
+def get_authentication_flow_by_alias(module, kc, realm, alias):
+    authenticationRepresentation = kc.get_authentication_flow_by_alias(alias, realm=realm)
+    if not authenticationRepresentation:
+        module.fail_json(msg="Error creating client, flow '{0}' not found in realm '{1}'".format(alias, realm))
+    return authenticationRepresentation["id"]
 
 def main():
     """
@@ -797,6 +809,11 @@ def main():
     :return:
     """
     argument_spec = keycloak_argument_spec()
+
+    authenticationFlowBindingOverrides_spec = dict(
+        direct_grant=dict(type='str'),
+        browser=dict(type='str'),
+    )
 
     protmapper_spec = dict(
         consentRequired=dict(type='bool'),
@@ -876,6 +893,11 @@ def main():
         authorization_settings=dict(type='dict', aliases=['authorizationSettings']),
         client_roles=dict(type='list', elements='dict', options=clientroles_spec, aliases=['clientRoles', 'roles']),
         scope_mappings=dict(type='dict', aliases=['scopeMappings'], options=scopemappings_spec),
+        authentication_flow_binding_overrides=dict(
+            type='dict', 
+            options=authenticationFlowBindingOverrides_spec,
+            required_one_of=[['direct_grant','browser']]
+            ),
         force=dict(type='bool', default=False),
     )
     argument_spec.update(meta_args)
@@ -942,6 +964,8 @@ def main():
 
         if client_param == 'roles':
             client_param = 'client_roles'
+        elif client_param == 'authentication_flow_binding_overrides':
+            new_param_value = update_authentication_flow_binding_overrides(module, kc, realm, new_param_value)
         changeset[camel(client_param)] = new_param_value
 
     newClientScopeMappings = {}

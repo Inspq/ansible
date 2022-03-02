@@ -479,6 +479,24 @@ class KeycloakClientTestCase(ModuleTestCase):
             "enabled": True,
             "protocol": "openid-connect",
             "bearerOnly": True,
+        },
+        {
+            "auth_keycloak_url": "http://localhost:18081/auth",
+            "auth_username": "admin",
+            "auth_password": "admin",
+            "realm": "master",
+            "state": "present",
+            "clientId": "test_client_auth_flow",
+            "name": "Client to delete",
+            "description": "this client should have been deleted",
+            "rootUrl": "http://test.com:8080",
+            "description": "Base testing",
+            "publicClient": False,
+            "force": False,
+            "authentication_flow_binding_overrides": {
+                "browser": "browser",
+                "direct_grant": "direct grant"
+            }
         }
     ]
     compareExcludes = ["auth_keycloak_url", "auth_username", "auth_password", "realm", "state", "force", "credentials","_ansible_keep_remote_files","_ansible_remote_tmp"]
@@ -486,6 +504,8 @@ class KeycloakClientTestCase(ModuleTestCase):
         super(KeycloakClientTestCase, self).setUp()
         self.module = keycloak_client
         for client in self.testClients:
+            if client["clientId"] == "test_client_auth_flow":
+                continue
             if client["clientId"] == "basetest":
                 client["roles"] = self.testClientRoles
             elif client["clientId"] in ["test_modify_client", "test_add_client_composite_roles", "test_create_client"]:
@@ -683,7 +703,7 @@ class KeycloakClientTestCase(ModuleTestCase):
         with self.assertRaises(AnsibleExitJson) as results:
             self.module.main()
         self.assertTrue(results.exception.args[0]['changed'])
-        self.assertRegexpMatches(results.exception.args[0]['msg'], 'deleted', 'client not deleted')
+        self.assertRegex(results.exception.args[0]['msg'], 'deleted', 'client not deleted')
 
     def test_create_client_with_non_existing_client_composite_role(self):
         toErrorClient = self.testClients[7].copy()
@@ -691,7 +711,7 @@ class KeycloakClientTestCase(ModuleTestCase):
         set_module_args(toErrorClient)
         with self.assertRaises(AnsibleFailJson) as results:
             self.module.main()
-        self.assertRegexpMatches(results.exception.args[0]['msg'], 'client ' + toErrorClient["roles"][1]["composites"][1]["id"] + ' does not exist', 'error not generated')
+        self.assertRegex(results.exception.args[0]['msg'], 'client ' + toErrorClient["roles"][1]["composites"][1]["id"] + ' does not exist', 'error not generated')
 
     def test_add_client_scope_mappings_roles(self):
         toAddnewClientScopeMappings = self.testClients[8].copy()
@@ -738,3 +758,9 @@ class KeycloakClientTestCase(ModuleTestCase):
         #self.assertEqual(results.exception.args[0]['end_state']['description'], toModifyClient["description"], 'description: ' + results.exception.args[0]['end_state']['description'])
         #self.assertEqual(results.exception.args[0]['end_state']['redirectUris'].sort(),toModifyClient["redirectUris"].sort(),"redirectUris: " + str(results.exception.args[0]['end_state']['redirectUris'].sort()))
 
+
+    def test_client_auth_flow_config(self):
+        set_module_args(self.testClients[10])
+        with self.assertRaises(AnsibleExitJson) as results:
+            self.module.main()
+        self.assertTrue(results.exception.args[0]['changed'])
