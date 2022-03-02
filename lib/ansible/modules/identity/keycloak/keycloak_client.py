@@ -563,6 +563,19 @@ options:
                                 default: present
                                 type: str
         version_added: "2.9"
+    authentication_flow_binding_overrides:
+        type: dict
+        description:
+            - Authentication flow binding overrides options
+        suboptions:
+            direct_grant:
+                type: str
+                description:
+                    - Direct grant option
+            browser:
+                type: str
+                description:
+                    - Browser option
     force:
         type: bool
         description:
