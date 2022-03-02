@@ -234,7 +234,41 @@ class KeycloakAuthenticationTestCase(ModuleTestCase):
             "state":"present",
             "force":False
         },
-        
+        {
+            "auth_keycloak_url":  "http://localhost:18081/auth",
+            "auth_username": "admin",
+            "auth_password": "admin",
+            "realm": "master",
+            "alias": "Sx5 browser otp",
+            "copyFrom": "browser",
+            "authenticationExecutions": [
+                {
+                    "displayName": "Cookie",
+                    "providerId": "auth-cookie"
+                },
+                {
+                    "displayName": "Kerberos",
+                    "providerId": "auth-spnego"
+                },
+                {
+                    "displayName": "Identity Provider Redirector",
+                    "providerId": "identity-provider-redirector"
+                },
+                {
+                    "displayName": "Sx5 browser otp forms"
+                },
+                {
+                    "displayName": "Username Password Form",
+                    "providerId": "auth-username-password-form"
+                },
+                {
+                    "displayName": "Sx5 browser otp Browser - Conditional OTP",
+                    "requirement": "REQUIRED"
+                }
+            ],
+            "state":"absent",
+            "force": False
+        }
     ]
     def setUp(self):
         super(KeycloakAuthenticationTestCase, self).setUp()
@@ -261,7 +295,7 @@ class KeycloakAuthenticationTestCase(ModuleTestCase):
         with self.assertRaises(AnsibleExitJson) as results:
             self.module.main()
         self.assertTrue(results.exception.args[0]['changed'])
-        self.assertEquals(results.exception.args[0]["flow"]["alias"], toCreate["alias"], results.exception.args[0]["flow"]["alias"] + "is not" + toCreate["alias"] )
+        self.assertEqual(results.exception.args[0]["flow"]["alias"], toCreate["alias"], results.exception.args[0]["flow"]["alias"] + "is not" + toCreate["alias"] )
         for expectedExecutions in toCreate["authenticationExecutions"]:
             executionFound = False
             for execution in results.exception.args[0]["flow"]["authenticationExecutions"]:
@@ -269,9 +303,9 @@ class KeycloakAuthenticationTestCase(ModuleTestCase):
                     executionFound = True
                     break
             self.assertTrue(executionFound, "Execution " + expectedExecutions["providerId"] + " not found")
-            self.assertEquals(execution["requirement"], expectedExecutions["requirement"], execution["requirement"] + " is not equals to " + expectedExecutions["requirement"])
+            self.assertEqual(execution["requirement"], expectedExecutions["requirement"], execution["requirement"] + " is not equals to " + expectedExecutions["requirement"])
             for key in expectedExecutions["authenticationConfig"]["config"]:
-                self.assertEquals(expectedExecutions["authenticationConfig"]["config"][key], execution["authenticationConfig"]["config"][key], execution["authenticationConfig"]["config"][key] + " is not equals to " + expectedExecutions["authenticationConfig"]["config"][key])
+                self.assertEqual(expectedExecutions["authenticationConfig"]["config"][key], execution["authenticationConfig"]["config"][key], execution["authenticationConfig"]["config"][key] + " is not equals to " + expectedExecutions["authenticationConfig"]["config"][key])
 
     def test_create_authentication_flow_set_update_profile_on_first_login_to_on(self):
         toCreate = self.authenticationTestFlows[1].copy()
@@ -280,7 +314,7 @@ class KeycloakAuthenticationTestCase(ModuleTestCase):
         with self.assertRaises(AnsibleExitJson) as results:
             self.module.main()
         self.assertTrue(results.exception.args[0]['changed'])
-        self.assertEquals(results.exception.args[0]["flow"]["alias"], toCreate["alias"], results.exception.args[0]["flow"]["alias"] + "is not" + toCreate["alias"] )
+        self.assertEqual(results.exception.args[0]["flow"]["alias"], toCreate["alias"], results.exception.args[0]["flow"]["alias"] + "is not" + toCreate["alias"] )
         for expectedExecutions in toCreate["authenticationExecutions"]:
             executionFound = False
             for execution in results.exception.args[0]["flow"]["authenticationExecutions"]:
@@ -288,9 +322,9 @@ class KeycloakAuthenticationTestCase(ModuleTestCase):
                     executionFound = True
                     break
             self.assertTrue(executionFound, "Execution " + expectedExecutions["providerId"] + " not found")
-            self.assertEquals(execution["requirement"], expectedExecutions["requirement"], execution["requirement"] + " is not equals to " + expectedExecutions["requirement"])
+            self.assertEqual(execution["requirement"], expectedExecutions["requirement"], execution["requirement"] + " is not equals to " + expectedExecutions["requirement"])
             for key in expectedExecutions["authenticationConfig"]["config"]:
-                self.assertEquals(expectedExecutions["authenticationConfig"]["config"][key], execution["authenticationConfig"]["config"][key], execution["authenticationConfig"]["config"][key] + " is not equals to " + expectedExecutions["authenticationConfig"]["config"][key])
+                self.assertEqual(expectedExecutions["authenticationConfig"]["config"][key], execution["authenticationConfig"]["config"][key], execution["authenticationConfig"]["config"][key] + " is not equals to " + expectedExecutions["authenticationConfig"]["config"][key])
         
     def test_create_authentication_flow_without_copy(self):
         toCreate = self.authenticationTestFlows[2].copy()
@@ -299,7 +333,7 @@ class KeycloakAuthenticationTestCase(ModuleTestCase):
         with self.assertRaises(AnsibleExitJson) as results:
             self.module.main()
         self.assertTrue(results.exception.args[0]['changed'])
-        self.assertEquals(results.exception.args[0]["flow"]["alias"], toCreate["alias"], results.exception.args[0]["flow"]["alias"] + "is not" + toCreate["alias"] )
+        self.assertEqual(results.exception.args[0]["flow"]["alias"], toCreate["alias"], results.exception.args[0]["flow"]["alias"] + "is not" + toCreate["alias"] )
         for expectedExecutions in toCreate["authenticationExecutions"]:
             executionFound = False
             for execution in results.exception.args[0]["flow"]["authenticationExecutions"]:
@@ -307,9 +341,9 @@ class KeycloakAuthenticationTestCase(ModuleTestCase):
                     executionFound = True
                     break
             self.assertTrue(executionFound, "Execution " + expectedExecutions["providerId"] + " not found")
-            self.assertEquals(execution["requirement"], expectedExecutions["requirement"], execution["requirement"] + " is not equals to " + expectedExecutions["requirement"])
+            self.assertEqual(execution["requirement"], expectedExecutions["requirement"], execution["requirement"] + " is not equals to " + expectedExecutions["requirement"])
             for key in expectedExecutions["authenticationConfig"]["config"]:
-                self.assertEquals(expectedExecutions["authenticationConfig"]["config"][key], execution["authenticationConfig"]["config"][key], execution["authenticationConfig"]["config"][key] + " is not equals to " + expectedExecutions["authenticationConfig"]["config"][key])
+                self.assertEqual(expectedExecutions["authenticationConfig"]["config"][key], execution["authenticationConfig"]["config"][key], execution["authenticationConfig"]["config"][key] + " is not equals to " + expectedExecutions["authenticationConfig"]["config"][key])
 
     def test_create_authentication_flow_with_two_executions_without_copy(self):
         toCreate = self.authenticationTestFlows[3].copy()
@@ -319,7 +353,7 @@ class KeycloakAuthenticationTestCase(ModuleTestCase):
         with self.assertRaises(AnsibleExitJson) as results:
             self.module.main()
         self.assertTrue(results.exception.args[0]['changed'])
-        self.assertEquals(results.exception.args[0]["flow"]["alias"], toCreate["alias"], results.exception.args[0]["flow"]["alias"] + "is not" + toCreate["alias"] )
+        self.assertEqual(results.exception.args[0]["flow"]["alias"], toCreate["alias"], results.exception.args[0]["flow"]["alias"] + "is not" + toCreate["alias"] )
         for expectedExecutions in toCreate["authenticationExecutions"]:
             executionFound = False
             for execution in results.exception.args[0]["flow"]["authenticationExecutions"]:
@@ -327,9 +361,9 @@ class KeycloakAuthenticationTestCase(ModuleTestCase):
                     executionFound = True
                     break
             self.assertTrue(executionFound, "Execution " + expectedExecutions["providerId"] + " not found")
-            self.assertEquals(execution["requirement"], expectedExecutions["requirement"], execution["requirement"] + " is not equals to " + expectedExecutions["requirement"])
+            self.assertEqual(execution["requirement"], expectedExecutions["requirement"], execution["requirement"] + " is not equals to " + expectedExecutions["requirement"])
             for key in expectedExecutions["authenticationConfig"]["config"]:
-                self.assertEquals(expectedExecutions["authenticationConfig"]["config"][key], execution["authenticationConfig"]["config"][key], execution["authenticationConfig"]["config"][key] + " is not equals to " + expectedExecutions["authenticationConfig"]["config"][key])
+                self.assertEqual(expectedExecutions["authenticationConfig"]["config"][key], execution["authenticationConfig"]["config"][key], execution["authenticationConfig"]["config"][key] + " is not equals to " + expectedExecutions["authenticationConfig"]["config"][key])
                 
     def test_add_execution_to_authentication_flow_without_copy(self):
         executionToAdd = {
@@ -350,7 +384,7 @@ class KeycloakAuthenticationTestCase(ModuleTestCase):
         with self.assertRaises(AnsibleExitJson) as results:
             self.module.main()
         self.assertTrue(results.exception.args[0]['changed'])
-        self.assertEquals(results.exception.args[0]["flow"]["alias"], toModify["alias"], results.exception.args[0]["flow"]["alias"] + "is not" + toModify["alias"] )
+        self.assertEqual(results.exception.args[0]["flow"]["alias"], toModify["alias"], results.exception.args[0]["flow"]["alias"] + "is not" + toModify["alias"] )
         for expectedExecutions in toModify["authenticationExecutions"]:
             executionFound = False
             for execution in results.exception.args[0]["flow"]["authenticationExecutions"]:
@@ -358,9 +392,9 @@ class KeycloakAuthenticationTestCase(ModuleTestCase):
                     executionFound = True
                     break
             self.assertTrue(executionFound, "Execution " + expectedExecutions["providerId"] + " not found")
-            self.assertEquals(execution["requirement"], expectedExecutions["requirement"], execution["requirement"] + " is not equals to " + expectedExecutions["requirement"])
+            self.assertEqual(execution["requirement"], expectedExecutions["requirement"], execution["requirement"] + " is not equals to " + expectedExecutions["requirement"])
             for key in expectedExecutions["authenticationConfig"]["config"]:
-                self.assertEquals(expectedExecutions["authenticationConfig"]["config"][key], execution["authenticationConfig"]["config"][key], execution["authenticationConfig"]["config"][key] + " is not equals to " + expectedExecutions["authenticationConfig"]["config"][key])
+                self.assertEqual(expectedExecutions["authenticationConfig"]["config"][key], execution["authenticationConfig"]["config"][key], execution["authenticationConfig"]["config"][key] + " is not equals to " + expectedExecutions["authenticationConfig"]["config"][key])
 
     def test_authentication_flow_not_changed(self):
         toModify = self.authenticationTestFlows[5].copy()
@@ -376,7 +410,7 @@ class KeycloakAuthenticationTestCase(ModuleTestCase):
         with self.assertRaises(AnsibleExitJson) as results:
             self.module.main()
         self.assertTrue(results.exception.args[0]['changed'])
-        self.assertEquals(results.exception.args[0]["flow"]["alias"], toModify["alias"], results.exception.args[0]["flow"]["alias"] + "is not" + toModify["alias"] )
+        self.assertEqual(results.exception.args[0]["flow"]["alias"], toModify["alias"], results.exception.args[0]["flow"]["alias"] + "is not" + toModify["alias"] )
         for expectedExecutions in toModify["authenticationExecutions"]:
             executionFound = False
             for execution in results.exception.args[0]["flow"]["authenticationExecutions"]:
@@ -384,9 +418,9 @@ class KeycloakAuthenticationTestCase(ModuleTestCase):
                     executionFound = True
                     break
             self.assertTrue(executionFound, "Execution " + expectedExecutions["providerId"] + " not found")
-            self.assertEquals(execution["requirement"], expectedExecutions["requirement"], execution["requirement"] + " is not equals to " + expectedExecutions["requirement"])
+            self.assertEqual(execution["requirement"], expectedExecutions["requirement"], execution["requirement"] + " is not equals to " + expectedExecutions["requirement"])
             for key in expectedExecutions["authenticationConfig"]["config"]:
-                self.assertEquals(expectedExecutions["authenticationConfig"]["config"][key], execution["authenticationConfig"]["config"][key], execution["authenticationConfig"]["config"][key] + " is not equals to " + expectedExecutions["authenticationConfig"]["config"][key])
+                self.assertEqual(expectedExecutions["authenticationConfig"]["config"][key], execution["authenticationConfig"]["config"][key], execution["authenticationConfig"]["config"][key] + " is not equals to " + expectedExecutions["authenticationConfig"]["config"][key])
         
     def test_delete_authentication_flow(self):
         toDelete = self.authenticationTestFlows[7].copy()
@@ -395,7 +429,7 @@ class KeycloakAuthenticationTestCase(ModuleTestCase):
         with self.assertRaises(AnsibleExitJson) as results:
             self.module.main()
         self.assertTrue(results.exception.args[0]['changed'])
-        self.assertRegexpMatches(results.exception.args[0]['msg'], 'deleted', 'authentication flow not deleted')
+        self.assertRegex(results.exception.args[0]['msg'], 'deleted', 'authentication flow not deleted')
 
     def test_delete_inexisting_authentication_flow(self):
         toDelete = self.authenticationTestFlows[8].copy()
@@ -403,7 +437,7 @@ class KeycloakAuthenticationTestCase(ModuleTestCase):
         with self.assertRaises(AnsibleExitJson) as results:
             self.module.main()
         self.assertFalse(results.exception.args[0]['changed'])
-        self.assertRegexpMatches(results.exception.args[0]['msg'], 'absent', 'authentication flow is not absent')
+        self.assertRegex(results.exception.args[0]['msg'], 'absent', 'authentication flow is not absent')
         
     def test_reorder_executions_in_existing_authentication_flow(self):
         newOrder = [
@@ -443,4 +477,23 @@ class KeycloakAuthenticationTestCase(ModuleTestCase):
                 break
         self.assertTrue(executionsInSameOrder, "Execution have not been reordered")
 
-            
+    def test_create_authentication_flow_with_otp_required(self):
+        toCreate = self.authenticationTestFlows[10].copy()
+        toCreate["state"] = "present"
+        set_module_args(toCreate)
+        with self.assertRaises(AnsibleExitJson) as results:
+            self.module.main()
+        self.assertTrue(results.exception.args[0]['changed'])
+        self.assertEqual(results.exception.args[0]["flow"]["alias"], toCreate["alias"], results.exception.args[0]["flow"]["alias"] + "is not" + toCreate["alias"] )
+
+        for expectedExecutions in toCreate["authenticationExecutions"]:
+            executionFound = False
+            if "displayName" in expectedExecutions \
+            and expectedExecutions["displayName"] == "Sx5 browser otp Browser - Conditional OTP":
+                for execution in results.exception.args[0]["flow"]["authenticationExecutions"]:
+                    if "displayName" in execution \
+                    and execution["displayName"] == expectedExecutions["displayName"]:
+                        executionFound = True
+                        break
+        self.assertTrue(executionFound, "Execution " + expectedExecutions["displayName"] + " not found")
+        self.assertEqual(execution["requirement"], expectedExecutions["requirement"], execution["requirement"] + " is not equals to " + expectedExecutions["requirement"])
