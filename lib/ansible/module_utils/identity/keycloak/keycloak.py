@@ -1679,14 +1679,14 @@ class KeycloakAPI(object):
                     executionFound = False
                     for i, existingExecution in enumerate(existingExecutions, start=0):
                         if "providerId" in existingExecution \
-                        and "providerId" in newExecution \
-                        and existingExecution["providerId"] == newExecution["providerId"]:
+                                and "providerId" in newExecution \
+                                and existingExecution["providerId"] == newExecution["providerId"]:
                             executionFound = True
                             existingExecutionIndex = i
                             break
                         elif "displayName" in existingExecution \
-                        and "displayName" in newExecution \
-                        and existingExecution["displayName"].lower() == newExecution["displayName"].lower():
+                                and "displayName" in newExecution \
+                                and existingExecution["displayName"].lower() == newExecution["displayName"].lower():
                             executionFound = True
                             existingExecutionIndex = i
                             break
@@ -1733,14 +1733,14 @@ class KeycloakAPI(object):
                         executionFound = False
                         for i, existingExecution in enumerate(existingExecutions, start=0):
                             if "providerId" in existingExecution \
-                            and "providerId" in newExecution \
-                            and existingExecution["providerId"] == newExecution["providerId"]:
+                                    and "providerId" in newExecution \
+                                    and existingExecution["providerId"] == newExecution["providerId"]:
                                 executionFound = True
                                 existingExecutionIndex = i
                                 break
                             elif "displayName" in existingExecution \
-                            and "displayName" in newExecution \
-                            and existingExecution["displayName"].lower() == newExecution["displayName"].lower():
+                                    and "displayName" in newExecution \
+                                    and existingExecution["displayName"].lower() == newExecution["displayName"].lower():
                                 executionFound = True
                                 existingExecutionIndex = i
                                 break

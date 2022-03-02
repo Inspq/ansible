@@ -563,6 +563,19 @@ options:
                                 default: present
                                 type: str
         version_added: "2.9"
+    authentication_flow_binding_overrides:
+        type: dict
+        description:
+            - Authentication flow binding overrides options
+        suboptions:
+            direct_grant:
+                type: str
+                description:
+                    - Direct grant option
+            browser:
+                type: str
+                description:
+                    - Browser option
     force:
         type: bool
         description:
@@ -789,6 +802,7 @@ def sanitize_cr(clientrep):
             result['attributes']['saml.signing.private.key'] = 'no_log'
     return result
 
+
 def update_authentication_flow_binding_overrides(module, kc, realm, new_param_value):
     if 'direct_grant' in new_param_value and new_param_value['direct_grant']:
         new_param_value['direct_grant'] = get_authentication_flow_by_alias(module, kc, realm, new_param_value['direct_grant'])
@@ -796,11 +810,13 @@ def update_authentication_flow_binding_overrides(module, kc, realm, new_param_va
         new_param_value['browser'] = get_authentication_flow_by_alias(module, kc, realm, new_param_value['browser'])
     return new_param_value
 
+
 def get_authentication_flow_by_alias(module, kc, realm, alias):
     authenticationRepresentation = kc.get_authentication_flow_by_alias(alias, realm=realm)
     if not authenticationRepresentation:
         module.fail_json(msg="Error creating client, flow '{0}' not found in realm '{1}'".format(alias, realm))
     return authenticationRepresentation["id"]
+
 
 def main():
     """
@@ -894,10 +910,10 @@ def main():
         client_roles=dict(type='list', elements='dict', options=clientroles_spec, aliases=['clientRoles', 'roles']),
         scope_mappings=dict(type='dict', aliases=['scopeMappings'], options=scopemappings_spec),
         authentication_flow_binding_overrides=dict(
-            type='dict', 
+            type='dict',
             options=authenticationFlowBindingOverrides_spec,
-            required_one_of=[['direct_grant','browser']]
-            ),
+            required_one_of=[['direct_grant', 'browser']]
+        ),
         force=dict(type='bool', default=False),
     )
     argument_spec.update(meta_args)
