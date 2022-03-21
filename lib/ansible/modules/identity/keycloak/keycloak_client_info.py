@@ -62,7 +62,6 @@ EXAMPLES = '''
     auth_password: PASSWORD
     realm: myrealm
     client_id: test
-    state: present
 
 '''
 
