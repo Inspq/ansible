@@ -88,16 +88,6 @@ clientSecret:
         type: "secret",
         value: "691ccfeb-13f0-4bbf-91bb-a57b42f47e31"
     }
-end_state:
-    description: client representation of client after module execution (sample is truncated)
-    returned: always
-    type: dict
-    sample: {
-        "adminUrl": "http://www.example.com/admin_url",
-        "attributes": {
-            "request.object.signature.alg": "RS256",
-        }
-    }
 '''
 
 from ansible.module_utils.identity.keycloak.keycloak import KeycloakAPI, camel, \
