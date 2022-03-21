@@ -8,7 +8,7 @@ from __future__ import absolute_import, division, print_function
 __metaclass__ = type
 
 ANSIBLE_METADATA = {
-    'metadata_version': '1.1',
+    'metadata_version': '1.0',
     'status': ['preview'],
     'supported_by': 'community'
 }
@@ -19,7 +19,7 @@ module: keycloak_client_info
 
 short_description: Allows administration of Keycloak clients via Keycloak API
 
-version_added: "2.5"
+version_added: "2.10.16"
 
 description:
     - This module allows return client info with secret
@@ -27,32 +27,28 @@ description:
 options:
     realm:
         description:
-            - The realm to create the client in.
+            - The realm to fetch the client.
         type: str
         default: master
     client_id:
         description:
-            - Client id of client to be worked on. This is usually an alphanumeric name chosen by
-              you. Either this or I(id) is required. If you specify both, I(id) takes precedence.
+            - Client id of client to be return.
+              Either this or I(id) is required. If you specify both, I(id) takes precedence.
               This is 'clientId' in the Keycloak REST API.
         aliases:
             - clientId
         type: str
     id:
         description:
-            - Id of client to be worked on. This is usually an UUID. Either this or I(client_id)
+            - Id of client to be return. This is usually an UUID. Either this or I(client_id)
               is required. If you specify both, this takes precedence.
-        type: str
-    name:
-        description:
-            - Name of the client (this is not the same as I(client_id))
         type: str
     
 
 extends_documentation_fragment:
     - keycloak
 author:
-    - Eike Frost (@eikef)
+    - Andre
 '''
 
 EXAMPLES = '''
