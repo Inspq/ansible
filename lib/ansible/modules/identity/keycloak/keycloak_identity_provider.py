@@ -306,6 +306,9 @@ def main():
         "openIdConfigurationUrl": {
             "type": "str"
         },
+        "fromUrl": {
+            "type": "str"
+        },
         "clientId": {
             "type": "str"
         },
@@ -388,7 +391,11 @@ def main():
         firstBrokerLoginFlowAlias=dict(type='str'),
         postBrokerLoginFlowAlias=dict(type='str'),
         linkOnly=dict(type='bool', default=False),
-        config=dict(type='dict', options=idpconfig_spec),
+        config=dict(
+            type='dict', 
+            options=idpconfig_spec,
+            mutually_exclusive = [['openIdConfigurationUrl', 'fromUrl']]
+            ),
         mappers=dict(type='list', options=mapper_spec),
         state=dict(choices=["absent", "present"], default='present'),
         force=dict(type='bool', default=False),
@@ -448,6 +455,8 @@ def main():
         newIdPConfig = remove_arguments_with_value_none(module.params.get('config'))
         if 'openIdConfigurationUrl' in newIdPConfig:
             del(newIdPConfig['openIdConfigurationUrl'])
+        elif 'fromUrl' in newIdPConfig:
+            del(newIdPConfig['fromUrl'])
 
     if 'providerId' in newIdPRepresentation and newIdPRepresentation["providerId"] == 'google' and 'userIp' in module.params.get("config"):
         newIdPConfig["userIp"] = module.params.get("config")["userIp"]
@@ -455,10 +464,17 @@ def main():
     newIdPMappers = remove_arguments_with_value_none(module.params.get('mappers'))
 
     if newIdPConfig is not None:
-        if (module.params.get('config') is not None and
-                'openIdConfigurationUrl' in module.params.get('config') and
-                module.params.get("config")['openIdConfigurationUrl'] is not None):
-            kc.add_idp_endpoints(newIdPConfig, module.params.get("config")['openIdConfigurationUrl'])
+        if module.params.get('config') is not None:
+            if 'openIdConfigurationUrl' in module.params.get('config') and \
+            module.params.get("config")['openIdConfigurationUrl'] is not None:
+                kc.add_idp_endpoints(newIdPConfig, module.params.get("config")['openIdConfigurationUrl'])
+            elif 'fromUrl' in module.params.get('config') and \
+            module.params.get("config")['fromUrl'] is not None:
+                kc.add_idp_endpoints_import_config_url(
+                    newIdPConfig,
+                    providerId=newIdPRepresentation['providerId'], 
+                    fromUrl=module.params.get('config')['fromUrl'], 
+                    realm=realm)
         newIdPRepresentation["config"] = newIdPConfig
 
     # Search the Idp on Keycloak server.
