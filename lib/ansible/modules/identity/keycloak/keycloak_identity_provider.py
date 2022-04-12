@@ -96,6 +96,10 @@ options:
             description:
                 - Open ID configuration URL of the IdP to configure. Will be used to configure IdP endpoints.
             type: str
+        fromUrl:
+            description:
+                - Get Idp Configuration from URL
+            type: str
         clientId:
             description:
                 - Client ID used to authenticate Keycloak on this IdP
