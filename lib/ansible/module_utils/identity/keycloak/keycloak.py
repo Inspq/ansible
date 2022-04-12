@@ -93,6 +93,7 @@ URL_IDPS = "{url}/admin/realms/{realm}/identity-provider/instances"
 URL_IDP = "{url}/admin/realms/{realm}/identity-provider/instances/{alias}"
 URL_IDP_MAPPERS = "{url}/admin/realms/{realm}/identity-provider/instances/{alias}/mappers"
 URL_IDP_MAPPER = "{url}/admin/realms/{realm}/identity-provider/instances/{alias}/mappers/{id}"
+URL_IDP_IMPORT = "{url}/admin/realms/{realm}/identity-provider/import-config"
 
 URL_REALMS = "{url}/admin/realms"
 URL_REALM = "{url}/admin/realms/{realm}"
@@ -2377,6 +2378,42 @@ class KeycloakAPI(object):
             return self.get_idp_by_alias(newIdPRepresentation["alias"], realm)
         except Exception as e:
             self.module.fail_json(msg='Could not create the IdP %s in realm %s: %s'
+                                      % (newIdPRepresentation["alias"], realm, str(e)))
+
+    def add_idp_endpoints_import_config_url(self, idPConfiguration, providerId, fromUrl, realm='master'):
+        """
+        Import an identity provider on a Keycloak server form url.
+        :param newIdPRepresentation: Map with attributs providerId, fromUrl and alias
+        :param realm: Realm
+        :return: Actual representation of the idp created.
+        """
+        try:
+            newIdPRepresentation = dict(
+                providerId=providerId, 
+                fromUrl=fromUrl
+            )
+            idps_url = URL_IDP_IMPORT.format(
+                url=self.baseurl,
+                realm=realm)
+            openIdConfig = json.load(open_url(idps_url,
+                                method='POST',
+                                headers=self.restheaders,
+                                data=json.dumps(newIdPRepresentation)))
+            if 'userInfoUrl' in openIdConfig.keys():
+                idPConfiguration["userInfoUrl"] = openIdConfig["userInfoUrl"]
+            if 'tokenUrl' in openIdConfig.keys():
+                idPConfiguration["tokenUrl"] = openIdConfig["tokenUrl"]
+            if 'jwksUrl' in openIdConfig.keys():
+                idPConfiguration["jwksUrl"] = openIdConfig["jwksUrl"]
+            if 'issuer' in openIdConfig.keys():
+                idPConfiguration["issuer"] = openIdConfig["issuer"]
+            if 'authorizationUrl' in openIdConfig.keys():
+                idPConfiguration["authorizationUrl"] = openIdConfig["authorizationUrl"]
+            if 'logoutUrl' in openIdConfig.keys():
+                idPConfiguration["logoutUrl"] = openIdConfig["logoutUrl"]
+            return openIdConfig
+        except Exception as e:
+            self.module.fail_json(msg='Could not import the IdP %s config in realm %s: %s'
                                       % (newIdPRepresentation["alias"], realm, str(e)))
 
     def update_idp(self, newIdPRepresentation, realm='master'):
