@@ -455,7 +455,62 @@ class KeycloakIdentityProviderTestCase(ModuleTestCase):
             ],
             "state": "absent",
             "force": False
-        }        
+        },
+        {
+            "auth_username": "admin", 
+            "auth_password": "admin",
+            "realm": "master",
+            "auth_keycloak_url": "http://localhost:18081/auth",
+            "alias": "test_idp_from_url",
+            "providerId": "oidc",
+            "displayName": "test from url",
+            "enabled": True,
+            "updateProfileFirstLoginMode": "on",
+            "trustEmail": False,
+            "storeToken": True,
+            "addReadTokenRoleOnCreate": True,
+            "authenticateByDefault": False,
+            "linkOnly": False,
+            "firstBrokerLoginFlowAlias": "first broker login",
+            "config": { 
+                "fromUrl": "http://localhost:8080/auth/realms/master/.well-known/openid-configuration",
+                "clientId": "test1",
+                "defaultScope": "openid email profile",
+                "disableUserInfo": "false",
+                "guiOrder": "1",
+                "backchannelSupported": "true"
+                },
+            "mappers": [ 
+                    {
+                        "name": "test11",
+                        "identityProviderMapper": "oidc-user-attribute-idp-mapper", 
+                        "config" : {
+                            "claim" : "test",
+                            "user.attribute": "lastname"
+                            }
+                    }, 
+                    {
+                        "name" : "test12",
+                        "identityProviderMapper": "oidc-user-attribute-idp-mapper", 
+                        "config" : {
+                            "claim": "test2",
+                            "user.attribute":"firstname"
+                        }
+                    },
+                    {
+                        "name" : "test13",
+                        "identityProviderMapper": "oidc-role-idp-mapper", 
+                        "config" : {
+                            "claim": "claimName",
+                            "claim.value": "valueThatGiveRole",
+                            "role": "roleName"
+                        }
+                    }
+    
+                ],
+            "state": "absent",
+            "force": False
+        }
     ]
 
     def setUp(self):
@@ -465,7 +520,7 @@ class KeycloakIdentityProviderTestCase(ModuleTestCase):
             set_module_args(idp)
             with self.assertRaises(AnsibleExitJson) as results:
                 self.module.main()
- 
+
     def tearDown(self):
         self.module = keycloak_identity_provider
         for idp in self.testIDPs:
@@ -484,11 +539,11 @@ class KeycloakIdentityProviderTestCase(ModuleTestCase):
             self.module.main()
         self.assertTrue(results.exception.args[0]['changed'])
         self.assertTrue(results.exception.args[0]['idp']['enabled'])
-        self.assertEquals(results.exception.args[0]['idp']['alias'],toCreate["alias"], 'Alias = ' + results.exception.args[0]['idp']['alias'])
-        self.assertEquals(results.exception.args[0]['idp']['config']['clientId'],toCreate["config"]["clientId"],"ClientId: " + results.exception.args[0]['idp']['config']['clientId'])
-        self.assertEquals(results.exception.args[0]['idp']['config']['guiOrder'],toCreate["config"]["guiOrder"],"GuiOrder: " + results.exception.args[0]['idp']['config']['guiOrder'] + ": " + toCreate["config"]["guiOrder"])
+        self.assertEqual(results.exception.args[0]['idp']['alias'],toCreate["alias"], 'Alias = ' + results.exception.args[0]['idp']['alias'])
+        self.assertEqual(results.exception.args[0]['idp']['config']['clientId'],toCreate["config"]["clientId"],"ClientId: " + results.exception.args[0]['idp']['config']['clientId'])
+        self.assertEqual(results.exception.args[0]['idp']['config']['guiOrder'],toCreate["config"]["guiOrder"],"GuiOrder: " + results.exception.args[0]['idp']['config']['guiOrder'] + ": " + toCreate["config"]["guiOrder"])
         self.assertTrue('clientAuthMethod' in results.exception.args[0]['idp']['config'], "clientAuthMethod not in IdP config")
-        self.assertEquals(
+        self.assertEqual(
             results.exception.args[0]['idp']['config']['clientAuthMethod'], 
             toCreate["config"]["clientAuthMethod"], 
             "clientAuthMethod is {0} but supposed to be {1}".format(
@@ -499,7 +554,7 @@ class KeycloakIdentityProviderTestCase(ModuleTestCase):
             for mapper in results.exception.args[0]['mappers']:
                 if mapper["name"] == mapperToCreate["name"]:
                     mapperFound = True
-                    self.assertEquals(mapper["identityProviderMapper"], mapperToCreate["identityProviderMapper"], "identityProviderMapper: " + mapper["identityProviderMapper"] + "not equal " + mapperToCreate["identityProviderMapper"])
+                    self.assertEqual(mapper["identityProviderMapper"], mapperToCreate["identityProviderMapper"], "identityProviderMapper: " + mapper["identityProviderMapper"] + "not equal " + mapperToCreate["identityProviderMapper"])
                     self.assertDictEqual(mapper["config"], mapperToCreate["config"], "config: " + str(mapper["config"]) + "not equal " + str(mapperToCreate["config"]))
             self.assertTrue(mapperFound, "mapper " + mapperToCreate["name"] + " not found")                                          
         
@@ -509,13 +564,13 @@ class KeycloakIdentityProviderTestCase(ModuleTestCase):
         with self.assertRaises(AnsibleExitJson) as results:
             self.module.main()
         self.assertFalse(results.exception.args[0]['changed'])
-        self.assertEquals(results.exception.args[0]['idp']['alias'],toDoNotChange['alias'], 'Alias = ' + results.exception.args[0]['idp']['alias'])
+        self.assertEqual(results.exception.args[0]['idp']['alias'],toDoNotChange['alias'], 'Alias = ' + results.exception.args[0]['idp']['alias'])
         for mapperToDoNotChange in toDoNotChange["mappers"]:
             mapperFound = False
             for mapper in results.exception.args[0]['mappers']:
                 if mapper["name"] == mapperToDoNotChange["name"]:
                     mapperFound = True
-                    self.assertEquals(mapper["identityProviderMapper"], mapperToDoNotChange["identityProviderMapper"], "identityProviderMapper: " + mapper["identityProviderMapper"] + "not equal " + mapperToDoNotChange["identityProviderMapper"])
+                    self.assertEqual(mapper["identityProviderMapper"], mapperToDoNotChange["identityProviderMapper"], "identityProviderMapper: " + mapper["identityProviderMapper"] + "not equal " + mapperToDoNotChange["identityProviderMapper"])
                     self.assertDictEqual(mapper["config"], mapperToDoNotChange["config"], "config: " + str(mapper["config"]) + "not equal " + str(mapperToDoNotChange["config"]))
             self.assertTrue(mapperFound, "mapper " + mapperToDoNotChange["name"] + " not found")                                          
 
@@ -526,7 +581,7 @@ class KeycloakIdentityProviderTestCase(ModuleTestCase):
         with self.assertRaises(AnsibleExitJson) as results:
             self.module.main()
         self.assertFalse(results.exception.args[0]['changed'])
-        self.assertEquals(results.exception.args[0]['idp']['displayName'],self.testIDPs[1]['displayName'], 'displayName changed: ' + results.exception.args[0]['idp']['displayName'])
+        self.assertEqual(results.exception.args[0]['idp']['displayName'],self.testIDPs[1]['displayName'], 'displayName changed: ' + results.exception.args[0]['idp']['displayName'])
 
     def test_modify_idp(self):
         newToChange = {
@@ -553,10 +608,10 @@ class KeycloakIdentityProviderTestCase(ModuleTestCase):
         with self.assertRaises(AnsibleExitJson) as results:
             self.module.main()
         self.assertTrue(results.exception.args[0]['changed'])
-        self.assertEquals(results.exception.args[0]['idp']['alias'],newToChange["alias"], 'Alias = ' + results.exception.args[0]['idp']['alias'])
+        self.assertEqual(results.exception.args[0]['idp']['alias'],newToChange["alias"], 'Alias = ' + results.exception.args[0]['idp']['alias'])
         self.assertFalse(results.exception.args[0]['idp']['storeToken'], 'storeToken should be false : ' + str(results.exception.args[0]['idp']['storeToken']))
-        self.assertEquals(results.exception.args[0]['idp']['firstBrokerLoginFlowAlias'], newToChange["firstBrokerLoginFlowAlias"], "firstBrokerLoginFlowAlias: " + results.exception.args[0]['idp']['firstBrokerLoginFlowAlias'])
-        self.assertEquals(results.exception.args[0]['idp']['config']['guiOrder'],newToChange["config"]["guiOrder"],"GuiOrder: " + results.exception.args[0]['idp']['config']['guiOrder'])
+        self.assertEqual(results.exception.args[0]['idp']['firstBrokerLoginFlowAlias'], newToChange["firstBrokerLoginFlowAlias"], "firstBrokerLoginFlowAlias: " + results.exception.args[0]['idp']['firstBrokerLoginFlowAlias'])
+        self.assertEqual(results.exception.args[0]['idp']['config']['guiOrder'],newToChange["config"]["guiOrder"],"GuiOrder: " + results.exception.args[0]['idp']['config']['guiOrder'])
 
     def test_modify_idp_force(self):
         newToChange = self.testIDPs[3].copy()
@@ -566,10 +621,10 @@ class KeycloakIdentityProviderTestCase(ModuleTestCase):
             self.module.main()
         self.assertTrue(results.exception.args[0]['changed'])
         
-        self.assertEquals(results.exception.args[0]['idp']['alias'],newToChange["alias"], 'Alias = ' + results.exception.args[0]['idp']['alias'])
+        self.assertEqual(results.exception.args[0]['idp']['alias'],newToChange["alias"], 'Alias = ' + results.exception.args[0]['idp']['alias'])
         self.assertFalse(results.exception.args[0]['idp']['storeToken'], 'storeToken should be false : ' + str(results.exception.args[0]['idp']['storeToken']))
-        self.assertEquals(results.exception.args[0]['idp']['firstBrokerLoginFlowAlias'], newToChange["firstBrokerLoginFlowAlias"], "firstBrokerLoginFlowAlias: " + results.exception.args[0]['idp']['firstBrokerLoginFlowAlias'])
-        self.assertEquals(results.exception.args[0]['idp']['config']['guiOrder'],newToChange["config"]["guiOrder"],"GuiOrder: " + results.exception.args[0]['idp']['config']['guiOrder'])
+        self.assertEqual(results.exception.args[0]['idp']['firstBrokerLoginFlowAlias'], newToChange["firstBrokerLoginFlowAlias"], "firstBrokerLoginFlowAlias: " + results.exception.args[0]['idp']['firstBrokerLoginFlowAlias'])
+        self.assertEqual(results.exception.args[0]['idp']['config']['guiOrder'],newToChange["config"]["guiOrder"],"GuiOrder: " + results.exception.args[0]['idp']['config']['guiOrder'])
 
     def test_modify_idp_mappers(self):
         newToChange = {
@@ -605,13 +660,13 @@ class KeycloakIdentityProviderTestCase(ModuleTestCase):
         with self.assertRaises(AnsibleExitJson) as results:
             self.module.main()
         self.assertTrue(results.exception.args[0]['changed'])        
-        self.assertEquals(results.exception.args[0]['idp']['alias'], newToChange["alias"], 'Alias = ' + results.exception.args[0]['idp']['alias'])
+        self.assertEqual(results.exception.args[0]['idp']['alias'], newToChange["alias"], 'Alias = ' + results.exception.args[0]['idp']['alias'])
         for mapperToChange in newToChange["mappers"]:
             mapperFound = False
             for mapper in results.exception.args[0]['mappers']:
                 if mapper["name"] == mapperToChange["name"]:
                     mapperFound = True
-                    self.assertEquals(mapper["identityProviderMapper"], mapperToChange["identityProviderMapper"], "identityProviderMapper: " + mapper["identityProviderMapper"] + "not equal " + mapperToChange["identityProviderMapper"])
+                    self.assertEqual(mapper["identityProviderMapper"], mapperToChange["identityProviderMapper"], "identityProviderMapper: " + mapper["identityProviderMapper"] + "not equal " + mapperToChange["identityProviderMapper"])
                     self.assertDictEqual(mapper["config"], mapperToChange["config"], "config: " + str(mapper["config"]) + "not equal " + str(mapperToChange["config"]))
             self.assertTrue(mapperFound, "mapper " + mapperToChange["name"] + " not found")  
 
@@ -636,7 +691,7 @@ class KeycloakIdentityProviderTestCase(ModuleTestCase):
         with self.assertRaises(AnsibleExitJson) as results:
             self.module.main()
         self.assertTrue(results.exception.args[0]['changed'])        
-        self.assertRegexpMatches(results.exception.args[0]['msg'], 'deleted', 'IdP not deleted')
+        self.assertRegex(results.exception.args[0]['msg'], 'deleted', 'IdP not deleted')
 
     def test_change_client_secret(self):
         toChangeSecret = self.testIDPs[7].copy()
@@ -665,7 +720,7 @@ class KeycloakIdentityProviderTestCase(ModuleTestCase):
         with self.assertRaises(AnsibleFailJson) as results:
             self.module.main()
         self.assertTrue(results.exception.args[0]['failed'], 'Test has not failed has it is supposed to.')
-        self.assertRegexpMatches(results.exception.args[0]['msg'], 'missing required arguments', 'Wrong error message: ' + results.exception.args[0]['msg'])
+        self.assertRegex(results.exception.args[0]['msg'], 'missing required arguments', 'Wrong error message: ' + results.exception.args[0]['msg'])
 
     def test_change_client_secret_with_minimal_info(self):
         toChangeSecret = {}
@@ -690,11 +745,11 @@ class KeycloakIdentityProviderTestCase(ModuleTestCase):
             self.module.main()
         self.assertTrue(results.exception.args[0]['changed'])
         self.assertTrue(results.exception.args[0]['idp']['enabled'])
-        self.assertEquals(results.exception.args[0]['idp']['alias'],toCreate["alias"], 'Alias = ' + results.exception.args[0]['idp']['alias'])
-        self.assertEquals(results.exception.args[0]['idp']['config']['clientId'],toCreate["config"]["clientId"],"ClientId: " + results.exception.args[0]['idp']['config']['clientId'])
-        self.assertEquals(results.exception.args[0]['idp']['config']['guiOrder'],toCreate["config"]["guiOrder"],"GuiOrder: " + results.exception.args[0]['idp']['config']['guiOrder'] + ": " + toCreate["config"]["guiOrder"])
+        self.assertEqual(results.exception.args[0]['idp']['alias'],toCreate["alias"], 'Alias = ' + results.exception.args[0]['idp']['alias'])
+        self.assertEqual(results.exception.args[0]['idp']['config']['clientId'],toCreate["config"]["clientId"],"ClientId: " + results.exception.args[0]['idp']['config']['clientId'])
+        self.assertEqual(results.exception.args[0]['idp']['config']['guiOrder'],toCreate["config"]["guiOrder"],"GuiOrder: " + results.exception.args[0]['idp']['config']['guiOrder'] + ": " + toCreate["config"]["guiOrder"])
         self.assertTrue('clientAuthMethod' in results.exception.args[0]['idp']['config'], "clientAuthMethod not in IdP config")
-        self.assertEquals(
+        self.assertEqual(
             results.exception.args[0]['idp']['config']['clientAuthMethod'], 
             self.defaultClientAuthMethod, 
             "clientAuthMethod is {0} but supposed to be {1}".format(
@@ -706,7 +761,24 @@ class KeycloakIdentityProviderTestCase(ModuleTestCase):
             for mapper in results.exception.args[0]['mappers']:
                 if mapper["name"] == mapperToCreate["name"]:
                     mapperFound = True
-                    self.assertEquals(mapper["identityProviderMapper"], mapperToCreate["identityProviderMapper"], "identityProviderMapper: " + mapper["identityProviderMapper"] + "not equal " + mapperToCreate["identityProviderMapper"])
+                    self.assertEqual(mapper["identityProviderMapper"], mapperToCreate["identityProviderMapper"], "identityProviderMapper: " + mapper["identityProviderMapper"] + "not equal " + mapperToCreate["identityProviderMapper"])
                     self.assertDictEqual(mapper["config"], mapperToCreate["config"], "config: " + str(mapper["config"]) + "not equal " + str(mapperToCreate["config"]))
             self.assertTrue(mapperFound, "mapper " + mapperToCreate["name"] + " not found")                                          
         
+    def test_create_idp_from_url(self):
+        toCreate = self.testIDPs[9].copy()
+        toCreate["state"] = "present"
+        set_module_args(toCreate)
+        with self.assertRaises(AnsibleExitJson) as results:
+            self.module.main()
+        self.assertTrue(results.exception.args[0]['changed'])
+        self.assertEqual(results.exception.args[0]['idp']['displayName'],toCreate['displayName'], 'displayName changed: ' + results.exception.args[0]['idp']['displayName'])
+
+        config = results.exception.args[0]['idp']['config']
+        self.assertEqual(config['userInfoUrl'],"http://localhost:8080/auth/realms/master/protocol/openid-connect/userinfo", 'userInfoUrl changed: ' + config['userInfoUrl'])
+        self.assertEqual(config['tokenUrl'],"http://localhost:8080/auth/realms/master/protocol/openid-connect/token", 'tokenUrl changed: ' + config['tokenUrl'])
+        self.assertEqual(config['jwksUrl'],"http://localhost:8080/auth/realms/master/protocol/openid-connect/certs", 'jwksUrl changed: ' + config['jwksUrl'])
+        self.assertEqual(config['issuer'],"http://localhost:8080/auth/realms/master", 'issuer changed: ' + config['issuer'])
+        self.assertEqual(config['authorizationUrl'],"http://localhost:8080/auth/realms/master/protocol/openid-connect/auth", 'authorizationUrl changed: ' + config['authorizationUrl'])
+        self.assertEqual(config['logoutUrl'],"http://localhost:8080/auth/realms/master/protocol/openid-connect/logout", 'logoutUrl changed: ' + config['logoutUrl'])
+
