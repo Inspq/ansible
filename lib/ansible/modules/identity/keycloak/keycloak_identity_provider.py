@@ -392,10 +392,10 @@ def main():
         postBrokerLoginFlowAlias=dict(type='str'),
         linkOnly=dict(type='bool', default=False),
         config=dict(
-            type='dict', 
+            type='dict',
             options=idpconfig_spec,
-            mutually_exclusive = [['openIdConfigurationUrl', 'fromUrl']]
-            ),
+            mutually_exclusive=[['openIdConfigurationUrl', 'fromUrl']]
+        ),
         mappers=dict(type='list', options=mapper_spec),
         state=dict(choices=["absent", "present"], default='present'),
         force=dict(type='bool', default=False),
@@ -465,15 +465,15 @@ def main():
 
     if newIdPConfig is not None:
         if module.params.get('config') is not None:
-            if 'openIdConfigurationUrl' in module.params.get('config') and \
-            module.params.get("config")['openIdConfigurationUrl'] is not None:
+            if ('openIdConfigurationUrl' in module.params.get('config') and
+                    module.params.get("config")['openIdConfigurationUrl'] is not None):
                 kc.add_idp_endpoints(newIdPConfig, module.params.get("config")['openIdConfigurationUrl'])
-            elif 'fromUrl' in module.params.get('config') and \
-            module.params.get("config")['fromUrl'] is not None:
+            elif ('fromUrl' in module.params.get('config') and
+                    module.params.get("config")['fromUrl'] is not None):
                 kc.add_idp_endpoints_import_config_url(
                     newIdPConfig,
-                    providerId=newIdPRepresentation['providerId'], 
-                    fromUrl=module.params.get('config')['fromUrl'], 
+                    providerId=newIdPRepresentation['providerId'],
+                    fromUrl=module.params.get('config')['fromUrl'],
                     realm=realm)
         newIdPRepresentation["config"] = newIdPConfig
 

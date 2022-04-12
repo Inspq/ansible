@@ -2389,16 +2389,17 @@ class KeycloakAPI(object):
         """
         try:
             newIdPRepresentation = dict(
-                providerId=providerId, 
+                providerId=providerId,
                 fromUrl=fromUrl
             )
             idps_url = URL_IDP_IMPORT.format(
                 url=self.baseurl,
                 realm=realm)
-            openIdConfig = json.load(open_url(idps_url,
-                                method='POST',
-                                headers=self.restheaders,
-                                data=json.dumps(newIdPRepresentation)))
+            openIdConfig = json.load(open_url(
+                idps_url,
+                method='POST',
+                headers=self.restheaders,
+                data=json.dumps(newIdPRepresentation)))
             if 'userInfoUrl' in openIdConfig.keys():
                 idPConfiguration["userInfoUrl"] = openIdConfig["userInfoUrl"]
             if 'tokenUrl' in openIdConfig.keys():
