@@ -291,15 +291,9 @@ class KeycloakAuthenticationTestCase(ModuleTestCase):
                             "requirement": "REQUIRED"
                         },
                         {
-                            "alias": "sx5-pin-config",
-                            "authenticationConfig": {
-                                "alias": "sx5-pin-config",
-                                "config": {
-                                    "length": "6"
-                                }
-                            },
+                            "alias": "sx5-bidon-config",
                             "displayName": "PIN Authentication",
-                            "providerId": "pin-authenticator",
+                            "providerId": "auth-spnego",
                             "requirement": "REQUIRED"
                         }
                     ]
