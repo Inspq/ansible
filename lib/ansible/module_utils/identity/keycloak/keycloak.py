@@ -1748,7 +1748,7 @@ class KeycloakAPI(object):
                                     headers=self.restheaders))
                             existingExecution["authenticationConfig"] = execConfig
                         # Compare the executions to see if it need changes
-                        if not isDictEquals(newExecution, existingExecution,['authenticationExecutions']) or existingExecutionIndex != newExecutionIndex:
+                        if not isDictEquals(newExecution, existingExecution, ['authenticationExecutions']) or existingExecutionIndex != newExecutionIndex:
                             changed = True
                     elif "providerId" in newExecution:
                         # Create the new execution

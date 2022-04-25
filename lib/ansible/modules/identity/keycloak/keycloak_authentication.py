@@ -151,7 +151,7 @@ EXAMPLES = '''
             - displayName: OTP Form
               providerId: auth-otp-form
               requirement: REQUIRED
-        
+
     - name: Remove authentication.
       keycloak_authentication:
         auth_keycloak_url: http://localhost:8080/auth
@@ -200,7 +200,7 @@ def main():
 
     module = AnsibleModule(argument_spec=argument_spec,
                            supports_check_mode=True,
-                           required_if=[['state', 'present',('providerId', 'copyFrom',),'any']]
+                           required_if=[['state', 'present', ('providerId', 'copyFrom',), True]]
                            )
 
     result = dict(changed=False, msg='', flow={})
