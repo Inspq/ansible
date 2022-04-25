@@ -107,6 +107,51 @@ EXAMPLES = '''
         state: present
         force: yes
 
+    - name: Create complex authentication flow with sub flow
+      keycloak_authentication:
+        alias: "Sx5 browser pin"
+        realm: "admin"
+        description: "Browser flow auth with conditional PIN challenge"
+        providerId: basic-flow
+        authenticationExecutions:
+        - displayName: Sx5 cookie pin
+          requirement: ALTERNATIVE
+          authenticationExecutions:
+          - displayName: Cookie
+            providerId: auth-cookie
+            requirement: REQUIRED
+          - alias: sx5-pin-config
+            authenticationConfig:
+              alias: sx5-pin-config
+              config:
+                length: '6'
+            displayName: PIN Authentication
+            providerId: pin-authenticator
+            requirement: REQUIRED
+        - displayName: Kerberos
+          providerId: auth-spnego
+          requirement: DISABLED
+        - displayName: Identity Provider Redirector
+          providerId: identity-provider-redirector
+          requirement: ALTERNATIVE
+        - description: Username, password, otp and other auth forms.
+          displayName: Sx5 browser pin forms
+          requirement: ALTERNATIVE
+          authenticationExecutions:
+          - displayName: Username Password Form
+            providerId: auth-username-password-form
+            requirement: REQUIRED
+          - description: Flow to determine if the OTP is required for the authentication
+            displayName: Sx5 browser pin Browser - Conditional OTP
+            requirement: CONDITIONAL
+            authenticationExecutions:
+            - displayName: Condition - user configured
+              providerId: conditional-user-configured
+              requirement: REQUIRED
+            - displayName: OTP Form
+              providerId: auth-otp-form
+              requirement: REQUIRED
+        
     - name: Remove authentication.
       keycloak_authentication:
         auth_keycloak_url: http://localhost:8080/auth
@@ -154,7 +199,9 @@ def main():
     argument_spec.update(meta_args)
 
     module = AnsibleModule(argument_spec=argument_spec,
-                           supports_check_mode=True)
+                           supports_check_mode=True,
+                           required_if=[['state', 'present',('providerId', 'copyFrom',),'any']]
+                           )
 
     result = dict(changed=False, msg='', flow={})
     # Obtain access token, initialize API
