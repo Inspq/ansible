@@ -255,19 +255,92 @@ class KeycloakAuthenticationTestCase(ModuleTestCase):
                     "providerId": "identity-provider-redirector"
                 },
                 {
-                    "displayName": "Sx5 browser otp forms"
-                },
-                {
-                    "displayName": "Username Password Form",
-                    "providerId": "auth-username-password-form"
-                },
-                {
-                    "displayName": "Sx5 browser otp Browser - Conditional OTP",
-                    "requirement": "REQUIRED"
+                    "displayName": "Sx5 browser otp forms",
+                    "authenticationExecutions": [
+                        {
+                            "displayName": "Username Password Form",
+                            "providerId": "auth-username-password-form"
+                        },
+                        {
+                            "displayName": "Sx5 browser otp Browser - Conditional OTP",
+                            "requirement": "REQUIRED"
+                        }
+                    ]
                 }
             ],
             "state":"absent",
             "force": False
+        },
+        {
+            "auth_keycloak_url":  "http://localhost:18081/auth",
+            "auth_username": "admin",
+            "auth_password": "admin",
+            "realm": "master",
+            "alias": "Sx5 browser pin",
+            "providerId": "basic-flow",
+            "authenticationExecutions": [
+                {
+                    "authenticationFlow": True,
+                    "description": "",
+                    "displayName": "Sx5 cookie pin",
+                    "requirement": "ALTERNATIVE",
+                    "authenticationExecutions": [
+                        {
+                            "displayName": "Cookie",
+                            "providerId": "auth-cookie",
+                            "requirement": "REQUIRED"
+                        },
+                        {
+                            "alias": "sx5-bidon-config",
+                            "displayName": "PIN Authentication",
+                            "providerId": "auth-spnego",
+                            "requirement": "REQUIRED"
+                        }
+                    ]
+                },
+                {
+                    "displayName": "Kerberos",
+                    "providerId": "auth-spnego",
+                    "requirement": "DISABLED"
+                },
+                {
+                    "displayName": "Identity Provider Redirector",
+                    "providerId": "identity-provider-redirector",
+                    "requirement": "ALTERNATIVE"
+                },
+                {
+                    "authenticationFlow": True,
+                    "description": "Username, password, otp and other auth forms.",
+                    "displayName": "Sx5 browser pin forms",
+                    "requirement": "ALTERNATIVE",
+                    "authenticationExecutions": [
+                        {
+                            "displayName": "Username Password Form",
+                            "providerId": "auth-username-password-form",
+                            "requirement": "REQUIRED"
+                        },
+                        {
+                            "authenticationFlow": True,
+                            "description": "Flow to determine if the OTP is required for the authentication",
+                            "displayName": "Sx5 browser pin Browser - Conditional OTP",
+                            "requirement": "CONDITIONAL",
+                            "authenticationExecutions": [
+                                {
+                                    "displayName": "Condition - user configured",
+                                    "providerId": "conditional-user-configured",
+                                    "requirement": "REQUIRED"
+                                },
+                                {
+                                    "displayName": "OTP Form",
+                                    "providerId": "auth-otp-form",
+                                    "requirement": "REQUIRED"
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ],
+            "state": "absent"
         }
     ]
     def setUp(self):
@@ -486,14 +559,19 @@ class KeycloakAuthenticationTestCase(ModuleTestCase):
         self.assertTrue(results.exception.args[0]['changed'])
         self.assertEqual(results.exception.args[0]["flow"]["alias"], toCreate["alias"], results.exception.args[0]["flow"]["alias"] + "is not" + toCreate["alias"] )
 
-        for expectedExecutions in toCreate["authenticationExecutions"]:
-            executionFound = False
-            if "displayName" in expectedExecutions \
-            and expectedExecutions["displayName"] == "Sx5 browser otp Browser - Conditional OTP":
-                for execution in results.exception.args[0]["flow"]["authenticationExecutions"]:
-                    if "displayName" in execution \
-                    and execution["displayName"] == expectedExecutions["displayName"]:
-                        executionFound = True
-                        break
-        self.assertTrue(executionFound, "Execution " + expectedExecutions["displayName"] + " not found")
-        self.assertEqual(execution["requirement"], expectedExecutions["requirement"], execution["requirement"] + " is not equals to " + expectedExecutions["requirement"])
+        for execution in results.exception.args[0]["flow"]["authenticationExecutions"]:
+            if "displayName" in execution \
+            and execution["displayName"] == "Sx5 browser otp Browser - Conditional OTP":
+                executionFound = True
+                break
+        self.assertTrue(executionFound, "Execution Sx5 browser otp Browser - Conditional OTP not found")
+        self.assertEqual(execution["requirement"], "REQUIRED", execution["requirement"] + "REQUIRED is not equals to REQUIRED")
+
+    def test_create_authentication_flow_with_complex_sub_flow(self):
+        toCreate = self.authenticationTestFlows[11].copy()
+        toCreate["state"] = "present"
+        set_module_args(toCreate)
+        with self.assertRaises(AnsibleExitJson) as results:
+            self.module.main()
+        self.assertTrue(results.exception.args[0]['changed'])
+        self.assertEqual(results.exception.args[0]["flow"]["alias"], toCreate["alias"], results.exception.args[0]["flow"]["alias"] + "is not" + toCreate["alias"] )

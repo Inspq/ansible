@@ -84,6 +84,7 @@ URL_AUTHENTICATION_FLOW = "{url}/admin/realms/{realm}/authentication/flows/{id}"
 URL_AUTHENTICATION_FLOW_COPY = "{url}/admin/realms/{realm}/authentication/flows/{copyfrom}/copy"
 URL_AUTHENTICATION_FLOW_EXECUTIONS = "{url}/admin/realms/{realm}/authentication/flows/{flowalias}/executions"
 URL_AUTHENTICATION_FLOW_EXECUTIONS_EXECUTION = "{url}/admin/realms/{realm}/authentication/flows/{flowalias}/executions/execution"
+URL_AUTHENTICATION_FLOW_EXECUTIONS_FLOW = "{url}/admin/realms/{realm}/authentication/flows/{flowAlias}/executions/flow"
 URL_AUTHENTICATION_EXECUTION_CONFIG = "{url}/admin/realms/{realm}/authentication/executions/{id}/config"
 URL_AUTHENTICATION_EXECUTION_RAISE_PRIORITY = "{url}/admin/realms/{realm}/authentication/executions/{id}/raise-priority"
 URL_AUTHENTICATION_EXECUTION_LOWER_PRIORITY = "{url}/admin/realms/{realm}/authentication/executions/{id}/lower-priority"
@@ -1657,6 +1658,45 @@ class KeycloakAPI(object):
             self.module.fail_json(msg='Could not create empty authentication flow %s in realm %s: %s'
                                       % (config["alias"], realm, str(e)))
 
+    def create_empty_execution_auth_flow(self, parentFlow, config, realm='master'):
+        """
+        Create a new empty authentication flow.
+        :param config: Representation of the authentication flow to create.
+        :param realm: Realm.
+        :return: Representation of the new authentication flow.
+        """
+        try:
+            newFlow = dict(
+                alias=config["alias"],
+                type='form-flow' if "providerId" in config else 'basic-flow',
+                provider=config["providerId"] if "providerId" in config else '',
+                description=config["description"] if "description" in config else ''
+            )
+            open_url(
+                URL_AUTHENTICATION_FLOW_EXECUTIONS_FLOW.format(
+                    url=self.baseurl,
+                    realm=realm,
+                    flowAlias=quote(parentFlow)),
+                method='POST',
+                headers=self.restheaders,
+                data=json.dumps(newFlow))
+
+            flowList = json.load(
+                open_url(
+                    URL_AUTHENTICATION_FLOW_EXECUTIONS.format(
+                        url=self.baseurl,
+                        realm=realm,
+                        flowalias=quote(parentFlow)),
+                    method='GET',
+                    headers=self.restheaders))
+            for flow in flowList:
+                if flow["displayName"] == config["alias"]:
+                    return flow
+            return None
+        except Exception as e:
+            self.module.fail_json(msg='Could not create empty authentication flow %s in realm %s: %s'
+                                      % (config["alias"], realm, str(e)))
+
     def create_or_update_executions(self, config, realm='master'):
         """
         Create or update executions for an authentication flow.
@@ -1678,19 +1718,22 @@ class KeycloakAPI(object):
                             method='GET',
                             headers=self.restheaders))
                     executionFound = False
-                    for i, existingExecution in enumerate(existingExecutions, start=0):
-                        if "providerId" in existingExecution \
-                                and "providerId" in newExecution \
-                                and existingExecution["providerId"] == newExecution["providerId"]:
-                            executionFound = True
-                            existingExecutionIndex = i
-                            break
-                        elif "displayName" in existingExecution \
-                                and "displayName" in newExecution \
-                                and existingExecution["displayName"].lower() == newExecution["displayName"].lower():
-                            executionFound = True
-                            existingExecutionIndex = i
-                            break
+                    i = 0
+                    for existingExecution in existingExecutions:
+                        if existingExecution["level"] == 0:
+                            if "providerId" in existingExecution \
+                                    and "providerId" in newExecution \
+                                    and existingExecution["providerId"] == newExecution["providerId"]:
+                                executionFound = True
+                                existingExecutionIndex = i
+                                break
+                            elif "displayName" in existingExecution \
+                                    and "displayName" in newExecution \
+                                    and existingExecution["displayName"].lower() == newExecution["displayName"].lower():
+                                executionFound = True
+                                existingExecutionIndex = i
+                                break
+                            i = i + 1
                     if executionFound:
                         # Replace config id of the execution config by it's complete representation
                         if "authenticationConfig" in existingExecution:
@@ -1705,13 +1748,14 @@ class KeycloakAPI(object):
                                     headers=self.restheaders))
                             existingExecution["authenticationConfig"] = execConfig
                         # Compare the executions to see if it need changes
-                        if not isDictEquals(newExecution, existingExecution) or existingExecutionIndex != newExecutionIndex:
+                        if not isDictEquals(newExecution, existingExecution, ['authenticationExecutions']) or existingExecutionIndex != newExecutionIndex:
                             changed = True
-                    else:
+                    elif "providerId" in newExecution:
                         # Create the new execution
                         newExec = {}
                         newExec["provider"] = newExecution["providerId"]
-                        newExec["requirement"] = newExecution["requirement"]
+                        if "requirement" in newExecution:
+                            newExec["requirement"] = newExecution["requirement"]
                         open_url(
                             URL_AUTHENTICATION_FLOW_EXECUTIONS_EXECUTION.format(
                                 url=self.baseurl,
@@ -1720,6 +1764,15 @@ class KeycloakAPI(object):
                             method='POST',
                             headers=self.restheaders,
                             data=json.dumps(newExec))
+                        changed = True
+                    else:
+                        newExec = {}
+                        newExec["alias"] = newExecution["displayName"]
+                        if "requirement" in newExecution:
+                            newExec["requirement"] = newExecution["requirement"]
+                        if "description" in newExecution:
+                            newExec["description"] = newExecution["description"]
+                        self.create_empty_execution_auth_flow(config["alias"], newExec, realm)
                         changed = True
                     if changed:
                         # Get existing executions on the Keycloak server for this alias
@@ -1732,26 +1785,34 @@ class KeycloakAPI(object):
                                 method='GET',
                                 headers=self.restheaders))
                         executionFound = False
-                        for i, existingExecution in enumerate(existingExecutions, start=0):
-                            if "providerId" in existingExecution \
-                                    and "providerId" in newExecution \
-                                    and existingExecution["providerId"] == newExecution["providerId"]:
-                                executionFound = True
-                                existingExecutionIndex = i
-                                break
-                            elif "displayName" in existingExecution \
-                                    and "displayName" in newExecution \
-                                    and existingExecution["displayName"].lower() == newExecution["displayName"].lower():
-                                executionFound = True
-                                existingExecutionIndex = i
-                                break
+                        i = 0
+                        for existingExecution in existingExecutions:
+                            if existingExecution["level"] == 0:
+                                if "providerId" in existingExecution \
+                                        and "providerId" in newExecution \
+                                        and existingExecution["providerId"] == newExecution["providerId"]:
+                                    executionFound = True
+                                    existingExecutionIndex = i
+                                    break
+                                elif "displayName" in existingExecution \
+                                        and "displayName" in newExecution \
+                                        and existingExecution["displayName"].lower() == newExecution["displayName"].lower():
+                                    executionFound = True
+                                    existingExecutionIndex = i
+                                    break
+                                i = i + 1
                         if executionFound:
                             # Update the existing execution
                             updatedExec = {}
                             updatedExec["id"] = existingExecution["id"]
+                            if 'flowId' in existingExecution:
+                                updatedExec["flowId"] = existingExecution["flowId"]
                             for key in newExecution:
+                                # new auth execute ceated after
+                                if key == "authenticationExecutions":
+                                    None
                                 # create the execution configuration
-                                if key == "authenticationConfig":
+                                elif key == "authenticationConfig":
                                     # Add the autenticatorConfig to the execution
                                     open_url(
                                         URL_AUTHENTICATION_EXECUTION_CONFIG.format(
@@ -1791,6 +1852,10 @@ class KeycloakAPI(object):
                                             id=existingExecution["id"]),
                                         method='POST',
                                         headers=self.restheaders)
+                    if 'authenticationExecutions' in newExecution:
+                        newExecution = copy.deepcopy(newExecution)
+                        newExecution['alias'] = newExecution['displayName']
+                        changed = self.create_or_update_executions(newExecution, realm=realm) or changed
 
             return changed
         except Exception as e:
