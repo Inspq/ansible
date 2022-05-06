@@ -89,6 +89,9 @@ URL_AUTHENTICATION_EXECUTION_CONFIG = "{url}/admin/realms/{realm}/authentication
 URL_AUTHENTICATION_EXECUTION_RAISE_PRIORITY = "{url}/admin/realms/{realm}/authentication/executions/{id}/raise-priority"
 URL_AUTHENTICATION_EXECUTION_LOWER_PRIORITY = "{url}/admin/realms/{realm}/authentication/executions/{id}/lower-priority"
 URL_AUTHENTICATION_CONFIG = "{url}/admin/realms/{realm}/authentication/config/{id}"
+URL_AUT_REGISTER_REQUIRED_ACTION = "{url}/admin/realms/{realm}/authentication/register-required-action"
+URL_AUTHENTICATION_REQUIRED_ACTIONS = "{url}/admin/realms//{realm}/authentication/required-actions"
+URL_AUTHENTICATION_REQUIRED_ACTION = "{url}/admin/realms//{realm}/authentication/required-actions/{id}"
 
 URL_IDPS = "{url}/admin/realms/{realm}/identity-provider/instances"
 URL_IDP = "{url}/admin/realms/{realm}/identity-provider/instances/{alias}"
@@ -1895,6 +1898,41 @@ class KeycloakAPI(object):
         except Exception as e:
             self.module.fail_json(msg='Could not get executions for authentication flow %s in realm %s: %s'
                                       % (config["alias"], realm, str(e)))
+
+    def register_auth_required_action(self, config, realm='master'):
+        """
+        Register Actions
+        :param config: JSON containing 'providerId', and 'name' attributes.
+        :param realm: Realm.
+        :return: Representation of the new required action.
+        """
+        try:
+            # {
+            # "name": "account-expires-action,
+            # "providerId": "account-expires-action",
+            # }
+            newName = dict(
+                name=config["name"],
+                providerId=config["providerId"]
+            )
+            open_url(
+                URL_AUTHENTICATION_REQUIRED_ACTION.format(
+                    url=self.baseurl,
+                    realm=realm),
+                method='POST',
+                headers=self.restheaders,
+                data=json.dumps(newName))
+            action = json.load(
+                open_url(
+                    URL_AUTHENTICATION_REQUIRED_ACTION.format(url=self.baseurl,
+                                                    realm=realm,
+                                                    id=config["name"]),
+                    method='GET',
+                    headers=self.restheaders))
+            return action
+        except Exception as e:
+            self.module.fail_json(msg='Could not register action %s in realm %s: %s'
+                                      % (config["name"], realm, str(e)))
 
     def get_component_by_id(self, component_id, realm='master'):
         """
