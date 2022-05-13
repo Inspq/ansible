@@ -187,12 +187,25 @@ def main():
     :returm:
     """
     argument_spec = keycloak_argument_spec()
+
+    requiredAction_spec = dict(
+      name=dict(type='str', required=True),
+      providerId=dict(type='str', aliases=['alias'], required=True),
+      config=dict(type='dict'),
+      defaultAction=dict(type='bool', default=False),
+      enabled=dict(type='bool', default=True),
+    )
+
     meta_args = dict(
         realm=dict(type='str', required=True),
         alias=dict(type='str', required=True),
         providerId=dict(type='str'),
         copyFrom=dict(type='str'),
         authenticationExecutions=dict(type='list'),
+        requiredActions=dict(
+          type='list',
+          elements='dict',
+          options=requiredAction_spec),
         state=dict(choices=["absent", "present"], default='present'),
         force=dict(type='bool', default=False),
     )
@@ -228,6 +241,7 @@ def main():
     newAuthenticationRepresentation["copyFrom"] = module.params.get("copyFrom")
     newAuthenticationRepresentation["providerId"] = module.params.get("providerId")
     newAuthenticationRepresentation["authenticationExecutions"] = module.params.get("authenticationExecutions")
+    newAuthenticationRepresentation["requiredActions"] = module.params.get("requiredActions")
 
     changed = False
 
@@ -251,6 +265,12 @@ def main():
             executionsRepresentation = kc.get_executions_representation(config=newAuthenticationRepresentation, realm=realm)
             if executionsRepresentation is not None:
                 authenticationRepresentation["authenticationExecutions"] = executionsRepresentation
+
+            kc.create_or_update_required_actions(config=newAuthenticationRepresentation, realm=realm)
+            requiredActions = kc.get_required_actions_representation(realm=realm)
+            if requiredActions is not None:
+                authenticationRepresentation["requiredActions"] = requiredActions
+
             result['changed'] = changed
             result['flow'] = authenticationRepresentation
         elif state == 'absent':  # If desired state is absent.
@@ -278,6 +298,12 @@ def main():
             executionsRepresentation = kc.get_executions_representation(config=newAuthenticationRepresentation, realm=realm)
             if executionsRepresentation is not None:
                 authenticationRepresentation["authenticationExecutions"] = executionsRepresentation
+            
+            changed = kc.create_or_update_required_actions(config=newAuthenticationRepresentation, realm=realm) or changed
+            requiredActions = kc.get_required_actions_representation(realm=realm)
+            if requiredActions is not None:
+                authenticationRepresentation["requiredActions"] = requiredActions
+
             result['flow'] = authenticationRepresentation
             result['changed'] = changed
         elif state == 'absent':  # If desired state is absent

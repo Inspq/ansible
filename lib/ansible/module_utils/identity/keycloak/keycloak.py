@@ -89,9 +89,11 @@ URL_AUTHENTICATION_EXECUTION_CONFIG = "{url}/admin/realms/{realm}/authentication
 URL_AUTHENTICATION_EXECUTION_RAISE_PRIORITY = "{url}/admin/realms/{realm}/authentication/executions/{id}/raise-priority"
 URL_AUTHENTICATION_EXECUTION_LOWER_PRIORITY = "{url}/admin/realms/{realm}/authentication/executions/{id}/lower-priority"
 URL_AUTHENTICATION_CONFIG = "{url}/admin/realms/{realm}/authentication/config/{id}"
-URL_AUT_REGISTER_REQUIRED_ACTION = "{url}/admin/realms/{realm}/authentication/register-required-action"
-URL_AUTHENTICATION_REQUIRED_ACTIONS = "{url}/admin/realms//{realm}/authentication/required-actions"
-URL_AUTHENTICATION_REQUIRED_ACTION = "{url}/admin/realms//{realm}/authentication/required-actions/{id}"
+URL_AUTH_REGISTER_REQUIRED_ACTION = "{url}/admin/realms/{realm}/authentication/register-required-action"
+URL_AUTHENTICATION_REQUIRED_ACTIONS = "{url}/admin/realms/{realm}/authentication/required-actions"
+URL_AUTHENTICATION_REQUIRED_ACTION = "{url}/admin/realms/{realm}/authentication/required-actions/{id}"
+URL_AUTH_REQUIRED_ACTION_LOWER_PRIORITY = "{url}/admin/realms/{realm}/authentication/required-actions/{id}/lower-priority"
+URL_AUTH_REQUIRED_ACTION_RAISE_PRIORITY = "{url}/admin/realms/{realm}/authentication/required-actions/{id}/raise-priority"
 
 URL_IDPS = "{url}/admin/realms/{realm}/identity-provider/instances"
 URL_IDP = "{url}/admin/realms/{realm}/identity-provider/instances/{alias}"
@@ -1709,7 +1711,8 @@ class KeycloakAPI(object):
         """
         try:
             changed = False
-            if "authenticationExecutions" in config:
+            if "authenticationExecutions" in config \
+            and config["authenticationExecutions"]:
                 for newExecutionIndex, newExecution in enumerate(config["authenticationExecutions"], start=0):
                     # Get existing executions on the Keycloak server for this alias
                     existingExecutions = json.load(
@@ -1899,6 +1902,124 @@ class KeycloakAPI(object):
             self.module.fail_json(msg='Could not get executions for authentication flow %s in realm %s: %s'
                                       % (config["alias"], realm, str(e)))
 
+    def create_or_update_required_actions(self, config, realm='master'):
+        """
+        Create or update required actions for realm.
+        :param config: Representation of required actions.
+        :param realm: Realm
+        :return: True if required actions have been modified. False otherwise.
+        """
+        try:
+            changed = False
+            if "requiredActions" in config \
+            and config["requiredActions"]:
+                #self._object_assign_original(realmRequiredActions, config, "requiredActions", "providerId")
+                for newRequiredAction in config["requiredActions"]:
+                    requiredAction = self.get_required_actions_representation(realm=realm, providerId=newRequiredAction["providerId"])
+                    if not requiredAction:
+                        requiredAction = self.register_auth_required_action(newRequiredAction, realm)
+                        changed = True
+                    
+                    #stay in position
+                    newRequiredAction["priority"] = requiredAction["priority"]
+                    #Remove "None" from representation
+                    tmp = copy.deepcopy(newRequiredAction)
+                    for key in newRequiredAction.keys():
+                        if tmp[key] == None:
+                            tmp.pop(key)
+                    if not isDictEquals(tmp, requiredAction):
+                        open_url(
+                            URL_AUTHENTICATION_REQUIRED_ACTION.format(
+                                url=self.baseurl,
+                                realm=realm,
+                                id=quote(tmp["providerId"])),
+                            method='PUT',
+                            headers=self.restheaders,
+                            data=json.dumps(tmp))
+                        changed = True
+
+                #Juste make sure provided actions are at position relative to the other provided actions
+                newPositions = self._object_position_by_index(config["requiredActions"], "providerId")
+                for newRequiredAction in config["requiredActions"]:
+                    providerId = newRequiredAction["providerId"]
+                    newPositions.pop(providerId)
+                    realmRequiredActions = self.get_required_actions_representation(realm=realm)
+                    positions = self._object_position_by_index(realmRequiredActions, "providerId")
+                    existingIndex = positions[providerId]
+                    diff = 0
+                    for otherProviderId in newPositions.keys():
+                        newRequiredActionIndex = positions[otherProviderId]
+                        if existingIndex > newRequiredActionIndex:
+                            diff = max(existingIndex - newRequiredActionIndex, diff)
+                    for i in range(diff):
+                        open_url(
+                            URL_AUTH_REQUIRED_ACTION_RAISE_PRIORITY.format(
+                                url=self.baseurl,
+                                realm=realm,
+                                id=quote(providerId)),
+                            method='POST',
+                            headers=self.restheaders)
+                        changed = True
+
+            return changed
+        except Exception as e:
+            self.module.fail_json(msg='Could not create or update required actions for realm %s: %s'
+                                      % (realm, str(e)))
+
+    def _object_position_by_index(self, params, index_name = 'name'):
+        values = {}
+        for index, item in enumerate(params, start=0):
+            values[item[index_name]] = index
+        return values
+
+
+    def _object_assign_original(self, old_params, new_params, param_name, index_name = 'name'):
+        old = old_params.get(param_name) or []
+        new = new_params.get(param_name) or []
+        newArray = []
+        newvalues = {}
+        for item in new:
+            newvalues[item[index_name]] = item
+        for item in old:
+            if not item[index_name] in newvalues:
+                newArray.append(item)
+        for key in newvalues:
+            newArray.append(newvalues[key])
+        new_params[param_name] = newArray
+
+    def get_required_actions_representation(self, realm='master', providerId=None):
+        """
+        Get a representation of the required actions for realm.
+        :param realm: Realm
+        :param providerId: providerId or alias of required action
+        :return: Stream of required actions if providerId is None, else return required action
+        """
+        try:
+            if providerId:
+                url = URL_AUTHENTICATION_REQUIRED_ACTION.format(
+                        url=self.baseurl,
+                        realm=realm,
+                        id=quote(providerId))
+            else:
+                url = URL_AUTHENTICATION_REQUIRED_ACTIONS.format(
+                        url=self.baseurl,
+                        realm=realm)
+            requiredActions  = json.load(
+                open_url(
+                    url,
+                    method='GET',
+                    headers=self.restheaders))
+            return requiredActions
+        except HTTPError as e:
+            if e.code == 404:
+                return None
+            else:
+                self.module.fail_json(msg='Could not get required actions for realm %s: %s'
+                                      % (realm, str(e)))
+        except Exception as e:
+            self.module.fail_json(msg='Could not get required actions for realm %s: %s'
+                                      % (realm, str(e)))
+
     def register_auth_required_action(self, config, realm='master'):
         """
         Register Actions
@@ -1907,28 +2028,18 @@ class KeycloakAPI(object):
         :return: Representation of the new required action.
         """
         try:
-            # {
-            # "name": "account-expires-action,
-            # "providerId": "account-expires-action",
-            # }
             newName = dict(
                 name=config["name"],
                 providerId=config["providerId"]
             )
             open_url(
-                URL_AUTHENTICATION_REQUIRED_ACTION.format(
+                URL_AUTH_REGISTER_REQUIRED_ACTION.format(
                     url=self.baseurl,
                     realm=realm),
                 method='POST',
                 headers=self.restheaders,
                 data=json.dumps(newName))
-            action = json.load(
-                open_url(
-                    URL_AUTHENTICATION_REQUIRED_ACTION.format(url=self.baseurl,
-                                                    realm=realm,
-                                                    id=config["name"]),
-                    method='GET',
-                    headers=self.restheaders))
+            action = self.get_required_actions_representation(realm=realm, providerId=newName["providerId"])
             return action
         except Exception as e:
             self.module.fail_json(msg='Could not register action %s in realm %s: %s'
