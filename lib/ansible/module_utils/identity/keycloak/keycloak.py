@@ -92,7 +92,6 @@ URL_AUTHENTICATION_CONFIG = "{url}/admin/realms/{realm}/authentication/config/{i
 URL_AUTH_REGISTER_REQUIRED_ACTION = "{url}/admin/realms/{realm}/authentication/register-required-action"
 URL_AUTHENTICATION_REQUIRED_ACTIONS = "{url}/admin/realms/{realm}/authentication/required-actions"
 URL_AUTHENTICATION_REQUIRED_ACTION = "{url}/admin/realms/{realm}/authentication/required-actions/{id}"
-URL_AUTH_REQUIRED_ACTION_LOWER_PRIORITY = "{url}/admin/realms/{realm}/authentication/required-actions/{id}/lower-priority"
 URL_AUTH_REQUIRED_ACTION_RAISE_PRIORITY = "{url}/admin/realms/{realm}/authentication/required-actions/{id}/raise-priority"
 
 URL_IDPS = "{url}/admin/realms/{realm}/identity-provider/instances"
@@ -1973,19 +1972,27 @@ class KeycloakAPI(object):
         return values
 
 
-    def _object_assign_original(self, old_params, new_params, param_name, index_name = 'name'):
-        old = old_params.get(param_name) or []
-        new = new_params.get(param_name) or []
-        newArray = []
-        newvalues = {}
-        for item in new:
-            newvalues[item[index_name]] = item
-        for item in old:
-            if not item[index_name] in newvalues:
-                newArray.append(item)
-        for key in newvalues:
-            newArray.append(newvalues[key])
-        new_params[param_name] = newArray
+    def delete_required_action_by_providerId(self, providerId, realm='master'):
+        """ Delete unregister required actions
+
+        :param config: dict with list of required action
+        :param realm: realm to unregister action
+        """
+        
+        try:
+            url = URL_AUTHENTICATION_REQUIRED_ACTION.format(url=self.baseurl, realm=realm, id=quote(providerId))
+            open_url(url, method='DELETE', headers=self.restheaders,
+                            validate_certs=self.validate_certs)
+            return True
+        except HTTPError as e:
+            if e.code == 404:
+                return False
+            else:
+                self.module.fail_json(msg='Could not delete required action %s in realm %s: %s'
+                                    % (id, realm, str(e)))
+        except Exception as e:
+            self.module.fail_json(msg='Could not delete required action %s in realm %s: %s'
+                                    % (id, realm, str(e)))
 
     def get_required_actions_representation(self, realm='master', providerId=None):
         """
