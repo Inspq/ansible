@@ -341,8 +341,89 @@ class KeycloakAuthenticationTestCase(ModuleTestCase):
                 }
             ],
             "state": "absent"
+        },
+        {
+            "auth_keycloak_url":  "http://localhost:18081/auth",
+            "auth_username": "admin",
+            "auth_password": "admin",
+            "realm": "master",
+            "alias": "Test register action and re-order priority",
+            "requiredActions": [
+                {
+                    "name": "Webauthn Register Passwordless unit test",
+                    "alias": "webauthn-register-passwordless"
+                }
+            ], 
+            "state":"absent",
+            "force":False
         }
     ]
+    requiredActionsTest =  [
+        {
+            "auth_keycloak_url":  "http://localhost:18081/auth",
+            "auth_username": "admin",
+            "auth_password": "admin",
+            "realm": "master",
+            "alias": "Test restaure",
+            "requiredActions": [
+                {
+                "name": "Configure OTP",
+                "providerId": "CONFIGURE_TOTP",
+                },
+                {
+                "name": "Terms and Conditions",
+                "providerId": "terms_and_conditions"
+                },
+                {
+                "name": "Update Password",
+                "providerId": "UPDATE_PASSWORD"
+                },
+                {
+                "name": "Update Profile",
+                "providerId": "UPDATE_PROFILE"
+                },
+                {
+                "name": "Verify Email",
+                "providerId": "VERIFY_EMAIL"
+                },
+                {
+                "name": "Delete Account",
+                "providerId": "delete_account"
+                },
+                {
+                "name": "Update User Locale",
+                "providerId": "update_user_locale"
+                }
+            ]
+        },
+        {
+            "auth_keycloak_url":  "http://localhost:18081/auth",
+            "auth_username": "admin",
+            "auth_password": "admin",
+            "realm": "master",
+            "alias": "Test register action and re-order priority",
+            "requiredActions": [
+                {
+                    "name": "Webauthn Register Passwordless unit test",
+                    "alias": "webauthn-register-passwordless",
+                    "enabled": False,
+                    "config":
+                        {
+                            "test2.property": "value2"
+                        }
+                },
+                {
+                    "name": "Verify Email",
+                    "alias": "VERIFY_EMAIL"
+                },
+                {
+                    "name": "Update Password",
+                    "providerId": "UPDATE_PASSWORD"
+                }
+            ]
+        }
+    ]
+
     def setUp(self):
         super(KeycloakAuthenticationTestCase, self).setUp()
         self.module = keycloak_authentication
@@ -359,6 +440,11 @@ class KeycloakAuthenticationTestCase(ModuleTestCase):
             set_module_args(flowToDelete)
             with self.assertRaises(AnsibleExitJson) as results:
                 self.module.main()
+
+        set_module_args(self.requiredActionsTest[0])
+        with self.assertRaises(AnsibleExitJson) as results:
+            self.module.main()
+
         super(KeycloakAuthenticationTestCase, self).tearDown()
                 
     def test_create_authentication_flow_copy(self):
@@ -575,3 +661,27 @@ class KeycloakAuthenticationTestCase(ModuleTestCase):
             self.module.main()
         self.assertTrue(results.exception.args[0]['changed'])
         self.assertEqual(results.exception.args[0]["flow"]["alias"], toCreate["alias"], results.exception.args[0]["flow"]["alias"] + "is not" + toCreate["alias"] )
+
+    def test_register_required_action(self):
+        toCreate = self.requiredActionsTest[1].copy()
+        toCreate["state"] = "present"
+        set_module_args(toCreate)
+        with self.assertRaises(AnsibleExitJson) as results:
+            self.module.main()
+        self.assertTrue(results.exception.args[0]['changed'])
+        #import json
+        #print('####################')
+        #print(json.dumps(results.exception.args, indent=2))
+        #print('####################')
+        indexed_result = {}
+        result = results.exception.args[0]["flow"]
+        for item in result["requiredActions"]:
+            indexed_result[item["providerId"]] = item
+
+        self.assertTrue("webauthn-register-passwordless" in indexed_result, "Register action - 'webauthn-register-passwordless' not found")
+        self.assertFalse(indexed_result['webauthn-register-passwordless']["enabled"], "Required action webauthn-register-passwordless is not disabled")
+
+        self.assertLess(indexed_result['terms_and_conditions']["priority"], indexed_result['webauthn-register-passwordless']["priority"], "Priority - terms_and_conditions vs webauthn-register-passwordless")
+        self.assertLess(indexed_result['webauthn-register-passwordless']["priority"], indexed_result['VERIFY_EMAIL']["priority"], "Priority - webauthn-register-passwordless vs VERIFY_EMAIL")
+        self.assertLess(indexed_result['VERIFY_EMAIL']["priority"], indexed_result['UPDATE_PASSWORD']["priority"], "Priority - VERIFY_EMAIL vs UPDATE_PASSWORD")
+
