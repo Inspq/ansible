@@ -208,7 +208,7 @@ def main():
 
     meta_args = dict(
         realm=dict(type='str', required=True),
-        alias=dict(type='str', required=True),
+        alias=dict(type='str'),
         providerId=dict(type='str'),
         copyFrom=dict(type='str'),
         authenticationExecutions=dict(type='list'),
@@ -221,9 +221,12 @@ def main():
     )
     argument_spec.update(meta_args)
 
+
     module = AnsibleModule(argument_spec=argument_spec,
                            supports_check_mode=True,
-                           required_if=[['state', 'present', ('providerId', 'copyFrom', 'requiredActions'), True]]
+                           required_if=[['state', 'present', ('providerId', 'copyFrom', 'requiredActions'), True]],
+                           mutually_exclusive=[['providerId', 'copyFrom']],
+                           required_one_of = [['alias', 'requiredActions']]
                            )
 
     result = dict(changed=False, msg='', flow={})
@@ -255,7 +258,10 @@ def main():
 
     changed = False
 
-    authenticationRepresentation = kc.get_authentication_flow_by_alias(alias=newAuthenticationRepresentation["alias"], realm=realm)
+    if newAuthenticationRepresentation["alias"]:
+      authenticationRepresentation = kc.get_authentication_flow_by_alias(alias=newAuthenticationRepresentation["alias"], realm=realm)
+    else:
+      authenticationRepresentation = {}
 
     if authenticationRepresentation == {}:  # Authentication flow does not exist
         if (state == 'present'):  # If desired state is prenset
