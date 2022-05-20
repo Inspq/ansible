@@ -1755,7 +1755,8 @@ class KeycloakAPI(object):
                         # Compare the executions to see if it need changes
                         if not isDictEquals(newExecution, existingExecution, ['authenticationExecutions']) or existingExecutionIndex != newExecutionIndex:
                             changed = True
-                    elif "providerId" in newExecution:
+                    elif "providerId" in newExecution \
+                    and newExecution["providerId"] != "basic-flow":
                         # Create the new execution
                         newExec = {}
                         newExec["provider"] = newExecution["providerId"]
