@@ -28,7 +28,7 @@ options:
     alias:
         description:
             - Alias for the authentication flow
-        required: true
+        required: False
         type: str
     providerId:
         description:
@@ -45,6 +45,38 @@ options:
             - Configuration structure for the executions
         required: false
         type: list
+    requiredActions:
+        description:
+            - Action required for the authentication flow
+        type: list
+        elements: dict
+        suboptions:
+            name:
+                description:
+                    - name
+                type: str
+                required: True
+            providerId:
+                description:
+                    - Provider Id for the requiredActions
+                type: str
+                required: True
+                aliases:
+                    - alias
+            enabled:
+                description:
+                    - Is this required action enabled
+                type: bool
+                default: True
+            defaultAction:
+                description:
+                    - Default Action
+                type: bool
+                default: False
+            config:
+                description:
+                    - Configurations
+                type: dict
     state:
         description:
             - Control if the authentication flow must exists or not
@@ -66,7 +98,7 @@ author:
 '''
 
 EXAMPLES = '''
-    - name: Create an authentication flow from first broker login and add an execution to it.
+    - name: Create an authentication flow from first broker login, add an execution to it and register action "webauthn-register-passwordless" for realm master.
       keycloak_authentication:
         auth_keycloak_url: http://localhost:8080/auth
         auth_sername: admin
@@ -74,6 +106,16 @@ EXAMPLES = '''
         realm: master
         alias: "Copy of first broker login"
         copyFrom: "first broker login"
+        requiredActions:
+        - name: Webauthn Register Passwordless
+          alias: webauthn-register-passwordless
+          enabled: false
+          config:
+            test2.property: value2
+        - name: Verify Email
+          alias: VERIFY_EMAIL
+        - name: Update Password
+          providerId: UPDATE_PASSWORD
         authenticationExecutions:
           - providerId: "test-execution1"
             requirement: "REQUIRED"
@@ -187,21 +229,37 @@ def main():
     :returm:
     """
     argument_spec = keycloak_argument_spec()
+
+    requiredAction_spec = dict(
+        name=dict(type='str', required=True),
+        providerId=dict(type='str', aliases=['alias'], required=True),
+        config=dict(type='dict'),
+        defaultAction=dict(type='bool', default=False),
+        enabled=dict(type='bool', default=True),
+    )
+
     meta_args = dict(
         realm=dict(type='str', required=True),
-        alias=dict(type='str', required=True),
-        providerId=dict(type='str'),
+        alias=dict(type='str'),
+        providerId=dict(type='str', required=False),
         copyFrom=dict(type='str'),
         authenticationExecutions=dict(type='list'),
+        requiredActions=dict(
+            type='list',
+            elements='dict',
+            options=requiredAction_spec),
         state=dict(choices=["absent", "present"], default='present'),
         force=dict(type='bool', default=False),
     )
     argument_spec.update(meta_args)
 
-    module = AnsibleModule(argument_spec=argument_spec,
-                           supports_check_mode=True,
-                           required_if=[['state', 'present', ('providerId', 'copyFrom',), True]]
-                           )
+    module = AnsibleModule(
+        argument_spec=argument_spec,
+        supports_check_mode=True,
+        required_if=[['state', 'present', ('providerId', 'copyFrom', 'requiredActions'), True]],
+        mutually_exclusive=[['providerId', 'copyFrom']],
+        required_one_of=[['alias', 'requiredActions']]
+    )
 
     result = dict(changed=False, msg='', flow={})
     # Obtain access token, initialize API
@@ -228,61 +286,86 @@ def main():
     newAuthenticationRepresentation["copyFrom"] = module.params.get("copyFrom")
     newAuthenticationRepresentation["providerId"] = module.params.get("providerId")
     newAuthenticationRepresentation["authenticationExecutions"] = module.params.get("authenticationExecutions")
+    newAuthenticationRepresentation["requiredActions"] = module.params.get("requiredActions")
 
     changed = False
 
-    authenticationRepresentation = kc.get_authentication_flow_by_alias(alias=newAuthenticationRepresentation["alias"], realm=realm)
+    if newAuthenticationRepresentation["alias"]:
+        authenticationRepresentation = kc.get_authentication_flow_by_alias(alias=newAuthenticationRepresentation["alias"], realm=realm)
+    else:
+        authenticationRepresentation = {}
 
     if authenticationRepresentation == {}:  # Authentication flow does not exist
         if (state == 'present'):  # If desired state is prenset
-            # If copyFrom is defined, create authentication flow from a copy
-            if "copyFrom" in newAuthenticationRepresentation and newAuthenticationRepresentation["copyFrom"] is not None:
-                authenticationRepresentation = kc.copy_auth_flow(config=newAuthenticationRepresentation, realm=realm)
-            else:  # Create an empty authentication flow
-                authenticationRepresentation = kc.create_empty_auth_flow(config=newAuthenticationRepresentation, realm=realm)
-            # If the authentication still not exist on the server, raise an exception.
-            if authenticationRepresentation is None:
-                result['msg'] = "Authentication just created not found: " + str(newAuthenticationRepresentation)
-                module.fail_json(**result)
-            # Configure the executions for the flow
-            kc.create_or_update_executions(config=newAuthenticationRepresentation, realm=realm)
-            changed = True
-            # Get executions created
-            executionsRepresentation = kc.get_executions_representation(config=newAuthenticationRepresentation, realm=realm)
-            if executionsRepresentation is not None:
-                authenticationRepresentation["authenticationExecutions"] = executionsRepresentation
-            result['changed'] = changed
-            result['flow'] = authenticationRepresentation
-        elif state == 'absent':  # If desired state is absent.
-            result['msg'] = newAuthenticationRepresentation["alias"] + ' absent'
-    else:  # The authentication flow already exist
-        if (state == 'present'):  # if desired state is present
-            if force:  # If force option is true
-                # Delete the actual authentication flow
-                kc.delete_authentication_flow_by_id(id=authenticationRepresentation["id"], realm=realm)
-                changed = True
+            if newAuthenticationRepresentation["copyFrom"] or newAuthenticationRepresentation["providerId"]:
                 # If copyFrom is defined, create authentication flow from a copy
-                if "copyFrom" in newAuthenticationRepresentation and newAuthenticationRepresentation["copyFrom"] is not None:
+                if newAuthenticationRepresentation["copyFrom"] is not None:
                     authenticationRepresentation = kc.copy_auth_flow(config=newAuthenticationRepresentation, realm=realm)
                 else:  # Create an empty authentication flow
                     authenticationRepresentation = kc.create_empty_auth_flow(config=newAuthenticationRepresentation, realm=realm)
                 # If the authentication still not exist on the server, raise an exception.
                 if authenticationRepresentation is None:
                     result['msg'] = "Authentication just created not found: " + str(newAuthenticationRepresentation)
-                    result['changed'] = changed
                     module.fail_json(**result)
-            # Configure the executions for the flow
-            if kc.create_or_update_executions(config=newAuthenticationRepresentation, realm=realm):
+                # Configure the executions for the flow
+                kc.create_or_update_executions(config=newAuthenticationRepresentation, realm=realm)
                 changed = True
-            # Get executions created
-            executionsRepresentation = kc.get_executions_representation(config=newAuthenticationRepresentation, realm=realm)
-            if executionsRepresentation is not None:
-                authenticationRepresentation["authenticationExecutions"] = executionsRepresentation
+                # Get executions created
+                executionsRepresentation = kc.get_executions_representation(config=newAuthenticationRepresentation, realm=realm)
+                if executionsRepresentation is not None:
+                    authenticationRepresentation["authenticationExecutions"] = executionsRepresentation
+
+            changed = kc.create_or_update_required_actions(config=newAuthenticationRepresentation, realm=realm) or changed
+            requiredActions = kc.get_required_actions_representation(realm=realm)
+            if requiredActions is not None:
+                authenticationRepresentation["requiredActions"] = requiredActions
+
+            result['changed'] = changed
+            result['flow'] = authenticationRepresentation
+        elif state == 'absent':  # If desired state is absent.
+            result['msg'] = newAuthenticationRepresentation["alias"] + ' absent'
+            if newAuthenticationRepresentation["requiredActions"]:
+                for item in newAuthenticationRepresentation["requiredActions"]:
+                    changed = kc.delete_required_action_by_providerId(providerId=item["providerId"], realm=realm) or changed
+                result['changed'] = changed
+    else:  # The authentication flow already exist
+        if (state == 'present'):  # if desired state is present
+            if newAuthenticationRepresentation["copyFrom"] or newAuthenticationRepresentation["providerId"]:
+                if force:  # If force option is true
+                    # Delete the actual authentication flow
+                    kc.delete_authentication_flow_by_id(id=authenticationRepresentation["id"], realm=realm)
+                    changed = True
+                    # If copyFrom is defined, create authentication flow from a copy
+                    if "copyFrom" in newAuthenticationRepresentation and newAuthenticationRepresentation["copyFrom"] is not None:
+                        authenticationRepresentation = kc.copy_auth_flow(config=newAuthenticationRepresentation, realm=realm)
+                    else:  # Create an empty authentication flow
+                        authenticationRepresentation = kc.create_empty_auth_flow(config=newAuthenticationRepresentation, realm=realm)
+                    # If the authentication still not exist on the server, raise an exception.
+                    if authenticationRepresentation is None:
+                        result['msg'] = "Authentication just created not found: " + str(newAuthenticationRepresentation)
+                        result['changed'] = changed
+                        module.fail_json(**result)
+                # Configure the executions for the flow
+                if kc.create_or_update_executions(config=newAuthenticationRepresentation, realm=realm):
+                    changed = True
+                # Get executions created
+                executionsRepresentation = kc.get_executions_representation(config=newAuthenticationRepresentation, realm=realm)
+                if executionsRepresentation is not None:
+                    authenticationRepresentation["authenticationExecutions"] = executionsRepresentation
+
+            changed = kc.create_or_update_required_actions(config=newAuthenticationRepresentation, realm=realm) or changed
+            requiredActions = kc.get_required_actions_representation(realm=realm)
+            if requiredActions is not None:
+                authenticationRepresentation["requiredActions"] = requiredActions
+
             result['flow'] = authenticationRepresentation
             result['changed'] = changed
         elif state == 'absent':  # If desired state is absent
             # Delete the authentication flow alias.
             kc.delete_authentication_flow_by_id(id=authenticationRepresentation["id"], realm=realm)
+            if newAuthenticationRepresentation["requiredActions"]:
+                for item in newAuthenticationRepresentation["requiredActions"]:
+                    kc.delete_required_action_by_providerId(providerId=item["providerId"], realm=realm)
             changed = True
             result['msg'] = 'Authentication flow: ' + newAuthenticationRepresentation['alias'] + ' id: ' + authenticationRepresentation["id"] + ' is deleted'
             result['changed'] = changed
