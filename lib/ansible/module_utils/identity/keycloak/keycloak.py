@@ -1711,7 +1711,7 @@ class KeycloakAPI(object):
         try:
             changed = False
             if "authenticationExecutions" in config \
-            and config["authenticationExecutions"]:
+                    and config["authenticationExecutions"]:
                 for newExecutionIndex, newExecution in enumerate(config["authenticationExecutions"], start=0):
                     # Get existing executions on the Keycloak server for this alias
                     existingExecutions = json.load(
@@ -1756,7 +1756,7 @@ class KeycloakAPI(object):
                         if not isDictEquals(newExecution, existingExecution, ['authenticationExecutions']) or existingExecutionIndex != newExecutionIndex:
                             changed = True
                     elif "providerId" in newExecution \
-                    and newExecution["providerId"] != "basic-flow":
+                            and newExecution["providerId"] != "basic-flow":
                         # Create the new execution
                         newExec = {}
                         newExec["provider"] = newExecution["providerId"]
@@ -1912,20 +1912,20 @@ class KeycloakAPI(object):
         try:
             changed = False
             if "requiredActions" in config \
-            and config["requiredActions"]:
-                #self._object_assign_original(realmRequiredActions, config, "requiredActions", "providerId")
+                    and config["requiredActions"]:
+                # self._object_assign_original(realmRequiredActions, config, "requiredActions", "providerId")
                 for newRequiredAction in config["requiredActions"]:
                     requiredAction = self.get_required_actions_representation(realm=realm, providerId=newRequiredAction["providerId"])
                     if not requiredAction:
                         requiredAction = self.register_auth_required_action(newRequiredAction, realm)
                         changed = True
-                    
-                    #stay in position
+
+                    # stay in position
                     newRequiredAction["priority"] = requiredAction["priority"]
-                    #Remove "None" from representation
+                    # Remove "None" from representation
                     tmp = copy.deepcopy(newRequiredAction)
                     for key in newRequiredAction.keys():
-                        if tmp[key] == None:
+                        if tmp[key] is None:
                             tmp.pop(key)
                     if not isDictEquals(tmp, requiredAction):
                         open_url(
@@ -1938,7 +1938,7 @@ class KeycloakAPI(object):
                             data=json.dumps(tmp))
                         changed = True
 
-                #Juste make sure provided actions are at position relative to the other provided actions
+                # Juste make sure provided actions are at position relative to the other provided actions
                 newPositions = self._object_position_by_index(config["requiredActions"], "providerId")
                 for newRequiredAction in config["requiredActions"]:
                     providerId = newRequiredAction["providerId"]
@@ -1966,12 +1966,11 @@ class KeycloakAPI(object):
             self.module.fail_json(msg='Could not create or update required actions for realm %s: %s'
                                       % (realm, str(e)))
 
-    def _object_position_by_index(self, params, index_name = 'name'):
+    def _object_position_by_index(self, params, index_name='name'):
         values = {}
         for index, item in enumerate(params, start=0):
             values[item[index_name]] = index
         return values
-
 
     def delete_required_action_by_providerId(self, providerId, realm='master'):
         """ Delete unregister required actions
@@ -1979,21 +1978,18 @@ class KeycloakAPI(object):
         :param config: dict with list of required action
         :param realm: realm to unregister action
         """
-        
+
         try:
             url = URL_AUTHENTICATION_REQUIRED_ACTION.format(url=self.baseurl, realm=realm, id=quote(providerId))
-            open_url(url, method='DELETE', headers=self.restheaders,
-                            validate_certs=self.validate_certs)
+            open_url(url, method='DELETE', headers=self.restheaders, validate_certs=self.validate_certs)
             return True
         except HTTPError as e:
             if e.code == 404:
                 return False
             else:
-                self.module.fail_json(msg='Could not delete required action %s in realm %s: %s'
-                                    % (id, realm, str(e)))
+                self.module.fail_json(msg='Could not delete required action %s in realm %s: %s' % (id, realm, str(e)))
         except Exception as e:
-            self.module.fail_json(msg='Could not delete required action %s in realm %s: %s'
-                                    % (id, realm, str(e)))
+            self.module.fail_json(msg='Could not delete required action %s in realm %s: %s' % (id, realm, str(e)))
 
     def get_required_actions_representation(self, realm='master', providerId=None):
         """
@@ -2005,14 +2001,14 @@ class KeycloakAPI(object):
         try:
             if providerId:
                 url = URL_AUTHENTICATION_REQUIRED_ACTION.format(
-                        url=self.baseurl,
-                        realm=realm,
-                        id=quote(providerId))
+                    url=self.baseurl,
+                    realm=realm,
+                    id=quote(providerId))
             else:
                 url = URL_AUTHENTICATION_REQUIRED_ACTIONS.format(
-                        url=self.baseurl,
-                        realm=realm)
-            requiredActions  = json.load(
+                    url=self.baseurl,
+                    realm=realm)
+            requiredActions = json.load(
                 open_url(
                     url,
                     method='GET',
