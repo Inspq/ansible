@@ -7,7 +7,7 @@ pipeline {
         disableConcurrentBuilds()
     }
 	environment{
-	    KEYCLOAK_IMAGE='jboss/keycloak'
+	    KEYCLOAK_IMAGE='nexus3.inspq.qc.ca:5000/inspq/keycloak'
 	    KEYCLOAK_VERSION='18.0.2'
 	    RHSSO_IMAGE='nexus3.inspq.qc.ca:5000/inspq/rhsso'
 	    RHSSO_VERSION='7.6.0'
