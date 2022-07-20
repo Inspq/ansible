@@ -736,7 +736,7 @@ def main():
     newComponent["name"] = module.params.get('name')
     newComponent["providerId"] = module.params.get('providerId')
     newComponent["providerType"] = module.params.get('providerType')
-    newComponent["parentId"] = module.params.get('parentId') if module.params.get('parentId') is not None else realm
+    newComponent["parentId"] = kc.search_realm(realm)['id']
     newComponent["config"] = remove_arguments_with_value_none(module.params.get("config").copy())
     newSubComponents = remove_arguments_with_value_none(module.params.get("subComponents").copy())
     syncUserStorage = module.params.get('syncUserStorage') if module.params.get('syncUserStorage') is not None else "no"
