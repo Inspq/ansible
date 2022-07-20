@@ -335,12 +335,9 @@ class KeycloakRoleTestCase(ModuleTestCase):
     
     def test_role_not_changed(self):
         toDoNotChange = self.testRoles[1].copy()
-        print(json.dumps(toDoNotChange,indent=2))
         set_module_args(toDoNotChange)
         with self.assertRaises(AnsibleExitJson) as results:
             self.module.main()
-        print("---------------------------------------------")
-        json.dumps(results.exception.args,indent=2)
         self.assertFalse(results.exception.args[0]['changed'])
         self.assertTrue(isDictEquals(toDoNotChange, results.exception.args[0]['role'], self.roleExcudes), 'Realm role not modified does not comply to specifications.')
         self.assertTrue(isDictEquals(toDoNotChange["composites"], results.exception.args[0]['composites'], self.roleExcudes), 'Realm role composites not modified does not comply to specifications.')
