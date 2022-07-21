@@ -208,7 +208,10 @@ def main():
         newRoleRepresentation["description"] = module.params.get('description')
     newRoleRepresentation["composite"] = module.params.get('composite')
     newRoleRepresentation["clientRole"] = module.params.get('clientRole')
-    newRoleRepresentation["containerId"] = module.params.get('containerId') if module.params.get('containerId') is not None else realm
+    objRealm = kc.search_realm(realm)
+    if not objRealm:
+        module.fail_json(msg="Failed to retrive realm '{realm}'".format(realm=realm))
+    newRoleRepresentation["containerId"] = objRealm['id']
     if module.params.get('composites') is not None:
         newComposites = module.params.get('composites')
 
