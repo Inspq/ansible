@@ -7,10 +7,10 @@ pipeline {
         disableConcurrentBuilds()
     }
 	environment{
-	    KEYCLOAK_IMAGE='jboss/keycloak'
-	    KEYCLOAK_VERSION='latest'
+	    KEYCLOAK_IMAGE='nexus3.inspq.qc.ca:5000/inspq/keycloak'
+	    KEYCLOAK_VERSION='18.0.2'
 	    RHSSO_IMAGE='nexus3.inspq.qc.ca:5000/inspq/rhsso'
-	    RHSSO_VERSION='latest'
+	    RHSSO_VERSION='7.6.0'
 	    THREEEIGHTYNINEDS_IMAGE='minkwe/389ds'
 	    THREEEIGHTYNINEDS_VERSION='latest'
 	    SX5SPCONFIG_IMAGE='nexus3.inspq.qc.ca:5000/inspq/sx5-sp-config'
