@@ -30,7 +30,8 @@ class KeycloakIdentityProviderTestCase(ModuleTestCase):
                 "defaultScope": "openid email profile",
                 "disableUserInfo": "false",
                 "guiOrder": "1",
-                "backchannelSupported": "false"
+                "backchannelSupported": "false",
+                "loginHint": "true"
             },
             "mappers": [ 
                 {
@@ -542,6 +543,7 @@ class KeycloakIdentityProviderTestCase(ModuleTestCase):
         self.assertEqual(results.exception.args[0]['idp']['alias'],toCreate["alias"], 'Alias = ' + results.exception.args[0]['idp']['alias'])
         self.assertEqual(results.exception.args[0]['idp']['config']['clientId'],toCreate["config"]["clientId"],"ClientId: " + results.exception.args[0]['idp']['config']['clientId'])
         self.assertEqual(results.exception.args[0]['idp']['config']['guiOrder'],toCreate["config"]["guiOrder"],"GuiOrder: " + results.exception.args[0]['idp']['config']['guiOrder'] + ": " + toCreate["config"]["guiOrder"])
+        self.assertEqual(results.exception.args[0]['idp']['config']['loginHint'],toCreate["config"]["loginHint"],"ClientId: " + results.exception.args[0]['idp']['config']['loginHint'])
         self.assertTrue('clientAuthMethod' in results.exception.args[0]['idp']['config'], "clientAuthMethod not in IdP config")
         self.assertEqual(
             results.exception.args[0]['idp']['config']['clientAuthMethod'], 
