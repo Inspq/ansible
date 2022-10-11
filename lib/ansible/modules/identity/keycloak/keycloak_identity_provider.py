@@ -159,7 +159,7 @@ options:
         loginHint:
             description:
                 - Allow pre-fill the username/email field on the login form.
-                - Example: login_hint=desand01
+                - Example, login_hint=desand01
             type: str
             choices:
                 - 'true'
