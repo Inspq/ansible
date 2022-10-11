@@ -156,6 +156,15 @@ options:
                 - LEGACY
                 - FORCE
             default: LEGACY
+        loginHint:
+            description:
+                - Allow pre-fill the username/email field on the login form.
+                - Example, login_hint=desand01
+            type: str
+            choices:
+                - 'true'
+                - 'false'
+            default: 'false'
   mappers:
     description:
     - List of mappers for the Identity provider.
@@ -349,6 +358,11 @@ def main():
             "type": "str",
             "default": "LEGACY",
             "choices": ["LEGACY", "IMPORT", "FORCE"]
+        },
+        "loginHint": {
+            "type": "str",
+            "default": "false",
+            "choices": ["true", "false"]
         }
     }
     mapperconfig_args = {
