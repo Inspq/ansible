@@ -1305,7 +1305,7 @@ class KeycloakAPI(object):
                         newRoleRepresentation["clientRole"] = newClientRole['clientRole'] if "clientRole" in newClientRole else True
                         data = json.dumps(newRoleRepresentation)
                         if clientRoleFound:
-                            open_url(clientRolesUrl + '/' + newClientRole['name'], method='PUT', headers=self.restheaders, data=data)
+                            open_url(clientRolesUrl + '/' + quote(newClientRole['name']), method='PUT', headers=self.restheaders, data=data)
                         else:
                             open_url(clientRolesUrl, method='POST', headers=self.restheaders, data=data)
                         changed = True
