@@ -469,6 +469,10 @@ options:
                 description:
                     - For OpenID-Connect clients, client certificate for validating JWT issued by
                       client and signed by its key, base64-encoded.
+            client.session.idle.timeout:
+                description:
+                    - Override default session idle timeout setting for client.
+                type: int
     client_roles:
         description:
             - List of roles and their composites for the client.
