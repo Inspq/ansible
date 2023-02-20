@@ -91,22 +91,22 @@ options:
             - Client Authentication Flow.
         default: clients
         type: str
-    clientSessionIdleTimeout: 
+    clientSessionIdleTimeout:
         description:
             Default client session idle timeout. If 0 then ssoSessionIdleTimeout setting apply.
         type: int
         default: 0
-    clientSessionMaxLifespan: 
+    clientSessionMaxLifespan:
         description:
             Default client session max lifespan. If 0 then ssoSessionMaxLifespan setting apply.
         type: int
         default: 0
-    clientOfflineSessionIdleTimeout: 
+    clientOfflineSessionIdleTimeout:
         description:
             Default client offline session idle timeout. If 0 offlineSessionIdleTimeout setting apply.
         type: int
         default: 0
-    clientOfflineSessionMaxLifespan: 
+    clientOfflineSessionMaxLifespan:
         description:
             Default client offline session max lifespan. If 0 then offlineSessionMaxLifespan setting apply.
         type: int
@@ -286,7 +286,7 @@ options:
             OAuth2 device code lifespan.
         type: int
         default: 600
-    oauth2DevicePollingInterval: 
+    oauth2DevicePollingInterval:
         description:
             OAuth2 device polling interval.
         type: int
@@ -296,12 +296,12 @@ options:
             - Offline Session Idle Timeout.
         default: 2592000
         type: int
-    offlineSessionMaxLifespanEnabled: 
+    offlineSessionMaxLifespanEnabled:
         description:
             Offline session max idle lifespan enabled
         type: bool
         default: False
-    offlineSessionMaxLifespan: 
+    offlineSessionMaxLifespan:
         description:
             Offline session max lifespan
         type: int
@@ -488,7 +488,7 @@ options:
             SSO session idle timeout for Remember Me
         type: int
         default: 0
-    ssoSessionMaxLifespanRememberMe: 
+    ssoSessionMaxLifespanRememberMe:
         description:
             SSO session max lifespan for remember me
         type: int
@@ -742,7 +742,7 @@ def main():
         bruteForceProtected=dict(type='bool', default=False),
         clientAuthenticationFlow=dict(type='str', default="clients"),
         clientSessionIdleTimeout=dict(type='int', default=0),
-        clientSessionMaxLifespan=dict(type=int, default=0),
+        clientSessionMaxLifespan=dict(type='int', default=0),
         clientOfflineSessionIdleTimeout=dict(type='int', default=0),
         clientOfflineSessionMaxLifespan=dict(type='int', default=0),
         defaultLocale=dict(type="str"),
@@ -790,8 +790,8 @@ def main():
         sslRequired=dict(type='str', default="external"),
         ssoSessionIdleTimeout=dict(type='int', default=1800),
         ssoSessionMaxLifespan=dict(type='int', default=36000),
-        ssoSessionIdleTimeoutRememberMe=dict(type='int', default = 0),
-        ssoSessionMaxLifespanRememberMe=dict(type='int', default=0), 
+        ssoSessionIdleTimeoutRememberMe=dict(type='int', default=0),
+        ssoSessionMaxLifespanRememberMe=dict(type='int', default=0),
         state=dict(choices=["absent", "present"], default='present'),
         supportedLocales=dict(type="list"),
         verifyEmail=dict(type='bool', default=False),
