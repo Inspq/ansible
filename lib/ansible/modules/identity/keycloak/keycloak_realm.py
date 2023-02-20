@@ -91,6 +91,26 @@ options:
             - Client Authentication Flow.
         default: clients
         type: str
+    clientSessionIdleTimeout: 
+        description:
+            Default client session idle timeout. If 0 then ssoSessionIdleTimeout setting apply.
+        type: int
+        default: 0
+    clientSessionMaxLifespan: 
+        description:
+            Default client session max lifespan. If 0 then ssoSessionMaxLifespan setting apply.
+        type: int
+        default: 0
+    clientOfflineSessionIdleTimeout: 
+        description:
+            Default client offline session idle timeout. If 0 offlineSessionIdleTimeout setting apply.
+        type: int
+        default: 0
+    clientOfflineSessionMaxLifespan: 
+        description:
+            Default client offline session max lifespan. If 0 then offlineSessionMaxLifespan setting apply.
+        type: int
+        default: 0
     defaultLocale:
         description:
             - If multiple locales are supported, which one will be used as default language.
@@ -261,11 +281,31 @@ options:
         description:
             - Not Before.
         type: int
+    oauth2DeviceCodeLifespan:
+        description:
+            OAuth2 device code lifespan.
+        type: int
+        default: 600
+    oauth2DevicePollingInterval: 
+        description:
+            OAuth2 device polling interval.
+        type: int
+        default: 600
     offlineSessionIdleTimeout:
         description:
             - Offline Session Idle Timeout.
         default: 2592000
         type: int
+    offlineSessionMaxLifespanEnabled: 
+        description:
+            Offline session max idle lifespan enabled
+        type: bool
+        default: False
+    offlineSessionMaxLifespan: 
+        description:
+            Offline session max lifespan
+        type: int
+        default: 5184000
     otpPolicyAlgorithm:
         description:
             - Otp Policy Algorithm.
@@ -443,6 +483,16 @@ options:
             - Sso Session Max Lifespan.
         default: 36000
         type: int
+    ssoSessionIdleTimeoutRememberMe:
+        description:
+            SSO session idle timeout for Remember Me
+        type: int
+        default: 0
+    ssoSessionMaxLifespanRememberMe: 
+        description:
+            SSO session max lifespan for remember me
+        type: int
+        default: 0
     state:
         choices: [ "present", "absent" ]
         default: present
@@ -691,6 +741,10 @@ def main():
         browserFlow=dict(type='str', default="browser"),
         bruteForceProtected=dict(type='bool', default=False),
         clientAuthenticationFlow=dict(type='str', default="clients"),
+        clientSessionIdleTimeout=dict(type='int', default=0),
+        clientSessionMaxLifespan=dict(type=int, default=0),
+        clientOfflineSessionIdleTimeout=dict(type='int', default=0),
+        clientOfflineSessionMaxLifespan=dict(type='int', default=0),
         defaultLocale=dict(type="str"),
         directGrantFlow=dict(type='str', default="direct grant"),
         displayName=dict(type='str', required=True, aliases=['name']),
@@ -709,7 +763,11 @@ def main():
         maxFailureWaitSeconds=dict(type='int', default=900),
         minimumQuickLoginWaitSeconds=dict(type='int', default=60),
         notBefore=dict(type='int', default=0),
+        oauth2DeviceCodeLifespan=dict(type='int', default=600),
+        oauth2DevicePollingInterval=dict(type='int', default=600),
         offlineSessionIdleTimeout=dict(type='int', default=2592000),
+        offlineSessionMaxLifespanEnabled=dict(type='bool', default=False),
+        offlineSessionMaxLifespan=dict(type='int', default=5184000),
         otpPolicyAlgorithm=dict(type='str', default="HmacSHA1"),
         otpPolicyDigits=dict(type='int', default=6),
         otpPolicyInitialCounter=dict(type='int', default=0),
@@ -732,6 +790,8 @@ def main():
         sslRequired=dict(type='str', default="external"),
         ssoSessionIdleTimeout=dict(type='int', default=1800),
         ssoSessionMaxLifespan=dict(type='int', default=36000),
+        ssoSessionIdleTimeoutRememberMe=dict(type='int', default = 0),
+        ssoSessionMaxLifespanRememberMe=dict(type='int', default=0), 
         state=dict(choices=["absent", "present"], default='present'),
         supportedLocales=dict(type="list"),
         verifyEmail=dict(type='bool', default=False),
@@ -804,13 +864,23 @@ def main():
     newRealmRepresentation["accessCodeLifespanUserAction"] = module.params.get('accessCodeLifespanUserAction')
     newRealmRepresentation["actionTokenGeneratedByAdminLifespan"] = module.params.get('actionTokenGeneratedByAdminLifespan')
     newRealmRepresentation["actionTokenGeneratedByUserLifespan"] = module.params.get('actionTokenGeneratedByUserLifespan')
+    newRealmRepresentation["clientSessionIdleTimeout"] = module.params.get('clientSessionIdleTimeout')
+    newRealmRepresentation["clientSessionMaxLifespan"] = module.params.get('clientSessionMaxLifespan')
+    newRealmRepresentation["clientOfflineSessionIdleTimeout"] = module.params.get('clientOfflineSessionIdleTimeout')
+    newRealmRepresentation["clientOfflineSessionMaxLifespan"] = module.params.get('clientOfflineSessionMaxLifespan')
     newRealmRepresentation["notBefore"] = module.params.get('notBefore')
     newRealmRepresentation["revokeRefreshToken"] = module.params.get('revokeRefreshToken')
     newRealmRepresentation["accessTokenLifespan"] = module.params.get('accessTokenLifespan')
     newRealmRepresentation["accessTokenLifespanForImplicitFlow"] = module.params.get('accessTokenLifespanForImplicitFlow')
     newRealmRepresentation["ssoSessionIdleTimeout"] = module.params.get('ssoSessionIdleTimeout')
     newRealmRepresentation["ssoSessionMaxLifespan"] = module.params.get('ssoSessionMaxLifespan')
+    newRealmRepresentation["ssoSessionIdleTimeoutRememberMe"] = module.params.get('ssoSessionIdleTimeoutRememberMe')
+    newRealmRepresentation["ssoSessionMaxLifespanRememberMe"] = module.params.get('ssoSessionMaxLifespanRememberMe')
+    newRealmRepresentation["oauth2DeviceCodeLifespan"] = module.params.get('oauth2DeviceCodeLifespan')
+    newRealmRepresentation["oauth2DevicePollingInterval"] = module.params.get('oauth2DevicePollingInterval')
     newRealmRepresentation["offlineSessionIdleTimeout"] = module.params.get('offlineSessionIdleTimeout')
+    newRealmRepresentation["offlineSessionMaxLifespanEnabled"] = module.params.get('offlineSessionMaxLifespanEnabled')
+    newRealmRepresentation["offlineSessionMaxLifespan"] = module.params.get('offlineSessionMaxLifespan')
     newRealmRepresentation["enabled"] = module.params.get('enabled')
     newRealmRepresentation["sslRequired"] = module.params.get('sslRequired')
     newRealmRepresentation["registrationAllowed"] = module.params.get('registrationAllowed')
@@ -886,7 +956,11 @@ def main():
                 # Compare realms
                 if not isDictEquals(newRealmRepresentation, realmRepresentation):  # If new realm introduces changes
                     # Update REALM
-                    realmRepresentation = kc.update_realm(newRealmRepresentation=newRealmRepresentation)
+                    for key in realmRepresentation.keys():
+                        if key in newRealmRepresentation.keys():
+                            realmRepresentation[key] = newRealmRepresentation[key]
+
+                    realmRepresentation = kc.update_realm(newRealmRepresentation=realmRepresentation)
                     changed = True
                 else:
                     realmRepresentation = kc.get_realm(realm=newRealmRepresentation["realm"])
