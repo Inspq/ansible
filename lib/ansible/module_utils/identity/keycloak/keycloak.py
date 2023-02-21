@@ -2787,8 +2787,8 @@ class KeycloakAPI(object):
         """
         try:
             realm_url = URL_REALM.format(
-            url=self.baseurl,
-            realm=newRealmRepresentation["realm"])
+                url=self.baseurl,
+                realm=newRealmRepresentation["realm"])
             # Update the realm
             open_url(
                 realm_url,
