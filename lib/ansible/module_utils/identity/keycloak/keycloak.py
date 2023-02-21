@@ -2787,14 +2787,17 @@ class KeycloakAPI(object):
         """
         try:
             realm_url = URL_REALM.format(
-                url=self.baseurl,
-                realm=newRealmRepresentation["realm"])
+            url=self.baseurl,
+            realm=newRealmRepresentation["realm"])
+            # Update the realm
             open_url(
                 realm_url,
                 method='PUT',
                 headers=self.restheaders,
                 data=json.dumps(newRealmRepresentation))
-            return self.get_realm(newRealmRepresentation["realm"])
+            updated_realm = self.get_realm(newRealmRepresentation["realm"])
+
+            return updated_realm
         except Exception as e:
             self.module.fail_json(msg='Could update realm %s: %s'
                                       % (newRealmRepresentation["realm"], str(e)))
