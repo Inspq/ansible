@@ -4,7 +4,7 @@ import os
 from ansible.modules.identity.keycloak import keycloak_realm
 from units.modules.utils import AnsibleExitJson, AnsibleFailJson, ModuleTestCase, set_module_args
 from ansible.module_utils.identity.keycloak.keycloak import isDictEquals
-
+import unittest
 class KeycloakRealmTestCase(ModuleTestCase):
     toCreateRealm = {
         'realm': 'test_create_realm',
@@ -24,6 +24,7 @@ class KeycloakRealmTestCase(ModuleTestCase):
         'accessTokenLifespanForImplicitFlow':  900,
         'ssoSessionIdleTimeout':  1800,
         'ssoSessionMaxLifespan':  36000,
+        'clientSessionIdleTimeout': 0,
         'offlineSessionIdleTimeout':  2592000,
         'enabled':  True,
         'sslRequired':  "external",
@@ -92,6 +93,7 @@ class KeycloakRealmTestCase(ModuleTestCase):
         'accessTokenLifespan':  300,
         'accessTokenLifespanForImplicitFlow':  900,
         'ssoSessionIdleTimeout':  1800,
+        'clientSessionIdleTimeout': 0,
         'ssoSessionMaxLifespan':  36000,
         'offlineSessionIdleTimeout':  2592000,
         'enabled':  True,
@@ -277,6 +279,9 @@ class KeycloakRealmTestCase(ModuleTestCase):
         toModify["displayNameHtml"] = "New name"
         toModify["actionTokenGeneratedByAdminLifespan"] = 360
         toModify["actionTokenGeneratedByUserLifespan"] = 240
+        toModify['ssoSessionIdleTimeout'] = 3600
+        toModify['clientSessionIdleTimeout'] = 1800
+
         toModify['eventsConfig'] = {
             "eventsEnabled": True,
             "eventsListeners": [ "jboss-logging" ],
@@ -289,7 +294,9 @@ class KeycloakRealmTestCase(ModuleTestCase):
             self.module.main()
         self.assertTrue(results.exception.args[0]['changed'])
         self.assertTrue(isDictEquals(toModify, results.exception.args[0]['realm'], self.realmExcudes), 'Realm modified does not comply to specifications.')
-        #self.assertEqual(results.exception.args[0]['realm']['displayNameHtml'], toModify["namehtml"], "namehtml: " + results.exception.args[0]['realm']['displayNameHtml'])
+        # Valider les modifications de sessions
+        self.assertEqual(results.exception.args[0]['realm']['ssoSessionIdleTimeout'], toModify["ssoSessionIdleTimeout"], "ssoSessionIdleTimeout: " + str(results.exception.args[0]['realm']['ssoSessionIdleTimeout']))
+        self.assertEqual(results.exception.args[0]['realm']['clientSessionIdleTimeout'], toModify["clientSessionIdleTimeout"], "clientSessionIdleTimeout: " + str(results.exception.args[0]['realm']['clientSessionIdleTimeout']))
         self.assertTrue(isDictEquals(toModify['eventsConfig'],results.exception.args[0]['eventsConfig']), "Events configuration has not been modified")
 
     def test_do_not_change_realm(self):
@@ -316,3 +323,9 @@ class KeycloakRealmTestCase(ModuleTestCase):
             self.module.main()
         self.assertTrue(results.exception.args[0]['changed'])
         self.assertRegexpMatches(results.exception.args[0]['msg'], 'deleted', 'Realm not deleted')
+
+def main():
+    unittest.main()
+
+if __name__ == '__main__':
+    main()
