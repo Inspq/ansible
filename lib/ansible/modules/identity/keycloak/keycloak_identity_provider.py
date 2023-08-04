@@ -165,6 +165,24 @@ options:
                 - 'true'
                 - 'false'
             default: 'false'
+        clientAssertionSigningAlg:
+            description:
+                - Remote Identity Provider expected signing Algorythm provided through JWKS URL in his client config
+            type: str
+            choices:
+            - ES256
+            - ES384
+            - ES512
+            - HS256
+            - HS384
+            - HS512
+            - PS256
+            - PS384
+            - PS512
+            - RS256
+            - RS384
+            - RS512
+            default: RS256
   mappers:
     description:
     - List of mappers for the Identity provider.
@@ -363,6 +381,24 @@ def main():
             "type": "str",
             "default": "false",
             "choices": ["true", "false"]
+        },
+        "clientAssertionSigningAlg": {
+            "type": "str",
+            "choices": [
+                "ES256",
+                "ES384",
+                "ES512",
+                "HS256",
+                "HS384",
+                "HS512",
+                "PS256",
+                "PS384",
+                "PS512",
+                "RS256",
+                "RS384",
+                "RS512"
+            ],
+            "default": "RS256"
         }
     }
     mapperconfig_args = {
@@ -412,7 +448,8 @@ def main():
         config=dict(
             type='dict',
             options=idpconfig_spec,
-            mutually_exclusive=[['openIdConfigurationUrl', 'fromUrl']]
+            mutually_exclusive=[['openIdConfigurationUrl', 'fromUrl']],
+            required_if=[['clientAuthMethod', 'private_key_jwt', ['clientAssertionSigningAlg']]]
         ),
         mappers=dict(type='list', options=mapper_spec),
         state=dict(choices=["absent", "present"], default='present'),
