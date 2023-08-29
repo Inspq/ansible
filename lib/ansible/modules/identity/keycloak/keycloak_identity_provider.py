@@ -127,6 +127,15 @@ options:
                 - 'true'
                 - 'false'
             default: 'false'
+        hideOnLoginPage:
+            description:
+                - Hide IDP on Login Page. Default value is False.
+                - If hidden, login with this provider is possible only if requested explicitly using the 'kc_idp_hint' parameter.
+            type: str
+            choices:
+                - 'true'
+                - 'false'
+            default: 'false'
         defaultScope:
             description:
                 - Default scope supported with this IdP
