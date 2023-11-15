@@ -260,3 +260,4 @@ lib/ansible/modules/identity/keycloak/keycloak_user.py validate-modules:no-log-n
 lib/ansible/modules/identity/keycloak/keycloak_realm.py validate-modules:no-log-needed
 lib/ansible/modules/identity/keycloak/keycloak_group.py validate-modules:no-log-needed
 lib/ansible/modules/identity/keycloak/keycloak_identity_provider.py validate-modules:no-log-needed
+lib/ansible/modules/identity/keycloak/keycloak_component_info.py validate-modules:no-log-needed
