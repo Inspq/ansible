@@ -441,4 +441,16 @@ lib/ansible/modules/identity/keycloak/keycloak_client.py validate-modules:parame
 lib/ansible/modules/identity/keycloak/keycloak_authentication.py validate-modules:parameter-list-no-elements
 lib/ansible/modules/identity/user_provisioning/scim_user.py validate-modules:parameter-list-no-elements
 lib/ansible/modules/identity/keycloak/keycloak_clienttemplate.py validate-modules:doc-elements-mismatch
-
+lib/ansible/modules/identity/keycloak/keycloak_component.py validate-modules:no-log-needed
+lib/ansible/modules/identity/keycloak/keycloak_client.py validate-modules:no-log-needed
+lib/ansible/modules/identity/keycloak/keycloak_authentication.py validate-modules:no-log-needed
+lib/ansible/modules/identity/user_provisioning/scim_user.py validate-modules:no-log-needed
+lib/ansible/modules/identity/keycloak/keycloak_clienttemplate.py validate-modules:no-log-needed
+lib/ansible/modules/identity/sx5/sx5_habilitation.py validate-modules:no-log-needed
+lib/ansible/modules/identity/sx5/sx5_sp_config_system.py validate-modules:no-log-needed
+lib/ansible/modules/identity/keycloak/keycloak_role.py validate-modules:no-log-needed
+lib/ansible/modules/identity/keycloak/keycloak_user.py validate-modules:no-log-needed
+lib/ansible/modules/identity/keycloak/keycloak_realm.py validate-modules:no-log-needed
+lib/ansible/modules/identity/keycloak/keycloak_group.py validate-modules:no-log-needed
+lib/ansible/modules/identity/keycloak/keycloak_identity_provider.py validate-modules:no-log-needed
+lib/ansible/modules/identity/keycloak/keycloak_component_info.py validate-modules:no-log-needed
