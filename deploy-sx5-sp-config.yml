@@ -3,7 +3,7 @@
   vars:
     ansible_python_interpreter: /usr/bin/python3
     sx5spconfig_keycloak_enabled: false
-    sx5spconfig_container_name: sx5spconfig 
+    sx5spconfig_container_name: sx5spconfig
     sx5spconfig_docker_image: nexus3.inspq.qc.ca:5000/inspq/sx5-sp-config
     sx5spconfig_image_version: latest
     sx5spconfig_external_port: 18182
@@ -17,20 +17,23 @@
       hostname: "{{ sx5spconfig_container_name }}"
       image: "{{ sx5spconfig_docker_image }}:{{ sx5spconfig_image_version }}"
       state: started
-      auto_remove: True
+      auto_remove: true
       ports:
       - "{{ sx5spconfig_external_port }}:{{ sx5spconfig_internal_port }}"
       env:
-        KEYCLOAK_URL: "{{ keycloak_url }}"
+        KEYCLOAK_URL: "{{ keycloak_url }}/auth"
         DEBUG_PORT: "{{ sx5spconfig_debug_port | default('0') }}"
         GRAYLOG_HOST_BASE: "{{ sx5spconfig_container_name }}"
         LOG4J2_GRAYLOG_PORT_GELF_UDP: "{{ sx5spconfig_port_gelf_udp | default('12231') | string }}"
         LOG4J2_GRAYLOG_URL: "{{ sx5spconfig_graylog_url | default(omit) }}"
+        SERVER_PORT: "{{ sx5spconfig_internal_port | string }}"
   - name: Attendre que le serveur sx5spconfig soit disponible
     uri:
       url: "{{ sx5spconfig_url }}"
-      status_code: 200
-      validate_certs: no
+      status_code:
+        - 200
+        - 401
+      validate_certs: false
     register: result
     until: result.status == 200 or result.status == 401
     retries: 5
