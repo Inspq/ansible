@@ -27,6 +27,7 @@
         LOG4J2_GRAYLOG_PORT_GELF_UDP: "{{ sx5spconfig_port_gelf_udp | default('12231') | string }}"
         LOG4J2_GRAYLOG_URL: "{{ sx5spconfig_graylog_url | default(omit) }}"
         SERVER_PORT: "{{ sx5spconfig_internal_port | string }}"
+        KEYCLOAK_ENABLED: 'false'
   - name: Attendre que le serveur sx5spconfig soit disponible
     uri:
       url: "{{ sx5spconfig_url }}"
