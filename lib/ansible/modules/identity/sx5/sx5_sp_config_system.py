@@ -871,7 +871,7 @@ class SpConfigSystem(object):
             self.addDiff('Creation-system-sp-config', bodySystem, None, result)
             spConfigSystem = self.inspectResponse(
                 requests.post(
-                    spConfigUrl + "/systemes/",
+                    spConfigUrl + "/systemes",
                     headers=self.headers,
                     json=bodySystem
                 ), "post systeme", 201
