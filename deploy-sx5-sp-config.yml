@@ -1,5 +1,6 @@
 ---
-- hosts: all
+- name: Déployer sx5-sp-config
+  hosts: all
   vars:
     ansible_python_interpreter: /usr/bin/python3
     sx5spconfig_keycloak_enabled: false
@@ -11,7 +12,7 @@
     sx5spconfig_url: "http://localhost:{{ sx5spconfig_external_port }}"
     keycloak_url: http://{{ ansible_fqdn }}:18081
   tasks:
-  - name: Creation du conteneur pour sx5spconfig 
+  - name: Creation du conteneur pour sx5spconfig
     docker_container:
       name: "{{ sx5spconfig_container_name }}"
       hostname: "{{ sx5spconfig_container_name }}"
@@ -19,21 +20,20 @@
       state: started
       auto_remove: true
       ports:
-      - "{{ sx5spconfig_external_port }}:{{ sx5spconfig_internal_port }}"
+        - "{{ sx5spconfig_external_port }}:{{ sx5spconfig_internal_port }}"
       env:
-        KEYCLOAK_URL: "{{ keycloak_url }}/auth"
+        KEYCLOAK_URL: "{{ keycloak_url }}"
+        KEYCLOAK_ENABLED: 'false'
+        SERVER_PORT: "{{ sx5spconfig_internal_port | string }}"
         DEBUG_PORT: "{{ sx5spconfig_debug_port | default('0') }}"
         GRAYLOG_HOST_BASE: "{{ sx5spconfig_container_name }}"
         LOG4J2_GRAYLOG_PORT_GELF_UDP: "{{ sx5spconfig_port_gelf_udp | default('12231') | string }}"
         LOG4J2_GRAYLOG_URL: "{{ sx5spconfig_graylog_url | default(omit) }}"
-        SERVER_PORT: "{{ sx5spconfig_internal_port | string }}"
-        KEYCLOAK_ENABLED: 'false'
+
   - name: Attendre que le serveur sx5spconfig soit disponible
     uri:
       url: "{{ sx5spconfig_url }}"
-      status_code:
-        - 200
-        - 401
+      status_code: 200
       validate_certs: false
     register: result
     until: result.status == 200 or result.status == 401
