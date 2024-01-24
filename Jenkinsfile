@@ -143,7 +143,7 @@ pipeline {
                     if (KEYCLOAK_VERSION.startsWith("18.0")) {
                         sh "docker pull ${KEYCLOAK_IMAGE}:${KEYCLOAK_VERSION} && docker run -d --rm --name testkc -p 18081:18081 -e KEYCLOAK_USER=admin -e KEYCLOAK_PASSWORD=admin -e JBOSS_HTTP_PORT=18081 -e KEYCLOAK_CONFIG=standalone-test.xml ${KEYCLOAK_IMAGE}:${KEYCLOAK_VERSION}"
                     } else {
-                        sh "docker pull ${KEYCLOAK_IMAGE}:${KEYCLOAK_VERSION} && docker run -d --rm --name testkc -p 18081:18081 --link testldap:testldap -e KC_HTTP_PORT=18081 -e KC_DB=dev-file -e KC_HTTP_ENABLED=true -e KC_HTTP_RELATIVE_PATH=/auth -e KC_HOSTNAME_URL=http://localhost:18081/auth -e KEYCLOAK_ADMIN=admin -e KEYCLOAK_ADMIN_PASSWORD=admin ${KEYCLOAK_IMAGE}:${KEYCLOAK_VERSION} start"
+                        sh "docker pull ${KEYCLOAK_IMAGE}:${KEYCLOAK_VERSION} && docker run -d --rm --name testkc -p 18081:18081 -e KC_HTTP_PORT=18081 -e KC_DB=dev-file -e KC_HTTP_ENABLED=true -e KC_HTTP_RELATIVE_PATH=/auth -e KC_HOSTNAME_URL=http://localhost:18081/auth -e KEYCLOAK_ADMIN=admin -e KEYCLOAK_ADMIN_PASSWORD=admin ${KEYCLOAK_IMAGE}:${KEYCLOAK_VERSION} start"
                     }
                     sh '''
                     until $(curl --output /dev/null --silent --head --fail http://localhost:18081/auth)
@@ -178,7 +178,7 @@ pipeline {
                     if (KEYCLOAK_VERSION.startsWith("18.0")) {
                         sh "docker pull ${KEYCLOAK_IMAGE}:${KEYCLOAK_VERSION} && docker run -d --rm --name testkc -p 18081:18081 -e KEYCLOAK_USER=admin -e KEYCLOAK_PASSWORD=admin -e JBOSS_HTTP_PORT=18081 -e KEYCLOAK_CONFIG=standalone-test.xml ${KEYCLOAK_IMAGE}:${KEYCLOAK_VERSION}"
                     } else {
-                        sh "docker pull ${KEYCLOAK_IMAGE}:${KEYCLOAK_VERSION} && docker run -d --rm --name testkc -p 18081:18081 --link testldap:testldap -e KC_HTTP_PORT=18081 -e KC_DB=dev-file -e KC_HTTP_ENABLED=true -e KC_HTTP_RELATIVE_PATH=/auth -e KC_HOSTNAME_URL=http://localhost:18081/auth -e KEYCLOAK_ADMIN=admin -e KEYCLOAK_ADMIN_PASSWORD=admin ${KEYCLOAK_IMAGE}:${KEYCLOAK_VERSION} start"
+                        sh "docker pull ${KEYCLOAK_IMAGE}:${KEYCLOAK_VERSION} && docker run -d --rm --name testkc -p 18081:18081 -e KC_HTTP_PORT=18081 -e KC_DB=dev-file -e KC_HTTP_ENABLED=true -e KC_HTTP_RELATIVE_PATH=/auth -e KC_HOSTNAME_URL=http://localhost:18081/auth -e KEYCLOAK_ADMIN=admin -e KEYCLOAK_ADMIN_PASSWORD=admin ${KEYCLOAK_IMAGE}:${KEYCLOAK_VERSION} start"
                     }
                     sh '''
                     until $(curl --output /dev/null --silent --head --fail http://localhost:18081/auth)
