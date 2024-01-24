@@ -71,7 +71,7 @@ pipeline {
             steps {
                 script {
                     sh "docker run -d --rm --name testldap -p 10389:389 ${THREEEIGHTYNINEDS_IMAGE}:${THREEEIGHTYNINEDS_VERSION}"
-                    if (KEYCLOAK_VERSION == "18.0.2") {
+                    if (KEYCLOAK_VERSION.startsWith("18.0")) {
                         sh "docker pull ${KEYCLOAK_IMAGE}:${KEYCLOAK_VERSION} && docker run -d --rm --name testkc -p 18081:8080 --link testldap:testldap -e KEYCLOAK_USER=admin -e KEYCLOAK_PASSWORD=admin -e KEYCLOAK_CONFIG=standalone-test.xml ${KEYCLOAK_IMAGE}:${KEYCLOAK_VERSION}"
                     } else {
                         sh "docker pull ${KEYCLOAK_IMAGE}:${KEYCLOAK_VERSION} && docker run -d --rm --name testkc -p 18081:18081 --link testldap:testldap -e KC_HTTP_PORT=18081 -e KC_DB=dev-file -e KC_HTTP_ENABLED=true -e KC_HTTP_RELATIVE_PATH=/auth -e KC_HOSTNAME_URL=http://localhost:18081/auth -e KEYCLOAK_ADMIN=admin -e KEYCLOAK_ADMIN_PASSWORD=admin ${KEYCLOAK_IMAGE}:${KEYCLOAK_VERSION} start"
@@ -106,7 +106,7 @@ pipeline {
             steps {
                 script {
                     sh "docker run -d --rm --name testldap -p 10389:389 ${THREEEIGHTYNINEDS_IMAGE}:${THREEEIGHTYNINEDS_VERSION}"
-                    if (RHSSO_VERSION == "18.0.2") {
+                    if (RHBK_VERSION.startsWith("7.")) {
                         sh "docker pull ${RHSSO_IMAGE}:${RHSSO_VERSION} && docker run -d --rm --name testrhsso -p 18081:8080 --link testldap:testldap -e KEYCLOAK_USER=admin -e KEYCLOAK_PASSWORD=admin -e KEYCLOAK_CONFIG=standalone-test.xml ${RHSSO_IMAGE}:${RHSSO_VERSION}"
                     } else {
                         sh "docker pull ${RHSSO_IMAGE}:${RHSSO_VERSION} && docker run -d --rm --name testkc -p 18081:18081 --link testldap:testldap -e KC_DB=dev-file -e KC_HTTP_PORT=18081 -e KC_HTTP_ENABLED=true -e KC_HTTP_RELATIVE_PATH=/auth -e KC_HOSTNAME_URL=http://localhost:18081/auth -e KEYCLOAK_ADMIN=admin -e KEYCLOAK_ADMIN_PASSWORD=admin ${RHSSO_IMAGE}:${RHSSO_VERSION} start"
@@ -140,7 +140,7 @@ pipeline {
       stage ('Tests unitaires des modules ansible de sx5-sp-config') {
             steps {
                 script {
-                    if (KEYCLOAK_VERSION == "18.0.2") {
+                    if (KEYCLOAK_VERSION.startsWith("18.0")) {
                         sh "docker run -d --rm --name testkc -p 18081:8080 -e KEYCLOAK_USER=admin -e KEYCLOAK_PASSWORD=admin -e KEYCLOAK_CONFIG=standalone-test.xml ${KEYCLOAK_IMAGE}:${KEYCLOAK_VERSION}"
                     } else {
                         sh "docker pull ${KEYCLOAK_IMAGE}:${KEYCLOAK_VERSION} && docker run -d --rm --name testkc -p 18081:18081 --link testldap:testldap -e KC_HTTP_PORT=18081 -e KC_DB=dev-file -e KC_HTTP_ENABLED=true -e KC_HTTP_RELATIVE_PATH=/auth -e KC_HOSTNAME_URL=http://localhost:18081/auth -e KEYCLOAK_ADMIN=admin -e KEYCLOAK_ADMIN_PASSWORD=admin ${KEYCLOAK_IMAGE}:${KEYCLOAK_VERSION} start"
@@ -175,7 +175,7 @@ pipeline {
         stage ('Tests unitaires des modules ansible de sx5-habilitation') {
             steps {
                 script {
-                    if (KEYCLOAK_VERSION == "18.0.2") {
+                    if (KEYCLOAK_VERSION.startsWith("18.0")) {
                         sh "docker run -d --rm --name testkc -p 18081:8080 -e KEYCLOAK_USER=admin -e KEYCLOAK_PASSWORD=admin -e KEYCLOAK_CONFIG=standalone-test.xml ${KEYCLOAK_IMAGE}:${KEYCLOAK_VERSION}"
                     } else {
                         sh "docker pull ${KEYCLOAK_IMAGE}:${KEYCLOAK_VERSION} && docker run -d --rm --name testkc -p 18081:18081 --link testldap:testldap -e KC_HTTP_PORT=18081 -e KC_DB=dev-file -e KC_HTTP_ENABLED=true -e KC_HTTP_RELATIVE_PATH=/auth -e KC_HOSTNAME_URL=http://localhost:18081/auth -e KEYCLOAK_ADMIN=admin -e KEYCLOAK_ADMIN_PASSWORD=admin ${KEYCLOAK_IMAGE}:${KEYCLOAK_VERSION} start"
