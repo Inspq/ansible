@@ -7,10 +7,10 @@ pipeline {
         disableConcurrentBuilds()
     }
 	environment{
-	    KEYCLOAK_IMAGE=${env.KC_IMAGE == null ? 'nexus3.inspq.qc.ca:5000/inspq/keycloak' : env.KC_IMAGE}
-	    KEYCLOAK_VERSION=${env.KC_VERSION == null ? 'latest-quarkus' : env.KC_VERSION}
-	    RHSSO_IMAGE=${env.RHBK_IMAGE == null ? 'nexus3.inspq.qc.ca:5000/inspq/rhbk' : env.RHBK_IMAGE}
-	    RHSSO_VERSION=${env.RHBK_VERSION == null ? 'latest' : env.RHBK_VERSION}
+	    KEYCLOAK_IMAGE="${env.KC_IMAGE == null ? 'nexus3.inspq.qc.ca:5000/inspq/keycloak' : env.KC_IMAGE}"
+	    KEYCLOAK_VERSION="${env.KC_VERSION == null ? 'latest-quarkus' : env.KC_VERSION}"
+	    RHSSO_IMAGE="${env.RHBK_IMAGE == null ? 'nexus3.inspq.qc.ca:5000/inspq/rhbk' : env.RHBK_IMAGE}"
+	    RHSSO_VERSION="${env.RHBK_VERSION == null ? 'latest' : env.RHBK_VERSION}"
 	    THREEEIGHTYNINEDS_IMAGE='minkwe/389ds'
 	    THREEEIGHTYNINEDS_VERSION='latest'
 	    SX5SPCONFIG_IMAGE='nexus3.inspq.qc.ca:5000/inspq/sx5-sp-config'
