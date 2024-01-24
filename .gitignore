@@ -114,3 +114,5 @@ changelogs/.plugin-cache.yaml
 .ansible-test-timeout.json
 .settings
 nosetests*
+galaxy_cache/
+galaxy_token
