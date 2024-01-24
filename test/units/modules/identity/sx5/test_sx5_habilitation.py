@@ -26,6 +26,7 @@ docker stop sx5spconfig testkc testldap
 """
 
 import os
+import unittest
 
 from units.modules.utils import AnsibleExitJson, ModuleTestCase, set_module_args
 from ansible.modules.identity.keycloak import keycloak_user, keycloak_client
@@ -399,7 +400,7 @@ class Sx5HabilitationTestCase(ModuleTestCase):
             for roleToExpire in listeDesRoles:
                 newHabilitation={"idUtilisateur": userId,"idRole": roleToExpire,"dateEcheance": dateEcheance}
                 try:
-                    open_url(habilitation["spConfigUrl"]+"/habilitations/",headers=headers,data=json.dumps(newHabilitation),method='POST')
+                    open_url(habilitation["spConfigUrl"]+"/habilitations",headers=headers,data=json.dumps(newHabilitation),method='POST')
                     self.expiredHabilitationsIndex.append(newHabilitation)
                 except Exception as e:
                     print(str(e))
@@ -590,4 +591,8 @@ class Sx5HabilitationTestCase(ModuleTestCase):
         self.assertNotEqual(results2.exception.args[0]["habilitation"]["extExpiredHabilitations"],self.expiredHabilitationsIndex,"operation = extend : ExpiredHabilitations not extended")
         self.assertEqual(results2.exception.args[0]["habilitation"]["extExpiredHabilitations"],ExpiredHabilitations,"operation = extend : mismatch extend ExpiredHabilitations")
 
-        
+def main():
+    unittest.main()
+
+if __name__ == '__main__':
+    main()        
