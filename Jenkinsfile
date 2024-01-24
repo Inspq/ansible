@@ -69,20 +69,20 @@ pipeline {
         }
         stage ('Tests unitaires des modules ansible de Keycloak sur la dernière version de Keycloak') {
             steps {
-                sh "docker run -d --rm --name testldap -p 10389:389 ${THREEEIGHTYNINEDS_IMAGE}:${THREEEIGHTYNINEDS_VERSION}"
-                if (KEYCLOAK_VERSION == "18.0.2") {
-                    sh "docker pull ${KEYCLOAK_IMAGE}:${KEYCLOAK_VERSION} && docker run -d --rm --name testkc -p 18081:8080 --link testldap:testldap -e KEYCLOAK_USER=admin -e KEYCLOAK_PASSWORD=admin -e KEYCLOAK_CONFIG=standalone-test.xml ${KEYCLOAK_IMAGE}:${KEYCLOAK_VERSION}"
-                } else {
-                    sh "docker pull ${KEYCLOAK_IMAGE}:${KEYCLOAK_VERSION} && docker run -d --rm --name testkc -p 18081:18081 --link testldap:testldap -e KC_HTTP_PORT=18081 -e KC_DB=dev-file -e KC_HTTP_ENABLED=true -e KC_HTTP_RELATIVE_PATH=/auth -e KC_HOSTNAME_URL=http://localhost:18081/auth -e KEYCLOAK_ADMIN=admin -e KEYCLOAK_ADMIN_PASSWORD=admin ${KEYCLOAK_IMAGE}:${KEYCLOAK_VERSION} start"
-                }
-                sh '''
-                until $(curl --output /dev/null --silent --head --fail http://localhost:18081/auth)
-                do 
-                	printf '.'
-                	sleep 5
-                done
-                '''
                 script {
+                    sh "docker run -d --rm --name testldap -p 10389:389 ${THREEEIGHTYNINEDS_IMAGE}:${THREEEIGHTYNINEDS_VERSION}"
+                    if (KEYCLOAK_VERSION == "18.0.2") {
+                        sh "docker pull ${KEYCLOAK_IMAGE}:${KEYCLOAK_VERSION} && docker run -d --rm --name testkc -p 18081:8080 --link testldap:testldap -e KEYCLOAK_USER=admin -e KEYCLOAK_PASSWORD=admin -e KEYCLOAK_CONFIG=standalone-test.xml ${KEYCLOAK_IMAGE}:${KEYCLOAK_VERSION}"
+                    } else {
+                        sh "docker pull ${KEYCLOAK_IMAGE}:${KEYCLOAK_VERSION} && docker run -d --rm --name testkc -p 18081:18081 --link testldap:testldap -e KC_HTTP_PORT=18081 -e KC_DB=dev-file -e KC_HTTP_ENABLED=true -e KC_HTTP_RELATIVE_PATH=/auth -e KC_HOSTNAME_URL=http://localhost:18081/auth -e KEYCLOAK_ADMIN=admin -e KEYCLOAK_ADMIN_PASSWORD=admin ${KEYCLOAK_IMAGE}:${KEYCLOAK_VERSION} start"
+                    }
+                    sh '''
+                    until $(curl --output /dev/null --silent --head --fail http://localhost:18081/auth)
+                    do 
+                        printf '.'
+                        sleep 5
+                    done
+                    '''
                     try {
 		                sh "source hacking/env-setup && cd test && python3 -m nose --with-xunit --xunit-file=nosetests-keycloak.xml units/module_utils/identity/keycloak/test_keycloak_utils.py units/modules/identity/keycloak/test_keycloak_authentication.py units/modules/identity/keycloak/test_keycloak_client.py units/modules/identity/keycloak/test_keycloak_group.py units/modules/identity/keycloak/test_keycloak_identity_provider.py units/modules/identity/keycloak/test_keycloak_realm.py units/modules/identity/keycloak/test_keycloak_role.py units/modules/identity/keycloak/test_keycloak_user.py units/modules/identity/keycloak/test_keycloak_component.py"
                     }
@@ -104,20 +104,20 @@ pipeline {
         }
         stage ('Tests unitaires des modules ansible de Keycloak sur la dernière version de RHSSO') {
             steps {
-                sh "docker run -d --rm --name testldap -p 10389:389 ${THREEEIGHTYNINEDS_IMAGE}:${THREEEIGHTYNINEDS_VERSION}"
-                if (RHSSO_VERSION == "18.0.2") {
-                    sh "docker pull ${RHSSO_IMAGE}:${RHSSO_VERSION} && docker run -d --rm --name testrhsso -p 18081:8080 --link testldap:testldap -e KEYCLOAK_USER=admin -e KEYCLOAK_PASSWORD=admin -e KEYCLOAK_CONFIG=standalone-test.xml ${RHSSO_IMAGE}:${RHSSO_VERSION}"
-                } else {
-                    sh "docker pull ${RHSSO_IMAGE}:${RHSSO_VERSION} && docker run -d --rm --name testkc -p 18081:18081 --link testldap:testldap -e KC_DB=dev-file -e KC_HTTP_PORT=18081 -e KC_HTTP_ENABLED=true -e KC_HTTP_RELATIVE_PATH=/auth -e KC_HOSTNAME_URL=http://localhost:18081/auth -e KEYCLOAK_ADMIN=admin -e KEYCLOAK_ADMIN_PASSWORD=admin ${RHSSO_IMAGE}:${RHSSO_VERSION} start"
-                }
-                sh '''
-                until $(curl --output /dev/null --silent --head --fail http://localhost:18081/auth)
-                do 
-                	printf '.'
-                	sleep 5
-                done
-                '''
                 script {
+                    sh "docker run -d --rm --name testldap -p 10389:389 ${THREEEIGHTYNINEDS_IMAGE}:${THREEEIGHTYNINEDS_VERSION}"
+                    if (RHSSO_VERSION == "18.0.2") {
+                        sh "docker pull ${RHSSO_IMAGE}:${RHSSO_VERSION} && docker run -d --rm --name testrhsso -p 18081:8080 --link testldap:testldap -e KEYCLOAK_USER=admin -e KEYCLOAK_PASSWORD=admin -e KEYCLOAK_CONFIG=standalone-test.xml ${RHSSO_IMAGE}:${RHSSO_VERSION}"
+                    } else {
+                        sh "docker pull ${RHSSO_IMAGE}:${RHSSO_VERSION} && docker run -d --rm --name testkc -p 18081:18081 --link testldap:testldap -e KC_DB=dev-file -e KC_HTTP_PORT=18081 -e KC_HTTP_ENABLED=true -e KC_HTTP_RELATIVE_PATH=/auth -e KC_HOSTNAME_URL=http://localhost:18081/auth -e KEYCLOAK_ADMIN=admin -e KEYCLOAK_ADMIN_PASSWORD=admin ${RHSSO_IMAGE}:${RHSSO_VERSION} start"
+                    }
+                    sh '''
+                    until $(curl --output /dev/null --silent --head --fail http://localhost:18081/auth)
+                    do 
+                        printf '.'
+                        sleep 5
+                    done
+                    '''
                     try {
 		                sh "source hacking/env-setup && cd test && python3 -m nose --with-xunit --xunit-file=nosetests-rhsso.xml  units/module_utils/identity/keycloak/test_keycloak_utils.py units/modules/identity/keycloak/test_keycloak_authentication.py units/modules/identity/keycloak/test_keycloak_client.py units/modules/identity/keycloak/test_keycloak_group.py units/modules/identity/keycloak/test_keycloak_identity_provider.py units/modules/identity/keycloak/test_keycloak_realm.py units/modules/identity/keycloak/test_keycloak_role.py units/modules/identity/keycloak/test_keycloak_user.py units/modules/identity/keycloak/test_keycloak_component.py"
                     }
@@ -139,20 +139,20 @@ pipeline {
         }
       stage ('Tests unitaires des modules ansible de sx5-sp-config') {
             steps {
-                if (KEYCLOAK_VERSION == "18.0.2") {
-                    sh "docker run -d --rm --name testkc -p 18081:8080 -e KEYCLOAK_USER=admin -e KEYCLOAK_PASSWORD=admin -e KEYCLOAK_CONFIG=standalone-test.xml ${KEYCLOAK_IMAGE}:${KEYCLOAK_VERSION}"
-                } else {
-                    sh "docker pull ${KEYCLOAK_IMAGE}:${KEYCLOAK_VERSION} && docker run -d --rm --name testkc -p 18081:18081 --link testldap:testldap -e KC_HTTP_PORT=18081 -e KC_DB=dev-file -e KC_HTTP_ENABLED=true -e KC_HTTP_RELATIVE_PATH=/auth -e KC_HOSTNAME_URL=http://localhost:18081/auth -e KEYCLOAK_ADMIN=admin -e KEYCLOAK_ADMIN_PASSWORD=admin ${KEYCLOAK_IMAGE}:${KEYCLOAK_VERSION} start"
-                }
-                sh '''
-                until $(curl --output /dev/null --silent --head --fail http://localhost:18081/auth)
-                do 
-                	printf '.'
-                	sleep 5
-                done
-                '''
-                sh "ansible-playbook -i sx5-sp-config.hosts -e sx5spconfig_image_version=${SX5SPCONFIG_VERSION} deploy-sx5-sp-config.yml"
                 script {
+                    if (KEYCLOAK_VERSION == "18.0.2") {
+                        sh "docker run -d --rm --name testkc -p 18081:8080 -e KEYCLOAK_USER=admin -e KEYCLOAK_PASSWORD=admin -e KEYCLOAK_CONFIG=standalone-test.xml ${KEYCLOAK_IMAGE}:${KEYCLOAK_VERSION}"
+                    } else {
+                        sh "docker pull ${KEYCLOAK_IMAGE}:${KEYCLOAK_VERSION} && docker run -d --rm --name testkc -p 18081:18081 --link testldap:testldap -e KC_HTTP_PORT=18081 -e KC_DB=dev-file -e KC_HTTP_ENABLED=true -e KC_HTTP_RELATIVE_PATH=/auth -e KC_HOSTNAME_URL=http://localhost:18081/auth -e KEYCLOAK_ADMIN=admin -e KEYCLOAK_ADMIN_PASSWORD=admin ${KEYCLOAK_IMAGE}:${KEYCLOAK_VERSION} start"
+                    }
+                    sh '''
+                    until $(curl --output /dev/null --silent --head --fail http://localhost:18081/auth)
+                    do 
+                        printf '.'
+                        sleep 5
+                    done
+                    '''
+                    sh "ansible-playbook -i sx5-sp-config.hosts -e sx5spconfig_image_version=${SX5SPCONFIG_VERSION} deploy-sx5-sp-config.yml"
                     try {
 		                sh "source hacking/env-setup && cd test && python3 -m nose --with-xunit --xunit-file=nosetests-sx5-sp-config.xml units/module_utils/identity/sx5/test_sx5_sp_config_system_utils.py units/modules/identity/sx5/test_sx5_sp_config_system.py"
                     }
@@ -174,20 +174,20 @@ pipeline {
         }
         stage ('Tests unitaires des modules ansible de sx5-habilitation') {
             steps {
-                if (KEYCLOAK_VERSION == "18.0.2") {
-                    sh "docker run -d --rm --name testkc -p 18081:8080 -e KEYCLOAK_USER=admin -e KEYCLOAK_PASSWORD=admin -e KEYCLOAK_CONFIG=standalone-test.xml ${KEYCLOAK_IMAGE}:${KEYCLOAK_VERSION}"
-                } else {
-                    sh "docker pull ${KEYCLOAK_IMAGE}:${KEYCLOAK_VERSION} && docker run -d --rm --name testkc -p 18081:18081 --link testldap:testldap -e KC_HTTP_PORT=18081 -e KC_DB=dev-file -e KC_HTTP_ENABLED=true -e KC_HTTP_RELATIVE_PATH=/auth -e KC_HOSTNAME_URL=http://localhost:18081/auth -e KEYCLOAK_ADMIN=admin -e KEYCLOAK_ADMIN_PASSWORD=admin ${KEYCLOAK_IMAGE}:${KEYCLOAK_VERSION} start"
-                }
-                sh '''
-                until $(curl --output /dev/null --silent --head --fail http://localhost:18081/auth)
-                do 
-                	printf '.'
-                	sleep 5
-                done
-                '''
-                sh "ansible-playbook -i sx5-sp-config.hosts -e sx5spconfig_image_version=${SX5SPCONFIG_VERSION} deploy-sx5-sp-config.yml"
                 script {
+                    if (KEYCLOAK_VERSION == "18.0.2") {
+                        sh "docker run -d --rm --name testkc -p 18081:8080 -e KEYCLOAK_USER=admin -e KEYCLOAK_PASSWORD=admin -e KEYCLOAK_CONFIG=standalone-test.xml ${KEYCLOAK_IMAGE}:${KEYCLOAK_VERSION}"
+                    } else {
+                        sh "docker pull ${KEYCLOAK_IMAGE}:${KEYCLOAK_VERSION} && docker run -d --rm --name testkc -p 18081:18081 --link testldap:testldap -e KC_HTTP_PORT=18081 -e KC_DB=dev-file -e KC_HTTP_ENABLED=true -e KC_HTTP_RELATIVE_PATH=/auth -e KC_HOSTNAME_URL=http://localhost:18081/auth -e KEYCLOAK_ADMIN=admin -e KEYCLOAK_ADMIN_PASSWORD=admin ${KEYCLOAK_IMAGE}:${KEYCLOAK_VERSION} start"
+                    }
+                    sh '''
+                    until $(curl --output /dev/null --silent --head --fail http://localhost:18081/auth)
+                    do 
+                        printf '.'
+                        sleep 5
+                    done
+                    '''
+                    sh "ansible-playbook -i sx5-sp-config.hosts -e sx5spconfig_image_version=${SX5SPCONFIG_VERSION} deploy-sx5-sp-config.yml"
                     try {
 		                sh "source hacking/env-setup && cd test && python3 -m nose --with-xunit --xunit-file=nosetests-sx5-habilitation.xml units/modules/identity/sx5/test_sx5_habilitation.py"
                     }
