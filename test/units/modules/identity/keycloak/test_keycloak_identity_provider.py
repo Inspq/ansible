@@ -1,6 +1,7 @@
 import collections
 import os
 import copy
+import unittest
 from ansible.modules.identity.keycloak import keycloak_identity_provider
 from units.modules.utils import AnsibleExitJson, AnsibleFailJson, ModuleTestCase, set_module_args
 
@@ -474,7 +475,7 @@ class KeycloakIdentityProviderTestCase(ModuleTestCase):
             "linkOnly": False,
             "firstBrokerLoginFlowAlias": "first broker login",
             "config": { 
-                "fromUrl": "http://localhost:8080/auth/realms/master/.well-known/openid-configuration",
+                "fromUrl": "http://localhost:18081/auth/realms/master/.well-known/openid-configuration",
                 "clientId": "test1",
                 "defaultScope": "openid email profile",
                 "disableUserInfo": "false",
@@ -777,10 +778,15 @@ class KeycloakIdentityProviderTestCase(ModuleTestCase):
         self.assertEqual(results.exception.args[0]['idp']['displayName'],toCreate['displayName'], 'displayName changed: ' + results.exception.args[0]['idp']['displayName'])
 
         config = results.exception.args[0]['idp']['config']
-        self.assertEqual(config['userInfoUrl'],"http://localhost:8080/auth/realms/master/protocol/openid-connect/userinfo", 'userInfoUrl changed: ' + config['userInfoUrl'])
-        self.assertEqual(config['tokenUrl'],"http://localhost:8080/auth/realms/master/protocol/openid-connect/token", 'tokenUrl changed: ' + config['tokenUrl'])
-        self.assertEqual(config['jwksUrl'],"http://localhost:8080/auth/realms/master/protocol/openid-connect/certs", 'jwksUrl changed: ' + config['jwksUrl'])
-        self.assertEqual(config['issuer'],"http://localhost:8080/auth/realms/master", 'issuer changed: ' + config['issuer'])
-        self.assertEqual(config['authorizationUrl'],"http://localhost:8080/auth/realms/master/protocol/openid-connect/auth", 'authorizationUrl changed: ' + config['authorizationUrl'])
-        self.assertEqual(config['logoutUrl'],"http://localhost:8080/auth/realms/master/protocol/openid-connect/logout", 'logoutUrl changed: ' + config['logoutUrl'])
+        self.assertEqual(config['userInfoUrl'],"http://localhost:18081/auth/realms/master/protocol/openid-connect/userinfo", 'userInfoUrl changed: ' + config['userInfoUrl'])
+        self.assertEqual(config['tokenUrl'],"http://localhost:18081/auth/realms/master/protocol/openid-connect/token", 'tokenUrl changed: ' + config['tokenUrl'])
+        self.assertEqual(config['jwksUrl'],"http://localhost:18081/auth/realms/master/protocol/openid-connect/certs", 'jwksUrl changed: ' + config['jwksUrl'])
+        self.assertEqual(config['issuer'],"http://localhost:18081/auth/realms/master", 'issuer changed: ' + config['issuer'])
+        self.assertEqual(config['authorizationUrl'],"http://localhost:18081/auth/realms/master/protocol/openid-connect/auth", 'authorizationUrl changed: ' + config['authorizationUrl'])
+        self.assertEqual(config['logoutUrl'],"http://localhost:18081/auth/realms/master/protocol/openid-connect/logout", 'logoutUrl changed: ' + config['logoutUrl'])
 
+def main():
+    unittest.main()
+
+if __name__ == '__main__':
+    main()
