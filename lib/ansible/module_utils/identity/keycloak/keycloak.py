@@ -2919,6 +2919,11 @@ class KeycloakAPI(object):
                     method='GET',
                     headers=self.restheaders))
             return role
+        except HTTPError as err:
+            if err.code == 404:
+                raise err
+            self.module.fail_json(msg='Could not get role %s in realm %s: %s'
+                                      % (roleid, realm, str(err)))
         except Exception as e:
             self.module.fail_json(msg='Could not get role %s in realm %s: %s'
                                       % (roleid, realm, str(e)))
@@ -3177,6 +3182,11 @@ class KeycloakAPI(object):
                     method='GET',
                     headers=self.restheaders))
             return userRepresentation
+        except HTTPError as err:
+            if err.code == 404:
+                raise err
+            self.module.fail_json(msg='Could not get user %s in realm %s: %s'
+                                      % (user_id, realm, str(err)))
         except Exception as e:
             self.module.fail_json(msg='Could not get user %s in realm %s: %s'
                                       % (user_id, realm, str(e)))
