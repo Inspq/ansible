@@ -158,6 +158,7 @@ def updateHabilitation(url, user_id, role_id, habilitation, headers):
     )
     return putResponse
 
+
 def get_token_private(module):
     try:
         connection_header = get_token(
@@ -172,6 +173,7 @@ def get_token_private(module):
     except KeycloakError as e:
         module.fail_json(msg=str(e))
     return connection_header
+
 
 def main():
     argument_spec = keycloak_argument_spec()
@@ -242,7 +244,12 @@ def main():
                             kc.delete_user_realm_role(user_id=expiredHabilitation["idUtilisateur"], role=roleRepresentation, realm=realm)
                             deleteExpiredHabilitationsInKc.append(expiredHabilitation)
                     # Delete expired habilitation from spconfig
-                    deleteHabilitation(url=spConfigUrl, user_id=expiredHabilitation["idUtilisateur"], role_id=expiredHabilitation["idRole"], headers=kc.restheaders)
+                    deleteHabilitation(
+                        url=spConfigUrl,
+                        user_id=expiredHabilitation["idUtilisateur"],
+                        role_id=expiredHabilitation["idRole"],
+                        headers=kc.restheaders
+                    )
                     deleteExpiredHabilitations.append(expiredHabilitation)
                     changed = True
                 elif operation == "extend":
