@@ -1,6 +1,7 @@
 from ansible.modules.identity.keycloak import keycloak_user, keycloak_group, keycloak_role
 from ansible.module_utils.identity.keycloak.keycloak import isDictEquals
 from units.modules.utils import AnsibleExitJson, AnsibleFailJson, ModuleTestCase, set_module_args
+import unittest
 
 class KeycloakUserTestCase(ModuleTestCase):
     testGroups = [
@@ -334,3 +335,10 @@ class KeycloakUserTestCase(ModuleTestCase):
         with self.assertRaises(AnsibleFailJson) as results:
             self.module.main()
         self.assertRegexpMatches(results.exception.args[0]['msg'], 'client ' + toCreate["clientRoles"][0]["clientId"] + ' not found', 'error not generated')
+
+
+def main():
+    unittest.main()
+
+if __name__ == '__main__':
+    main()
