@@ -7,7 +7,7 @@
     sx5spconfig_container_name: sx5spconfig
     sx5spconfig_docker_image: nexus3.inspq.qc.ca:5000/inspq/sx5-sp-config
     sx5spconfig_image_version: latest
-    sx5spconfig_external_port: 18182
+    sx5spconfig_external_port: 28182
     sx5spconfig_internal_port: 8080
     sx5spconfig_url: "http://localhost:{{ sx5spconfig_external_port }}"
     keycloak_url: http://{{ ansible_fqdn }}:18081
