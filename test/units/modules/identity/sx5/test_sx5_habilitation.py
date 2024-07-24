@@ -4,7 +4,7 @@
 # Pour exécuter ce test, les composants Keycloak et sx5_sp_config doivent être fonctionnel.
 # Utiliser les commandes suivantes pour les lancer avec Docker
 export KC_PORT=18081
-export SP_PORT=18182
+export SP_PORT=28182
 export LDAP_PORT=10389
 # Lancer le LDAP (optionnel pour ce test)
 docker pull minkwe/389ds:latest
@@ -39,7 +39,7 @@ from ansible.module_utils.six.moves.urllib.error import HTTPError
 KC_URL = os.environ['KC_URL'] if 'KC_URL' in os.environ else "http://localhost"
 SP_URL = KC_URL
 KC_PORT =  int(os.environ['KC_PORT']) if 'KC_PORT' in os.environ else 18081
-SP_PORT =  int(os.environ['SP_PORT']) if 'SP_PORT' in os.environ else 18182
+SP_PORT =  int(os.environ['SP_PORT']) if 'SP_PORT' in os.environ else 28182
 AUTH_URL = "{url}:{port}".format(url = KC_URL, port = KC_PORT)
 SP_CONFIG_URL = "{url}:{port}/config".format(url = SP_URL, port = SP_PORT)
 
@@ -157,12 +157,12 @@ class Sx5HabilitationTestCase(ModuleTestCase):
         "auth_password": "admin",
         "realm": "master",
         "state": "present",
-        "rootUrl": "http://test.com:18182",
+        "rootUrl": "http://test.com:28182",
         "description": "Ceci est un test",
-        "adminUrl": "http://test.com:18182/admin",
+        "adminUrl": "http://test.com:28182/admin",
         "enabled": True,
         "clientAuthenticatorType": "client-secret",
-        "redirectUris": ["http://test.com:18182/secure","http://test1.com:18182/secure"],
+        "redirectUris": ["http://test.com:28182/secure","http://test1.com:28182/secure"],
         "webOrigins": ["*"],
         "bearerOnly": False,
         "publicClient": False,
