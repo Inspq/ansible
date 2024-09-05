@@ -370,6 +370,11 @@ def main():
             "default": "false",
             "choices": ["true", "false"]
         },
+        "hideOnLoginPage": {
+            "type": "str",
+            "default": "false",
+            "choices": ["true", "false"]
+        },
         "defaultScope": {
             "type": "str"
         },

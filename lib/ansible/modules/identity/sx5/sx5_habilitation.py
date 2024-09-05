@@ -132,7 +132,8 @@ def getExpiredHabilitations(url, headers):
         open_url(
             urlEchue,
             method='GET',
-            headers=headers))
+            headers=headers,
+            timeout=60))
     return expiredHabilitations
 
 
@@ -141,7 +142,8 @@ def deleteHabilitation(url, user_id, role_id, headers):
     deleteResponse = open_url(
         urlHabilitation,
         method='DELETE',
-        headers=headers)
+        headers=headers,
+        timeout=60)
     return deleteResponse
 
 
@@ -151,9 +153,26 @@ def updateHabilitation(url, user_id, role_id, habilitation, headers):
         urlHabilitation,
         method='PUT',
         headers=headers,
+        timeout=60,
         data=json.dumps(habilitation)
     )
     return putResponse
+
+
+def get_token_private(module):
+    try:
+        connection_header = get_token(
+            base_url=module.params.get('auth_keycloak_url'),
+            validate_certs=module.params.get('validate_certs'),
+            auth_realm=module.params.get('auth_realm'),
+            client_id=module.params.get('auth_client_id'),
+            auth_username=module.params.get('auth_username'),
+            auth_password=module.params.get('auth_password'),
+            client_secret=module.params.get('auth_client_secret'),
+        )
+    except KeycloakError as e:
+        module.fail_json(msg=str(e))
+    return connection_header
 
 
 def main():
@@ -174,18 +193,7 @@ def main():
     result = dict(changed=False, msg={}, habilitation={})
 
     # Obtain access token, initialize API
-    try:
-        connection_header = get_token(
-            base_url=module.params.get('auth_keycloak_url'),
-            validate_certs=module.params.get('validate_certs'),
-            auth_realm=module.params.get('auth_realm'),
-            client_id=module.params.get('auth_client_id'),
-            auth_username=module.params.get('auth_username'),
-            auth_password=module.params.get('auth_password'),
-            client_secret=module.params.get('auth_client_secret'),
-        )
-    except KeycloakError as e:
-        module.fail_json(msg=str(e))
+    connection_header = get_token_private(module)
 
     kc = KeycloakAPI(module, connection_header)
     realm = module.params.get('realm')
@@ -193,7 +201,6 @@ def main():
     duration = module.params.get('duration')
     spConfigUrl = module.params.get('spConfigUrl')
     changed = False
-    headers = kc.restheaders
 
     # Search expired accreditation in sx5_sp_config.
     listeExpiredHabilitations = []
@@ -203,69 +210,72 @@ def main():
     msgList = []
     msgRm = []
     msgExt = []
-    expiredHabilitations = getExpiredHabilitations(url=spConfigUrl, headers=headers)
-    for expiredHabilitation in expiredHabilitations:
-        if expiredHabilitation is None:
-            changed = False
-            break
-        else:
-            if operation == "list":
-                listeExpiredHabilitations.append(expiredHabilitation)
-                message = "Habilitation ExpiredHabilitations added"
-                msgList.append({"info": message})
-            elif operation == "remove":
-                try:
-                    # Check if the user still exist on the Keycloak server
-                    userRepresentation = kc.get_user_by_id(user_id=expiredHabilitation["idUtilisateur"], realm=realm)
-                except Exception as e:
-                    if "msg" in e.args[0] and "HTTP Error 404" in e.args[0]["msg"]:
+    expiredHabilitations = getExpiredHabilitations(url=spConfigUrl, headers=kc.restheaders)
+    if operation == "list":
+        listeExpiredHabilitations = expiredHabilitations
+    else:
+        totalModification = 0
+        for expiredHabilitation in expiredHabilitations:
+            totalModification += 1
+            if expiredHabilitation is None:
+                changed = False
+                break
+            else:
+                if operation == "remove":
+                    try:
+                        # Check if the user still exist on the Keycloak server
+                        userRepresentation = kc.get_user_by_id(user_id=expiredHabilitation["idUtilisateur"], realm=realm)
+                    except Exception as e:
                         userRepresentation = None
-                    else:
-                        module.fail_json(msg=e.args[0]["msg"])
-                try:
-                    # Get the role to expire if it still exists
-                    roleRepresentation = kc.get_role_by_id(roleid=expiredHabilitation["idRole"], realm=realm)
-                except Exception as e:
-                    if "msg" in e.args[0] and "HTTP Error 404" in e.args[0]["msg"]:
+                    try:
+                        # Get the role to expire if it still exists
+                        roleRepresentation = kc.get_role_by_id(roleid=expiredHabilitation["idRole"], realm=realm)
+                    except Exception as e:
                         roleRepresentation = None
-                    else:
-                        module.fail_json(msg=e.args[0]["msg"])
-                if userRepresentation is not None and roleRepresentation is not None:
-                    if roleRepresentation["clientRole"]:  # If it's a client Role
-                        # Get the client ID
-                        clientId = roleRepresentation["containerId"]
-                        # Remove the client Role mapping for the user
-                        kc.delete_user_client_role(user_id=expiredHabilitation["idUtilisateur"], client_id=clientId, role=roleRepresentation, realm=realm)
-                        deleteExpiredHabilitationsInKc.append(expiredHabilitation)
-                    else:  # It's a realm role
-                        # Delete the realm role user mapping
-                        kc.delete_user_realm_role(user_id=expiredHabilitation["idUtilisateur"], role=roleRepresentation, realm=realm)
-                        deleteExpiredHabilitationsInKc.append(expiredHabilitation)
-                # Delete expired habilitation from spconfig
-                deleteHabilitation(url=spConfigUrl, user_id=expiredHabilitation["idUtilisateur"], role_id=expiredHabilitation["idRole"], headers=headers)
-                deleteExpiredHabilitations.append(expiredHabilitation)
-                changed = True
-            elif operation == "extend":
-                newdate_extension = datetime.datetime.strptime(expiredHabilitation["dateEcheance"], '%Y-%m-%d')
-                newdate_extension = newdate_extension + datetime.timedelta(days=duration)
-                newHabilitation = {
-                    "idUtilisateur": expiredHabilitation["idUtilisateur"],
-                    "idRole": expiredHabilitation["idRole"],
-                    "dateEcheance": newdate_extension.strftime('%Y-%m-%d')
-                }
-                putResponse = updateHabilitation(
-                    url=spConfigUrl,
-                    user_id=expiredHabilitation["idUtilisateur"],
-                    role_id=expiredHabilitation["idRole"],
-                    habilitation=newHabilitation,
-                    headers=headers)
-                if putResponse.getcode() == 200:
-                    extExpiredHabilitations.append(newHabilitation)
-                changed = True
-                message = "Habilitation update from spConfig DB. msg = status: %s, info: %s" % (
-                    putResponse.getcode(),
-                    putResponse.info())
-                msgExt.append({"info": message})
+                    if userRepresentation is not None and roleRepresentation is not None:
+                        if roleRepresentation["clientRole"]:  # If it's a client Role
+                            # Get the client ID
+                            clientId = roleRepresentation["containerId"]
+                            # Remove the client Role mapping for the user
+                            kc.delete_user_client_role(user_id=expiredHabilitation["idUtilisateur"], client_id=clientId, role=roleRepresentation, realm=realm)
+                            deleteExpiredHabilitationsInKc.append(expiredHabilitation)
+                        else:  # It's a realm role
+                            # Delete the realm role user mapping
+                            kc.delete_user_realm_role(user_id=expiredHabilitation["idUtilisateur"], role=roleRepresentation, realm=realm)
+                            deleteExpiredHabilitationsInKc.append(expiredHabilitation)
+                    # Delete expired habilitation from spconfig
+                    deleteHabilitation(
+                        url=spConfigUrl,
+                        user_id=expiredHabilitation["idUtilisateur"],
+                        role_id=expiredHabilitation["idRole"],
+                        headers=kc.restheaders
+                    )
+                    deleteExpiredHabilitations.append(expiredHabilitation)
+                    changed = True
+                elif operation == "extend":
+                    newdate_extension = datetime.datetime.strptime(expiredHabilitation["dateEcheance"], '%Y-%m-%d')
+                    newdate_extension = newdate_extension + datetime.timedelta(days=duration)
+                    newHabilitation = {
+                        "idUtilisateur": expiredHabilitation["idUtilisateur"],
+                        "idRole": expiredHabilitation["idRole"],
+                        "dateEcheance": newdate_extension.strftime('%Y-%m-%d')
+                    }
+                    putResponse = updateHabilitation(
+                        url=spConfigUrl,
+                        user_id=expiredHabilitation["idUtilisateur"],
+                        role_id=expiredHabilitation["idRole"],
+                        habilitation=newHabilitation,
+                        headers=kc.restheaders)
+                    if putResponse.getcode() == 200:
+                        extExpiredHabilitations.append(newHabilitation)
+                    changed = True
+                    message = "Habilitation update from spConfig DB. msg = status: %s, info: %s" % (
+                        putResponse.getcode(),
+                        putResponse.info())
+                    msgExt.append({"info": message})
+            if totalModification % 30 == 0:
+                kc.get_new_access_token()
+
     msgResponse = {
         "operationType": operation,
         "ExpiredHabilitations": listeExpiredHabilitations,

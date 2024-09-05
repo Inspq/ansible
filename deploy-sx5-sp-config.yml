@@ -36,6 +36,6 @@
       status_code: 200
       validate_certs: false
     register: result
-    until: result.status == 200 or result.status == 401
+    until: result.status == 200
     retries: 5
     delay: 10
