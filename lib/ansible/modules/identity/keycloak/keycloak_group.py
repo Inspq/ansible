@@ -438,11 +438,11 @@ def main():
                 gid = before_group['id']
                 kc.delete_group(groupid=gid, realm=realm)
                 # remove id
-                del(updated_group['id'])
+                del (updated_group['id'])
                 if "realmRoles" in updated_group:
-                    del(updated_group['realmRoles'])
+                    del (updated_group['realmRoles'])
                 if "clientRoles" in updated_group:
-                    del(updated_group['clientRoles'])
+                    del (updated_group['clientRoles'])
 
                 # create it again
                 kc.create_group(updated_group, realm=realm)

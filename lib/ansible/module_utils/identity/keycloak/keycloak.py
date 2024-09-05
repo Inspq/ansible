@@ -258,6 +258,7 @@ def keycloak2ansibleClientRoles(keycloakClientRoles):
 def get_token(base_url, validate_certs, auth_realm, client_id,
               auth_username, auth_password, client_secret):
     auth_url = URL_TOKEN.format(url=base_url, realm=auth_realm)
+
     temp_payload = {
         'grant_type': 'password',
         'client_id': client_id,
@@ -532,13 +533,13 @@ class KeycloakAPI(object):
             client_roles = None
             if camel('client_roles') in clientrep:
                 client_roles = clientrep[camel('client_roles')]
-                del(clientrep[camel('client_roles')])
+                del (clientrep[camel('client_roles')])
             if camel('scope_mappings') in clientrep:
-                del(clientrep[camel('scope_mappings')])
+                del (clientrep[camel('scope_mappings')])
             client_protocol_mappers = None
             if camel('protocol_mappers') in clientrep:
                 client_protocol_mappers = clientrep[camel('protocol_mappers')]
-                del(clientrep[camel('protocol_mappers')])
+                del (clientrep[camel('protocol_mappers')])
             putResponse = open_url(client_url, method='PUT', headers=self.restheaders,
                                    data=json.dumps(clientrep), validate_certs=self.validate_certs)
             if client_protocol_mappers is not None:
@@ -566,13 +567,13 @@ class KeycloakAPI(object):
             client_roles = None
             if camel('client_roles') in clientrep:
                 client_roles = clientrep[camel('client_roles')]
-                del(clientrep[camel('client_roles')])
+                del (clientrep[camel('client_roles')])
             if camel('scope_mappings') in clientrep:
-                del(clientrep[camel('scope_mappings')])
+                del (clientrep[camel('scope_mappings')])
             client_protocol_mappers = None
             if camel('protocol_mappers') in clientrep:
                 client_protocol_mappers = clientrep[camel('protocol_mappers')]
-                del(clientrep[camel('protocol_mappers')])
+                del (clientrep[camel('protocol_mappers')])
             postResponse = open_url(clients_url, method='POST', headers=self.restheaders,
                                     data=json.dumps(clientrep), validate_certs=self.validate_certs)
             client_url = URL_CLIENT.format(url=self.baseurl,
@@ -1041,12 +1042,12 @@ class KeycloakAPI(object):
             # Remove roles because they are not supported by the POST method of the Keycloak endpoint.
             groupreptocreate = grouprep.copy()
             if "realmRoles" in groupreptocreate:
-                del(groupreptocreate['realmRoles'])
+                del (groupreptocreate['realmRoles'])
             if "clientRoles" in groupreptocreate:
-                del(groupreptocreate['clientRoles'])
+                del (groupreptocreate['clientRoles'])
             # Remove the id if it is defined. This can happen when force is true.
             if "id" in groupreptocreate:
-                del(groupreptocreate['id'])
+                del (groupreptocreate['id'])
             return open_url(groups_url, method='POST', headers=self.restheaders,
                             data=json.dumps(groupreptocreate), validate_certs=self.validate_certs)
         except Exception as e:
@@ -1065,9 +1066,9 @@ class KeycloakAPI(object):
             # remove roles because they are not supported by the PUT method of the Keycloak endpoint.
             groupreptoupdate = grouprep.copy()
             if "realmRoles" in groupreptoupdate:
-                del(groupreptoupdate['realmRoles'])
+                del (groupreptoupdate['realmRoles'])
             if "clientRoles" in groupreptoupdate:
-                del(groupreptoupdate['clientRoles'])
+                del (groupreptoupdate['clientRoles'])
             return open_url(group_url, method='PUT', headers=self.restheaders,
                             data=json.dumps(groupreptoupdate), validate_certs=self.validate_certs)
         except Exception as e:
@@ -1233,7 +1234,7 @@ class KeycloakAPI(object):
                     # If state key is included in the client role representation, save its value and remove the key from the representation.
                     if "state" in newClientRole:
                         desiredState = newClientRole["state"]
-                        del(newClientRole["state"])
+                        del (newClientRole["state"])
                     if 'composites' in newClientRole and newClientRole['composites'] is not None:
                         newComposites = newClientRole['composites']
                         for newComposite in newComposites:
@@ -1305,9 +1306,19 @@ class KeycloakAPI(object):
                         newRoleRepresentation["clientRole"] = newClientRole['clientRole'] if "clientRole" in newClientRole else True
                         data = json.dumps(newRoleRepresentation)
                         if clientRoleFound:
-                            open_url(clientRolesUrl + '/' + newClientRole['name'], method='PUT', headers=self.restheaders, data=data)
+                            open_url(
+                                clientRolesUrl + '/' + quote(newClientRole['name']),
+                                method='PUT',
+                                http_agent=self.http_agent,
+                                headers=self.restheaders,
+                                data=data)
                         else:
-                            open_url(clientRolesUrl, method='POST', headers=self.restheaders, data=data)
+                            open_url(
+                                clientRolesUrl,
+                                method='POST',
+                                http_agent=self.http_agent,
+                                headers=self.restheaders,
+                                data=data)
                         changed = True
                         # Composites role
                         if 'composites' in newClientRole and newClientRole['composites'] is not None and len(newClientRole['composites']) > 0:
@@ -1358,7 +1369,7 @@ class KeycloakAPI(object):
                     # If state key is included in the mapper representation, save its value and remove the key from the representation.
                     if "state" in newClientProtocolMapper:
                         desiredState = newClientProtocolMapper["state"]
-                        del(newClientProtocolMapper["state"])
+                        del (newClientProtocolMapper["state"])
                     clientMapperFound = False
                     # Check if mapper already exist for the client
                     for clientMapper in clientMappers:
@@ -1369,7 +1380,11 @@ class KeycloakAPI(object):
                     if clientMapperFound:
                         if desiredState == "absent":
                             # Delete the mapper
-                            open_url(clientUrl + '/protocol-mappers/models/' + clientMapper['id'], method='DELETE', headers=self.restheaders)
+                            open_url(
+                                clientUrl + '/protocol-mappers/models/' + clientMapper['id'],
+                                method='DELETE',
+                                http_agent=self.http_agent,
+                                headers=self.restheaders)
                             changed = True
                         else:
                             if not isDictEquals(newClientProtocolMapper, clientMapper):
@@ -1569,7 +1584,12 @@ class KeycloakAPI(object):
         try:
             authenticationFlow = {}
             # Check if the authentication flow exists on the Keycloak serveraders
-            authentications = json.load(open_url(URL_AUTHENTICATION_FLOWS.format(url=self.baseurl, realm=realm), method='GET', headers=self.restheaders))
+            authentications = json.load(
+                open_url(
+                    URL_AUTHENTICATION_FLOWS.format(url=self.baseurl, realm=realm),
+                    method='GET',
+                    http_agent=self.http_agent,
+                    headers=self.restheaders))
             for authentication in authentications:
                 if authentication["alias"] == alias:
                     authenticationFlow = authentication
@@ -2447,7 +2467,7 @@ class KeycloakAPI(object):
                 desiredState = "present"
                 if "state" in idPMapper:
                     desiredState = idPMapper["state"]
-                    del(idPMapper["state"])
+                    del (idPMapper["state"])
                 mapperFound = False
                 for mapper in mappers:
                     if mapper['name'] == idPMapper['name']:

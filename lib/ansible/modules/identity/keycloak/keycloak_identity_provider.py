@@ -518,9 +518,9 @@ def main():
     if module.params.get('config') is not None:
         newIdPConfig = remove_arguments_with_value_none(module.params.get('config'))
         if 'openIdConfigurationUrl' in newIdPConfig:
-            del(newIdPConfig['openIdConfigurationUrl'])
+            del (newIdPConfig['openIdConfigurationUrl'])
         elif 'fromUrl' in newIdPConfig:
-            del(newIdPConfig['fromUrl'])
+            del (newIdPConfig['fromUrl'])
 
     if 'providerId' in newIdPRepresentation and newIdPRepresentation["providerId"] == 'google' and 'userIp' in module.params.get("config"):
         newIdPConfig["userIp"] = module.params.get("config")["userIp"]
