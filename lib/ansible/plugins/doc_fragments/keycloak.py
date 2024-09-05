@@ -49,4 +49,9 @@ options:
             - Verify TLS certificates (do not disable this in production).
         type: bool
         default: yes
+    http_agent:
+        description:
+            - String to set the User-Agent for the HTTP request.
+        type: str
+        default: Ansible
 '''
