@@ -1,11 +1,9 @@
-#!/usr/bin/python
 # -*- coding: utf-8 -*-
 
 # Copyright: (c) 2012, Stephen Fromm <sfromm@gmail.com>
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-from __future__ import absolute_import, division, print_function
-__metaclass__ = type
+from __future__ import annotations
 
 
 DOCUMENTATION = '''
@@ -36,9 +34,16 @@ options:
         type: str
         choices: [ absent, present ]
         default: present
+    force:
+        description:
+            - Whether to delete a group even if it is the primary group of a user.
+            - Only applicable on platforms which implement a C(--force) flag on the group deletion command.
+        type: bool
+        default: false
+        version_added: "2.15"
     system:
         description:
-            - If I(yes), indicates that the group created is a system group.
+            - If V(yes), indicates that the group created is a system group.
         type: bool
         default: no
     local:
@@ -52,18 +57,40 @@ options:
         version_added: "2.6"
     non_unique:
         description:
-            - This option allows to change the group ID to a non-unique value. Requires C(gid).
+            - This option allows to change the group ID to a non-unique value. Requires O(gid).
             - Not supported on macOS or BusyBox distributions.
         type: bool
         default: no
         version_added: "2.8"
+    gid_min:
+        description:
+            - Sets the GID_MIN value for group creation.
+            - Overwrites /etc/login.defs default value.
+            - Currently supported on Linux. Does nothing when used with other platforms.
+            - Requires O(local) is omitted or V(False).
+        type: int
+        version_added: "2.18"
+    gid_max:
+        description:
+            - Sets the GID_MAX value for group creation.
+            - Overwrites /etc/login.defs default value.
+            - Currently supported on Linux. Does nothing when used with other platforms.
+            - Requires O(local) is omitted or V(False).
+        type: int
+        version_added: "2.18"
+extends_documentation_fragment: action_common_attributes
+attributes:
+    check_mode:
+        support: full
+    diff_mode:
+        support: none
+    platform:
+        platforms: posix
 seealso:
 - module: ansible.builtin.user
 - module: ansible.windows.win_group
 author:
 - Stephen Fromm (@sfromm)
-notes:
-- Supports C(check_mode).
 '''
 
 EXAMPLES = '''
@@ -82,7 +109,7 @@ EXAMPLES = '''
 RETURN = r'''
 gid:
   description: Group ID of the group.
-  returned: When C(state) is 'present'
+  returned: When O(state) is C(present)
   type: int
   sample: 1001
 name:
@@ -97,7 +124,7 @@ state:
   sample: 'absent'
 system:
   description: Whether the group is a system group or not.
-  returned: When C(state) is 'present'
+  returned: When O(state) is C(present)
   type: bool
   sample: False
 '''
@@ -105,7 +132,7 @@ system:
 import grp
 import os
 
-from ansible.module_utils._text import to_bytes
+from ansible.module_utils.common.text.converters import to_bytes
 from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils.common.sys_info import get_platform_subclass
 
@@ -124,7 +151,7 @@ class Group(object):
     """
 
     platform = 'Generic'
-    distribution = None
+    distribution = None  # type: str | None
     GROUPFILE = '/etc/group'
 
     def __new__(cls, *args, **kwargs):
@@ -135,10 +162,19 @@ class Group(object):
         self.module = module
         self.state = module.params['state']
         self.name = module.params['name']
+        self.force = module.params['force']
         self.gid = module.params['gid']
         self.system = module.params['system']
         self.local = module.params['local']
         self.non_unique = module.params['non_unique']
+        self.gid_min = module.params['gid_min']
+        self.gid_max = module.params['gid_max']
+
+        if self.local:
+            if self.gid_min is not None:
+                module.fail_json(msg="'gid_min' can not be used with 'local'")
+            if self.gid_max is not None:
+                module.fail_json(msg="'gid_max' can not be used with 'local'")
 
     def execute_command(self, cmd):
         return self.module.run_command(cmd)
@@ -172,6 +208,12 @@ class Group(object):
                     cmd.append('-o')
             elif key == 'system' and kwargs[key] is True:
                 cmd.append('-r')
+        if self.gid_min is not None:
+            cmd.append('-K')
+            cmd.append('GID_MIN=' + str(self.gid_min))
+        if self.gid_max is not None:
+            cmd.append('-K')
+            cmd.append('GID_MAX=' + str(self.gid_max))
         cmd.append(self.name)
         return self.execute_command(cmd)
 
@@ -214,14 +256,7 @@ class Group(object):
                     if line.startswith(to_bytes(name_test)):
                         exists = True
                         break
-
-            if not exists:
-                self.module.warn(
-                    "'local: true' specified and group was not found in {file}. "
-                    "The local group may already exist if the local group database exists somewhere other than {file}.".format(file=self.GROUPFILE))
-
             return exists
-
         else:
             try:
                 if grp.getgrnam(self.name):
@@ -237,6 +272,31 @@ class Group(object):
         except KeyError:
             return False
         return info
+
+
+# ===========================================
+
+class Linux(Group):
+    """
+    This is a Linux Group manipulation class. This is to apply the '-f' parameter to the groupdel command
+
+    This overrides the following methods from the generic class:-
+        - group_del()
+    """
+
+    platform = 'Linux'
+    distribution = None
+
+    def group_del(self):
+        if self.local:
+            command_name = 'lgroupdel'
+        else:
+            command_name = 'groupdel'
+        cmd = [self.module.get_bin_path(command_name, True)]
+        if self.force:
+            cmd.append('-f')
+        cmd.append(self.name)
+        return self.execute_command(cmd)
 
 
 # ===========================================
@@ -262,6 +322,12 @@ class SunOS(Group):
                 cmd.append(str(kwargs[key]))
                 if self.non_unique:
                     cmd.append('-o')
+        if self.gid_min is not None:
+            cmd.append('-K')
+            cmd.append('GID_MIN=' + str(self.gid_min))
+        if self.gid_max is not None:
+            cmd.append('-K')
+            cmd.append('GID_MAX=' + str(self.gid_max))
         cmd.append(self.name)
         return self.execute_command(cmd)
 
@@ -293,6 +359,12 @@ class AIX(Group):
                 cmd.append('id=' + str(kwargs[key]))
             elif key == 'system' and kwargs[key] is True:
                 cmd.append('-a')
+        if self.gid_min is not None:
+            cmd.append('-K')
+            cmd.append('GID_MIN=' + str(self.gid_min))
+        if self.gid_max is not None:
+            cmd.append('-K')
+            cmd.append('GID_MAX=' + str(self.gid_max))
         cmd.append(self.name)
         return self.execute_command(cmd)
 
@@ -338,6 +410,12 @@ class FreeBsdGroup(Group):
             cmd.append(str(self.gid))
             if self.non_unique:
                 cmd.append('-o')
+        if self.gid_min is not None:
+            cmd.append('-K')
+            cmd.append('GID_MIN=' + str(self.gid_min))
+        if self.gid_max is not None:
+            cmd.append('-K')
+            cmd.append('GID_MAX=' + str(self.gid_max))
         return self.execute_command(cmd)
 
     def group_mod(self, **kwargs):
@@ -462,6 +540,12 @@ class OpenBsdGroup(Group):
             cmd.append(str(self.gid))
             if self.non_unique:
                 cmd.append('-o')
+        if self.gid_min is not None:
+            cmd.append('-K')
+            cmd.append('GID_MIN=' + str(self.gid_min))
+        if self.gid_max is not None:
+            cmd.append('-K')
+            cmd.append('GID_MAX=' + str(self.gid_max))
         cmd.append(self.name)
         return self.execute_command(cmd)
 
@@ -508,6 +592,12 @@ class NetBsdGroup(Group):
             cmd.append(str(self.gid))
             if self.non_unique:
                 cmd.append('-o')
+        if self.gid_min is not None:
+            cmd.append('-K')
+            cmd.append('GID_MIN=' + str(self.gid_min))
+        if self.gid_max is not None:
+            cmd.append('-K')
+            cmd.append('GID_MAX=' + str(self.gid_max))
         cmd.append(self.name)
         return self.execute_command(cmd)
 
@@ -547,6 +637,14 @@ class BusyBoxGroup(Group):
 
         if self.system:
             cmd.append('-S')
+
+        if self.gid_min is not None:
+            cmd.append('-K')
+            cmd.append('GID_MIN=' + str(self.gid_min))
+
+        if self.gid_max is not None:
+            cmd.append('-K')
+            cmd.append('GID_MAX=' + str(self.gid_max))
 
         cmd.append(self.name)
 
@@ -591,16 +689,22 @@ def main():
         argument_spec=dict(
             state=dict(type='str', default='present', choices=['absent', 'present']),
             name=dict(type='str', required=True),
+            force=dict(type='bool', default=False),
             gid=dict(type='int'),
             system=dict(type='bool', default=False),
             local=dict(type='bool', default=False),
             non_unique=dict(type='bool', default=False),
+            gid_min=dict(type='int'),
+            gid_max=dict(type='int'),
         ),
         supports_check_mode=True,
         required_if=[
             ['non_unique', True, ['gid']],
         ],
     )
+
+    if module.params['force'] and module.params['local']:
+        module.fail_json(msg='force is not a valid option for local, force=True and local=True are mutually exclusive')
 
     group = Group(module)
 

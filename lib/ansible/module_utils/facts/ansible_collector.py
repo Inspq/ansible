@@ -26,11 +26,12 @@
 # USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
 
-from __future__ import (absolute_import, division, print_function)
-__metaclass__ = type
+from __future__ import annotations
 
 import fnmatch
 import sys
+
+import ansible.module_utils.compat.typing as t
 
 from ansible.module_utils.facts import timeout
 from ansible.module_utils.facts import collector
@@ -61,7 +62,17 @@ class AnsibleFactCollector(collector.BaseFactCollector):
         if is_string(filter_spec):
             filter_spec = [filter_spec]
 
-        return [(x, y) for x, y in facts_dict.items() for f in filter_spec if not f or fnmatch.fnmatch(x, f)]
+        found = []
+        for f in filter_spec:
+            for x, y in facts_dict.items():
+                if not f or fnmatch.fnmatch(x, f):
+                    found.append((x, y))
+                elif not f.startswith(('ansible_', 'facter', 'ohai')):
+                    # try to match with ansible_ prefix added when non empty
+                    g = 'ansible_%s' % f
+                    if fnmatch.fnmatch(x, g):
+                        found.append((x, y))
+        return found
 
     def collect(self, module=None, collected_facts=None):
         collected_facts = collected_facts or {}
@@ -94,7 +105,7 @@ class CollectorMetaDataCollector(collector.BaseFactCollector):
     '''Collector that provides a facts with the gather_subset metadata.'''
 
     name = 'gather_subset'
-    _fact_ids = set([])
+    _fact_ids = set()  # type: t.Set[str]
 
     def __init__(self, collectors=None, namespace=None, gather_subset=None, module_setup=None):
         super(CollectorMetaDataCollector, self).__init__(collectors, namespace)

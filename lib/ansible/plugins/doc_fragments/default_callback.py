@@ -2,8 +2,7 @@
 
 # Copyright: (c) 2017, Ansible Project
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
-from __future__ import (absolute_import, division, print_function)
-__metaclass__ = type
+from __future__ import annotations
 
 
 class ModuleDocFragment(object):
@@ -12,22 +11,17 @@ class ModuleDocFragment(object):
     options:
       display_skipped_hosts:
         name: Show skipped hosts
-        description: "Toggle to control displaying skipped task/host results in a task"
+        description: "Toggle to control displaying skipped task/host results in a task."
         type: bool
         default: yes
         env:
-          - name: DISPLAY_SKIPPED_HOSTS
-            deprecated:
-              why: environment variables without "ANSIBLE_" prefix are deprecated
-              version: "2.12"
-              alternatives: the "ANSIBLE_DISPLAY_SKIPPED_HOSTS" environment variable
           - name: ANSIBLE_DISPLAY_SKIPPED_HOSTS
         ini:
           - key: display_skipped_hosts
             section: defaults
       display_ok_hosts:
         name: Show 'ok' hosts
-        description: "Toggle to control displaying 'ok' task/host results in a task"
+        description: "Toggle to control displaying 'ok' task/host results in a task."
         type: bool
         default: yes
         env:
@@ -38,7 +32,7 @@ class ModuleDocFragment(object):
         version_added: '2.7'
       display_failed_stderr:
         name: Use STDERR for failed and unreachable tasks
-        description: "Toggle to control whether failed and unreachable tasks are displayed to STDERR (vs. STDOUT)"
+        description: "Toggle to control whether failed and unreachable tasks are displayed to STDERR rather than STDOUT."
         type: bool
         default: no
         env:
@@ -49,7 +43,7 @@ class ModuleDocFragment(object):
         version_added: '2.7'
       show_custom_stats:
         name: Show custom stats
-        description: 'This adds the custom stats set via the set_stats plugin to the play recap'
+        description: 'This adds the custom stats set via the set_stats plugin to the play recap.'
         type: bool
         default: no
         env:
@@ -59,7 +53,7 @@ class ModuleDocFragment(object):
             section: defaults
       show_per_host_start:
         name: Show per host task start
-        description: 'This adds output that shows when a task is started to execute for each host'
+        description: 'This adds output that shows when a task starts to execute for each host.'
         type: bool
         default: no
         env:
@@ -72,8 +66,8 @@ class ModuleDocFragment(object):
         name: Show markers when running in check mode
         description:
         - Toggle to control displaying markers when running in check mode.
-        - "The markers are C(DRY RUN) at the beggining and ending of playbook execution (when calling C(ansible-playbook --check))
-        and C(CHECK MODE) as a suffix at every play and task that is run in check mode."
+        - "The markers are C(DRY RUN) at the beginning and ending of playbook execution (when calling C(ansible-playbook --check))
+          and C(CHECK MODE) as a suffix at every play and task that is run in check mode."
         type: bool
         default: no
         version_added: '2.9'
@@ -85,8 +79,8 @@ class ModuleDocFragment(object):
       show_task_path_on_failure:
         name: Show file path on failed tasks
         description:
-          When a task fails, display the path to the file containing the failed task and the line number.
-          This information is displayed automatically for every task when running with C(-vv) or greater verbosity.
+          - When a task fails, display the path to the file containing the failed task and the line number.
+            This information is displayed automatically for every task when running with C(-vv) or greater verbosity.
         type: bool
         default: no
         env:

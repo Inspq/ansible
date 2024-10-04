@@ -26,8 +26,7 @@
 # LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
 # USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-from __future__ import (absolute_import, division, print_function)
-__metaclass__ = type
+from __future__ import annotations
 
 
 def _get_quote_state(token, quote_char):
@@ -82,7 +81,7 @@ def split_args(args):
     '''
 
     # the list of params parsed out of the arg string
-    # this is going to be the result value when we are donei
+    # this is going to be the result value when we are done
     params = []
 
     # here we encode the args, so we have a uniform charset to

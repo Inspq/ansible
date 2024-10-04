@@ -1,20 +1,34 @@
 """Sanity test using pylint."""
-from __future__ import (absolute_import, division, print_function)
-__metaclass__ = type
+from __future__ import annotations
 
+import collections.abc as c
 import itertools
 import json
 import os
 import datetime
-
-from ... import types as t
+import configparser
+import typing as t
 
 from . import (
     SanitySingleVersion,
     SanityMessage,
     SanityFailure,
     SanitySuccess,
+    SanityTargets,
     SANITY_ROOT,
+)
+
+from ...constants import (
+    CONTROLLER_PYTHON_VERSIONS,
+    REMOTE_ONLY_PYTHON_VERSIONS,
+)
+
+from ...io import (
+    make_dirs,
+)
+
+from ...test import (
+    TestResult,
 )
 
 from ...target import (
@@ -24,9 +38,7 @@ from ...target import (
 from ...util import (
     SubprocessError,
     display,
-    ConfigParser,
     is_subdir,
-    find_python,
 )
 
 from ...util_common import (
@@ -38,6 +50,7 @@ from ...ansible_util import (
     get_collection_detail,
     CollectionDetail,
     CollectionDetailError,
+    ResultType,
 )
 
 from ...config import (
@@ -48,33 +61,33 @@ from ...data import (
     data_context,
 )
 
+from ...host_configs import (
+    PythonConfig,
+)
+
 
 class PylintTest(SanitySingleVersion):
     """Sanity test using pylint."""
 
-    def __init__(self):
-        super(PylintTest, self).__init__()
+    def __init__(self) -> None:
+        super().__init__()
         self.optional_error_codes.update([
             'ansible-deprecated-date',
             'too-complex',
         ])
 
     @property
-    def error_code(self):  # type: () -> t.Optional[str]
+    def error_code(self) -> t.Optional[str]:
         """Error code for ansible-test matching the format used by the underlying test program, or None if the program does not use error codes."""
         return 'ansible-test'
 
-    def filter_targets(self, targets):  # type: (t.List[TestTarget]) -> t.List[TestTarget]
+    def filter_targets(self, targets: list[TestTarget]) -> list[TestTarget]:
         """Return the given list of test targets, filtered to include only those relevant for the test."""
         return [target for target in targets if os.path.splitext(target.path)[1] == '.py' or is_subdir(target.path, 'bin')]
 
-    def test(self, args, targets, python_version):
-        """
-        :type args: SanityConfig
-        :type targets: SanityTargets
-        :type python_version: str
-        :rtype: TestResult
-        """
+    def test(self, args: SanityConfig, targets: SanityTargets, python: PythonConfig) -> TestResult:
+        target_paths = set(target.path for target in self.filter_remote_targets(list(targets.targets)))
+
         plugin_dir = os.path.join(SANITY_ROOT, 'pylint', 'plugins')
         plugin_names = sorted(p[0] for p in [
             os.path.splitext(p) for p in os.listdir(plugin_dir)] if p[1] == '.py' and p[0] != '__init__')
@@ -85,7 +98,7 @@ class PylintTest(SanitySingleVersion):
 
         module_paths = [os.path.relpath(p, data_context().content.module_path).split(os.path.sep) for p in
                         paths if is_subdir(p, data_context().content.module_path)]
-        module_dirs = sorted(set([p[0] for p in module_paths if len(p) > 1]))
+        module_dirs = sorted({p[0] for p in module_paths if len(p) > 1})
 
         large_module_group_threshold = 500
         large_module_groups = [key for key, value in
@@ -93,31 +106,28 @@ class PylintTest(SanitySingleVersion):
 
         large_module_group_paths = [os.path.relpath(p, data_context().content.module_path).split(os.path.sep) for p in paths
                                     if any(is_subdir(p, os.path.join(data_context().content.module_path, g)) for g in large_module_groups)]
-        large_module_group_dirs = sorted(set([os.path.sep.join(p[:2]) for p in large_module_group_paths if len(p) > 2]))
+        large_module_group_dirs = sorted({os.path.sep.join(p[:2]) for p in large_module_group_paths if len(p) > 2})
 
         contexts = []
         remaining_paths = set(paths)
 
-        def add_context(available_paths, context_name, context_filter):
-            """
-            :type available_paths: set[str]
-            :type context_name: str
-            :type context_filter: (str) -> bool
-            """
+        def add_context(available_paths: set[str], context_name: str, context_filter: c.Callable[[str], bool]) -> None:
+            """Add the specified context to the context list, consuming available paths that match the given context filter."""
             filtered_paths = set(p for p in available_paths if context_filter(p))
-            contexts.append((context_name, sorted(filtered_paths)))
+
+            if selected_paths := sorted(path for path in filtered_paths if path in target_paths):
+                contexts.append((context_name, True, selected_paths))
+
+            if selected_paths := sorted(path for path in filtered_paths if path not in target_paths):
+                contexts.append((context_name, False, selected_paths))
+
             available_paths -= filtered_paths
 
-        def filter_path(path_filter=None):
-            """
-            :type path_filter: str
-            :rtype: (str) -> bool
-            """
-            def context_filter(path_to_filter):
-                """
-                :type path_to_filter: str
-                :rtype: bool
-                """
+        def filter_path(path_filter: str = None) -> c.Callable[[str], bool]:
+            """Return a function that filters out paths which are not a subdirectory of the given path."""
+
+            def context_filter(path_to_filter: str) -> bool:
+                """Return true if the given path matches, otherwise return False."""
                 return is_subdir(path_to_filter, path_filter)
 
             return context_filter
@@ -136,10 +146,10 @@ class PylintTest(SanitySingleVersion):
         if data_context().content.collection:
             add_context(remaining_paths, 'collection', lambda p: True)
         else:
-            add_context(remaining_paths, 'validate-modules', filter_path('test/lib/ansible_test/_data/sanity/validate-modules/'))
+            add_context(remaining_paths, 'validate-modules', filter_path('test/lib/ansible_test/_util/controller/sanity/validate-modules/'))
             add_context(remaining_paths, 'validate-modules-unit', filter_path('test/lib/ansible_test/tests/validate-modules-unit/'))
-            add_context(remaining_paths, 'sanity', filter_path('test/lib/ansible_test/_data/sanity/'))
-            add_context(remaining_paths, 'legacy-collection-loader', filter_path('test/lib/ansible_test/_data/legacy_collection_loader/'))
+            add_context(remaining_paths, 'code-smell', filter_path('test/lib/ansible_test/_util/controller/sanity/code-smell/'))
+            add_context(remaining_paths, 'ansible-test-target', filter_path('test/lib/ansible_test/_util/target/'))
             add_context(remaining_paths, 'ansible-test', filter_path('test/lib/'))
             add_context(remaining_paths, 'test', filter_path('test/'))
             add_context(remaining_paths, 'hacking', filter_path('hacking/'))
@@ -148,32 +158,30 @@ class PylintTest(SanitySingleVersion):
         messages = []
         context_times = []
 
-        python = find_python(python_version)
-
         collection_detail = None
 
         if data_context().content.collection:
             try:
-                collection_detail = get_collection_detail(args, python)
+                collection_detail = get_collection_detail(python)
 
                 if not collection_detail.version:
                     display.warning('Skipping pylint collection version checks since no collection version was found.')
             except CollectionDetailError as ex:
                 display.warning('Skipping pylint collection version checks since collection detail loading failed: %s' % ex.reason)
 
-        test_start = datetime.datetime.utcnow()
+        test_start = datetime.datetime.now(tz=datetime.timezone.utc)
 
-        for context, context_paths in sorted(contexts):
+        for context, is_target, context_paths in sorted(contexts):
             if not context_paths:
                 continue
 
-            context_start = datetime.datetime.utcnow()
-            messages += self.pylint(args, context, context_paths, plugin_dir, plugin_names, python, collection_detail)
-            context_end = datetime.datetime.utcnow()
+            context_start = datetime.datetime.now(tz=datetime.timezone.utc)
+            messages += self.pylint(args, context, is_target, context_paths, plugin_dir, plugin_names, python, collection_detail)
+            context_end = datetime.datetime.now(tz=datetime.timezone.utc)
 
             context_times.append('%s: %d (%s)' % (context, len(context_paths), context_end - context_start))
 
-        test_end = datetime.datetime.utcnow()
+        test_end = datetime.datetime.now(tz=datetime.timezone.utc)
 
         for context_time in context_times:
             display.info(context_time, verbosity=4)
@@ -201,14 +209,15 @@ class PylintTest(SanitySingleVersion):
 
     @staticmethod
     def pylint(
-            args,  # type: SanityConfig
-            context,  # type: str
-            paths,  # type: t.List[str]
-            plugin_dir,  # type: str
-            plugin_names,  # type: t.List[str]
-            python,  # type: str
-            collection_detail,  # type: CollectionDetail
-    ):  # type: (...) -> t.List[t.Dict[str, str]]
+        args: SanityConfig,
+        context: str,
+        is_target: bool,
+        paths: list[str],
+        plugin_dir: str,
+        plugin_names: list[str],
+        python: PythonConfig,
+        collection_detail: CollectionDetail,
+    ) -> list[dict[str, str]]:
         """Run pylint using the config specified by the context on the specified paths."""
         rcfile = os.path.join(SANITY_ROOT, 'pylint', 'config', context.split('/')[0] + '.cfg')
 
@@ -218,19 +227,26 @@ class PylintTest(SanitySingleVersion):
             else:
                 rcfile = os.path.join(SANITY_ROOT, 'pylint', 'config', 'default.cfg')
 
-        parser = ConfigParser()
+        parser = configparser.ConfigParser()
         parser.read(rcfile)
 
         if parser.has_section('ansible-test'):
             config = dict(parser.items('ansible-test'))
         else:
-            config = dict()
+            config = {}
 
         disable_plugins = set(i.strip() for i in config.get('disable-plugins', '').split(',') if i)
         load_plugins = set(plugin_names + ['pylint.extensions.mccabe']) - disable_plugins
 
+        if is_target:
+            context_label = 'target'
+            min_python_version = REMOTE_ONLY_PYTHON_VERSIONS[0]
+        else:
+            context_label = 'controller'
+            min_python_version = CONTROLLER_PYTHON_VERSIONS[0]
+
         cmd = [
-            python,
+            python.path,
             '-m', 'pylint',
             '--jobs', '0',
             '--reports', 'n',
@@ -238,8 +254,9 @@ class PylintTest(SanitySingleVersion):
             '--max-complexity', '20',
             '--rcfile', rcfile,
             '--output-format', 'json',
-            '--load-plugins', ','.join(load_plugins),
-        ] + paths
+            '--load-plugins', ','.join(sorted(load_plugins)),
+            '--py-version', min_python_version,
+        ] + paths  # fmt: skip
 
         if data_context().content.collection:
             cmd.extend(['--collection-name', data_context().content.collection.full_name])
@@ -258,8 +275,14 @@ class PylintTest(SanitySingleVersion):
         # expose plugin paths for use in custom plugins
         env.update(dict(('ANSIBLE_TEST_%s_PATH' % k.upper(), os.path.abspath(v) + os.path.sep) for k, v in data_context().content.plugin_paths.items()))
 
+        # Set PYLINTHOME to prevent pylint from checking for an obsolete directory, which can result in a test failure due to stderr output.
+        # See: https://github.com/PyCQA/pylint/blob/e6c6bf5dfd61511d64779f54264b27a368c43100/pylint/constants.py#L148
+        pylint_home = os.path.join(ResultType.TMP.path, 'pylint')
+        make_dirs(pylint_home)
+        env.update(PYLINTHOME=pylint_home)
+
         if paths:
-            display.info('Checking %d file(s) in context "%s" with config: %s' % (len(paths), context, rcfile), verbosity=1)
+            display.info(f'Checking {len(paths)} file(s) in context {context!r} ({context_label}) with config: {rcfile}', verbosity=1)
 
             try:
                 stdout, stderr = run_command(args, cmd, env=env, capture=True)

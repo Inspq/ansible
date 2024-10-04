@@ -1,4 +1,3 @@
-#!/usr/bin/python
 # -*- coding: utf-8 -*-
 
 # Ansible module to import third party repo keys to your rpm db
@@ -6,8 +5,7 @@
 
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-from __future__ import absolute_import, division, print_function
-__metaclass__ = type
+from __future__ import annotations
 
 
 DOCUMENTATION = '''
@@ -17,7 +15,7 @@ author:
   - Hector Acosta (@hacosta) <hector.acosta@gazzang.com>
 short_description: Adds or removes a gpg key from the rpm db
 description:
-  - Adds or removes (rpm --import) a gpg key to your rpm database.
+  - Adds or removes C(rpm --import) a gpg key to your rpm database.
 version_added: "1.3"
 options:
     key:
@@ -34,7 +32,7 @@ options:
       choices: [ absent, present ]
     validate_certs:
       description:
-        - If C(no) and the C(key) is a url starting with https, SSL certificates will not be validated.
+        - If V(false) and the O(key) is a url starting with V(https), SSL certificates will not be validated.
         - This should only be used on personally controlled sites using self-signed certificates.
       type: bool
       default: 'yes'
@@ -42,10 +40,18 @@ options:
       description:
         - The long-form fingerprint of the key being imported.
         - This will be used to verify the specified key.
-      type: str
+      type: list
+      elements: str
       version_added: 2.9
-notes:
-  - Supports C(check_mode).
+extends_documentation_fragment:
+    - action_common_attributes
+attributes:
+    check_mode:
+        support: full
+    diff_mode:
+        support: none
+    platform:
+        platforms: rhel
 '''
 
 EXAMPLES = '''
@@ -68,6 +74,13 @@ EXAMPLES = '''
   ansible.builtin.rpm_key:
     key: /path/to/RPM-GPG-KEY.dag.txt
     fingerprint: EBC6 E12C 62B1 C734 026B  2122 A20E 5214 6B8D 79E6
+
+- name: Verify the key, using multiple fingerprints, before import
+  ansible.builtin.rpm_key:
+    key: /path/to/RPM-GPG-KEY.dag.txt
+    fingerprint:
+      - EBC6 E12C 62B1 C734 026B  2122 A20E 5214 6B8D 79E6
+      - 19B7 913E 6284 8E3F 4D78 D6B4 ECD9 1AB2 2EB6 8D86
 '''
 
 RETURN = r'''#'''
@@ -79,7 +92,7 @@ import tempfile
 # import module snippets
 from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils.urls import fetch_url
-from ansible.module_utils._text import to_native
+from ansible.module_utils.common.text.converters import to_native
 
 
 def is_pubkey(string):
@@ -100,8 +113,12 @@ class RpmKey(object):
         state = module.params['state']
         key = module.params['key']
         fingerprint = module.params['fingerprint']
+        fingerprints = set()
+
         if fingerprint:
-            fingerprint = fingerprint.replace(' ', '').upper()
+            if not isinstance(fingerprint, list):
+                fingerprint = [fingerprint]
+            fingerprints = set(f.replace(' ', '').upper() for f in fingerprint)
 
         self.gpg = self.module.get_bin_path('gpg')
         if not self.gpg:
@@ -126,11 +143,12 @@ class RpmKey(object):
             else:
                 if not keyfile:
                     self.module.fail_json(msg="When importing a key, a valid file must be given")
-                if fingerprint:
-                    has_fingerprint = self.getfingerprint(keyfile)
-                    if fingerprint != has_fingerprint:
+                if fingerprints:
+                    keyfile_fingerprints = self.getfingerprints(keyfile)
+                    if not fingerprints.issubset(keyfile_fingerprints):
                         self.module.fail_json(
-                            msg="The specified fingerprint, '%s', does not match the key fingerprint '%s'" % (fingerprint, has_fingerprint)
+                            msg=("The specified fingerprint, '%s', "
+                                 "does not match any key fingerprints in '%s'") % (fingerprints, keyfile_fingerprints)
                         )
                 self.import_key(keyfile)
                 if should_cleanup_keyfile:
@@ -178,11 +196,15 @@ class RpmKey(object):
 
         self.module.fail_json(msg="Unexpected gpg output")
 
-    def getfingerprint(self, keyfile):
+    def getfingerprints(self, keyfile):
         stdout, stderr = self.execute_command([
             self.gpg, '--no-tty', '--batch', '--with-colons',
-            '--fixed-list-mode', '--with-fingerprint', keyfile
+            '--fixed-list-mode', '--import', '--import-options', 'show-only',
+            '--dry-run', keyfile
         ])
+
+        fingerprints = set()
+
         for line in stdout.splitlines():
             line = line.strip()
             if line.startswith('fpr:'):
@@ -194,7 +216,10 @@ class RpmKey(object):
                 #
                 # "fpr :: Fingerprint (fingerprint is in field 10)"
                 #
-                return line.split(':')[9]
+                fingerprints.add(line.split(':')[9])
+
+        if fingerprints:
+            return fingerprints
 
         self.module.fail_json(msg="Unexpected gpg output")
 
@@ -234,7 +259,7 @@ def main():
         argument_spec=dict(
             state=dict(type='str', default='present', choices=['absent', 'present']),
             key=dict(type='str', required=True, no_log=False),
-            fingerprint=dict(type='str'),
+            fingerprint=dict(type='list', elements='str'),
             validate_certs=dict(type='bool', default=True),
         ),
         supports_check_mode=True,

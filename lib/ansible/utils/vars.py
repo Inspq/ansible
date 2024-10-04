@@ -15,32 +15,27 @@
 # You should have received a copy of the GNU General Public License
 # along with Ansible.  If not, see <http://www.gnu.org/licenses/>.
 
-# Make coding more python3-ish
-from __future__ import (absolute_import, division, print_function)
-__metaclass__ = type
+from __future__ import annotations
 
 import keyword
-import random
+import secrets
 import uuid
 
+from collections.abc import MutableMapping, MutableSequence
 from json import dumps
-
 
 from ansible import constants as C
 from ansible import context
 from ansible.errors import AnsibleError, AnsibleOptionsError
-from ansible.module_utils.six import iteritems, string_types, PY3
-from ansible.module_utils._text import to_native, to_text
-from ansible.module_utils.common._collections_compat import MutableMapping, MutableSequence
+from ansible.module_utils.six import string_types
+from ansible.module_utils.common.text.converters import to_native, to_text
 from ansible.parsing.splitter import parse_kv
 
-
-ADDITIONAL_PY2_KEYWORDS = frozenset(("True", "False", "None"))
 
 _MAXSIZE = 2 ** 32
 cur_id = 0
 node_mac = ("%012x" % uuid.getnode())[:12]
-random_int = ("%08x" % random.randint(0, _MAXSIZE))[:8]
+random_int = ("%08x" % secrets.randbelow(_MAXSIZE))[:8]
 
 
 def get_unique_id():
@@ -79,19 +74,18 @@ def _validate_mutable_mappings(a, b):
         )
 
 
-def combine_vars(a, b):
+def combine_vars(a, b, merge=None):
     """
     Return a copy of dictionaries of variables based on configured hash behavior
     """
 
-    if C.DEFAULT_HASH_BEHAVIOUR == "merge":
+    if merge or merge is None and C.DEFAULT_HASH_BEHAVIOUR == "merge":
         return merge_hash(a, b)
-    else:
-        # HASH_BEHAVIOUR == 'replace'
-        _validate_mutable_mappings(a, b)
-        result = a.copy()
-        result.update(b)
-        return result
+
+    # HASH_BEHAVIOUR == 'replace'
+    _validate_mutable_mappings(a, b)
+    result = a | b
+    return result
 
 
 def merge_hash(x, y, recursive=True, list_merge='replace'):
@@ -111,6 +105,8 @@ def merge_hash(x, y, recursive=True, list_merge='replace'):
     #  except performance)
     if x == {} or x == y:
         return y.copy()
+    if y == {}:
+        return x
 
     # in the following we will copy elements from y to x, but
     # we don't want to modify x, so we create a copy of it
@@ -129,7 +125,7 @@ def merge_hash(x, y, recursive=True, list_merge='replace'):
     # there is a high probability x will be the "default" dict the user
     # want to "patch" with y
     # therefore x will have much more elements than y
-    for key, y_value in iteritems(y):
+    for key, y_value in y.items():
         # if `key` isn't in x
         # update x and move on to the next element of y
         if key not in x:
@@ -183,66 +179,82 @@ def merge_hash(x, y, recursive=True, list_merge='replace'):
 
 
 def load_extra_vars(loader):
-    extra_vars = {}
-    for extra_vars_opt in context.CLIARGS.get('extra_vars', tuple()):
-        data = None
-        extra_vars_opt = to_text(extra_vars_opt, errors='surrogate_or_strict')
-        if extra_vars_opt is None or not extra_vars_opt:
-            continue
 
-        if extra_vars_opt.startswith(u"@"):
-            # Argument is a YAML file (JSON is a subset of YAML)
-            data = loader.load_from_file(extra_vars_opt[1:])
-        elif extra_vars_opt[0] in [u'/', u'.']:
-            raise AnsibleOptionsError("Please prepend extra_vars filename '%s' with '@'" % extra_vars_opt)
-        elif extra_vars_opt[0] in [u'[', u'{']:
-            # Arguments as YAML
-            data = loader.load(extra_vars_opt)
-        else:
-            # Arguments as Key-value
-            data = parse_kv(extra_vars_opt)
+    if not getattr(load_extra_vars, 'extra_vars', None):
+        extra_vars = {}
+        for extra_vars_opt in context.CLIARGS.get('extra_vars', tuple()):
+            data = None
+            extra_vars_opt = to_text(extra_vars_opt, errors='surrogate_or_strict')
+            if extra_vars_opt is None or not extra_vars_opt:
+                continue
 
-        if isinstance(data, MutableMapping):
-            extra_vars = combine_vars(extra_vars, data)
-        else:
-            raise AnsibleOptionsError("Invalid extra vars data supplied. '%s' could not be made into a dictionary" % extra_vars_opt)
+            if extra_vars_opt.startswith(u"@"):
+                # Argument is a YAML file (JSON is a subset of YAML)
+                data = loader.load_from_file(extra_vars_opt[1:])
+            elif extra_vars_opt[0] in [u'/', u'.']:
+                raise AnsibleOptionsError("Please prepend extra_vars filename '%s' with '@'" % extra_vars_opt)
+            elif extra_vars_opt[0] in [u'[', u'{']:
+                # Arguments as YAML
+                data = loader.load(extra_vars_opt)
+            else:
+                # Arguments as Key-value
+                data = parse_kv(extra_vars_opt)
 
-    return extra_vars
+            if isinstance(data, MutableMapping):
+                extra_vars = combine_vars(extra_vars, data)
+            else:
+                raise AnsibleOptionsError("Invalid extra vars data supplied. '%s' could not be made into a dictionary" % extra_vars_opt)
+
+        setattr(load_extra_vars, 'extra_vars', extra_vars)
+
+    return load_extra_vars.extra_vars
 
 
 def load_options_vars(version):
 
-    if version is None:
-        version = 'Unknown'
-    options_vars = {'ansible_version': version}
-    attrs = {'check': 'check_mode',
-             'diff': 'diff_mode',
-             'forks': 'forks',
-             'inventory': 'inventory_sources',
-             'skip_tags': 'skip_tags',
-             'subset': 'limit',
-             'tags': 'run_tags',
-             'verbosity': 'verbosity'}
+    if not getattr(load_options_vars, 'options_vars', None):
+        if version is None:
+            version = 'Unknown'
+        options_vars = {'ansible_version': version}
+        attrs = {'check': 'check_mode',
+                 'diff': 'diff_mode',
+                 'forks': 'forks',
+                 'inventory': 'inventory_sources',
+                 'skip_tags': 'skip_tags',
+                 'subset': 'limit',
+                 'tags': 'run_tags',
+                 'verbosity': 'verbosity'}
 
-    for attr, alias in attrs.items():
-        opt = context.CLIARGS.get(attr)
-        if opt is not None:
-            options_vars['ansible_%s' % alias] = opt
+        for attr, alias in attrs.items():
+            opt = context.CLIARGS.get(attr)
+            if opt is not None:
+                options_vars['ansible_%s' % alias] = opt
 
-    return options_vars
+        setattr(load_options_vars, 'options_vars', options_vars)
+
+    return load_options_vars.options_vars
 
 
-def _isidentifier_PY3(ident):
+def isidentifier(ident):
+    """Determine if string is valid identifier.
+
+    The purpose of this function is to be used to validate any variables created in
+    a play to be valid Python identifiers and to not conflict with Python keywords
+    to prevent unexpected behavior. Since Python 2 and Python 3 differ in what
+    a valid identifier is, this function unifies the validation so playbooks are
+    portable between the two. The following changes were made:
+
+        * disallow non-ascii characters (Python 3 allows for them as opposed to Python 2)
+
+    :arg ident: A text string of identifier to check. Note: It is callers
+        responsibility to convert ident to text if it is not already.
+
+    Originally posted at https://stackoverflow.com/a/29586366
+    """
     if not isinstance(ident, string_types):
         return False
 
-    # NOTE Python 3.7 offers str.isascii() so switch over to using it once
-    # we stop supporting 3.5 and 3.6 on the controller
-    try:
-        # Python 2 does not allow non-ascii characters in identifiers so unify
-        # the behavior for Python 3
-        ident.encode('ascii')
-    except UnicodeEncodeError:
+    if not ident.isascii():
         return False
 
     if not ident.isidentifier():
@@ -252,44 +264,3 @@ def _isidentifier_PY3(ident):
         return False
 
     return True
-
-
-def _isidentifier_PY2(ident):
-    if not isinstance(ident, string_types):
-        return False
-
-    if not ident:
-        return False
-
-    if C.INVALID_VARIABLE_NAMES.search(ident):
-        return False
-
-    if keyword.iskeyword(ident) or ident in ADDITIONAL_PY2_KEYWORDS:
-        return False
-
-    return True
-
-
-if PY3:
-    isidentifier = _isidentifier_PY3
-else:
-    isidentifier = _isidentifier_PY2
-
-
-isidentifier.__doc__ = """Determine if string is valid identifier.
-
-The purpose of this function is to be used to validate any variables created in
-a play to be valid Python identifiers and to not conflict with Python keywords
-to prevent unexpected behavior. Since Python 2 and Python 3 differ in what
-a valid identifier is, this function unifies the validation so playbooks are
-portable between the two. The following changes were made:
-
-    * disallow non-ascii characters (Python 3 allows for them as opposed to Python 2)
-    * True, False and None are reserved keywords (these are reserved keywords
-      on Python 3 as opposed to Python 2)
-
-:arg ident: A text string of identifier to check. Note: It is callers
-    responsibility to convert ident to text if it is not already.
-
-Originally posted at http://stackoverflow.com/a/29586366
-"""

@@ -4,14 +4,13 @@
 # (c) 2017-2018 Ansible Project
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-from __future__ import absolute_import, division, print_function
-__metaclass__ = type
+from __future__ import annotations
 
 import pytest
 
-from units.compat.mock import patch
+from unittest.mock import patch
 
-from ansible.module_utils.six.moves import builtins
+import builtins
 
 # Functions being tested
 from ansible.module_utils.common.sys_info import get_distribution
@@ -31,10 +30,19 @@ def platform_linux(mocker):
 # get_distribution tests
 #
 
-def test_get_distribution_not_linux():
-    """If it's not Linux, then it has no distribution"""
-    with patch('platform.system', return_value='Foo'):
-        assert get_distribution() is None
+@pytest.mark.parametrize(
+    ('system', 'dist'),
+    (
+        ('Darwin', 'Darwin'),
+        ('SunOS', 'Solaris'),
+        ('FreeBSD', 'Freebsd'),
+    ),
+)
+def test_get_distribution_not_linux(system, dist, mocker):
+    """For platforms other than Linux, return the distribution"""
+    mocker.patch('platform.system', return_value=system)
+    mocker.patch('ansible.module_utils.common.sys_info.distro.id', return_value=dist)
+    assert get_distribution() == dist
 
 
 @pytest.mark.usefixtures("platform_linux")
@@ -103,10 +111,19 @@ class TestGetDistribution:
 # get_distribution_version tests
 #
 
-def test_get_distribution_version_not_linux():
+@pytest.mark.parametrize(
+    ('system', 'version'),
+    (
+        ('Darwin', '19.6.0'),
+        ('SunOS', '11.4'),
+        ('FreeBSD', '12.1'),
+    ),
+)
+def test_get_distribution_version_not_linux(mocker, system, version):
     """If it's not Linux, then it has no distribution"""
-    with patch('platform.system', return_value='Foo'):
-        assert get_distribution_version() is None
+    mocker.patch('platform.system', return_value=system)
+    mocker.patch('ansible.module_utils.common.sys_info.distro.version', return_value=version)
+    assert get_distribution_version() == version
 
 
 @pytest.mark.usefixtures("platform_linux")

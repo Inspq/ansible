@@ -1,20 +1,19 @@
 # Copyright 2021 Red Hat
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-from __future__ import (absolute_import, division, print_function)
-__metaclass__ = type
+from __future__ import annotations
 
 from ansible.errors import AnsibleError
 from ansible.plugins.action import ActionBase
-from ansible.module_utils.six import iteritems, string_types
 from ansible.module_utils.common.arg_spec import ArgumentSpecValidator
-from ansible.module_utils.errors import AnsibleValidationErrorMultiple
+from ansible.utils.vars import combine_vars
 
 
 class ActionModule(ActionBase):
     ''' Validate an arg spec'''
 
     TRANSFERS_FILES = False
+    _requires_connection = False
 
     def get_args_from_task_vars(self, argument_spec, task_vars):
         '''
@@ -29,14 +28,10 @@ class ActionModule(ActionBase):
         '''
         args = {}
 
-        for argument_name, argument_attrs in iteritems(argument_spec):
+        for argument_name, argument_attrs in argument_spec.items():
             if argument_name in task_vars:
-                if isinstance(task_vars[argument_name], string_types):
-                    value = self._templar.do_template(task_vars[argument_name])
-                    if value:
-                        args[argument_name] = value
-                else:
-                    args[argument_name] = task_vars[argument_name]
+                args[argument_name] = task_vars[argument_name]
+        args = self._templar.template(args)
         return args
 
     def run(self, tmp=None, task_vars=None):
@@ -81,10 +76,8 @@ class ActionModule(ActionBase):
             raise AnsibleError('Incorrect type for provided_arguments, expected dict and got %s' % type(provided_arguments))
 
         args_from_vars = self.get_args_from_task_vars(argument_spec_data, task_vars)
-        provided_arguments.update(args_from_vars)
-
         validator = ArgumentSpecValidator(argument_spec_data)
-        validation_result = validator.validate(provided_arguments)
+        validation_result = validator.validate(combine_vars(args_from_vars, provided_arguments), validate_role_argument_spec=True)
 
         if validation_result.error_messages:
             result['failed'] = True

@@ -1,4 +1,3 @@
-shippable/posix/group3
-skip/aix
-skip/osx
+destructive
+shippable/posix/group2
 skip/macos

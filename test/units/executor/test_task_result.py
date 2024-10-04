@@ -15,12 +15,10 @@
 # You should have received a copy of the GNU General Public License
 # along with Ansible.  If not, see <http://www.gnu.org/licenses/>.
 
-# Make coding more python3-ish
-from __future__ import (absolute_import, division, print_function)
-__metaclass__ = type
+from __future__ import annotations
 
-from units.compat import unittest
-from units.compat.mock import patch, MagicMock
+import unittest
+from unittest.mock import patch, MagicMock
 
 from ansible.executor.task_result import TaskResult
 
@@ -152,7 +150,7 @@ class TestTaskResult(unittest.TestCase):
         mock_host = MagicMock()
         mock_task = MagicMock()
 
-        # no_log should not remove presrved keys
+        # no_log should not remove preserved keys
         tr = TaskResult(
             mock_host,
             mock_task,

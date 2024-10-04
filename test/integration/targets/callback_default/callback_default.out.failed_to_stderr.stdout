@@ -25,9 +25,6 @@ TASK [debug loop] **************************************************************
 changed: [testhost] => (item=debug-1) => {
     "msg": "debug-1"
 }
-failed: [testhost] (item=debug-2) => {
-    "msg": "debug-2"
-}
 ok: [testhost] => (item=debug-3) => {
     "msg": "debug-3"
 }
@@ -64,6 +61,17 @@ changed: [testhost]
 TASK [replace] *****************************************************************
 ok: [testhost]
 
+TASK [debug] *******************************************************************
+skipping: [testhost]
+
+TASK [debug] *******************************************************************
+skipping: [testhost]
+
+TASK [debug] *******************************************************************
+skipping: [testhost] => (item=1) 
+skipping: [testhost] => (item=2) 
+skipping: [testhost]
+
 RUNNING HANDLER [Test handler 1] ***********************************************
 changed: [testhost]
 
@@ -90,5 +98,5 @@ ok: [testhost] => {
 }
 
 PLAY RECAP *********************************************************************
-testhost                   : ok=19   changed=11   unreachable=0    failed=0    skipped=1    rescued=1    ignored=2   
+testhost                   : ok=19   changed=11   unreachable=0    failed=0    skipped=4    rescued=1    ignored=2   
 

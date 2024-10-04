@@ -26,12 +26,13 @@
 # USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
 
-from __future__ import (absolute_import, division, print_function)
-__metaclass__ = type
+from __future__ import annotations
 
 from collections import defaultdict
 
 import platform
+
+import ansible.module_utils.compat.typing as t
 
 from ansible.module_utils.facts import timeout
 
@@ -56,11 +57,11 @@ class CollectorNotFoundError(KeyError):
 
 
 class BaseFactCollector:
-    _fact_ids = set()
+    _fact_ids = set()  # type: t.Set[str]
 
     _platform = 'Generic'
-    name = None
-    required_facts = set()
+    name = None  # type: str | None
+    required_facts = set()  # type: t.Set[str]
 
     def __init__(self, collectors=None, namespace=None):
         '''Base class for things that collect facts.
@@ -89,6 +90,8 @@ class BaseFactCollector:
     def _transform_dict_keys(self, fact_dict):
         '''update a dicts keys to use new names as transformed by self._transform_name'''
 
+        if fact_dict is None:
+            return {}
         for old_key in list(fact_dict.keys()):
             new_key = self._transform_name(old_key)
             # pop the item by old_key and replace it using new_key

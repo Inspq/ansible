@@ -16,9 +16,8 @@
 # You should have received a copy of the GNU General Public License
 # along with Ansible.  If not, see <http://www.gnu.org/licenses/>.
 #
-from __future__ import absolute_import, division, print_function
+from __future__ import annotations
 
-__metaclass__ = type
 
 import sys
 import copy
@@ -107,7 +106,7 @@ class ActionModule(ActionNetworkModule):
                 return {
                     "failed": True,
                     "msg": "unable to open shell. Please see: "
-                    + "https://docs.ansible.com/ansible/network_debug_troubleshooting.html#unable-to-open-shell",
+                    + "https://docs.ansible.com/ansible/latest/network/user_guide/network_debug_troubleshooting.html#category-unable-to-open-shell",
                 }
 
             task_vars["ansible_socket"] = socket_path

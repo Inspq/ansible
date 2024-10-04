@@ -44,6 +44,14 @@ ANSIBLE_TRANSFORM_INVALID_GROUP_CHARS=never ansible-playbook -i ../../inventory 
 # test extra vars
 ansible-inventory -i testhost, -i ./extra_vars_constructed.yml --list -e 'from_extras=hey ' "$@"|grep '"example": "hellohey"'
 
+# test host vars from previous inventory sources
+ansible-inventory -i ./inv_with_host_vars.yml -i ./host_vars_constructed.yml --graph "$@" | tee out.txt
+if [[ "$(grep out.txt -ce '.*host_var[1|2]_defined')" != 2 ]]; then
+    cat out.txt
+    echo "Expected groups host_var1_defined and host_var2_defined to both exist"
+    exit 1
+fi
+
 # Do not fail when all inventories fail to parse.
 # Do not fail when any inventory fails to parse.
 ANSIBLE_INVENTORY_UNPARSED_FAILED=False ANSIBLE_INVENTORY_ANY_UNPARSED_IS_FAILED=False ansible -m ping localhost -i /idontexist "$@"
@@ -70,6 +78,16 @@ if ANSIBLE_INVENTORY_ANY_UNPARSED_IS_FAILED=True ansible -m ping localhost -i /i
     exit 1
 fi
 
+# Test parsing an empty config
+set +e
+ANSIBLE_INVENTORY_UNPARSED_FAILED=True ANSIBLE_INVENTORY_ENABLED=constructed ansible-inventory -i ./test_empty.yml --list "$@"
+rc_failed_inventory="$?"
+set -e
+if [[ "$rc_failed_inventory" != 1 ]]; then
+    echo "Config was empty so inventory was not parsed, should cause failure"
+    exit 1
+fi
+
 # Ensure we don't throw when an empty directory is used as inventory
 ansible-playbook -i "$tmpdir" playbook.yml
 
@@ -88,3 +106,9 @@ fi
 
 # ensure we don't traceback on inventory due to variables with int as key
 ansible-inventory  -i inv_with_int.yml --list "$@"
+
+# test in subshell relative paths work mid play for extra vars in inventory refresh
+{
+	cd 1/2
+	ansible-playbook -e @../vars.yml -i 'web_host.example.com,' -i inventory.yml 3/extra_vars_relative.yml "$@"
+}
