@@ -41,7 +41,9 @@ from uuid import UUID
 from ansible.module_utils.six.moves.urllib.parse import urlencode
 from ansible.module_utils.six.moves.urllib.error import HTTPError
 from ansible.module_utils._text import to_text
+from packaging.version import Version
 
+URL_SERVER_INFO = "{url}/admin/serverinfo"
 URL_TOKEN = "{url}/realms/{realm}/protocol/openid-connect/token"
 URL_CLIENT = "{url}/admin/realms/{realm}/clients/{id}"
 URL_CLIENTS = "{url}/admin/realms/{realm}/clients"
@@ -286,7 +288,8 @@ def get_token(base_url, validate_certs, auth_realm, client_id,
     try:
         return {
             'Authorization': 'Bearer ' + r['access_token'],
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
         }
     except KeyError:
         raise KeycloakError(
@@ -1781,6 +1784,15 @@ class KeycloakAPI(object):
         """
         try:
             changed = False
+            serverInfo = json.load(
+                            open_url(
+                                URL_SERVER_INFO.format(url=self.baseurl),
+                                method='GET',
+                                http_agent=self.http_agent,
+                                headers=self.restheaders
+                            )
+                        )
+            quarkus = Version(serverInfo["systemInfo"]["version"]) >= Version("23.0.0")
             if "authenticationExecutions" in config \
                     and config["authenticationExecutions"]:
                 for newExecutionIndex, newExecution in enumerate(config["authenticationExecutions"], start=0):
@@ -1886,6 +1898,8 @@ class KeycloakAPI(object):
                             # Update the existing execution
                             updatedExec = {}
                             updatedExec["id"] = existingExecution["id"]
+                            if quarkus:
+                                updatedExec["priority"] = existingExecutionIndex
                             if 'flowId' in existingExecution:
                                 updatedExec["flowId"] = existingExecution["flowId"]
                             for key in newExecution:
