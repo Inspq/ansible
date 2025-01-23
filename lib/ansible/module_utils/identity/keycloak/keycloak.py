@@ -1797,13 +1797,13 @@ class KeycloakAPI(object):
         try:
             changed = False
             serverInfo = json.load(
-                            open_url(
-                                URL_SERVER_INFO.format(url=self.baseurl),
-                                method='GET',
-                                http_agent=self.http_agent,
-                                headers=self.restheaders
-                            )
-                        )
+                open_url(
+                    URL_SERVER_INFO.format(url=self.baseurl),
+                    method='GET',
+                    http_agent=self.http_agent,
+                    headers=self.restheaders
+                )
+            )
             quarkus = Version(clean_version(serverInfo["systemInfo"]["version"])) >= Version("23.0.0")
             if "authenticationExecutions" in config \
                     and config["authenticationExecutions"]:
