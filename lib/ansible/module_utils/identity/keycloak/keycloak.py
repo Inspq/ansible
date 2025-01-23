@@ -324,6 +324,7 @@ def is_valid_uuid(uuid_to_test, version=4):
         return False
     return str(uuid_obj) == uuid_to_test
 
+
 def clean_version(version_str):
     """
     Nettoie une version pour qu'elle soit compatible avec la classe Version.
@@ -335,6 +336,7 @@ def clean_version(version_str):
         return match.group(1)
     else:
         return "1.0.0"
+
 
 class KeycloakModule(object):
     params = {}
