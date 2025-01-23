@@ -33,6 +33,7 @@ import json
 import sys
 import copy
 import time
+import re
 # import urllib
 from six.moves.urllib.parse import quote
 from ansible.module_utils.urls import open_url
@@ -323,6 +324,17 @@ def is_valid_uuid(uuid_to_test, version=4):
         return False
     return str(uuid_obj) == uuid_to_test
 
+def clean_version(version_str):
+    """
+    Nettoie une version pour qu'elle soit compatible avec la classe Version.
+    Supprime tout ce qui vient après les trois premiers chiffres (MAJOR.MINOR.PATCH).
+    """
+    # Capture seulement le début de la version au format X.Y.Z
+    match = re.match(r'^(\d+\.\d+\.\d+)', version_str)
+    if match:
+        return match.group(1)
+    else:
+        return "1.0.0"
 
 class KeycloakModule(object):
     params = {}
@@ -1792,7 +1804,7 @@ class KeycloakAPI(object):
                     headers=self.restheaders
                 )
             )
-            quarkus = Version(serverInfo["systemInfo"]["version"]) >= Version("23.0.0")
+            quarkus = Version(clean_version(serverInfo["systemInfo"]["version"])) >= Version("23.0.0")
             if "authenticationExecutions" in config \
                     and config["authenticationExecutions"]:
                 for newExecutionIndex, newExecution in enumerate(config["authenticationExecutions"], start=0):
